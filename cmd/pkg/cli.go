@@ -3,6 +3,7 @@ package pkg
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 )
 
 func Check(err error, args ...interface{}) {
@@ -31,5 +32,6 @@ func MustGetEnv(key string) (v string) {
 
 func Fatalf(message string, args ...interface{}) {
 	_, _ = fmt.Fprintf(os.Stderr, message+"\n", args...)
+	_, _ = fmt.Fprintf(os.Stderr,"Stack trace: %s\n", debug.Stack())
 	os.Exit(1)
 }
