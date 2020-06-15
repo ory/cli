@@ -98,5 +98,5 @@ func gitCleanTags() {
 func init() {
 	Main.AddCommand(publish)
 	publish.Flags().Bool("dry", false, "Make changes only locally and do not push to remotes.")
-	publish.Flags().String("from-version", "", "Use this as the previous version for changelog generation.")
+	publish.Flags().String("from-version", "", "When set includes all release up to this release in the changelog that will be sent out.")
 }
