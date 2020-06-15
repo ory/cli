@@ -91,7 +91,7 @@ func GitGetCurrentTag() string {
 	if cmd.Run() != nil {
 		return "v0.0.0"
 	}
-	return b.String()
+	return strings.TrimSpace(b.String())
 }
 
 func BashPipe(in string) (result []string) {
