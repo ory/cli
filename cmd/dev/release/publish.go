@@ -76,7 +76,7 @@ var publish = &cobra.Command{
 		}
 		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
 
-		fmt.Printf("Successfully released version: v%s", nextVersion.String())
+		fmt.Printf("Successfully released version: v%s\n", nextVersion.String())
 	},
 }
 
