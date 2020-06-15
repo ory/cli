@@ -14,7 +14,7 @@ import (
 	"github.com/ory/cli/cmd/pkg"
 )
 
-var supported = []string{"hydra", "kratos", "keto", "oathkeeper"}
+var supported = []string{"hydra", "kratos", "keto", "oathkeeper", "cli"}
 
 var publish = &cobra.Command{
 	Use:   "publish [version]",
