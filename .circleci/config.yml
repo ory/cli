@@ -18,10 +18,18 @@ jobs:
 workflows:
   default:
     jobs:
-      - goreleaser/test
+      - test:
+          filters:
+            tags:
+              only: /.*/
+      - goreleaser/test:
+        filters:
+          tags:
+            only: /.*/
       - goreleaser/release:
           requires:
             - goreleaser/test
+            - test
           filters:
             branches:
               ignore: /.*/
