@@ -78,7 +78,7 @@ func GitListTags() string {
 
 func CommandGetOutput(name string, args ...string) string {
 	var b bytes.Buffer
-	cmd := exec.Command(name, args...)
+	cmd := NewCommand(name,args...)
 	cmd.Stdout = &b
 	Check(cmd.Run())
 	return b.String()
