@@ -1,0 +1,72 @@
+# This is an example gorelease.yaml file with some sane defaults.
+# Make sure to check the documentation at http://gorelease.com
+project_name: ory
+
+env:
+  - GO111MODULE=on
+
+before:
+  hooks:
+    - go mod download
+    - go install github.com/markbates/pkger/cmd/pkger
+    - pkger
+
+builds:
+  -
+    id: ory
+    flags:
+      - -a
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.Version={{.Tag}} -X github.com/ory/cli/cmd.Commit={{.FullCommit}} -X github.com/ory/cli/cmd.Date={{.Date}}
+    binary: ory
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - 386
+    goos:
+      - linux
+      - windows
+      - darwin
+
+archives:
+  - builds:
+      - ory
+    id: ory-archive
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+
+brews:
+  - github:
+      owner: ory
+      name: homebrew-ory
+    goarm: 6
+    ids:
+      - hydra-archive
+    homepage:  https://www.ory.sh
+    commit_author:
+      name: aeneasr
+      email: aeneas@ory.sh
+
+scoop:
+  bucket:
+    owner: ory
+    name: scoop-ory
+  homepage:  https://www.ory.sh
+  commit_author:
+    name: aeneasr
+    email: aeneas@ory.sh
+
+release:
+  prerelease: auto
