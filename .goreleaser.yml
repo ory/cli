@@ -53,7 +53,7 @@ brews:
       name: homebrew-ory
     goarm: 6
     ids:
-      - hydra-archive
+      - ory-archive
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
