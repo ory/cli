@@ -49,7 +49,7 @@ var publish = &cobra.Command{
 			nextVersion = *nv
 		}
 
-		knowsTag(&nextVersion)
+		checkForDuplicateTag(&nextVersion)
 
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
 		pkg.Check(pkg.NewCommand("circleci", "config", "check").Run())
@@ -72,7 +72,7 @@ var publish = &cobra.Command{
 		if ov := flagx.MustGetString(cmd, "from-version"); len(ov) > 0 {
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov,"v"))
 			pkg.Check(err, "Unable to parse from-version git tag v%s: %s", ov, err)
-			knowsTag(fromVersion)
+			checkIfTagExists(fromVersion)
 		}
 		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
 
@@ -80,9 +80,15 @@ var publish = &cobra.Command{
 	},
 }
 
-func knowsTag(v *semver.Version) {
+func checkForDuplicateTag(v *semver.Version) {
 	if stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s",v)) {
 		pkg.Fatalf(`Version v%s exists already and can not be re-released!`, v.String())
+	}
+}
+
+func checkIfTagExists(v *semver.Version) {
+	if !stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s",v)) {
+		pkg.Fatalf(`Version v%s does not exist!`, v.String())
 	}
 }
 
