@@ -85,7 +85,13 @@ func CommandGetOutput(name string, args ...string) string {
 }
 
 func GitGetCurrentTag() string {
-	return strings.TrimSpace(CommandGetOutput("git", "describe", "--abbrev=0", "--tags"))
+	var b bytes.Buffer
+	cmd := NewCommand("git", "describe", "--abbrev=0", "--tags")
+	cmd.Stdout = &b
+	if cmd.Run() != nil {
+		return "v0.0.0"
+	}
+	return b.String()
 }
 
 func BashPipe(in string) (result []string) {
