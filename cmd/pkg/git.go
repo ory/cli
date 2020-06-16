@@ -31,7 +31,7 @@ func NewCommandIn(dir, name string, args ...string) *exec.Cmd {
 
 func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, previousVersion *semver.Version) {
 	gitArgs := []string{"commit", "--allow-empty", "-m",
-		fmt.Sprintf("chore: pin v%s release commit", nextVersion.String())}
+		fmt.Sprintf("autogen: pin v%s release commit", nextVersion.String())}
 	if previousVersion != nil {
 		gitArgs = append(gitArgs, "-m", fmt.Sprintf("%s v%s", GitCommitMessagePreviousVersion, previousVersion.String()))
 	}
