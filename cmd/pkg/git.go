@@ -15,7 +15,7 @@ import (
 const GitCommitMessagePreviousVersion = "Bumps from"
 
 func NewCommand(name string, args ...string) *exec.Cmd {
-	fmt.Printf("$ %s %s\n", name, strings.Join(args, " "))
+	_, _ = fmt.Fprintf(os.Stderr, "$ %s %s\n", name, strings.Join(args, " "))
 	ec := exec.Command(name, args...)
 	ec.Stdout = os.Stdout
 	ec.Stderr = os.Stderr
@@ -73,12 +73,12 @@ func Confirm(message string, args ...interface{}) {
 }
 
 func GitListTags() string {
-	return CommandGetOutput("git","tag","--sort=creatordate")
+	return CommandGetOutput("git", "tag", "--sort=creatordate")
 }
 
 func CommandGetOutput(name string, args ...string) string {
 	var b bytes.Buffer
-	cmd := NewCommand(name,args...)
+	cmd := NewCommand(name, args...)
 	cmd.Stdout = &b
 	Check(cmd.Run())
 	return b.String()
