@@ -24,9 +24,13 @@ var orbs = []string{
 var orbLatestRegex = regexp.MustCompile("(?im)^Latest:\\s(.*)$")
 
 var bump = &cobra.Command{
-	Use:   "bump [<./.circleci/config.yml>]",
+	Use:   "bump <[.circleci/config.yml]>",
 	Args:  cobra.RangeArgs(0, 1),
-	Short: "Render a Markdown file",
+	Short: "Bump CircleCI Orb versions",
+	Long: `Bumps ORY's CircleCI Orb versions to their newest version.
+
+If no argument is supplied, this command uses the default ".circleci/config.yml" location.
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		path := ".circleci/config.yml"
 		if len(args) == 1 {
