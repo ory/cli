@@ -47,7 +47,7 @@ func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, p
 	}
 
 	if !dry {
-		Confirm("Pressing [y] will push this release to GitHub. Are you sure?")
+		Confirm(fmt.Sprintf("Pressing [y] will push this (%s) release to GitHub. Are you sure?", dir))
 		Check(NewCommandIn(dir, "git", "push").Run())
 		Check(NewCommandIn(dir, "git", "push", "--tags").Run())
 	}
