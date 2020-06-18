@@ -102,7 +102,7 @@ Super multiline
 				require.False(t, o)
 			} else {
 				require.True(t, o)
-				assert.EqualValues(t, tc.v, "v"+ v.String())
+				assert.EqualValues(t, tc.v, "v"+v.String())
 			}
 		})
 	}

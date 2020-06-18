@@ -2,10 +2,20 @@ module github.com/ory/cli
 
 go 1.14
 
+replace (
+	github.com/gobuffalo/fizz => ../../gobuffalo/fizz
+	github.com/gobuffalo/pop/v5 => ../../gobuffalo/pop
+	github.com/ory/x => ../x
+)
+
 require (
 	github.com/Masterminds/semver/v3 v3.0.3
+	github.com/avast/retry-go v2.6.0+incompatible
+	github.com/gobuffalo/fizz v1.10.0 // indirect
+	github.com/gobuffalo/pop/v5 v5.0.11
 	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
 	github.com/google/uuid v1.1.0
+	github.com/jackc/pgx/v4 v4.4.1
 	github.com/markbates/pkger v0.17.0
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/viper v1.7.5

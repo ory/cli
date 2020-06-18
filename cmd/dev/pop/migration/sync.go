@@ -26,7 +26,7 @@ func makeFileIfNotExist(p string) error {
 var syncCmd = &cobra.Command{
 	Use:   "sync [path/to/migrations] [path/to/testdata] [path/to/fixtures]",
 	Short: "Creates testdata files and fixtures directories",
-	Args:  cobra.RangeArgs(2,3),
+	Args:  cobra.RangeArgs(2, 3),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return filepath.Walk(args[0], func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() || (filepath.Ext(path) != ".sql" && filepath.Ext(path) != ".fizz") {
