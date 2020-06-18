@@ -2,12 +2,6 @@ module github.com/ory/cli
 
 go 1.14
 
-replace (
-	github.com/gobuffalo/fizz => ../../gobuffalo/fizz
-	github.com/gobuffalo/pop/v5 => ../../gobuffalo/pop
-	github.com/ory/x => ../x
-)
-
 require (
 	github.com/Masterminds/semver/v3 v3.0.3
 	github.com/avast/retry-go v2.6.0+incompatible
@@ -19,7 +13,7 @@ require (
 	github.com/markbates/pkger v0.17.0
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/viper v1.7.5
-	github.com/ory/x v0.0.128
+	github.com/ory/x v0.0.131
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
