@@ -89,7 +89,6 @@ var draft = &cobra.Command{
 %s
 `, tagMessage, changelog)
 
-
 		return nil
 	},
 }

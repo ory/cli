@@ -32,7 +32,7 @@ var publish = &cobra.Command{
 		dry := flagx.MustGetBool(cmd, "dry")
 		gitCleanTags()
 
-		currentVersion, err := semver.StrictNewVersion(strings.TrimPrefix(pkg.GitGetCurrentTag(),"v"))
+		currentVersion, err := semver.StrictNewVersion(strings.TrimPrefix(pkg.GitGetCurrentTag(), "v"))
 		pkg.Check(err, "Unable to parse current git tag %s: %s", pkg.GitGetCurrentTag(), err)
 
 		var nextVersion semver.Version
@@ -44,7 +44,7 @@ var publish = &cobra.Command{
 		case "patch":
 			nextVersion = currentVersion.IncPatch()
 		default:
-			nv, err := semver.StrictNewVersion(strings.TrimPrefix(args[0],"v"))
+			nv, err := semver.StrictNewVersion(strings.TrimPrefix(args[0], "v"))
 			pkg.Check(err)
 			nextVersion = *nv
 		}
@@ -70,7 +70,7 @@ var publish = &cobra.Command{
 
 		var fromVersion *semver.Version
 		if ov := flagx.MustGetString(cmd, "from-version"); len(ov) > 0 {
-			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov,"v"))
+			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
 			pkg.Check(err, "Unable to parse from-version git tag v%s: %s", ov, err)
 			checkIfTagExists(fromVersion)
 		}
@@ -81,13 +81,13 @@ var publish = &cobra.Command{
 }
 
 func checkForDuplicateTag(v *semver.Version) {
-	if stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s",v)) {
+	if stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
 		pkg.Fatalf(`Version v%s exists already and can not be re-released!`, v.String())
 	}
 }
 
 func checkIfTagExists(v *semver.Version) {
-	if !stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s",v)) {
+	if !stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
 		pkg.Fatalf(`Version v%s does not exist!`, v.String())
 	}
 }

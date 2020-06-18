@@ -16,11 +16,12 @@ builds:
     id: ory
     flags:
       - -a
+      - -tags sqlite
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.Version={{.Tag}} -X github.com/ory/cli/cmd.Commit={{.FullCommit}} -X github.com/ory/cli/cmd.Date={{.Date}}
     binary: ory
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     goarch:
       - amd64
       - 386

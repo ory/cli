@@ -24,7 +24,7 @@ Example:
 		release campaign send 12345
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		SendCampaign(args[0],flagx.MustGetBool(cmd, "dry"))
+		SendCampaign(args[0], flagx.MustGetBool(cmd, "dry"))
 	},
 }
 
