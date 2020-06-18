@@ -1,11 +1,16 @@
 package migration
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/pop/v5"
+	"github.com/gobuffalo/pop/v5/logging"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/randx"
 	"github.com/ory/x/sqlcon/dockertest"
@@ -29,6 +34,10 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer dockertest.KillAllTestDatabases()
+
+		// Disable log outputs
+		pop.SetLogger(func(lvl logging.Level, s string, args ...interface{}) {})
+		_ = mysql.SetLogger(log.New(ioutil.Discard, "", 0))
 
 		var l sync.Mutex
 		dsns := map[string]string{
@@ -60,8 +69,12 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 
 		pkg.Check(os.MkdirAll(args[1], 0777))
 
-		// Ensure a connection exists and works before running the translators.
-		for _, dsn := range dsns {
+		dump := flagx.MustGetBool(cmd, "dump")
+		replace := flagx.MustGetBool(cmd, "replace")
+
+		var wg sync.WaitGroup
+		runner := func(name, dsn string) {
+			defer wg.Done()
 			c, err := pop.NewConnection(&pop.ConnectionDetails{URL: dsn})
 			pkg.Check(err)
 
@@ -72,14 +85,27 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 				return c.RawQuery("SELECT 1").Exec()
 			}))
 
-			m, err := fizzx.NewFileMigrator(args[0], args[1], flagx.MustGetBool(cmd, "replace"), c)
+			m, err := fizzx.NewDumpMigrator(args[0], args[1], replace, dump, c)
 			pkg.Check(err)
 
 			pkg.Check(m.Up())
+
+			if dump {
+				_ = m.DumpMigrationSchema()
+				_, _ = fmt.Fprintf(os.Stderr, "Dumped %s schema to: %s\n", name, m.SchemaPath)
+			}
+
 			pkg.Check(m.Down(-1))
 			pkg.Check(c.Close())
 		}
 
+		wg.Add(len(dsns))
+		// Ensure a connection exists and works before running the translators.
+		for name, dsn := range dsns {
+			go runner(name, dsn)
+		}
+
+		wg.Wait()
 		return nil
 	},
 }
@@ -88,4 +114,5 @@ func init() {
 	Main.AddCommand(render)
 
 	render.Flags().BoolP("replace", "r", false, "Replaces existing files if set.")
+	render.Flags().BoolP("dump", "d", false, "If set dumps the schema to a temporary location.")
 }

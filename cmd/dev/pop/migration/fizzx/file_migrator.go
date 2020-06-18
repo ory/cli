@@ -11,18 +11,25 @@ import (
 	"github.com/pkg/errors"
 )
 
-type FileMigrator struct {
+type DumpMigrator struct {
 	pop.Migrator
 	Path string
 }
 
-// NewFileMigrator for a path and a Connection
-func NewFileMigrator(path string, dest string, shouldReplace bool, c *pop.Connection) (FileMigrator, error) {
-	fm := FileMigrator{
+func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c *pop.Connection) (DumpMigrator, error) {
+	fm := DumpMigrator{
 		Migrator: pop.NewMigrator(c),
 		Path:     path,
 	}
-	// fm.SchemaPath = ""
+
+	if dumpSchema {
+		d, err := ioutil.TempDir(os.TempDir(),
+			fmt.Sprintf("schema-%s-*", c.Dialect.Name()))
+		if err != nil {
+			return fm, err
+		}
+		fm.SchemaPath = d
+	}
 
 	runner := func(mf pop.Migration, tx *pop.Connection) error {
 		f, err := os.Open(mf.Path)
@@ -47,7 +54,6 @@ func NewFileMigrator(path string, dest string, shouldReplace bool, c *pop.Connec
 
 		err = tx.RawQuery(content).Exec()
 		if err != nil {
-			_ = fm.DumpMigrationSchema()
 			return errors.Wrapf(err, "error executing %s, sql: %s", mf.Path, content)
 		}
 		return nil
@@ -61,7 +67,7 @@ func NewFileMigrator(path string, dest string, shouldReplace bool, c *pop.Connec
 	return fm, nil
 }
 
-func (fm *FileMigrator) findMigrations(runner func(mf pop.Migration, tx *pop.Connection) error) error {
+func (fm *DumpMigrator) findMigrations(runner func(mf pop.Migration, tx *pop.Connection) error) error {
 	dir := fm.Path
 	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
 		// directory doesn't exist
