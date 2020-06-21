@@ -1,7 +1,0 @@
-name: Check Golang dependencies for vulnerabilities
-on: [push, pull_request]
-jobs:
-  nancy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: sonatype-nexus-community/nancy-github-action@1.0.0
