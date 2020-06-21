@@ -1,0 +1,7 @@
+name: Check Golang dependencies for vulnerabilities
+on: [push, pull_request]
+jobs:
+  nancy:
+    -
+      name: Run nancy
+      uses: sonatype-nexus-community/nancy-github-action@1.0.0
