@@ -2,5 +2,6 @@ name: Run linters
 on: [push, pull_request]
 jobs:
   lint:
-    - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v1.2.1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: golangci/golangci-lint-action@v1.2.1
