@@ -98,8 +98,15 @@ func (fm *DumpMigrator) findMigrations(runner func(mf pop.Migration, tx *pop.Con
 }
 
 func writeFile(path string, contents []byte, replace bool) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) || replace {
-		return ioutil.WriteFile(path, contents, 0666)
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		if replace {
+			_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
+			return ioutil.WriteFile(path, contents, 0666)
+		} else {
+			_, _ = fmt.Fprintf(os.Stderr, "Skipping file: %s\n", path)
+			return nil
+		}
 	}
-	return nil
+	_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
+	return ioutil.WriteFile(path, contents, 0666)
 }
