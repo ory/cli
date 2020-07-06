@@ -104,6 +104,25 @@ func writeFile(path string, contents []byte, replace bool) error {
 			return ioutil.WriteFile(path, contents, 0666)
 		} else {
 			_, _ = fmt.Fprintf(os.Stderr, "Skipping file: %s\n", path)
+			original, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			if string(contents) != string(original) {
+				_, _ = fmt.Fprintf(os.Stderr, `Migrations are not equal!
+
+Expected:
+
+%s
+
+------------------------
+Actual:
+
+%s
+
+`, original, contents)
+				return errors.Errorf("migrations are not equal")
+			}
 			return nil
 		}
 	}

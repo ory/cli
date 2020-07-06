@@ -11,12 +11,11 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/pop/v5"
 	"github.com/gobuffalo/pop/v5/logging"
+	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/randx"
 	"github.com/ory/x/sqlcon/dockertest"
 	"github.com/spf13/cobra"
-
-	_ "github.com/jackc/pgx/v4/stdlib"
 
 	"github.com/avast/retry-go"
 
@@ -88,14 +87,27 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 			m, err := fizzx.NewDumpMigrator(args[0], args[1], replace, dump, c)
 			pkg.Check(err)
 
+			if name == "sqlite" {
+				pkg.Check(c.RawQuery(`PRAGMA legacy_alter_table=on; PRAGMA foreign_keys=off;`).Exec())
+			}
 			pkg.Check(m.Up())
+			if name == "sqlite" {
+				pkg.Check(c.RawQuery(`PRAGMA legacy_alter_table=off; PRAGMA foreign_keys=on;`).Exec())
+			}
 
 			if dump {
 				_ = m.DumpMigrationSchema()
 				_, _ = fmt.Fprintf(os.Stderr, "Dumped %s schema to: %s\n", name, m.SchemaPath)
 			}
 
+			if name == "sqlite" {
+				pkg.Check(c.RawQuery(`PRAGMA legacy_alter_table=on; PRAGMA foreign_keys=off;`).Exec())
+			}
 			pkg.Check(m.Down(-1))
+			if name == "sqlite" {
+				pkg.Check(c.RawQuery(`PRAGMA legacy_alter_table=off; PRAGMA foreign_keys=on;`).Exec())
+			}
+
 			pkg.Check(c.Close())
 		}
 
