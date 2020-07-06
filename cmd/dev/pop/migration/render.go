@@ -2,6 +2,8 @@ package migration
 
 import (
 	"fmt"
+	"github.com/ory/x/randx"
+	"github.com/ory/x/stringslice"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,7 +15,6 @@ import (
 	"github.com/gobuffalo/pop/v5/logging"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/ory/x/flagx"
-	"github.com/ory/x/randx"
 	"github.com/ory/x/sqlcon/dockertest"
 	"github.com/spf13/cobra"
 
@@ -39,32 +40,46 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 		_ = mysql.SetLogger(log.New(ioutil.Discard, "", 0))
 
 		var l sync.Mutex
-		dsns := map[string]string{
-			"sqlite": "sqlite3://" + filepath.Join(os.TempDir(), randx.MustString(12, randx.AlphaNum)) + ".sql?mode=memory&_fk=true"}
+		dialects := flagx.MustGetStringSlice(cmd, "dialects")
+		dsns := map[string]string{}
+
+		if stringslice.Has(dialects, "sqlite") {
+			dsns["sqlite"] = "sqlite3://" + filepath.Join(os.TempDir(), randx.MustString(12, randx.AlphaNum)) + ".sql?mode=memory&_fk=true"
+		}
 
 		dockertest.Parallel([]func(){
 			func() {
-				u, err := dockertest.RunPostgreSQL()
-				pkg.Check(err)
-				l.Lock()
-				dsns["postgres"] = u
-				l.Unlock()
+				if stringslice.Has(dialects, "postgres") {
+					u, err := dockertest.RunPostgreSQL()
+					pkg.Check(err)
+					l.Lock()
+					dsns["postgres"] = u
+					l.Unlock()
+				}
 			},
 			func() {
-				u, err := dockertest.RunMySQL()
-				pkg.Check(err)
-				l.Lock()
-				dsns["mysql"] = u
-				l.Unlock()
+				if stringslice.Has(dialects, "mysql") {
+					u, err := dockertest.RunMySQL()
+					pkg.Check(err)
+					l.Lock()
+					dsns["mysql"] = u
+					l.Unlock()
+				}
 			},
 			func() {
-				u, err := dockertest.RunCockroachDB()
-				pkg.Check(err)
-				l.Lock()
-				dsns["cockroach"] = u
-				l.Unlock()
+				if stringslice.Has(dialects, "cockroach") {
+					u, err := dockertest.RunCockroachDB()
+					pkg.Check(err)
+					l.Lock()
+					dsns["cockroach"] = u
+					l.Unlock()
+				}
 			},
 		})
+
+		if len(dsns) == 0 {
+			panic(fmt.Sprintf("Expected at least one dialect out of [sqlite, mysql, postgres, cockroach], but got %v", dialects))
+		}
 
 		pkg.Check(os.MkdirAll(args[1], 0777))
 
@@ -127,4 +142,5 @@ func init() {
 
 	render.Flags().BoolP("replace", "r", false, "Replaces existing files if set.")
 	render.Flags().BoolP("dump", "d", false, "If set dumps the schema to a temporary location.")
+	render.Flags().StringSlice("dialects", []string{"sqlite", "mysql", "postgres", "cockroach"}, "Select dialects to render. Comma separated list out of sqlite,mysql,postgres,cockroach.")
 }
