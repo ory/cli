@@ -10,4 +10,3 @@ jobs:
           version: v1.27
       - name: Run Go linter
         uses: sonatype-nexus-community/nancy-github-action@1.0.0
-
