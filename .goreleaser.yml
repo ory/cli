@@ -80,10 +80,40 @@ builds:
 archives:
   - builds:
     - ory-sqlite-windows
+    id: ory-windows
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - builds:
     - ory-sqlite-darwin
+    id: ory-macos
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - builds:
     - ory-sqlite-linux
-    - ory-sqlite-linux-libmusl
-    id: ory-archive
+    id: ory-linux
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - builds:
+      - ory-sqlite-linux-libmusl
+    id: ory-linux-libmusl
     replacements:
       darwin: macOS
       386: 32-bit
@@ -104,7 +134,7 @@ brews:
       name: homebrew-ory
     goarm: 6
     ids:
-      - ory-archive
+      - ory-macos
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
