@@ -13,26 +13,76 @@ before:
 
 builds:
   -
-    id: ory
+    id: ory-sqlite-darwin
     flags:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.Version={{.Tag}} -X github.com/ory/cli/cmd.Commit={{.FullCommit}} -X github.com/ory/cli/cmd.Date={{.Date}}
-    binary: ory
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      # - "-extldflags '-static'"
+    binary: ory-sqlite
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    goarch:
+      - amd64
+    goos:
+      - darwin
+
+  -
+    id: ory-sqlite-linux
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+    binary: ory-sqlite
     env:
       - CGO_ENABLED=1
     goarch:
       - amd64
-      - 386
     goos:
       - linux
+  -
+    id: ory-sqlite-linux-libmusl
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+    binary: ory-sqlite-libmusl
+    env:
+      - CGO_ENABLED=1
+      - CC=musl-gcc
+    goarch:
+      - amd64
+    goos:
+      - linux
+  -
+    id: ory-sqlite-windows
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - "-extldflags '-static'"
+    binary: ory-sqlite
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    goarch:
+      - amd64
+    goos:
       - windows
-      - darwin
 
 archives:
   - builds:
-      - ory
+    - ory-sqlite-windows
+    - ory-sqlite-darwin
+    - ory-sqlite-linux
+    - ory-sqlite-linux-libmusl
     id: ory-archive
     replacements:
       darwin: macOS
