@@ -20,7 +20,7 @@ builds:
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
       # - "-extldflags '-static'"
-    binary: ory-sqlite
+    binary: ory
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -37,7 +37,7 @@ builds:
       - sqlite
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
-    binary: ory-sqlite
+    binary: ory
     env:
       - CGO_ENABLED=1
     goarch:
@@ -51,7 +51,7 @@ builds:
       - sqlite
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
-    binary: ory-sqlite-libmusl
+    binary: ory
     env:
       - CGO_ENABLED=1
       - CC=musl-gcc
@@ -67,7 +67,7 @@ builds:
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
       - "-extldflags '-static'"
-    binary: ory-sqlite
+    binary: ory
     env:
       - CGO_ENABLED=1
       - CC=x86_64-w64-mingw32-gcc
