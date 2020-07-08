@@ -49,9 +49,9 @@ var draft = &cobra.Command{
 		if cliFromVersion := flagx.MustGetString(cmd, "from-version"); len(cliFromVersion) > 0 {
 			cv, err := semver.StrictNewVersion(strings.TrimPrefix(cliFromVersion, "v"))
 			pkg.Check(err)
-			count = howManyVersionsSince(cv, pkg.GitListTags())
+			count = changelogGeneratorReleaseCount(cv, pkg.GitListTags())
 		} else if cliFromTag, ok := getPreviousVersionFromGitCommitMessage(commitMessage); ok {
-			count = howManyVersionsSince(cliFromTag, pkg.GitListTags())
+			count = changelogGeneratorReleaseCount(cliFromTag, pkg.GitListTags())
 		}
 
 		pkg.Check(pkg.NewCommand("npx", "conventional-changelog-cli@v2.0.34", "--config",
@@ -115,7 +115,12 @@ func getPreviousVersionFromGitCommitMessage(message string) (*semver.Version, bo
 	return version, true
 }
 
-func howManyVersionsSince(tag *semver.Version, listOfTags string) int {
+// changelogGeneratorReleaseCount returns the `--release-count <count>` for `npx changelog-generator-cli`.
+// The count works as follows:
+//
+// - `-r 1` all changes since the latest git tag. For fresh git tags without any newer commits this is always empty.
+// - `-r 2` all changes since the latest git tag, plus the changes from the latest git tag.
+func changelogGeneratorReleaseCount(tag *semver.Version, listOfTags string) int {
 	var count = 0
 	for _, line := range strings.Split(listOfTags, "\n") {
 		if line == fmt.Sprintf("v%s", tag.String()) {

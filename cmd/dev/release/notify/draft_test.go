@@ -49,10 +49,11 @@ v0.2.1-alpha.1
 v0.3.0-alpha.1
 `
 
-	assert.Equal(t, 2, howManyVersionsSince(semver.MustParse("0.3.0-alpha.1"), list))
-	assert.Equal(t, 3, howManyVersionsSince(semver.MustParse("0.2.1-alpha.1"), list))
-	assert.Equal(t, 5, howManyVersionsSince(semver.MustParse("0.1.1-alpha.1"), list))
-	assert.Equal(t, 2, howManyVersionsSince(semver.MustParse("9.9.9"), list))
+	// This is 2 because 1 are the changes SINCE the last git tag, not including the last tag.
+	assert.Equal(t, 2, changelogGeneratorReleaseCount(semver.MustParse("0.3.0-alpha.1"), list))
+	assert.Equal(t, 3, changelogGeneratorReleaseCount(semver.MustParse("0.2.1-alpha.1"), list))
+	assert.Equal(t, 5, changelogGeneratorReleaseCount(semver.MustParse("0.1.1-alpha.1"), list))
+	assert.Equal(t, 2, changelogGeneratorReleaseCount(semver.MustParse("9.9.9"), list))
 }
 
 func TestGetPreviousVersionFromGitCommitMessage(t *testing.T) {
