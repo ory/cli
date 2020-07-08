@@ -98,8 +98,34 @@ func (fm *DumpMigrator) findMigrations(runner func(mf pop.Migration, tx *pop.Con
 }
 
 func writeFile(path string, contents []byte, replace bool) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) || replace {
-		return ioutil.WriteFile(path, contents, 0666)
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		if replace {
+			_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
+			return ioutil.WriteFile(path, contents, 0666)
+		} else {
+			_, _ = fmt.Fprintf(os.Stderr, "Skipping file: %s\n", path)
+			original, err := ioutil.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			if string(contents) != string(original) {
+				_, _ = fmt.Fprintf(os.Stderr, `Migrations are not equal!
+
+Expected:
+
+%s
+
+------------------------
+Actual:
+
+%s
+
+`, original, contents)
+				return errors.Errorf("migrations are not equal")
+			}
+			return nil
+		}
 	}
-	return nil
+	_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
+	return ioutil.WriteFile(path, contents, 0666)
 }

@@ -20,6 +20,13 @@ var publish = &cobra.Command{
 	Use:   "publish [version]",
 	Args:  cobra.ExactArgs(1),
 	Short: "Publish a new release",
+	Long: `Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
+
+In case where the release pipeline failed and you re-create another release where you want to include the changelog from the failed release, perform the following:
+
+1. Assuming release "v0.1.0" failed
+2. You wish to create "v0.1.1" and include the changelog of "v0.1.0" as well
+3. Run `+"`ory dev release publish v0.1.1 --include-changelog-since v0.1.0`",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
 		pkg.Check(err)
@@ -69,9 +76,9 @@ var publish = &cobra.Command{
 		}
 
 		var fromVersion *semver.Version
-		if ov := flagx.MustGetString(cmd, "from-version"); len(ov) > 0 {
+		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) > 0 {
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
-			pkg.Check(err, "Unable to parse from-version git tag v%s: %s", ov, err)
+			pkg.Check(err, "Unable to parse include-changelog-since git tag v%s: %s", ov, err)
 			checkIfTagExists(fromVersion)
 		}
 		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
@@ -104,5 +111,5 @@ func gitCleanTags() {
 func init() {
 	Main.AddCommand(publish)
 	publish.Flags().Bool("dry", false, "Make changes only locally and do not push to remotes.")
-	publish.Flags().String("from-version", "", "When set includes all release up to this release in the changelog that will be sent out.")
+	publish.Flags().String("include-changelog-since", "", "If set includes all changelog entries for all git tags up to and including the specified git tag")
 }
