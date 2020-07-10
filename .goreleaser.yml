@@ -13,27 +13,74 @@ before:
 
 builds:
   -
-    id: ory
+    id: ory-sqlite-darwin
     flags:
-      - -a
-      - -tags sqlite
+      - -tags
+      - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.Version={{.Tag}} -X github.com/ory/cli/cmd.Commit={{.FullCommit}} -X github.com/ory/cli/cmd.Date={{.Date}}
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      # - "-extldflags '-static'"
+    binary: ory
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    goarch:
+      - amd64
+    goos:
+      - darwin
+
+  -
+    id: ory-sqlite-linux
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
     binary: ory
     env:
       - CGO_ENABLED=1
     goarch:
       - amd64
-      - 386
     goos:
       - linux
+  -
+    id: ory-sqlite-linux-libmusl
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+    binary: ory
+    env:
+      - CGO_ENABLED=1
+      - CC=musl-gcc
+    goarch:
+      - amd64
+    goos:
+      - linux
+  -
+    id: ory-sqlite-windows
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - "-extldflags '-static'"
+    binary: ory
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    goarch:
+      - amd64
+    goos:
       - windows
-      - darwin
 
 archives:
   - builds:
-      - ory
-    id: ory-archive
+    - ory-sqlite-windows
+    id: ory-windows
     replacements:
       darwin: macOS
       386: 32-bit
@@ -41,6 +88,40 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+
+  - builds:
+    - ory-sqlite-darwin
+    id: ory-macos
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - builds:
+    - ory-sqlite-linux
+    id: ory-linux
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+
+  - builds:
+      - ory-sqlite-linux-libmusl
+    id: ory-linux-libmusl
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-libmusl_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 snapshot:
   name_template: "{{ .Tag }}-next"
@@ -54,7 +135,7 @@ brews:
       name: homebrew-ory
     goarm: 6
     ids:
-      - ory-archive
+      - ory-macos
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
