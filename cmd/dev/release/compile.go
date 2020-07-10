@@ -22,6 +22,7 @@ var compile = &cobra.Command{
 		pkg.Check(pkg.NewCommand("docker", "run", "--mount",
 			fmt.Sprintf(`type=bind,source=%s,target=/project`, wd),
 			"oryd/xgoreleaser:"+flagx.MustGetString(cmd, "tag"),
+			"--timeout", "60m",
 			"--skip-publish", "--snapshot", "--rm-dist", "--parallelism",
 			strconv.Itoa(flagx.MustGetInt(cmd,"parallelism"))).Run())
 	},
