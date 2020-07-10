@@ -11,7 +11,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Check go modules are up to date
-        run: go mod download; git status --exit-code
+        run: |
+          go mod download
+          git diff --exit-code
       - name: Run Go linter
         uses: golangci/golangci-lint-action@v1.2.1
         with:
