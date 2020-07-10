@@ -1,5 +1,9 @@
 name: Run linters
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 jobs:
   lint:
     runs-on: ubuntu-latest
