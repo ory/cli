@@ -10,6 +10,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Check go modules are up to date
+        run: |
+          go mod download
+          git status --exit-code
       - name: Run Go linter
         uses: golangci/golangci-lint-action@v1.2.1
         with:
@@ -17,7 +21,7 @@ jobs:
       - name: Check Go dependencies for vulnerabilities
         uses: ory/nancy-github-action@v0.0.4
       -
-        name: Check GoReleaser Config
+        name: Check GoReleaser config correctness
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
