@@ -15,4 +15,12 @@ jobs:
         with:
           version: v1.27
       - name: Check Go dependencies for vulnerabilities
-        uses: ory/nancy-github-action@0.0.3
+        uses: ory/nancy-github-action@v0.0.4
+      -
+        name: Check GoReleaser Config
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
