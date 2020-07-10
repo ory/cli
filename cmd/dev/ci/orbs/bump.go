@@ -21,7 +21,7 @@ var orbs = []string{
 	"ory/golangci",
 }
 
-var orbLatestRegex = regexp.MustCompile("(?im)^Latest:\\s(.*)$")
+var orbLatestRegex = regexp.MustCompile(`(?im)^Latest:\s(.*)$`)
 
 var bump = &cobra.Command{
 	Use:   "bump <[.circleci/config.yml]>",

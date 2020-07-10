@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var fizzTestRegex = regexp.MustCompile("([0-9]+)_([a-zA-Z_0-9]+)(\\.(mysql|postgres|cockroach|sqlite)|)\\.up\\.(fizz|sql)")
+var fizzTestRegex = regexp.MustCompile(`([0-9]+)_([a-zA-Z_0-9]+)(\.(mysql|postgres|cockroach|sqlite)|)\.up\.(fizz|sql)`)
 
 func makeFileIfNotExist(p string) error {
 	if _, err := os.Stat(p); !os.IsNotExist(err) {
