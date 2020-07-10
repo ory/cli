@@ -4,9 +4,11 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Go dependencies for vulnerabilities
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Go linter
         uses: golangci/golangci-lint-action@v1.2.1
         with:
           version: v1.27
-      - name: Run Go linter
-        uses: sonatype-nexus-community/nancy-github-action@1.0.0
+      - name: Check Go dependencies for vulnerabilities
+        uses: ory/nancy-github-action@0.0.1
