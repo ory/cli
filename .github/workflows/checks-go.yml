@@ -11,4 +11,4 @@ jobs:
         with:
           version: v1.27
       - name: Check Go dependencies for vulnerabilities
-        uses: ory/nancy-github-action@0.0.1
+        uses: ory/nancy-github-action@0.0.2
