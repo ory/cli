@@ -1,0 +1,30 @@
+name: Run linters
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Check go modules are up to date
+        run: |
+          go mod download
+          git diff --exit-code
+      - name: Run Go linter
+        uses: golangci/golangci-lint-action@v1.2.1
+        with:
+          version: v1.27
+      - name: Check Go dependencies for vulnerabilities
+        uses: ory/nancy-github-action@v0.0.4
+      -
+        name: Check GoReleaser config correctness
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
