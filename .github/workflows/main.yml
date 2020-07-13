@@ -1,0 +1,80 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+jobs:
+  lint:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Check go modules are up to date
+        run: |
+          go mod download
+          git diff --exit-code
+      - name: Run Go linter
+        uses: golangci/golangci-lint-action@v1.2.1
+        with:
+          version: v1.27
+      - name: Check Go dependencies for vulnerabilities
+        uses: ory/nancy-github-action@v0.0.4
+      -
+        name: Check GoReleaser config correctness
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: 0.139.0
+          args: check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Test
+        run: go test -tags sqlite -failfast ./...
+
+  generate:
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v2
+
+      -
+        name: Checkout code
+        uses: ory/actions@v0
+        with:
+          run: changelog/generate
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [test, lint, generate]
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    steps:
+      -
+        name: Checkout code
+        uses: actions/checkout@v2
+      -
+        name: Checkout code
+        uses: ory/actions@v0
+        with:
+          run: release/publish
+          dockerUser: ${{ secrets.DOCKER_USER }}
+          dockerToken: ${{ secrets.DOCKER_TOKEN }}
+
+      # newsletter-draft
+      # approval
+      # newsletter send
