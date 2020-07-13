@@ -19,7 +19,6 @@ builds:
       - sqlite
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
-      # - "-extldflags '-static'"
     binary: ory
     env:
       - CGO_ENABLED=1
