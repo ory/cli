@@ -1,6 +1,5 @@
 linters:
   enable:
-    - gosec
     - errcheck
     - bodyclose
     - staticcheck
@@ -10,6 +9,7 @@ linters:
     - deadcode
     - unused
     - structcheck
+    - gosec
 
 run:
   skip-files:
