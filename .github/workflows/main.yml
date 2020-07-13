@@ -47,7 +47,7 @@ jobs:
         run: go test -tags sqlite -failfast ./...
       -
         name: Build release snapshot
-        uses: ory/actions@v0.0.13
+        uses: ory/actions@v0.0.14
         with:
           run: release/snapshot
 
@@ -61,7 +61,7 @@ jobs:
 
       -
         name: Checkout code
-        uses: ory/actions@v0.0.13
+        uses: ory/actions@v0.0.14
         with:
           run: changelog/generate
 
@@ -75,7 +75,7 @@ jobs:
         uses: actions/checkout@v2
       -
         name: Checkout code
-        uses: ory/actions@v0.0.13
+        uses: ory/actions@v0.0.14
         with:
           run: release/publish
           dockerUser: ${{ secrets.DOCKER_USER }}
