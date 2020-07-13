@@ -28,7 +28,8 @@ $ source $(ory dev ci github env)`,
 			fmt.Println(fmt.Sprintf("export GIT_BRANCH=%s",
 				strings.ReplaceAll(ref, branchPrefix, "")))
 		} else {
-			pkg.Fatalf("Unable to detect if on a branch or a tag in GITHUB_REF: %s", ref)
+			fmt.Println(fmt.Sprintf("export GIT_BRANCH=%s",
+				strings.TrimSpace(pkg.CommandGetOutput("git","rev-parse","--abbrev-ref","HEAD"))))
 		}
 
 		repo := strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")
