@@ -26,7 +26,7 @@ In case where the release pipeline failed and you re-create another release wher
 
 1. Assuming release "v0.1.0" failed
 2. You wish to create "v0.1.1" and include the changelog of "v0.1.0" as well
-3. Run `+"`ory dev release publish v0.1.1 --include-changelog-since v0.1.0`",
+3. Run ` + "`ory dev release publish v0.1.1 --include-changelog-since v0.1.0`",
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
 		pkg.Check(err)

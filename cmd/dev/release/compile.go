@@ -24,7 +24,7 @@ var compile = &cobra.Command{
 			"oryd/xgoreleaser:"+flagx.MustGetString(cmd, "tag"),
 			"--timeout", "60m",
 			"--skip-publish", "--snapshot", "--rm-dist", "--parallelism",
-			strconv.Itoa(flagx.MustGetInt(cmd,"parallelism"))).Run())
+			strconv.Itoa(flagx.MustGetInt(cmd, "parallelism"))).Run())
 	},
 }
 
