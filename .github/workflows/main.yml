@@ -51,7 +51,7 @@ jobs:
     steps:
       -
         name: Build release snapshot
-        uses: ory/actions@v0.0.14
+        uses: ory/actions@v0.0.15
         with:
           run: release/snapshot
 
@@ -64,8 +64,8 @@ jobs:
         uses: actions/checkout@v2
 
       -
-        name: Checkout code
-        uses: ory/actions@v0.0.14
+        name: Generate changelog
+        uses: ory/actions@v0.0.15
         with:
           run: changelog/generate
 
@@ -79,7 +79,7 @@ jobs:
         uses: actions/checkout@v2
       -
         name: Checkout code
-        uses: ory/actions@v0.0.14
+        uses: ory/actions@v0.0.15
         with:
           run: release/publish
           dockerUser: ${{ secrets.DOCKER_USER }}
