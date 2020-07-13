@@ -44,6 +44,11 @@ jobs:
         uses: actions/checkout@v2
       - name: Test
         run: go test -tags sqlite -failfast ./...
+      -
+        name: Build release snapshot
+        uses: ory/actions@v0
+        with:
+          run: release/snapshot
 
   generate:
     runs-on: ubuntu-latest
