@@ -22,13 +22,13 @@ $ source $(ory dev ci github env)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if ref := os.Getenv("GITHUB_REF"); strings.HasPrefix(ref, tagPrefix) {
 			// it's a tag
-			fmt.Printf("export GIT_TAG=%s\n",
+			fmt.Printf("export GIT_TAG=%s",
 				strings.ReplaceAll(ref, tagPrefix, ""))
 		} else if strings.HasPrefix(ref, branchPrefix) {
-			fmt.Printf("export GIT_BRANCH=%s\n",
+			fmt.Printf("export GIT_BRANCH=%s",
 				strings.ReplaceAll(ref, branchPrefix, ""))
 		} else {
-			fmt.Printf("export GIT_BRANCH=%s\n",
+			fmt.Printf("export GIT_BRANCH=%s",
 				strings.TrimSpace(pkg.CommandGetOutput("git", "rev-parse", "--abbrev-ref", "HEAD")))
 		}
 
@@ -48,7 +48,7 @@ $ source $(ory dev ci github env)`,
 			for k, p := range ignorePkgs {
 				ignorePkgs[k] = "-x " + p
 			}
-			fmt.Printf("export SWAGGER_SPEC_IGNORE_PKGS='%s'\n", strings.Join(ignorePkgs, " "))
+			fmt.Printf(`export SWAGGER_SPEC_IGNORE_PKGS='%s'`, strings.Join(ignorePkgs, " "))
 		}
 	},
 }
