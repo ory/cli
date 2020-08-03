@@ -13,6 +13,7 @@ require (
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/markbates/pkger v0.17.0
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
+	github.com/ory/jsonschema/v3 v3.0.1
 	github.com/ory/viper v1.7.5
 	github.com/ory/x v0.0.131
 	github.com/pkg/errors v0.9.1

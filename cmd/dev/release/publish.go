@@ -3,7 +3,6 @@ package release
 import (
 	"fmt"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -13,8 +12,6 @@ import (
 
 	"github.com/ory/cli/cmd/pkg"
 )
-
-var supported = []string{"hydra", "kratos", "keto", "oathkeeper", "cli"}
 
 var publish = &cobra.Command{
 	Use:   "publish [version]",
@@ -30,12 +27,8 @@ In case where the release pipeline failed and you re-create another release wher
 	Run: func(cmd *cobra.Command, args []string) {
 		wd, err := os.Getwd()
 		pkg.Check(err)
-		project := path.Base(wd)
-		if !stringslice.Has(supported, project) {
-			pkg.Fatalf(`This script is expected to run in a directory named "hydra", "keto", "oathkeeper", "kratos".`)
-			return
-		}
 
+		project := pkg.ProjectFromDir(wd)
 		dry := flagx.MustGetBool(cmd, "dry")
 		gitCleanTags()
 
