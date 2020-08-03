@@ -131,7 +131,7 @@ changelog:
 
 brews:
   -
-    github:
+    tap:
       owner: ory
       name: homebrew-ory
     goarm: 6
