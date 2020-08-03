@@ -2,13 +2,14 @@ package migration
 
 import (
 	"fmt"
-	"github.com/ory/x/randx"
-	"github.com/ory/x/stringslice"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/ory/x/randx"
+	"github.com/ory/x/stringslice"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/pop/v5"

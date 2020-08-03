@@ -22,14 +22,14 @@ $ source $(ory dev ci github env)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if ref := os.Getenv("GITHUB_REF"); strings.HasPrefix(ref, tagPrefix) {
 			// it's a tag
-			fmt.Println(fmt.Sprintf("export GIT_TAG=%s",
-				strings.ReplaceAll(ref, tagPrefix, "")))
+			fmt.Printf("export GIT_TAG=%s",
+				strings.ReplaceAll(ref, tagPrefix, ""))
 		} else if strings.HasPrefix(ref, branchPrefix) {
-			fmt.Println(fmt.Sprintf("export GIT_BRANCH=%s",
-				strings.ReplaceAll(ref, branchPrefix, "")))
+			fmt.Printf("export GIT_BRANCH=%s",
+				strings.ReplaceAll(ref, branchPrefix, ""))
 		} else {
-			fmt.Println(fmt.Sprintf("export GIT_BRANCH=%s",
-				strings.TrimSpace(pkg.CommandGetOutput("git","rev-parse","--abbrev-ref","HEAD"))))
+			fmt.Printf("export GIT_BRANCH=%s",
+				strings.TrimSpace(pkg.CommandGetOutput("git", "rev-parse", "--abbrev-ref", "HEAD")))
 		}
 
 		repo := strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")
@@ -48,7 +48,7 @@ $ source $(ory dev ci github env)`,
 			for k, p := range ignorePkgs {
 				ignorePkgs[k] = "-x " + p
 			}
-			fmt.Println(fmt.Sprintf(`export SWAGGER_SPEC_IGNORE_PKGS='%s'`, strings.Join(ignorePkgs, " ")))
+			fmt.Printf(`export SWAGGER_SPEC_IGNORE_PKGS='%s'`, strings.Join(ignorePkgs, " "))
 		}
 	},
 }
