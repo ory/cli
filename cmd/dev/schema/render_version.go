@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/markbates/pkger"
 	"github.com/ory/cli/cmd/pkg"
@@ -54,6 +55,9 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 	renderedVersionSchema, err := sjson.SetBytes(versionSchema, "oneOf.-1", json.RawMessage(newVersionEntry))
 	pkg.Check(err)
 
+	var prettyVersionSchema bytes.Buffer
+	pkg.Check(json.Indent(&prettyVersionSchema, renderedVersionSchema, "", strings.Repeat(" ", 4)))
+
 	f, err := pkger.Open("/.schema/version_meta.schema.json")
 	pkg.Check(err)
 	metaSchema, err := ioutil.ReadAll(f)
@@ -62,11 +66,11 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 	schema, err := jsonschema.CompileString("version_meta.schema.json", string(metaSchema))
 	pkg.Check(err)
 
-	err = schema.Validate(bytes.NewBuffer(renderedVersionSchema))
+	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))
 	if err != nil {
 		viperx.PrintHumanReadableValidationErrors(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	pkg.Check(ioutil.WriteFile(destFile, renderedVersionSchema, 0600))
+	pkg.Check(ioutil.WriteFile(destFile, prettyVersionSchema.Bytes(), 0600))
 }
