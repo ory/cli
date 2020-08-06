@@ -8,6 +8,7 @@ import (
 	"github.com/ory/cli/cmd/dev/newsletter"
 	"github.com/ory/cli/cmd/dev/pop"
 	"github.com/ory/cli/cmd/dev/release"
+	"github.com/ory/cli/cmd/dev/schema"
 	"github.com/ory/cli/cmd/dev/swagger"
 )
 
@@ -24,5 +25,6 @@ func init() {
 		release.Main,
 		swagger.Main,
 		ci.Main,
+		schema.Main,
 	)
 }
