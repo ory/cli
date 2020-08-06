@@ -1,6 +1,7 @@
 package dev
 
 import (
+	"github.com/ory/cli/cmd/dev/schema"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/dev/ci"
@@ -24,5 +25,6 @@ func init() {
 		release.Main,
 		swagger.Main,
 		ci.Main,
+		schema.Main,
 	)
 }
