@@ -2,7 +2,8 @@ package migration
 
 import (
 	"fmt"
-	"os"
+	"io/ioutil"
+	"path/filepath"
 	"time"
 
 	"github.com/ory/x/flagx"
@@ -11,8 +12,8 @@ import (
 )
 
 var createCmd = &cobra.Command{
-	Use:  "create [name]",
-	Args: cobra.ExactArgs(1),
+	Use:  "create [destination] [name]",
+	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		prefix := time.Now().Format("20060102150405")
 		d := flagx.MustGetString(cmd, "dialect")
@@ -25,12 +26,15 @@ var createCmd = &cobra.Command{
 			suffix = fmt.Sprintf(".%s.sql", d)
 		}
 
-		f, err := os.Create(fmt.Sprintf("%s_%s%s", prefix, args[0], suffix))
-		if err != nil {
-			return err
+		for _, fn := range []string{
+			fmt.Sprintf("%s_%s.up%s", prefix, args[1], suffix),
+			fmt.Sprintf("%s_%s.down%s", prefix, args[1], suffix),
+		} {
+			if err := ioutil.WriteFile(filepath.Join(args[0], fn), []byte{}, 644); err != nil {
+				return err
+			}
 		}
-
-		return f.Close()
+		return nil
 	},
 }
 
