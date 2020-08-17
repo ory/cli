@@ -21,55 +21,84 @@ type Component struct {
 	Path         string   `yaml:"path"`
 }
 
+func (component Component) String() string {
+	yamlOutput, err := yaml.Marshal(component)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	return string(yamlOutput[:])
+}
+
 type ComponentGraph struct {
 	components            []*Component
 	componentIDs          map[string]*Component
 	componentDependencies map[string]mapset.Set
+	componentPaths        map[string]*Component
 }
 
-var rootDirectory string
-var changedComponentIds string
-var graph ComponentGraph
+const configFile = "monorepo.yml"
 
 var dep = &cobra.Command{
 	Use:   "dep",
-	Short: "Ready dependency configs and displays dependency graph.",
-	Long:  `Ready dependency configs and displays dependency graph.`,
+	Short: "Read dependency configs and displays dependency graph.",
+	Long:  `Read dependency configs and displays dependency graph.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Root Directory: " + rootDirectory)
-		isDirectory, err := isDirectory(rootDirectory)
-		if err != nil {
-			fmt.Printf("Error acceesing '%s': %s\n", rootDirectory, err)
-			return
-		}
-		if !isDirectory {
-			fmt.Printf("Provided path '%s' is not a directory!\n", rootDirectory)
-			return
-		}
-		filepath.Walk(rootDirectory, visitFile)
 
+		var graph ComponentGraph
+		graph.readConfiguration(rootDirectory)
 		graph.displayGraph()
-		resolved, err := resolveGraph(&graph)
+
+		resolved, err := graph.resolveGraph()
 		if err != nil {
 			fmt.Printf("Failed to resolve dependency graph: %s\n", err)
 		} else {
 			fmt.Println("The dependency graph resolved successfully")
 		}
 
-		for _, component := range resolved.components {
-			fmt.Println(component.ID)
-		}
-
 		if len(changedComponentIds) > 0 {
 			ids := strings.Split(changedComponentIds, ",")
-			fmt.Println("IDS: %s ", ids)
 			triggers := resolved.triggerComponents(ids)
-			for id := range triggers.Iter() {
-				fmt.Printf(" -> %s \n", id)
+			for id, component := range triggers {
+				fmt.Printf(" %s -> %v \n", id, component)
 			}
 		}
-
 	},
+}
+
+func (graph *ComponentGraph) readConfiguration(rootDirectory string) (*ComponentGraph, error) {
+	//fmt.Println("Scanning Directory Tree: ", rootDirectory)
+	isDirectory, err := isDirectory(rootDirectory)
+	if err != nil {
+		//log.Fatalf("Error acceesing '%s': %s\n", rootDirectory, err)
+		return nil, err
+	}
+	if !isDirectory {
+		return nil, fmt.Errorf("Provided path '%s' is not a directory", rootDirectory)
+	}
+	filepath.Walk(rootDirectory, func(path string, fi os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Println(err) // can't walk here,
+			return nil       // but continue walking elsewhere
+		}
+		if fi.IsDir() {
+			return nil // not a file.  ignore.
+		}
+		matched, err := filepath.Match(configFile, fi.Name())
+		if err != nil {
+			fmt.Println(err) // malformed pattern
+			return err       // this is fatal.
+		}
+		if matched {
+			if debug {
+				fmt.Printf("Debug: reading config file '%s'\n", path)
+			}
+			var c Component
+			c.getMonoRepoConfigFile(path, rootDirectory)
+			graph.addComponent(&c)
+		}
+		return nil
+	})
+	return graph, nil
 }
 
 func isDirectory(path string) (bool, error) {
@@ -80,49 +109,34 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-func (c *Component) getMonoRepoConfigFile(path string) *Component {
-	yamlFile, err := ioutil.ReadFile(path)
+func (component *Component) getMonoRepoConfigFile(configFilePath, rootDir string) (*Component, error) {
+	yamlFile, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		fmt.Errorf("Error reading monorepo config file '%s': %v \n", path, err)
+		return nil, fmt.Errorf("Error reading monorepo config file '%s': %v", configFilePath, err)
 	}
-	err = yaml.Unmarshal(yamlFile, c)
+	err = yaml.Unmarshal(yamlFile, component)
 	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
+		return nil, fmt.Errorf("Error reading monorepo config file '%s', invalid format", configFilePath)
 	}
 
-	return c
-}
-
-func visitFile(fp string, fi os.FileInfo, err error) error {
+	configFilePath, err = filepath.Abs(configFilePath)
 	if err != nil {
-		fmt.Println(err) // can't walk here,
-		return nil       // but continue walking elsewhere
+		return nil, fmt.Errorf("Error determining absolute config file path '%s': %v", configFilePath, err)
 	}
-	if fi.IsDir() {
-		return nil // not a file.  ignore.
-	}
-	matched, err := filepath.Match("monorepo.yml", fi.Name())
+	rootDir, err = filepath.Abs(rootDir)
 	if err != nil {
-		fmt.Println(err) // malformed pattern
-		return err       // this is fatal.
+		return nil, fmt.Errorf("Error determining absolute root directory path '%s': %v", rootDir, err)
 	}
-	if matched {
-		fmt.Println(fp)
-		var c Component
-		c.getMonoRepoConfigFile(fp)
-		graph.addComponent(&c)
-		fmt.Printf("Components in Graph: %d\n", graph.len())
-	}
-	return nil
+	rootDir = rootDir + "/"
+	component.Path = strings.TrimSuffix(strings.TrimPrefix(configFilePath, rootDir), "/"+configFile)
+	return component, nil
 }
 
 // Resolves the dependency graph
-func resolveGraph(graph *ComponentGraph) (ComponentGraph, error) {
-
+func (graph *ComponentGraph) resolveGraph() (ComponentGraph, error) {
 	componentIDs := graph.componentIDs
 	componentDependencies := graph.componentDependencies
 
-	//validate only defined ids are used in dependencies
 	for id, deps := range componentDependencies {
 		for dep := range deps.Iter() {
 			_, found := componentIDs[dep.(string)]
@@ -132,39 +146,31 @@ func resolveGraph(graph *ComponentGraph) (ComponentGraph, error) {
 		}
 	}
 
-	// Iteratively find and remove nodes from the graph which have no dependencies.
-	// If at some point there are still nodes in the graph and we cannot find
-	// nodes without dependencies, that means we have a circular dependency
 	var resolved ComponentGraph
 	for len(componentDependencies) != 0 {
-		// Get all nodes from the graph which have no dependencies
 		readySet := mapset.NewSet()
 		for id, deps := range componentDependencies {
 			if deps.Cardinality() == 0 {
-				fmt.Printf(" - adding component without deps: '%s'\n", id)
+				//fmt.Printf(" - adding component without deps: '%s'\n", id)
 				readySet.Add(id)
 			}
 		}
 
-		// If there aren't any ready nodes, then we have a cicular dependency
 		if readySet.Cardinality() == 0 {
 			var g ComponentGraph
 			for id := range componentDependencies {
-				g.addComponent(g.componentIDs[id])
+				g.addComponent(graph.componentIDs[id])
 			}
 
 			return g, errors.New("Circular dependency found")
 		}
 
-		// Remove the ready nodes and add them to the resolved graph
 		for id := range readySet.Iter() {
-			fmt.Printf(" - removing ready compoents and adding them to resolved graph: '%s'\n", id)
+			//fmt.Printf(" - removing ready compoents and adding them to resolved graph: '%s'\n", id)
 			delete(componentDependencies, id.(string))
 			resolved.addComponent(graph.componentIDs[id.(string)])
 		}
 
-		// Also make sure to remove the ready nodes from the
-		// remaining node dependencies as well
 		for id, deps := range graph.componentDependencies {
 			diff := deps.Difference(readySet)
 			graph.componentDependencies[id] = diff
@@ -174,43 +180,56 @@ func resolveGraph(graph *ComponentGraph) (ComponentGraph, error) {
 	return resolved, nil
 }
 
-// Displays the dependency graph
-func (graph *ComponentGraph) displayGraph() {
-	fmt.Println("-Display Graph-----")
+func (graph *ComponentGraph) listComponents() {
 	for _, component := range graph.components {
-		if len(component.Dependencies) == 0 {
-			fmt.Printf("%s -|\n", component.ID)
+		if verbose {
+			fmt.Printf("%v\n", component)
 		} else {
-			for _, dep := range component.Dependencies {
-				fmt.Printf("%s -> %s\n", component.ID, dep)
-			}
+			fmt.Printf("%s\n", component.ID)
 		}
 	}
-	fmt.Println("-End-Display Graph-----")
+}
+
+// Displays the dependency graph
+func (graph *ComponentGraph) displayGraph() {
+	for _, component := range graph.components {
+		if verbose {
+			fmt.Printf("%v\n", component)
+		} else {
+			fmt.Printf("%s\n", component.ID)
+		}
+	}
 }
 
 func (graph ComponentGraph) len() int {
 	return len(graph.components)
 }
 
-func (graph *ComponentGraph) triggerComponents(ids []string) mapset.Set {
-	triggerSet := mapset.NewSet()
-	for _, item := range ids {
-		triggerSet.Add(item)
+func (graph *ComponentGraph) triggerComponents(paths []string) map[string]*Component {
+	triggerMap := make(map[string]*Component)
+
+	for _, path := range paths {
+		//1:1 comparisson not correct, we need to check if there is a change for the component directory or below
+		changedComponent, found := graph.componentPaths[path]
+		if found {
+			triggerMap[changedComponent.Path] = changedComponent
+		} else {
+			fmt.Printf("No component defined for path '%s'", path)
+		}
 	}
 
-	fmt.Printf("trigger? %d\n", graph.len())
 	for _, component := range graph.components {
 		for _, dependencyID := range component.Dependencies {
-			if triggerSet.Contains(dependencyID) {
-				fmt.Printf(" * Triggering Component: '%s'\n", component.ID)
-				triggerSet.Add(component.ID)
+			dependencyComponent := graph.componentIDs[dependencyID]
+			_, found := graph.componentPaths[dependencyComponent.Path]
+			if found {
+				triggerMap[component.Path] = component
 				break
 			}
 		}
 	}
 
-	return triggerSet
+	return triggerMap
 }
 
 // Adding component to the dependency graph
@@ -221,14 +240,17 @@ func (graph *ComponentGraph) addComponent(component *Component) {
 	}
 	graph.componentIDs[component.ID] = component
 
-	fmt.Printf(" + Adding Component: '%s'\n", component.ID)
+	if graph.componentPaths == nil {
+		graph.componentPaths = make(map[string]*Component)
+	}
+	graph.componentPaths[component.Path] = component
+
 	if graph.componentDependencies == nil {
 		graph.componentDependencies = make(map[string]mapset.Set)
 	}
 	dependencySet := mapset.NewSet()
 	for _, dep := range component.Dependencies {
 		dependencySet.Add(dep)
-		fmt.Printf(" +- dependency: '%s'\n", dep)
 	}
 	graph.componentDependencies[component.ID] = dependencySet
 }
@@ -236,6 +258,5 @@ func (graph *ComponentGraph) addComponent(component *Component) {
 func init() {
 	Main.AddCommand(dep)
 	//func StringVarP(p *string, name, shorthand string, value string, usage string) {
-	dep.Flags().StringVarP(&rootDirectory, "root", "r", ".", "Root directory to be used to traverse and search for dependency configurations.")
-	dep.Flags().StringVarP(&changedComponentIds, "changed", "c", "", "Changed Components IDs.")
+
 }
