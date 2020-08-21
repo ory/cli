@@ -1,14 +1,19 @@
 package monorepo
 
 import (
-	"fmt"
 	"os/exec"
 	"strings"
 )
 
-func changes(rootDirectory string, parent string) (string, error) {
-	//cmd := exec.Command("git", "--no-pager", "log") //, "origin/master", "--name-only", "--oneline", "|", "sed", "'/ /d'", "|", "sed", `/\//!d'`, "|", "sed", `'s/\/.*//'`, "|", "sort", "|", "uniq")
-	cmd := exec.Command("git", "--no-pager", "log", parent, "--name-only", "--oneline")
+// getRepositoryChanges returns the changes in the specified local respository (via rootDirectory) towards the specified
+func getRepositoryChanges(rootDirectory string, parent string, gitOpts []string) (string, error) {
+	args := []string{"--no-pager", "log", parent}
+	if gitOpts == nil {
+		//apply default args
+		gitOpts = []string{"--name-only", "--oneline"}
+	}
+
+	cmd := exec.Command("git", append(args, gitOpts...)...)
 	cmd.Dir = rootDirectory
 	out, err := cmd.Output()
 	if err != nil {
@@ -17,8 +22,11 @@ func changes(rootDirectory string, parent string) (string, error) {
 	return string(out[:]), nil
 }
 
-func cleanseChangeList(lines *[]string, includeFiles bool) {
-	fmt.Printf("cleanseChangeList: includeFiles '%t'", includeFiles)
+// cleanseRepositoryChanges currently support two cleansing operations.
+// * lines []string representing the change list as produced by getRepositoryChanges
+// * includeFiles if true, the returned output will include a list of all changed files (with the relative path)
+func cleanseRepositoryChanges(lines *[]string, includeFiles bool, deduplicate bool) {
+
 	for i, line := range *lines {
 		if strings.Contains(line, "/") {
 			//if line contains '/', it represent a path with filename
@@ -32,9 +40,13 @@ func cleanseChangeList(lines *[]string, includeFiles bool) {
 			(*lines)[i] = "."
 		}
 	}
+	if deduplicate {
+		deduplicateChanges(lines)
+	}
+
 }
 
-func removeDuplicateLines(lines *[]string) {
+func deduplicateChanges(lines *[]string) {
 	found := make(map[string]bool)
 	j := 0
 	for i, x := range *lines {

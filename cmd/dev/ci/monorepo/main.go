@@ -8,6 +8,7 @@ var rootDirectory string
 var changedComponentIds string
 var verbose bool
 var debug bool
+var parentBranch string
 
 var Main = &cobra.Command{
 	Use:   "monorepo",
@@ -19,4 +20,5 @@ func init() {
 	Main.PersistentFlags().StringVarP(&changedComponentIds, "changed", "c", "", "Changed Components IDs.")
 	Main.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	Main.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "Debug output")
+	Main.PersistentFlags().StringVarP(&parentBranch, "parentBranch", "p", "origin/master", "Parent branch used to determine changes!")
 }
