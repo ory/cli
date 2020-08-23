@@ -232,11 +232,11 @@ var changes = &cobra.Command{
 		switch changesMode {
 		case "full":
 			opts := []string{"--pretty=full"}
-			repoChanges, _ = getChangeLog(rootDirectory, "origin/master", opts)
+			repoChanges, _ = getChangeLog(rootDirectory, parentBranch, opts)
 		case "directories":
-			repoChanges, _ = getChangedDirectories(rootDirectory, "origin/master")
+			repoChanges, _ = getChangedDirectories(rootDirectory, parentBranch)
 		case "files":
-			repoChanges, _ = getChangedFiles(rootDirectory, "origin/master")
+			repoChanges, _ = getChangedFiles(rootDirectory, parentBranch)
 		default:
 			log.Fatalf("Unknown ListMode '%s'", changesMode)
 		}

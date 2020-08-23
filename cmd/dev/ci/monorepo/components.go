@@ -27,7 +27,7 @@ var components = &cobra.Command{
 		case "changed":
 
 			//get changes from Git CLI
-			changedDirectories, _ := getChangedDirectories(rootDirectory, "origin/master")
+			changedDirectories, _ := getChangedDirectories(rootDirectory, parentBranch)
 
 			changedComponents := detectChangedComponents(graph, changedDirectories)
 			for _, component := range changedComponents {
@@ -39,15 +39,6 @@ var components = &cobra.Command{
 		default:
 			log.Fatalf("Unknown ListMode '%s'", componentMode)
 		}
-
-		/*
-			resolved, err := graph.resolveGraph()
-			if err != nil {
-				fmt.Printf("Failed to resolve dependency graph: %s\n", err)
-			} else {
-				fmt.Println("The dependency graph resolved successfully")
-			}
-		*/
 	},
 }
 
