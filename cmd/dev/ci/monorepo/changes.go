@@ -3,8 +3,6 @@ package monorepo
 import (
 	"fmt"
 	"log"
-	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -247,29 +245,25 @@ var changes = &cobra.Command{
 }
 
 func getChangedFiles(rootDirectory, parentBranch string) (string, error) {
-	repoChanges, err := getRepositoryChanges(rootDirectory, parentBranch, nil)
+	changeLog, err := getRepositoryChanges(rootDirectory, parentBranch, nil)
 	if err != nil {
 		return "", fmt.Errorf("Error getting changes from Git: %v", err)
 	}
-	regex := regexp.MustCompile(`(?m)^[a-z0-9]{7}.*([\n]+|[\r\n]+|\z)$`)
-	repoChanges2 := regex.ReplaceAllString(repoChanges, "")
-	repoChangesArray := strings.Split(repoChanges2, "\n")
-	cleanseRepositoryChanges(&repoChangesArray, true, true)
-	sort.Strings(repoChangesArray)
-	return strings.Join(repoChangesArray, "\n"), nil
+	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
+	cleanseRepositoryChanges(&cleansedChangeLogArray, true, true)
+	caseInsensitiveSort(cleansedChangeLogArray)
+	return strings.Join(cleansedChangeLogArray, "\n"), nil
 }
 
 func getChangedDirectories(rootDirectory, parentBranch string) (string, error) {
-	repoChanges, err := getRepositoryChanges(rootDirectory, parentBranch, nil)
+	changeLog, err := getRepositoryChanges(rootDirectory, parentBranch, nil)
 	if err != nil {
 		return "", fmt.Errorf("Error getting changes from Git: %v", err)
 	}
-	regex := regexp.MustCompile(`(?m)^[a-z0-9]{7}.*([\n]+|[\r\n]+|\z)$`)
-	repoChanges = regex.ReplaceAllString(repoChanges, "")
-	repoChangesArray := strings.Split(repoChanges, "\n")
-	cleanseRepositoryChanges(&repoChangesArray, false, true)
-	sort.Strings(repoChangesArray)
-	return strings.Join(repoChangesArray, "\n"), nil
+	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
+	cleanseRepositoryChanges(&cleansedChangeLogArray, false, true)
+	caseInsensitiveSort(cleansedChangeLogArray)
+	return strings.Join(cleansedChangeLogArray, "\n"), nil
 }
 
 func getChangeLog(rootDirectory, parentBranch string, gitOpts []string) (string, error) {
@@ -283,6 +277,6 @@ func getChangeLog(rootDirectory, parentBranch string, gitOpts []string) (string,
 
 func init() {
 	Main.AddCommand(changes)
-	changes.Flags().StringVarP(&changesMode, "mode", "m", "all", "Define which which type of change information you want to get listed (all, files, directories). Default is 'directories'.")
+	changes.Flags().StringVarP(&changesMode, "mode", "m", "directories", "Define which which type of change information you want to get listed (all, files, directories). Default is 'directories'.")
 
 }
