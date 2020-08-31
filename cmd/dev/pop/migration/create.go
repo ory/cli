@@ -30,7 +30,7 @@ var createCmd = &cobra.Command{
 			fmt.Sprintf("%s_%s.up%s", prefix, args[1], suffix),
 			fmt.Sprintf("%s_%s.down%s", prefix, args[1], suffix),
 		} {
-			if err := ioutil.WriteFile(filepath.Join(args[0], fn), []byte{}, 644); err != nil {
+			if err := ioutil.WriteFile(filepath.Join(args[0], fn), []byte{}, 0666); err != nil {
 				return err
 			}
 		}
