@@ -21,18 +21,16 @@ import (
 var _ = pkger.Include("../../../.schema")
 
 var RenderVersion = &cobra.Command{
-	Use:   "render-version",
-	Short: "Release infrastructure for ORY and related components",
+	Use:   "render-version <project-name> <new-version>",
+	Short: "Renders the version schema for <project-name> and <new-version> in the current directory.",
 	Run:   addVersionToSchema,
 }
 
 func addVersionToSchema(_ *cobra.Command, args []string) {
 	const destFile = ".schema/version.schema.json"
-	newVersion := args[0]
-	wd, err := os.Getwd()
-	pkg.Check(err)
+	project := args[0]
+	newVersion := args[1]
 
-	project := pkg.ProjectFromDir(wd)
 	ref := fmt.Sprintf("https://raw.githubusercontent.com/ory/%s/%s/.schema/config.schema.json", project, newVersion)
 	newVersionEntry := fmt.Sprintf(`
 {

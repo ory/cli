@@ -44,26 +44,23 @@ func copyDir(t *testing.T, src, dst string) {
 }
 
 func TestAddVersionToSchema(t *testing.T) {
-	parentDir, err := ioutil.TempDir("", "version-schema-test-")
+	testDir, err := ioutil.TempDir("", "version-schema-test-")
 	require.NoError(t, err)
 
-	projectDir := path.Join(parentDir, "hydra")
-	require.NoError(t, os.Mkdir(projectDir, 0777))
-
-	copyDir(t, "fixtures/render_version_test", projectDir)
+	copyDir(t, "fixtures/render_version_test", testDir)
 
 	wd, err := os.Getwd()
 	require.NoError(t, err)
-	require.NoError(t, os.Chdir(projectDir))
+	require.NoError(t, os.Chdir(testDir))
 
-	addVersionToSchema(nil, []string{"v1.0.0"})
+	addVersionToSchema(nil, []string{"hydra", "v1.0.0"})
 
 	require.NoError(t, os.Chdir(wd))
 
 	expected, err := ioutil.ReadFile("expected/render_version_test/.schema/version.schema.json")
 	require.NoError(t, err)
-	actual, err := ioutil.ReadFile(path.Join(projectDir, ".schema/version.schema.json"))
+	actual, err := ioutil.ReadFile(path.Join(testDir, ".schema/version.schema.json"))
 	require.NoError(t, err)
 	// converting to string to have nice output in case they are not equal
-	assert.Equal(t, string(expected), string(actual), "To accept the new render output run:\ncp %s %s", path.Join(projectDir, ".schema/version.schema.json"), path.Join(wd, "expected/render_version_test/.schema/version.schema.json"))
+	assert.Equal(t, string(expected), string(actual), "To accept the new render output run:\ncp %s %s", path.Join(testDir, ".schema/version.schema.json"), path.Join(wd, "expected/render_version_test/.schema/version.schema.json"))
 }
