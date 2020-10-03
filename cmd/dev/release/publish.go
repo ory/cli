@@ -80,6 +80,10 @@ In case where the release pipeline failed and you re-create another release wher
 Please check "ory help dev release publish".`, currentVersion, nextVersion)
 		}
 
+		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) == 0 && !isTestRelease.MatchString(nextVersion.Prerelease()) {
+			pkg.Confirm("You are about to release a non-test release v%s but did not include the --include-changelog-since flag. Are you sure you want to continue?", nextVersion)
+		}
+
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
 		pkg.Check(pkg.NewCommand("circleci", "config", "check").Run())
 
