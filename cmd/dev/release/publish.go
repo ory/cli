@@ -59,22 +59,22 @@ In case where the release pipeline failed and you re-create another release wher
 		}
 		pkg.Confirm("Are you sure you want to bump to v%s? Previous version was v%s.", nextVersion, currentVersion)
 
-		switch project {
-		case "hydra":
-			pkg.Confirm("This will also release hydra-login-consent-node:v%s. Previous version was v%s. Is that ok?", nextVersion, currentVersion)
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
-		case "kratos":
-			pkg.Confirm("This will also release kratos-selfservice-ui-node:v%s. Previous version was v%s. Is that ok?", nextVersion, currentVersion)
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
-		}
-
 		var fromVersion *semver.Version
 		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) > 0 {
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
 			pkg.Check(err, "Unable to parse include-changelog-since git tag v%s: %s", ov, err)
 			checkIfTagExists(fromVersion)
 		}
+
 		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
+
+		switch project {
+		case "hydra":
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
+		case "kratos":
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion, nil)
+		}
 
 		fmt.Printf("Successfully released version: v%s\n", nextVersion.String())
 	},
