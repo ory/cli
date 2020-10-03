@@ -1,17 +1,20 @@
-FROM alpine:3.11
+FROM alpine:3.12
+
+RUN addgroup -S ory; \
+    adduser -S ory -G ory -D  -h /home/ory -s /bin/nologin; \
+    chown -R ory:ory /home/ory
 
 RUN apk add -U --no-cache ca-certificates
 
-# set up nsswitch.conf for Go's "netgo" implementation
-# - https://github.com/golang/go/blob/go1.9.1/src/net/conf.go#L194-L275
-RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
-
-FROM scratch
-
-COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=0 /etc/nsswitch.conf /etc/nsswitch.conf
 COPY ory /usr/bin/ory
 
-USER 1000
+# Exposing the ory home directory to simplify passing in Kratos configuration (e.g. if the file $HOME/.kratos.yaml
+# exists, it will be automatically used as the configuration file).
+VOLUME /home/ory
+
+# Declare the standard ports used by Kratos (4433 for public service endpoint, 4434 for admin service endpoint)
+EXPOSE 4433 4434
+
+USER ory
 
 ENTRYPOINT ["ory"]
