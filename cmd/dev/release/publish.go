@@ -72,7 +72,12 @@ In case where the release pipeline failed and you re-create another release wher
 
 		if !isTestRelease.MatchString(currentVersion.Prerelease()) &&
 			!isTestRelease.MatchString(nextVersion.Prerelease()) {
-			pkg.Fatalf(`You must create a test release before publishing the real release or vice versa. Please check "ory help dev release publish".`, pkg.GitGetCurrentTag(), err)
+			pkg.Fatalf(`You must create a test release before publishing the real release or vice versa:
+
+- Current version: 	%s
+- Next version: 	%s
+
+Please check "ory help dev release publish".`, currentVersion, nextVersion)
 		}
 
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
