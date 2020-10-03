@@ -3,6 +3,7 @@ package release
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -13,11 +14,29 @@ import (
 	"github.com/ory/cli/cmd/pkg"
 )
 
+var isTestRelease = regexp.MustCompile("^(([a-zA-Z0-9\\.\\-]+\\.)|)pre\\.[0-9]+$")
+
 var publish = &cobra.Command{
 	Use:   "publish [version]",
 	Args:  cobra.ExactArgs(1),
 	Short: "Publish a new release",
 	Long: `Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
+
+To publish a release, you first have to create a pre-release:
+
+	ory dev release publish v0.1.0-pre.0
+
+Once the release pipeline finished successfully (skip publishing the newsletter!) you can run:
+
+	ory dev release publish v0.1.0 --include-changelog-since v0.1.0-pre.0
+
+Here are some examples how to choose pre:
+
+- v0.1.0-pre.0 -> v0.1.0
+- v0.1.0-pre.1 -> v0.1.0
+- v0.1.0-alpha.0.pre.0 -> v0.1.0-alpha.0
+- v0.1.0-alpha.1.pre.0 -> v0.1.0-alpha.1
+- v0.1.0-rc.1.pre.0 -> v0.1.0-rc.1
 
 In case where the release pipeline failed and you re-create another release where you want to include the changelog from the failed release, perform the following:
 
@@ -50,6 +69,11 @@ In case where the release pipeline failed and you re-create another release wher
 		}
 
 		checkForDuplicateTag(&nextVersion)
+
+		if !isTestRelease.MatchString(currentVersion.Prerelease()) &&
+			!isTestRelease.MatchString(nextVersion.Prerelease()) {
+			pkg.Check(err, `You must create a test release before publishing the real release. Please check "ory help dev release publish".`, pkg.GitGetCurrentTag(), err)
+		}
 
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
 		pkg.Check(pkg.NewCommand("circleci", "config", "check").Run())
