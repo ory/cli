@@ -99,7 +99,7 @@ Please check "ory help dev release publish".`, currentVersion, nextVersion)
 			checkIfTagExists(fromVersion)
 		}
 
-		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
+		pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
 
 		switch project {
 		case "hydra":
