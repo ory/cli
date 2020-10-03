@@ -74,8 +74,8 @@ In case where the release pipeline failed and you re-create another release wher
 			!isTestRelease.MatchString(nextVersion.Prerelease()) {
 			pkg.Fatalf(`You must create a test release before publishing the real release or vice versa:
 
-- Current version: 	%s
-- Next version: 	%s
+- Current version: 	v%s
+- Next version: 	v%s
 
 Please check "ory help dev release publish".`, currentVersion, nextVersion)
 		}
