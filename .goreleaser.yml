@@ -153,3 +153,11 @@ scoop:
 
 release:
   prerelease: auto
+
+dockers:
+  - dockerfile: Dockerfile
+    binaries:
+      - ory
+    image_templates:
+      - "oryd/ory:{{ .Tag }}"
+      - "oryd/ory:latest"
