@@ -72,12 +72,14 @@ In case where the release pipeline failed and you re-create another release wher
 
 		if !isTestRelease.MatchString(currentVersion.Prerelease()) &&
 			!isTestRelease.MatchString(nextVersion.Prerelease()) {
-			pkg.Fatalf(`You must create a test release before publishing the real release or vice versa:
+			pkg.Confirm(`You should create a test release before publishing the real release or vice versa:
 
 - Current version: 	v%s
 - Next version: 	v%s
 
-Please check "ory help dev release publish".`, currentVersion, nextVersion)
+Please check "ory help dev release publish".
+
+Are you sure you want to proceed without creating a pre version first?`, currentVersion, nextVersion)
 		}
 
 		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) == 0 && !isTestRelease.MatchString(nextVersion.Prerelease()) {
