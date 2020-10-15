@@ -33,7 +33,7 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 	newVersion := args[1]
 
 	if strings.Contains(newVersion, ".pre.") {
-		fmt.Printf("Going to silently skip version schema rendering because '%s' contains '.pre.'")
+		fmt.Printf("Going to silently skip version schema rendering because '%s' contains '.pre.'", newVersion)
 		return
 	}
 
