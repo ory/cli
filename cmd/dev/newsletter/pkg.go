@@ -62,6 +62,20 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 func campaignID() string {
 	return fmt.Sprintf("%s-%s-%s",
 		pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME"),
-		pkg.CircleSHA1(),
+		substr(pkg.CircleSHA1(), 0, 6),
 		pkg.CircleTag())
+}
+
+func substr(input string, start int, length int) string {
+	asRunes := []rune(input)
+
+	if start >= len(asRunes) {
+		return ""
+	}
+
+	if start+length > len(asRunes) {
+		length = len(asRunes) - start
+	}
+
+	return string(asRunes[start : start+length])
 }
