@@ -22,6 +22,7 @@ var _ = pkger.Include("../../../.schema")
 
 var RenderVersion = &cobra.Command{
 	Use:   "render-version <project-name> <new-version>",
+	Args:  cobra.ExactArgs(2),
 	Short: "Renders the version schema for <project-name> and <new-version> in the current directory.",
 	Run:   addVersionToSchema,
 }
@@ -30,6 +31,11 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 	const destFile = ".schema/version.schema.json"
 	project := args[0]
 	newVersion := args[1]
+
+	if strings.Contains(newVersion, ".pre.") {
+		fmt.Printf("Going to silently skip version schema rendering because '%s' contains '.pre.'")
+		return
+	}
 
 	ref := fmt.Sprintf("https://raw.githubusercontent.com/ory/%s/%s/.schema/config.schema.json", project, newVersion)
 	newVersionEntry := fmt.Sprintf(`
