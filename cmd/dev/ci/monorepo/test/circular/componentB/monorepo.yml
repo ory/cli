@@ -1,0 +1,4 @@
+name: Component B
+id: component-b
+deps: 
+ - component-a

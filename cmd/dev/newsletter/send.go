@@ -3,9 +3,10 @@ package newsletter
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/ory/gochimp3"
 	"github.com/ory/x/flagx"
-	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/pkg"
 )

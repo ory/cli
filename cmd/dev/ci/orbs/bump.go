@@ -6,8 +6,9 @@ import (
 	"regexp"
 	"sync"
 
-	"github.com/ory/x/flagx"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/x/flagx"
 
 	"github.com/ory/cli/cmd/pkg"
 )

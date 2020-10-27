@@ -15,9 +15,10 @@ import (
 	"github.com/gobuffalo/pop/v5"
 	"github.com/gobuffalo/pop/v5/logging"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/spf13/cobra"
+
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/sqlcon/dockertest"
-	"github.com/spf13/cobra"
 
 	"github.com/avast/retry-go"
 
