@@ -15,7 +15,7 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/jsonschema/v3 v3.0.1
 	github.com/ory/viper v1.7.5
-	github.com/ory/x v0.0.148
+	github.com/ory/x v0.0.154
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.5.1
