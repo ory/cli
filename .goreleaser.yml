@@ -153,3 +153,13 @@ scoop:
 
 release:
   prerelease: auto
+
+dockers:
+  - dockerfile: Dockerfile
+    builds:
+      - ory-sqlite-linux-libmusl
+    binaries:
+      - ory
+    image_templates:
+      - "oryd/ory:{{ .Tag }}"
+      - "oryd/ory:latest"

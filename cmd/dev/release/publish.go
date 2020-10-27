@@ -3,6 +3,7 @@ package release
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -13,11 +14,29 @@ import (
 	"github.com/ory/cli/cmd/pkg"
 )
 
+var isTestRelease = regexp.MustCompile("^(([a-zA-Z0-9\\.\\-]+\\.)|)pre\\.[0-9]+$")
+
 var publish = &cobra.Command{
 	Use:   "publish [version]",
 	Args:  cobra.ExactArgs(1),
 	Short: "Publish a new release",
 	Long: `Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
+
+To publish a release, you first have to create a pre-release:
+
+	ory dev release publish v0.1.0-pre.0
+
+Once the release pipeline finished successfully (skip publishing the newsletter!) you can run:
+
+	ory dev release publish v0.1.0 --include-changelog-since v0.1.0-pre.0
+
+Here are some examples how to choose pre:
+
+- v0.1.0-pre.0 -> v0.1.0
+- v0.1.0-pre.1 -> v0.1.0
+- v0.1.0-alpha.0.pre.0 -> v0.1.0-alpha.0
+- v0.1.0-alpha.1.pre.0 -> v0.1.0-alpha.1
+- v0.1.0-rc.1.pre.0 -> v0.1.0-rc.1
 
 In case where the release pipeline failed and you re-create another release where you want to include the changelog from the failed release, perform the following:
 
@@ -51,6 +70,22 @@ In case where the release pipeline failed and you re-create another release wher
 
 		checkForDuplicateTag(&nextVersion)
 
+		if !isTestRelease.MatchString(currentVersion.Prerelease()) &&
+			!isTestRelease.MatchString(nextVersion.Prerelease()) {
+			pkg.Confirm(`You should create a test release before publishing the real release or vice versa:
+
+- Current version: 	v%s
+- Next version: 	v%s
+
+Please check "ory help dev release publish".
+
+Are you sure you want to proceed without creating a pre version first?`, currentVersion, nextVersion)
+		}
+
+		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) == 0 && !isTestRelease.MatchString(nextVersion.Prerelease()) {
+			pkg.Confirm("You are about to release a non-test release v%s but did not include the --include-changelog-since flag. Are you sure you want to continue?", nextVersion)
+		}
+
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
 		pkg.Check(pkg.NewCommand("circleci", "config", "check").Run())
 
@@ -59,22 +94,22 @@ In case where the release pipeline failed and you re-create another release wher
 		}
 		pkg.Confirm("Are you sure you want to bump to v%s? Previous version was v%s.", nextVersion, currentVersion)
 
-		switch project {
-		case "hydra":
-			pkg.Confirm("This will also release hydra-login-consent-node:v%s. Previous version was v%s. Is that ok?", nextVersion, currentVersion)
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
-		case "kratos":
-			pkg.Confirm("This will also release kratos-selfservice-ui-node:v%s. Previous version was v%s. Is that ok?", nextVersion, currentVersion)
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
-		}
-
 		var fromVersion *semver.Version
 		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) > 0 {
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
 			pkg.Check(err, "Unable to parse include-changelog-since git tag v%s: %s", ov, err)
 			checkIfTagExists(fromVersion)
 		}
-		pkg.GitTagRelease(wd, true, dry, nextVersion, fromVersion)
+
+		pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
+
+		switch project {
+		case "hydra":
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
+		case "kratos":
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
+			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion, nil)
+		}
 
 		fmt.Printf("Successfully released version: v%s\n", nextVersion.String())
 	},

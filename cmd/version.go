@@ -7,18 +7,18 @@ import (
 )
 
 var (
-	Version = "master"
-	Date    = "undefined"
-	Commit  = "undefined"
+	BuildVersion = "master"
+	BuildTime    = "undefined"
+	BuildGitHash = "undefined"
 )
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Display this binary's version, build time, and git hash of this build",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Version:    %s\n", Version)
-		fmt.Printf("Git Hash:   %s\n", Commit)
-		fmt.Printf("Build Time: %s\n", Date)
+		fmt.Printf("Version:    %s\n", BuildVersion)
+		fmt.Printf("Git Hash:   %s\n", BuildGitHash)
+		fmt.Printf("Build Time: %s\n", BuildTime)
 	},
 }
 

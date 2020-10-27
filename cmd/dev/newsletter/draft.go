@@ -107,7 +107,7 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 
 	chimp := gochimp3.New(chimpKey)
 	chimpTemplate, err := chimp.CreateTemplate(&gochimp3.TemplateCreationRequest{
-		Name: fmt.Sprintf("%s %s Release Announcement", projectName, tag),
+		Name: substr(fmt.Sprintf("%s %s Announcement", projectName, tag), 0, 49),
 		Html: body.String(),
 	})
 	if err != nil {
