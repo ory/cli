@@ -15,11 +15,10 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/jsonschema/v3 v3.0.1
 	github.com/ory/viper v1.7.5
-	github.com/ory/x v0.0.154
+	github.com/ory/x v0.0.155
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/tidwall/gjson v1.3.2
 	github.com/tidwall/sjson v1.0.4
-	google.golang.org/genproto v0.0.0-20191108220845-16a3f7862a1a // indirect
 )
