@@ -10,8 +10,9 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/ory/x/flagx"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/x/flagx"
 
 	"github.com/ory/cli/cmd/dev/newsletter"
 	"github.com/ory/cli/cmd/pkg"

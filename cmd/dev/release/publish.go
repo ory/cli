@@ -7,9 +7,10 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/spf13/cobra"
+
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringslice"
-	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/pkg"
 )

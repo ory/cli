@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
+	"github.com/spf13/cobra"
+
 	"github.com/ory/gochimp3"
 	_ "github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/pkg"
 )

@@ -9,11 +9,12 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
+	"github.com/spf13/cobra"
+	"github.com/tidwall/sjson"
+
 	"github.com/ory/jsonschema/v3"
 	_ "github.com/ory/jsonschema/v3/httploader"
 	"github.com/ory/x/viperx"
-	"github.com/spf13/cobra"
-	"github.com/tidwall/sjson"
 
 	"github.com/ory/cli/cmd/pkg"
 )
