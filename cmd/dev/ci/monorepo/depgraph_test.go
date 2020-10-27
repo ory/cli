@@ -8,14 +8,14 @@ import (
 
 func TestMonorepoInvalidFile(t *testing.T) {
 	var graph ComponentGraph
-	_, err := graph.readConfiguration("test/invalidConfigFile")
+	_, err := graph.getComponentGraph("test/invalidConfigFile")
 	//todo check for specific error
 	assert.Error(t, err)
 }
 
 func TestMonorepoCirclular(t *testing.T) {
 	var graph ComponentGraph
-	g, err := graph.readConfiguration("test/circular")
+	g, err := graph.getComponentGraph("test/circular")
 
 	//successfully read configurations
 	assert.Nil(t, err, "Successfully read configuration")
@@ -26,7 +26,7 @@ func TestMonorepoCirclular(t *testing.T) {
 func TestMonorepoWorking(t *testing.T) {
 	var graph ComponentGraph
 
-	graph.readConfiguration("test/working")
+	graph.getComponentGraph("test/working")
 	graph.displayGraph()
 
 	resolved, err := graph.resolveGraph()

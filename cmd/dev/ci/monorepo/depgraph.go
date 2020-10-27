@@ -10,15 +10,18 @@ import (
 	"strings"
 
 	mapset "github.com/deckarep/golang-set"
-	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
+const configFile = "monorepo.yml"
+
+//Component struct represent the configuration stored in yaml enriched by the relative path of the component in relation to the rootDirectory.
 type Component struct {
 	ID           string   `yaml:"id"`
 	Name         string   `yaml:"name"`
 	Dependencies []string `yaml:"deps"`
 	Path         string   `yaml:"path"`
+	//Graph        *ComponentGraph
 }
 
 func (component Component) String() string {
@@ -29,6 +32,7 @@ func (component Component) String() string {
 	return string(yamlOutput[:])
 }
 
+//ComponentGraph struct represent the graph of all components found in the specified rootDirectory and its subdirectories.
 type ComponentGraph struct {
 	components            []*Component
 	componentIDs          map[string]*Component
@@ -36,40 +40,11 @@ type ComponentGraph struct {
 	componentPaths        map[string]*Component
 }
 
-const configFile = "monorepo.yml"
-
-var dep = &cobra.Command{
-	Use:   "dep",
-	Short: "Read dependency configs and displays dependency graph.",
-	Long:  `Read dependency configs and displays dependency graph.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
-		var graph ComponentGraph
-		graph.readConfiguration(rootDirectory)
-		graph.displayGraph()
-
-		resolved, err := graph.resolveGraph()
-		if err != nil {
-			fmt.Printf("Failed to resolve dependency graph: %s\n", err)
-		} else {
-			fmt.Println("The dependency graph resolved successfully")
-		}
-
-		if len(changedComponentIds) > 0 {
-			ids := strings.Split(changedComponentIds, ",")
-			triggers := resolved.triggerComponents(ids)
-			for id, component := range triggers {
-				fmt.Printf(" %s -> %v \n", id, component)
-			}
-		}
-	},
-}
-
-func (graph *ComponentGraph) readConfiguration(rootDirectory string) (*ComponentGraph, error) {
+func (graph *ComponentGraph) getComponentGraph(rootDirectory string) (*ComponentGraph, error) {
 	//fmt.Println("Scanning Directory Tree: ", rootDirectory)
 	isDirectory, err := isDirectory(rootDirectory)
 	if err != nil {
-		//log.Fatalf("Error acceesing '%s': %s\n", rootDirectory, err)
+		//log.Fatalf("Error accessing '%s': %s\n", rootDirectory, err)
 		return nil, err
 	}
 	if !isDirectory {
@@ -93,7 +68,7 @@ func (graph *ComponentGraph) readConfiguration(rootDirectory string) (*Component
 				fmt.Printf("Debug: reading config file '%s'\n", path)
 			}
 			var c Component
-			c.getMonoRepoConfigFile(path, rootDirectory)
+			c.getComponentFromConfig(path, rootDirectory)
 			graph.addComponent(&c)
 		}
 		return nil
@@ -109,14 +84,14 @@ func isDirectory(path string) (bool, error) {
 	return fileInfo.IsDir(), err
 }
 
-func (component *Component) getMonoRepoConfigFile(configFilePath, rootDir string) (*Component, error) {
+func (component *Component) getComponentFromConfig(configFilePath, rootDir string) (*Component, error) {
 	yamlFile, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading monorepo config file '%s': %v", configFilePath, err)
+		return nil, fmt.Errorf("Config file not found: '%s'", configFilePath)
 	}
 	err = yaml.Unmarshal(yamlFile, component)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading monorepo config file '%s', invalid format", configFilePath)
+		return nil, fmt.Errorf("Error reading config file '%s', invalid format: %v", configFilePath, err)
 	}
 
 	configFilePath, err = filepath.Abs(configFilePath)
@@ -137,6 +112,7 @@ func (graph *ComponentGraph) resolveGraph() (ComponentGraph, error) {
 	componentIDs := graph.componentIDs
 	componentDependencies := graph.componentDependencies
 
+	//validating if all declared dependencies are part of the graph
 	for id, deps := range componentDependencies {
 		for dep := range deps.Iter() {
 			_, found := componentIDs[dep.(string)]
@@ -151,11 +127,14 @@ func (graph *ComponentGraph) resolveGraph() (ComponentGraph, error) {
 		readySet := mapset.NewSet()
 		for id, deps := range componentDependencies {
 			if deps.Cardinality() == 0 {
-				//fmt.Printf(" - adding component without deps: '%s'\n", id)
+				//add components with no depedencies directly
 				readySet.Add(id)
 			}
 		}
 
+		// if no components without dependencies were added, but there
+		// are still components in the componentDependencies map, there must be a circular
+		// dependency
 		if readySet.Cardinality() == 0 {
 			var g ComponentGraph
 			for id := range componentDependencies {
@@ -165,12 +144,16 @@ func (graph *ComponentGraph) resolveGraph() (ComponentGraph, error) {
 			return g, errors.New("Circular dependency found")
 		}
 
+		// remove ready components (without dependencies) from the
+		// componentDependencies map and add them to resolved graph
 		for id := range readySet.Iter() {
-			//fmt.Printf(" - removing ready compoents and adding them to resolved graph: '%s'\n", id)
 			delete(componentDependencies, id.(string))
 			resolved.addComponent(graph.componentIDs[id.(string)])
 		}
 
+		// cycle through the original componentDependencies and remove
+		// components which have been removed in this run from the dependencies
+		// of other components
 		for id, deps := range graph.componentDependencies {
 			diff := deps.Difference(readySet)
 			graph.componentDependencies[id] = diff
@@ -190,50 +173,42 @@ func (graph *ComponentGraph) listComponents() {
 	}
 }
 
-// Displays the dependency graph
+// displayGraph displays the ComponentGraph. TODO: not just listed the components in the graph, also add dependency
+// information (not sure if this is easily doable in shell)
 func (graph *ComponentGraph) displayGraph() {
-	for _, component := range graph.components {
-		if verbose {
-			fmt.Printf("%v\n", component)
-		} else {
-			fmt.Printf("%s\n", component.ID)
-		}
-	}
+	graph.listComponents()
 }
 
 func (graph ComponentGraph) len() int {
 	return len(graph.components)
 }
 
-func (graph *ComponentGraph) triggerComponents(paths []string) map[string]*Component {
-	triggerMap := make(map[string]*Component)
-
-	for _, path := range paths {
-		//1:1 comparisson not correct, we need to check if there is a change for the component directory or below
-		changedComponent, found := graph.componentPaths[path]
-		if found {
-			triggerMap[changedComponent.Path] = changedComponent
-		} else {
-			fmt.Printf("No component defined for path '%s'", path)
+func (component *Component) isDependent(cid string) bool {
+	for _, dependencyID := range component.Dependencies {
+		if cid == dependencyID {
+			return true
 		}
 	}
+	return false
+}
 
-	for _, component := range graph.components {
-		for _, dependencyID := range component.Dependencies {
-			dependencyComponent := graph.componentIDs[dependencyID]
-			_, found := graph.componentPaths[dependencyComponent.Path]
-			if found {
-				triggerMap[component.Path] = component
-				break
-			}
+func (component *Component) getDependentComponents(graph *ComponentGraph) []*Component {
+	var dependentComponents = mapset.NewSet()
+	for _, comp := range graph.components {
+		if comp.isDependent(component.ID) {
+			dependentComponents.Add(comp)
 		}
 	}
-
-	return triggerMap
+	var dependentComponentsArray []*Component
+	for comp := range dependentComponents.Iter() {
+		dependentComponentsArray = append(dependentComponentsArray, comp.(*Component))
+	}
+	return dependentComponentsArray
 }
 
 // Adding component to the dependency graph
 func (graph *ComponentGraph) addComponent(component *Component) {
+	//component.Graph = graph
 	graph.components = append(graph.components, component)
 	if graph.componentIDs == nil {
 		graph.componentIDs = make(map[string]*Component)
@@ -253,10 +228,4 @@ func (graph *ComponentGraph) addComponent(component *Component) {
 		dependencySet.Add(dep)
 	}
 	graph.componentDependencies[component.ID] = dependencySet
-}
-
-func init() {
-	Main.AddCommand(dep)
-	//func StringVarP(p *string, name, shorthand string, value string, usage string) {
-
 }
