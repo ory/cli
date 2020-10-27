@@ -15,13 +15,12 @@ import (
 
 const configFile = "monorepo.yml"
 
-//Component struct represent the configuration stored in yaml enriched by the relative path of the component in relation to the rootDirectory.
+// Component struct represent the configuration stored in yaml enriched by the relative path of the component in relation to the rootDirectory.
 type Component struct {
 	ID           string   `yaml:"id"`
 	Name         string   `yaml:"name"`
 	Dependencies []string `yaml:"deps"`
 	Path         string   `yaml:"path"`
-	//Graph        *ComponentGraph
 }
 
 func (component Component) String() string {
@@ -32,7 +31,7 @@ func (component Component) String() string {
 	return string(yamlOutput[:])
 }
 
-//ComponentGraph struct represent the graph of all components found in the specified rootDirectory and its subdirectories.
+// ComponentGraph struct represent the graph of all components found in the specified rootDirectory and its subdirectories.
 type ComponentGraph struct {
 	components            []*Component
 	componentIDs          map[string]*Component
@@ -50,7 +49,7 @@ func (graph *ComponentGraph) getComponentGraph(rootDirectory string) (*Component
 	if !isDirectory {
 		return nil, fmt.Errorf("Provided path '%s' is not a directory", rootDirectory)
 	}
-	filepath.Walk(rootDirectory, func(path string, fi os.FileInfo, err error) error {
+	if err := filepath.Walk(rootDirectory, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Println(err) // can't walk here,
 			return nil       // but continue walking elsewhere
@@ -68,11 +67,15 @@ func (graph *ComponentGraph) getComponentGraph(rootDirectory string) (*Component
 				fmt.Printf("Debug: reading config file '%s'\n", path)
 			}
 			var c Component
-			c.getComponentFromConfig(path, rootDirectory)
+			if _, err := c.getComponentFromConfig(path, rootDirectory); err != nil {
+				return err
+			}
 			graph.addComponent(&c)
 		}
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
 	return graph, nil
 }
 
