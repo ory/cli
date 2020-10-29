@@ -120,7 +120,14 @@
       padding: 0em 1em;
     }
     .email-section{
-      padding:2em 1em 2em;
+      padding:0 1em 2em;
+    }
+    .email-section table img {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      margin: auto;
+      display: block;
     }
     .heading-section{
       margin-bottom: 2em;
@@ -137,21 +144,20 @@
       line-height: 1.8;
       color: #000000;
     }
-    a{
-      color: #5528FF;
+
+    .hydra a{
+      color: #FF6A85
     }
-    table{
+    .kratos a{
+      color: #FF9800
     }
-    .logo h1{
-      margin: 0;
+    .oathkeeper a{
+      color: #BD2FEF
     }
-    .logo h1 a{
-      color: #000;
-      font-size: 20px;
-      font-weight: 100;
-      text-transform: uppercase;
-      font-family: 'inter',sans-serif;
+    .keto a{
+      color: #1DE9B6
     }
+
     .navigation li{
       list-style: none;
       display: inline-block;;
@@ -163,14 +169,22 @@
     .navigation a{
       color: #0B0035;
     }
-    .navigation a:hover{
-      color: #5528FF;
+    .hydra .navigation a:hover{
+      color: #FF6A85
+    }
+    .kratos .navigation a:hover{
+      color: #FF9800
+    }
+    .oathkeeper .navigation a:hover{
+      color: #BD2FEF
+    }
+    .keto .navigation a:hover{
+      color: #1DE9B6
     }
 
     pre {
       background: #F5F5F5;
       border: 1px solid #ddd;
-      border-left: 2px solid #5528FF;
       color: #666;
       font-family: monospace;
       margin-bottom: 1.6em;
@@ -178,6 +192,19 @@
       display: block;
       white-space: pre-wrap;
     }
+    .hydra pre{
+      border-left: 2px solid #FF6A85;
+    }
+    .kratos pre{
+      border-left: 2px solid #FF9800;
+    }
+    .oathkeeper pre{
+      border-left: 2px solid #BD2FEF;
+    }
+    .keto pre{
+      border-left: 2px solid #1DE9B6;
+    }
+
     code {
       background: #F5F5F5;
       color: #170070;
@@ -213,7 +240,7 @@
   </style>
 </head>
 
-<body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly;">
+<body width="100%" class="{{.RepoName}}" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly;">
 <center style="width: 100%; padding: 0; background-color: #fafafa;">
   <div style="max-width: 724px; margin: 0 auto;" class="email-container">
     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: auto;">
@@ -224,7 +251,7 @@
             <tr>
               <!--logo-->
               <td width="30%" class="logo" style="text-align: left;">
-                <div><a href="https://www.ory.sh/"><img alt="" src="https://mcusercontent.com/ffb1a878e4ec6c0ed312a3480/images/a9436fb6-1384-4734-885f-ffb078dbe219.png" style="width: 100%; max-width: 64px; align: left; height: auto; margin-right: auto; display: block;"></a></div>
+                <div><a href="https://www.ory.sh/"><img alt="" src="https://mcusercontent.com/ffb1a878e4ec6c0ed312a3480/images/0a98c5ec-8df8-4383-a15f-9c607bfb8e2f.png" style="width: 100%; max-width: 64px; align: left; height: auto; margin-right: auto; display: block;"></a></div>
               </td>
               <!--navlinks-->
               <td width="50%" class="logo" style="text-align: right">
@@ -252,18 +279,10 @@
                       <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                         <tr>
                           <td>
-                            <a href="https://github.com/ory/{{.RepoName}}"><img src="https://github.com/ory/meta/blob/master/static/banners/{{.RepoName}}.svg" alt="" style="width: 100%; max-width: 600px; height: auto; margin: auto; display: block;"></a>
+                            <a href="https://github.com/ory/{{.RepoName}}"><img src="https://raw.githubusercontent.com/ory/meta/master/static/banners/{{.RepoName}}.png" alt="" style="width: 100%; max-width: 100%; height: auto; margin-bottom: 2em; display: block;"></a>
                           </td>
                         </tr>
                       </table>
-                      <!--wrap images like this
-                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
-                          <tr>
-                              <td>
-                                  <a href="#"><img src="" alt="" style="width: 100%; max-width: 600px; height: auto; margin: auto; display: block;"></a>
-                              </td>
-                          </tr>
-                      </table>-->
                       <div class="heading-section" style="text-align: left;">
                         <h3 class="null" style="text-align: left;"><a href="https://github.com/ory/{{.RepoName}}/releases/tag/{{.GitTag}}" target="_blank"><span style="font-size:24px">{{.ProjectName}} {{.Version}}</span></a><span style="font-size:24px">&nbsp;is here!</span></h3>
                         <p>
@@ -298,7 +317,7 @@
     <table align="center" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: auto;">
       <!--e-mail-->
       <tr>
-        <td valign="middle" class="bg_dark footer email-section" width="100%" style="padding-bottom: 2em;">
+        <td valign="middle" class="bg_dark footer email-section" width="100%" style="padding: 2em;">
           <p>
             <em>Copyright © *|CURRENT_YEAR|* *|LIST:COMPANY|*, All rights reserved.</em><br>
             *|IFNOT:ARCHIVE_PAGE|* *|LIST:DESCRIPTION|*<br>
