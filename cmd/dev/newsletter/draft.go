@@ -89,6 +89,18 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		segmentOptions.SavedSegmentId = segmentID
 	}
 
+	brandColor := "#5528FF"
+	switch strings.ToLower(repoName) {
+	case "oathkeeper":
+		brandColor = "#BD2FEF"
+	case "hydra":
+		brandColor = "#FF6A85"
+	case "kratos":
+		brandColor = "#FF9800"
+	case "keto":
+		brandColor = "#1DE9B6"
+	}
+
 	var body bytes.Buffer
 	pkg.Check(readTemplate(pkger.Open("/view/mail-body.html")).Execute(&body, struct {
 		Version     string
@@ -97,6 +109,7 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		RepoName    string
 		Changelog   template.HTML
 		Message     template.HTML
+		BrandColor  string
 	}{
 		Version:     tag,
 		GitTag:      tag,
@@ -104,6 +117,7 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		RepoName:    repoName,
 		Changelog:   changelog,
 		Message:     tagMessage,
+		BrandColor:  brandColor,
 	}))
 
 	chimp := gochimp3.New(chimpKey)
