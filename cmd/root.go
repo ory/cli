@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-
-	"github.com/ory/viper"
 )
 
 var rootCmd = &cobra.Command{
@@ -23,8 +21,4 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-}
-
-func initConfig() {
-	viper.AutomaticEnv()
 }

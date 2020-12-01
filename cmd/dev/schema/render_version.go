@@ -8,15 +8,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ory/x/jsonschemax"
+
 	"github.com/markbates/pkger"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/sjson"
 
+	"github.com/ory/cli/cmd/pkg"
 	"github.com/ory/jsonschema/v3"
 	_ "github.com/ory/jsonschema/v3/httploader"
-	"github.com/ory/x/viperx"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
 var _ = pkger.Include("../../../.schema")
@@ -74,7 +74,7 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 
 	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))
 	if err != nil {
-		viperx.PrintHumanReadableValidationErrors(os.Stderr, err)
+		jsonschemax.FormatValidationErrorForCLI(os.Stderr, prettyVersionSchema.Bytes(), err)
 		os.Exit(1)
 	}
 
