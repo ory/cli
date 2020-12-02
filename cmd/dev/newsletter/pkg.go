@@ -1,14 +1,18 @@
 package newsletter
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/gomarkdown/markdown/ast"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
@@ -20,6 +24,10 @@ import (
 
 	"github.com/ory/cli/cmd/pkg"
 )
+
+var defaultRenderer = html.NewRenderer(html.RendererOptions{
+	Flags: html.CommonFlags | html.HrefTargetBlank,
+})
 
 func readTemplate(file pkging.File, err error) *template.Template {
 	pkg.Check(err)
@@ -33,8 +41,30 @@ func readTemplate(file pkging.File, err error) *template.Template {
 	return t
 }
 
+// return (ast.GoToNext, true) to tell html renderer to skip rendering this node
+// (because you've rendered it)
+func renderNodeHook(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
+	var b bytes.Buffer
+	switch n := node.(type) {
+	case *ast.Image:
+		var b bytes.Buffer
+		defaultRenderer.Image(&b, n, entering)
+		_, _ = w.Write([]byte(strings.ReplaceAll(b.String(), "<img", "<img width=\"600\" border=\"0\" style=\"display: block; max-width: 100%; min-width: 100px; width: 100%;\"")))
+	case *ast.CodeBlock:
+		defaultRenderer.CodeBlock(&b, n)
+		_, _ = w.Write([]byte(strings.ReplaceAll(b.String(), "<pre", "<pre style=\"word-break: break-all; white-space: pre-wrap\"")))
+	default:
+		return ast.GoToNext, false
+	}
+
+	return ast.GoToNext, true
+}
+
 func renderMarkdown(source []byte) template.HTML {
-	var markdownRenderer = html.NewRenderer(html.RendererOptions{Flags: html.CommonFlags | html.HrefTargetBlank})
+	var markdownRenderer = html.NewRenderer(html.RendererOptions{
+		Flags:          html.CommonFlags | html.HrefTargetBlank,
+		RenderNodeHook: renderNodeHook,
+	})
 	var markdownParser = parser.NewWithExtensions(
 		parser.NoIntraEmphasis | parser.Tables | parser.FencedCode | parser.NoEmptyLineBeforeBlock |
 			parser.Autolink | parser.Strikethrough | parser.SpaceHeadings | parser.DefinitionLists)

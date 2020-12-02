@@ -9,7 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/fizz v1.13.1-0.20200903094245-046abeb7de46
 	github.com/gobuffalo/pop/v5 v5.3.1
-	github.com/gomarkdown/markdown v0.0.0-20200609195525-3f9352745725
+	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/google/uuid v1.1.0
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/markbates/pkger v0.17.1
