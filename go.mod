@@ -2,8 +2,6 @@ module github.com/ory/cli
 
 go 1.14
 
-replace github.com/ory/kratos => ../kratos
-
 // Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 // github.com/ory/kratos/internal/httpclient
 replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.4-alpha.1
