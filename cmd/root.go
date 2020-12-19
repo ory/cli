@@ -1,9 +1,12 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
+	"context"
 
+	"github.com/ory/cli/cmd/cloud/remote"
+	"github.com/ory/kratos-client-go/client"
+	"github.com/ory/kratos/cmd/cliclient"
+	"github.com/ory/x/cmdx"
 	"github.com/spf13/cobra"
 )
 
@@ -13,8 +16,10 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *client.OryKratos {
+		return remote.NewClient(cmd)
+	})
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		cmdx.Fatalf(err.Error())
 	}
 }
