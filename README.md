@@ -2,10 +2,17 @@
 
 This is the ORY Command Line Interface (CLI).
 
-Install the CLI using:
+## Unix (Linux / macOS)
 
-```shell script
-bash <(curl https://raw.githubusercontent.com/ory/cli/master/install.sh) -b $GOPATH/bin
+```shell-session
+$ bash <(curl https://raw.githubusercontent.com/ory/cli/master/install.sh) -b $GOPATH/bin
+```
+
+## macOS
+
+```shell-session
+$ brew tap ory/ory
+$ brew install ory/ory/ory
 ```
 
 ## Development Toolchain
