@@ -64,6 +64,8 @@ builds:
     flags:
       - -tags
       - sqlite
+      # Remove once https://github.com/golang/go/issues/40795 is closed
+      - -buildmode=exe
     ldflags:
       - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
       - "-extldflags '-static'"
