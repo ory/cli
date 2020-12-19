@@ -21,7 +21,7 @@ require (
 	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/jsonschema/v3 v3.0.1
-	github.com/ory/kratos v0.0.0-00010101000000-000000000000
+	github.com/ory/kratos v0.5.5-alpha.1.0.20201219142622-e589c07bb081
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
 	github.com/ory/x v0.0.170
 	github.com/pkg/errors v0.9.1
