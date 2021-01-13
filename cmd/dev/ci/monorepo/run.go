@@ -2,7 +2,7 @@ package monorepo
 
 import (
 	"fmt"
-	"log"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -15,18 +15,19 @@ var dryRun bool
 
 var run = &cobra.Command{
 	Use:   "run",
-	Short: "Runs the specified commands if the current component (which is defined in the current work directory) is affected by any change in the repository.",
+	Short: "Runs the specified commands on changes",
 	Long:  `Runs the specified commands if the current component (which is defined in the current work directory) is affected by any change in the repository.`,
-	Run: func(cmd *cobra.Command, args []string) {
-
+	RunE: func(cmd *cobra.Command, args []string) error {
 		var graph ComponentGraph
-		graph.getComponentGraph(rootDirectory)
+		if _, err := graph.getComponentGraph(rootDirectory); err != nil {
+			return err
+		}
 
 		switch runMode {
 		case "current_involved":
 			c, err := getCurrentComponent()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			//fmt.Printf("Current Component '%s'!\n", c.String())
 			isAffected := c.isAffected(&graph)
@@ -34,70 +35,55 @@ var run = &cobra.Command{
 			isInvolved := isChanged || isAffected
 			fmt.Printf("%s is involved: %t (isChanged: %t, isAffected: %t)\n", c.ID, isInvolved, isChanged, isAffected)
 			if isInvolved {
-				err := runCommands(c, cmds, true, dryRun)
-				if err != nil {
-					log.Fatalf("Failed to execute specified commands: '%s', Error: %v\n", cmds, err)
+				if err := runCommands(c, cmds, dryRun); err != nil {
+					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
 				}
 			}
 		case "current_affected":
 			c, err := getCurrentComponent()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
-			//fmt.Printf("Current Component '%s'!\n", c.String())
+
 			isAffected := c.isAffected(&graph)
 			fmt.Printf("%s is affected: %t\n", c.ID, isAffected)
 			if isAffected {
-				err := runCommands(c, cmds, true, dryRun)
-				if err != nil {
-					log.Fatalf("Failed to execute specified commands: '%s', Error: %v\n", cmds, err)
+				if err := runCommands(c, cmds, dryRun); err != nil {
+					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
 				}
 			}
 		case "current_changed":
 			c, err := getCurrentComponent()
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
+
 			isChanged := c.isChanged(&graph)
 			fmt.Printf("%s is changed: %t\n", c.ID, isChanged)
 			if isChanged {
-				err := runCommands(c, cmds, true, dryRun)
-				if err != nil {
-					log.Fatalln(err)
-					//log.Fatalf("Failed to execute specified commands: '%s', Error: %v\n", cmds, err)
+				if err := runCommands(c, cmds, dryRun); err != nil {
+					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
 				}
 			}
 		default:
-			log.Fatalf("Unknown runMode '%s'", runMode)
+			return fmt.Errorf("unknown runMode: %s", runMode)
 		}
+
+		return nil
 	},
 }
 
-func runCommands(component *Component, cmdLine string, printOutput bool, dryRun bool) error {
-
-	if printOutput {
-		fmt.Printf("runCommands for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
+func runCommands(component *Component, cmdLine string, dryRun bool) error {
+	fmt.Printf("runCommands for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
+	if dryRun {
+		fmt.Print("Skipping execution because --dry-run was set.")
+		return nil
 	}
 
 	args := strings.Split(cmdLine, " ")
-	cmdName := args[0]
-	args = args[1:]
-	cmd := exec.Command(cmdName, args...)
-
-	if !dryRun {
-		out, err := cmd.Output()
-		if err != nil {
-			return err
-		}
-		output := string(out[:])
-		if printOutput {
-			fmt.Printf("Output: \n%s\n", output)
-		}
-	} else {
-		if printOutput {
-			fmt.Printf("Output: \n%s\n", "** dry-run **")
-		}
-	}
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	return nil
 }
