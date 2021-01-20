@@ -13,6 +13,9 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/deckarep/golang-set v1.7.1
 	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
+	github.com/evanphx/json-patch v0.5.2
+	github.com/getkin/kin-openapi v0.48.0
+	github.com/ghodss/yaml v1.0.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/fizz v1.13.1-0.20201104174146-3416f0e6618f
 	github.com/gobuffalo/pop/v5 v5.3.2-0.20210128124218-e397a61c1704
