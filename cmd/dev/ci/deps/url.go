@@ -111,7 +111,7 @@ func (component *Component) getRenderedUrl(osString string, archString string) (
 var url = &cobra.Command{
 	Use:   "url",
 	Short: "Returns the download url based on the provided config file.",
-	Long: `### add desc ###`,
+	Long: `This cmd will help to simplify our Makefile logic to download binary dependencies. As the values used for os and arch as well as the structure of the download url for different binary tools are not standardized it makes it quite cumbersome to handle this efficiently in Makefiles.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		component := Component{}
 		err:=component.getComponentFromConfig(pConfig)
