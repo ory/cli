@@ -40,33 +40,36 @@ func TestFileNotFound(t *testing.T) {
 	assert.ErrorAs(t, err, &fnfError, "Wrong Error Type")
 }
 
-var defaultUrl = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/amd64/kubectl`
-func TestDefaultUrl(t *testing.T) {
+func TestDefaultURL(t *testing.T) {
+	var defaultURL = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/amd64/kubectl`
+
 	comp1 := Component{}
-	_ = comp1.getComponentFromConfig("test/defaultUrl.yaml")
-	url, err := comp1.getRenderedUrl("darwin","amd64")
+	_ = comp1.getComponentFromConfig("test/defaultURL.yaml")
+	url, err := comp1.getRenderedURL("darwin","amd64")
 	assert.Nil(t, err, "Expected no Error!")
-	assert.Equal(t, defaultUrl, url)
+	assert.Equal(t, defaultURL, url)
 }
 
-var customArchUrl = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/x64/kubectl`
-func TestCustomArchUrl(t *testing.T) {
+func TestCustomArchURL(t *testing.T) {
+	var customArchURL = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/x64/kubectl`
+
 	comp1 := Component{}
-	_ = comp1.getComponentFromConfig("test/customArchUrl.yaml")
-	url, err := comp1.getRenderedUrl("darwin","amd64")
+	_ = comp1.getComponentFromConfig("test/customArchURL.yaml")
+	url, err := comp1.getRenderedURL("darwin","amd64")
 	assert.Nil(t, err, "Expected no Error!")
-	assert.Equal(t, customArchUrl, url)
+	assert.Equal(t, customArchURL, url)
 }
 
-var customOsUrl1 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/mac/amd64/kubectl`
-var customOsUrl2 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/unix/amd64/kubectl`
-func TestCustomOsUrl(t *testing.T) {
+func TestCustomOSURL(t *testing.T) {
+	var customOSURL1 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/mac/amd64/kubectl`
+	var customOSURL2 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/unix/amd64/kubectl`
+
 	comp1 := Component{}
-	_ = comp1.getComponentFromConfig("test/customOsUrl.yaml")
-	url, err := comp1.getRenderedUrl("darwin","amd64")
+	_ = comp1.getComponentFromConfig("test/customOSURL.yaml")
+	url, err := comp1.getRenderedURL("darwin","amd64")
 	assert.Nil(t, err, "Expected no Error!")
-	assert.Equal(t, customOsUrl1, url)
-	url, err = comp1.getRenderedUrl("linux","amd64")
+	assert.Equal(t, customOSURL1, url)
+	url, err = comp1.getRenderedURL("linux","amd64")
 	assert.Nil(t, err, "Expected no Error!")
-	assert.Equal(t, customOsUrl2, url)
+	assert.Equal(t, customOSURL2, url)
 }
