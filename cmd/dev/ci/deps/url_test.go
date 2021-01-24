@@ -8,11 +8,12 @@ import (
 
 const FullWorking = `version: v1.20.2
 url: https://storage.googleapis.com/kubernetes-release/release/{{.Version}}/bin/{{.Os}}/{{.Architecture}}/kubectl
-architecture-mapping:
-  amd64: x64
-os-mapping:
-  darwin: mac
-  linux: unix
+mappings:
+  architecture:
+    amd64: x64
+  os:
+    darwin: mac
+    linux: unix
 `
 
 func TestValidFile(t *testing.T) {

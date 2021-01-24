@@ -14,11 +14,12 @@ import (
 
 const ExampleConfigFile = `version: v1.20.2
 url: https://storage.googleapis.com/kubernetes-release/release/{{.Version}}/bin/{{.Os}}/{{.Architecture}}/kubectl
-architecture-mapping:
-  amd64: x64
-os-mapping:
-  darwin: mac
-  linux: unix
+mappings:
+  architecture:
+    amd64: x64
+  os:
+    darwin: mac
+    linux: unix
 `
 
 type FileNotFoundError struct {
@@ -40,14 +41,18 @@ func (e InvalidFileError) Unwrap() error { return e.Err }
 type Component struct {
 	Version string `yaml:"version"`
 	Url string `yaml:"url"`
-	ArchitectureMapping ArchitectureMapping `yaml:"architecture-mapping"`
-	OsMapping OsMapping `yaml:"os-mapping"`
+	Mappings Mappings `yaml:"mappings"`
 	Os string `yaml:"os,omitempty"`
 	Architecture string `yaml:"architecture,omitempty"`
 }
+
+type Mappings struct  {
+	ArchitectureMapping ArchitectureMapping `yaml:"architecture"`
+	OsMapping OsMapping `yaml:"os"`
+}
+
 type ArchitectureMapping struct {
 	AMD64 string `yaml:"amd64"`
-	ready bool
 }
 
 type OsMapping struct {
@@ -81,15 +86,15 @@ func (c *Component) getComponentFromConfig(configFilePath string) (error) {
 
 func (c *Component) getRenderedURL(osString string, archString string) (string, error){
 	c.Os = 	osString
-	if osString == "darwin" && c.OsMapping.Darwin != "" && osString != c.OsMapping.Darwin {
-		c.Os = 	c.OsMapping.Darwin
+	if osString == "darwin" && c.Mappings.OsMapping.Darwin != "" && osString != c.Mappings.OsMapping.Darwin {
+		c.Os = 	c.Mappings.OsMapping.Darwin
 	}
-	if osString == "linux" && c.OsMapping.Linux != "" && osString != c.OsMapping.Linux {
-		c.Os = 	c.OsMapping.Linux
+	if osString == "linux" && c.Mappings.OsMapping.Linux != "" && osString != c.Mappings.OsMapping.Linux {
+		c.Os = 	c.Mappings.OsMapping.Linux
 	}
 	c.Architecture = archString
-	if archString == "amd64" && c.ArchitectureMapping.AMD64 != "" && archString != c.ArchitectureMapping.AMD64 {
-		c.Architecture = c.ArchitectureMapping.AMD64
+	if archString == "amd64" && c.Mappings.ArchitectureMapping.AMD64 != "" && archString != c.Mappings.ArchitectureMapping.AMD64 {
+		c.Architecture = c.Mappings.ArchitectureMapping.AMD64
 	}
 	t := template.Must(template.New("url").Parse(c.Url))
 	buf := new(bytes.Buffer)
