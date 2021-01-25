@@ -1,6 +1,7 @@
 package ci
 
 import (
+	"github.com/ory/cli/cmd/dev/ci/deps"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/dev/ci/github"
@@ -17,4 +18,5 @@ func init() {
 	Main.AddCommand(orbs.Main)
 	Main.AddCommand(github.Main)
 	Main.AddCommand(monorepo.Main)
+	Main.AddCommand(deps.Main)
 }
