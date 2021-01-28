@@ -4,7 +4,7 @@ go 1.14
 
 // Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 // github.com/ory/kratos/internal/httpclient
-replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.4-alpha.1
+replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.4-alpha.1.0.20210128114841-5923097b1839
 
 replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210118092700-c2358be1e867
 
@@ -12,18 +12,16 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/deckarep/golang-set v1.7.1
-	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/fizz v1.13.1-0.20200903094245-046abeb7de46
-	github.com/gobuffalo/pop/v5 v5.3.2-0.20210108121026-333700c8729e
+	github.com/gobuffalo/pop/v5 v5.3.2-0.20210128113442-954abb2fbfd7
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/google/uuid v1.1.5
 	github.com/jackc/pgx/v4 v4.10.1
-	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/jsonschema/v3 v3.0.1
-	github.com/ory/kratos v0.5.5-alpha.1.0.20210118092700-c2358be1e867
+	github.com/ory/kratos v0.5.5-alpha.1.0.20210128113654-6fcbce052f78
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
 	github.com/ory/x v0.0.176
 	github.com/pkg/errors v0.9.1
