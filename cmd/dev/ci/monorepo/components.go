@@ -78,12 +78,13 @@ func getChangedComponents(graph *ComponentGraph) []*Component {
 			if !changedComponentIds.Contains(component.ID) && strings.HasPrefix(changedPath, path) {
 				changedComponents = append(changedComponents, component)
 				changedComponentIds.Add(component.ID)
-				if debug {
-					fmt.Printf("Adding changed component: %s\n", component.String())
-				}
 			}
 		}
 	}
+	if debug {
+		fmt.Printf(" - adding changed components: %s\n", changedComponentIds.String())
+	}
+
 	return changedComponents
 }
 
@@ -143,6 +144,9 @@ func getAffectedComponents(graph *ComponentGraph) []*Component {
 	var affectedComponents []*Component
 	for componentID := range affectedComponentIds.Iter() {
 		affectedComponents = append(affectedComponents, graph.componentIDs[componentID.(string)])
+	}
+	if debug {
+		fmt.Printf(" - adding affected components: %s\n", affectedComponentIds.String())
 	}
 	return affectedComponents
 }
