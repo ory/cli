@@ -78,7 +78,9 @@ func runWrapper(c *Component, cmdLine string, mode string, affected bool, change
 }
 
 func runCmd(component *Component, cmdLine string, dryRun bool) error {
-	fmt.Printf("runCmd for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
+	if debug {
+		fmt.Printf("runCmd for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
+	}
 	if dryRun {
 		fmt.Print("Skipping execution because --dry-run was set.")
 		return nil

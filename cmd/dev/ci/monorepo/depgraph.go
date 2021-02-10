@@ -64,7 +64,7 @@ func (graph *ComponentGraph) getComponentGraph(rootDirectory string) (*Component
 		}
 		if matched {
 			if debug {
-				fmt.Printf("Debug: reading config file '%s'\n", path)
+				fmt.Printf("Reading config file '%s'\n", path)
 			}
 			var c Component
 			if _, err := c.getComponentFromConfig(path, rootDirectory); err != nil {
