@@ -61,7 +61,12 @@ func getChangedFiles(rootDirectory string, revisionRange string, gitOpts string)
 	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
 	cleanseRepositoryChanges(&cleansedChangeLogArray, true, true)
 	caseInsensitiveSort(cleansedChangeLogArray)
-	return strings.Join(cleansedChangeLogArray, "\n"), nil
+
+	changedFiles := strings.Join(cleansedChangeLogArray, "\n")
+	if debug {
+		fmt.Printf("getChangedFiles: \n%s\n", changedFiles)
+	}
+	return changedFiles, nil
 }
 
 func getChangedDirectories(rootDirectory string, revisionRange string, gitOpts string) (string, error) {
@@ -72,7 +77,11 @@ func getChangedDirectories(rootDirectory string, revisionRange string, gitOpts s
 	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
 	cleanseRepositoryChanges(&cleansedChangeLogArray, false, true)
 	caseInsensitiveSort(cleansedChangeLogArray)
-	return strings.Join(cleansedChangeLogArray, "\n"), nil
+	changeDirectoriesString := strings.Join(cleansedChangeLogArray, "\n")
+	if debug {
+		fmt.Printf("getChangedDirectories: \n%s\n\n", changeDirectoriesString)
+	}
+	return changeDirectoriesString, nil
 }
 
 func getChangeLog(rootDirectory string, revisionRange string, gitOpts string) (string, error) {
@@ -135,6 +144,7 @@ func deduplicateChangelog(lines *[]string) {
 
 // getRepositoryChanges returns the changes in the specified local respository (via repositoryPath) towards the specified
 func getRepositoryChangeLog(repositoryPath string, revisionRange string, gitOptions string) (string, error) {
+	//TODO: caching the changelog, ensure this does not lead to problems.
 	if len(changeLog) == 0 {
 		args := []string{"--no-pager", "log"}
 		if len(revisionRange) > 0 {
@@ -157,6 +167,9 @@ func getRepositoryChangeLog(repositoryPath string, revisionRange string, gitOpti
 			return "", err
 		}
 		changeLog = string(out[:])
+	}
+	if debug {
+		fmt.Printf("getRepositoryChangeLog: \n%s\n", changeLog)
 	}
 	return changeLog, nil
 }
