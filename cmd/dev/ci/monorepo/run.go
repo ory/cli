@@ -12,6 +12,16 @@ import (
 var cmds string
 var runMode string
 var dryRun bool
+var inverseMode bool
+
+// ModeCurrentAffected will execute the specified commands if any of the current components dependecies have changed
+const ModeCurrentAffected = "current_affected"
+
+// ModeCurrentChanged will execute the specified commands if the current component has changed
+const ModeCurrentChanged = "current_changed"
+
+// ModeCurrentInvolved will execute the specified commands if the current component or any of its dependecies have changed
+const ModeCurrentInvolved = "current_involved"
 
 var run = &cobra.Command{
 	Use:   "run",
@@ -23,58 +33,52 @@ var run = &cobra.Command{
 			return err
 		}
 
-		switch runMode {
-		case "current_involved":
-			c, err := getCurrentComponent()
-			if err != nil {
-				return err
-			}
-			//fmt.Printf("Current Component '%s'!\n", c.String())
-			isAffected := c.isAffected(&graph)
-			isChanged := c.isChanged(&graph)
-			isInvolved := isChanged || isAffected
-			fmt.Printf("%s is involved: %t (isChanged: %t, isAffected: %t)\n", c.ID, isInvolved, isChanged, isAffected)
-			if isInvolved {
-				if err := runCommands(c, cmds, dryRun); err != nil {
-					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
-				}
-			}
-		case "current_affected":
-			c, err := getCurrentComponent()
-			if err != nil {
-				return err
-			}
-
-			isAffected := c.isAffected(&graph)
-			fmt.Printf("%s is affected: %t\n", c.ID, isAffected)
-			if isAffected {
-				if err := runCommands(c, cmds, dryRun); err != nil {
-					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
-				}
-			}
-		case "current_changed":
-			c, err := getCurrentComponent()
-			if err != nil {
-				return err
-			}
-
-			isChanged := c.isChanged(&graph)
-			fmt.Printf("%s is changed: %t\n", c.ID, isChanged)
-			if isChanged {
-				if err := runCommands(c, cmds, dryRun); err != nil {
-					return fmt.Errorf("failed to execute command '%s': %s", cmds, err)
-				}
-			}
-		default:
-			return fmt.Errorf("unknown runMode: %s", runMode)
+		c, err := getCurrentComponent()
+		if err != nil {
+			return err
 		}
+		isAffected := c.isAffected(&graph)
+		isChanged := c.isChanged(&graph)
+		isInvolved := isChanged || isAffected
 
-		return nil
+		return runWrapper(c, cmds, runMode, isAffected, isChanged, isInvolved, inverseMode)
 	},
 }
 
-func runCommands(component *Component, cmdLine string, dryRun bool) error {
-	fmt.Printf("runCommands for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
+func runWrapper(c *Component, cmdLine string, mode string, affected bool, changed bool, involved bool, inverse bool) error {
+	switch mode {
+	case ModeCurrentInvolved:
+		fmt.Printf("%s runCmd: %t (affected: %t, changed: %t, involved: %t, inverse: %t)\n", c.ID, involved != inverse, affected, changed, involved, inverse)
+		if involved != inverse {
+			if err := runCmd(c, cmdLine, dryRun); err != nil {
+				return fmt.Errorf("failed to execute command '%s': %s", cmdLine, err)
+			}
+		}
+
+	case ModeCurrentAffected:
+		fmt.Printf("%s runCmd: %t (affected: %t, inverse: %t)\n", c.ID, affected != inverse, affected, inverse)
+		if affected != inverse {
+			if err := runCmd(c, cmdLine, dryRun); err != nil {
+				return fmt.Errorf("failed to execute command '%s': %s", cmdLine, err)
+			}
+		}
+
+	case ModeCurrentChanged:
+		fmt.Printf("%s runCmd: %t (changed: %t, inverse: %t)\n", c.ID, changed != inverse, changed, inverse)
+		if changed != inverse {
+			if err := runCmd(c, cmdLine, dryRun); err != nil {
+				return fmt.Errorf("failed to execute command '%s': %s", cmdLine, err)
+			}
+		}
+
+	default:
+		return fmt.Errorf("unknown runMode: %s", runMode)
+	}
+	return nil
+}
+
+func runCmd(component *Component, cmdLine string, dryRun bool) error {
+	fmt.Printf("runCmd for '%s (%s)' component (dry-run: %t, cmds: '%s')\n", component.ID, component.Path, dryRun, cmdLine)
 	if dryRun {
 		fmt.Print("Skipping execution because --dry-run was set.")
 		return nil
@@ -85,7 +89,7 @@ func runCommands(component *Component, cmdLine string, dryRun bool) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return nil
+	return cmd.Run()
 }
 
 func init() {
@@ -93,4 +97,5 @@ func init() {
 	run.Flags().StringVarP(&cmds, "commands", "c", "", "Commands to be run if current component is affected.")
 	run.Flags().StringVarP(&runMode, "mode", "m", "current_involved", "Defines the mode of this run command. Supported values are: current_changed, current_affected, all_changed, all_affected. Default is current_involved.")
 	run.Flags().BoolVar(&dryRun, "dry-run", false, "If dry-run is used, commands are only displayed, but not executed!")
+	run.Flags().BoolVar(&inverseMode, "inverse", false, "If inverse is used, the specified commands will be executes if the current component is not affected/involved/changed (depending on mode)!")
 }
