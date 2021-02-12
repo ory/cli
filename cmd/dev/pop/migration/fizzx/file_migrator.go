@@ -71,9 +71,10 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 				placeholder = fmt.Sprintf("%s_%s.%s.%s.sql", id, mf.Name, c.Dialect.Name(), "down")
 			}
 
+			placeholder = filepath.Join(dest, placeholder)
 			if _, err := os.Stat(placeholder); os.IsNotExist(err) {
 				l.WithField("file", placeholder).Info("Writing filler file.")
-				if err := writeFile(filepath.Join(dest, placeholder), []byte{}, shouldReplace); err != nil {
+				if err := writeFile(placeholder, []byte{}, shouldReplace); err != nil {
 					return nil, err
 				}
 			}
