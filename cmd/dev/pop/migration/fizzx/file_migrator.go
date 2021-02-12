@@ -59,8 +59,13 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 			if strings.TrimSpace(statement) == "" {
 				continue
 			}
+			statement := statement + ";"
 
-			id := fmt.Sprintf("%s%06d", mf.Version, k)
+			id := fmt.Sprintf("%s%06d", mf.Version, len(content)-1-k)
+			if mf.Direction == "up" {
+				id = fmt.Sprintf("%s%06d", mf.Version, k)
+			}
+
 			fn := fmt.Sprintf("%s_%s.%s.%s.sql", id, mf.Name, c.Dialect.Name(), mf.Direction)
 			if err := writeFile(filepath.Join(dest, fn), []byte(statement), shouldReplace); err != nil {
 				return nil, err
@@ -81,7 +86,7 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 
 			tuples = append(tuples, MigrationTuple{
 				ID:        id,
-				Statement: statement,
+				Statement: statement + ";",
 			})
 		}
 
