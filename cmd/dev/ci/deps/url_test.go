@@ -46,7 +46,7 @@ func TestDefaultURL(t *testing.T) {
 
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/defaultURL.yaml")
-	url, err := comp1.getRenderedURL("darwin","amd64")
+	url, err := comp1.getRenderedURL("darwin", "amd64")
 	assert.Nil(t, err, "Expected no Error!")
 	assert.Equal(t, defaultURL, url)
 }
@@ -56,7 +56,7 @@ func TestCustomArchURL(t *testing.T) {
 
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/customArchURL.yaml")
-	url, err := comp1.getRenderedURL("darwin","amd64")
+	url, err := comp1.getRenderedURL("darwin", "amd64")
 	assert.Nil(t, err, "Expected no Error!")
 	assert.Equal(t, customArchURL, url)
 }
@@ -67,10 +67,10 @@ func TestCustomOSURL(t *testing.T) {
 
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/customOSURL.yaml")
-	url, err := comp1.getRenderedURL("darwin","amd64")
+	url, err := comp1.getRenderedURL("darwin", "amd64")
 	assert.Nil(t, err, "Expected no Error!")
 	assert.Equal(t, customOSURL1, url)
-	url, err = comp1.getRenderedURL("linux","amd64")
+	url, err = comp1.getRenderedURL("linux", "amd64")
 	assert.Nil(t, err, "Expected no Error!")
 	assert.Equal(t, customOSURL2, url)
 }

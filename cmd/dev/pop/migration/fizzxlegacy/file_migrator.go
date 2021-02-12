@@ -3,29 +3,26 @@ package fizzx
 import (
 	"bytes"
 	"fmt"
+	"github.com/gobuffalo/fizz"
+	"text/template"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-	"text/template"
-
-	"github.com/gobuffalo/fizz"
-	"github.com/ory/x/logrusx"
-	"github.com/ory/x/stringsx"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/pkg/errors"
 )
 
 type DumpMigrator struct {
-	Migrator
+	pop.Migrator
 	Path string
 }
 
-func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c *pop.Connection, l *logrusx.Logger) (DumpMigrator, error) {
+func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c *pop.Connection) (DumpMigrator, error) {
 	fm := DumpMigrator{
-		Migrator: NewMigrator(c, l),
+		Migrator: pop.NewMigrator(c),
 		Path:     path,
 	}
 
@@ -38,54 +35,32 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 		fm.SchemaPath = d
 	}
 
-	runner := func(mf Migration) ([]MigrationTuple, error) {
+	runner := func(mf pop.Migration, tx *pop.Connection) error {
 		f, err := os.Open(mf.Path)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		defer f.Close()
-
-		content, err := MigrationContent(mf, c, f, true)
+		content, err := MigrationContent(mf, tx, f, true)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error processing %s", mf.Path)
+			return errors.Wrapf(err, "error processing %s", mf.Path)
+		}
+		if content == "" {
+			return nil
 		}
 
-		if len(content) == 0 {
-			return nil, nil
+		_, fn := filepath.Split(mf.Path)
+		fn = strings.Replace(fn, ".up.fizz", fmt.Sprintf(".%s.up.sql", tx.Dialect.Name()), -1)
+		fn = strings.Replace(fn, ".down.fizz", fmt.Sprintf(".%s.down.sql", tx.Dialect.Name()), -1)
+		if err := writeFile(filepath.Join(dest, fn), []byte(content), shouldReplace); err != nil {
+			return err
 		}
 
-		var tuples []MigrationTuple
-		for k, statement := range content {
-			if strings.TrimSpace(statement) == "" {
-				continue
-			}
-
-			id := fmt.Sprintf("%s%06d", mf.Version, k)
-			fn := fmt.Sprintf("%s_%s.%s.%s.sql", id, mf.Name, c.Dialect.Name(), mf.Direction)
-			if err := writeFile(filepath.Join(dest, fn), []byte(statement), shouldReplace); err != nil {
-				return nil, err
-			}
-
-			placeholder := fmt.Sprintf("%s_%s.%s.%s.sql", id, mf.Name, c.Dialect.Name(), "up")
-			if mf.Direction == "up" {
-				placeholder = fmt.Sprintf("%s_%s.%s.%s.sql", id, mf.Name, c.Dialect.Name(), "down")
-			}
-
-			placeholder = filepath.Join(dest, placeholder)
-			if _, err := os.Stat(placeholder); os.IsNotExist(err) {
-				l.WithField("file", placeholder).Info("Writing filler file.")
-				if err := writeFile(placeholder, []byte{}, shouldReplace); err != nil {
-					return nil, err
-				}
-			}
-
-			tuples = append(tuples, MigrationTuple{
-				ID:        id,
-				Statement: statement,
-			})
+		err = tx.RawQuery(content).Exec()
+		if err != nil {
+			return errors.Wrapf(err, "error executing %s, sql: %s", mf.Path, content)
 		}
-
-		return tuples, nil
+		return nil
 	}
 
 	err := fm.findMigrations(runner)
@@ -96,7 +71,7 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 	return fm, nil
 }
 
-func (fm *DumpMigrator) findMigrations(runner func(mf Migration) ([]MigrationTuple, error)) error {
+func (fm *DumpMigrator) findMigrations(runner func(mf pop.Migration, tx *pop.Connection) error) error {
 	dir := fm.Path
 	if fi, err := os.Stat(dir); err != nil || !fi.IsDir() {
 		// directory doesn't exist
@@ -111,7 +86,7 @@ func (fm *DumpMigrator) findMigrations(runner func(mf Migration) ([]MigrationTup
 			if match == nil {
 				return nil
 			}
-			mf := Migration{
+			mf := pop.Migration{
 				Path:      p,
 				Version:   match.Version,
 				Name:      match.Name,
@@ -159,17 +134,17 @@ Actual:
 	return ioutil.WriteFile(path, contents, 0666)
 }
 
-func MigrationContent(mf Migration, c *pop.Connection, r io.Reader, usingTemplate bool) ([]string, error) {
+func MigrationContent(mf pop.Migration, c *pop.Connection, r io.Reader, usingTemplate bool) (string, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, nil
+		return "", nil
 	}
 
 	content := ""
 	if usingTemplate {
 		t, err := template.New("migration").Parse(string(b))
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not parse template %s", mf.Path)
+			return "", errors.Wrapf(err, "could not parse template %s", mf.Path)
 		}
 		var bb bytes.Buffer
 		err = t.Execute(&bb, struct {
@@ -186,7 +161,7 @@ func MigrationContent(mf Migration, c *pop.Connection, r io.Reader, usingTemplat
 			IsPostgreSQL: c.Dialect.Name() == "postgres",
 		})
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not execute migration template %s", mf.Path)
+			return "", errors.Wrapf(err, "could not execute migration template %s", mf.Path)
 		}
 		content = bb.String()
 	} else {
@@ -196,12 +171,9 @@ func MigrationContent(mf Migration, c *pop.Connection, r io.Reader, usingTemplat
 	if mf.Type == "fizz" {
 		content, err = fizz.AString(content, c.Dialect.FizzTranslator())
 		if err != nil {
-			return nil, errors.Wrapf(err, "could not fizz the migration %s", mf.Path)
+			return "", errors.Wrapf(err, "could not fizz the migration %s", mf.Path)
 		}
 	}
 
-	content = strings.ReplaceAll(content, "COMMIT TRANSACTION;", "")
-	content = strings.ReplaceAll(content, "BEGIN TRANSACTION;", "")
-
-	return stringsx.Splitx(content, ";\n"), nil
+	return content, nil
 }
