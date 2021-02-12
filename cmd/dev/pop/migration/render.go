@@ -143,15 +143,15 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 				return nil
 			}
 
-			base := filepath.Base(info.Name())
 			for _, d := range dialects {
 				if d == "sqlite" {
 					d = "sqlite3"
 				}
 
-				fp := filepath.Join(base, fmt.Sprintf("%s_%s.%s.%s.sql", match.Version, match.Name, d, match.Direction))
+				fp := filepath.Join(path, fmt.Sprintf("%s_%s.%s.%s.sql", match.Version, match.Name, d, match.Direction))
 				if _, err := os.Stat(fp); os.IsNotExist(err) {
-					if err := ioutil.WriteFile(path, []byte{}, 0666); err != nil {
+					logger.WithField("path", fp).Info("Writing filler file.")
+					if err := ioutil.WriteFile(fp, []byte{}, 0666); err != nil {
 						return err
 					}
 				}

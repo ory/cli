@@ -307,7 +307,7 @@ func newSchemaMigrations(name string) fizz.Table {
 				Name:    "version",
 				ColType: "string",
 				Options: map[string]interface{}{
-					"size": 21, // len(YYYYMMDDhhmmss000001)
+					"size": 48, // leave some extra room
 				},
 			},
 		},
