@@ -32,6 +32,8 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.6.7
 	github.com/tidwall/sjson v1.1.4
+	github.com/ziutek/mymysql v1.5.4 // indirect
 	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
+	gotest.tools v2.2.0+incompatible // indirect
 )
