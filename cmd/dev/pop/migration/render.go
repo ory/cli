@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/ory/x/logrusx"
+
 	"github.com/ory/x/randx"
 	"github.com/ory/x/stringslice"
 
@@ -36,6 +38,8 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		defer dockertest.KillAllTestDatabases()
+
+		logger := logrusx.New("Ory CLI", "")
 
 		// Disable log outputs
 		pop.SetLogger(func(lvl logging.Level, s string, args ...interface{}) {})
@@ -101,7 +105,7 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 				return c.RawQuery("SELECT 1").Exec()
 			}))
 
-			m, err := fizzx.NewDumpMigrator(args[0], args[1], replace, dump, c)
+			m, err := fizzx.NewDumpMigrator(args[0], args[1], replace, dump, c, logger)
 			pkg.Check(err)
 
 			pkg.Check(m.Up())
@@ -120,9 +124,41 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 		for name, dsn := range dsns {
 			go runner(name, dsn)
 		}
-
 		wg.Wait()
-		return nil
+
+		return filepath.Walk(args[1], func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			match, err := pop.ParseMigrationFilename(info.Name())
+			if err != nil {
+				return err
+			} else if match == nil {
+				logger.WithField("path", info.Name()).Warn("Skipping file because not a migration file.")
+				return nil
+			}
+
+			base := filepath.Base(info.Name())
+			for _, d := range dialects {
+				if d == "sqlite" {
+					d = "sqlite3"
+				}
+
+				fp := filepath.Join(base, fmt.Sprintf("%s_%s.%s.%s.sql", match.Version, match.Name, d, match.Direction))
+				if _, err := os.Stat(fp); os.IsNotExist(err) {
+					if err := ioutil.WriteFile(path, []byte{}, 0666); err != nil {
+						return err
+					}
+				}
+			}
+
+			return nil
+		})
 	},
 }
 
