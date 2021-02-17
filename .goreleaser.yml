@@ -158,10 +158,8 @@ release:
 
 dockers:
   - dockerfile: Dockerfile
-    builds:
+    ids:
       - ory-sqlite-linux-libmusl
-    binaries:
-      - ory
     image_templates:
       - "oryd/ory:{{ .Tag }}"
       - "oryd/ory:latest"
