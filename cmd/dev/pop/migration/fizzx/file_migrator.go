@@ -59,7 +59,7 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 			if strings.TrimSpace(statement) == "" {
 				continue
 			}
-			statement := statement + ";"
+			statement := strings.TrimSuffix(statement, ";") + ";"
 
 			id := fmt.Sprintf("%s%06d", mf.Version, len(content)-1-k)
 			if mf.Direction == "up" {
