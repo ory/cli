@@ -8,6 +8,7 @@ env:
 before:
   hooks:
     - go mod download
+    - go mod tidy
     - go install github.com/markbates/pkger/cmd/pkger
     - pkger
 
