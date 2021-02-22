@@ -1,13 +1,13 @@
 version: 2.1
 
 orbs:
-  goreleaser: ory/goreleaser@0.1.20
+  goreleaser: ory/goreleaser@0.1.22
   slack: circleci/slack@3.4.2
 
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.14
+      - image: circleci/golang:1.16
         environment:
           - GO111MODULE=on
     working_directory: /go/src/github.com/ory/cli
