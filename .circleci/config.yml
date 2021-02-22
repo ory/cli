@@ -24,7 +24,6 @@ workflows:
               only: /.*/
       - goreleaser/release:
           requires:
-            - goreleaser/test
             - test
           filters:
             branches:
