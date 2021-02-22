@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"context"
+	"fmt"
+	"github.com/pkg/errors"
+	"net/http"
+	"os"
 
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/kratos-client-go/client"
@@ -17,9 +21,15 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *client.OryKratos {
-		return remote.NewClient(cmd)
+		return remote.NewAdminClient(cmd)
+	})
+	ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
+		return remote.NewHTTPClient(cmd)
 	})
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
-		cmdx.Fatalf(err.Error())
+		if !errors.Is(err, cmdx.ErrNoPrintButFail) {
+			_, _ = fmt.Fprintln(rootCmd.ErrOrStderr(), err)
+		}
+		os.Exit(1)
 	}
 }
