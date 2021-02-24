@@ -3,6 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/ory/cli/cmd/cloud/identities"
+	"github.com/ory/cli/cmd/cloud/proxy"
+	"github.com/ory/cli/cmd/dev"
 	"github.com/pkg/errors"
 	"net/http"
 	"os"
@@ -14,9 +17,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "ory",
-	Short: "The ORY CLI",
+func NewRootCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "ory",
+		Short: "The ORY CLI",
+	}
+
+	c.AddCommand(
+		dev.Main,
+		identities.Main,
+		proxy.NewProxyCmd(),
+		versionCmd,
+	)
+
+	return c
 }
 
 func Execute() {
@@ -26,6 +40,8 @@ func Execute() {
 	ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
 		return remote.NewHTTPClient(cmd)
 	})
+
+	rootCmd := NewRootCmd()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		if !errors.Is(err, cmdx.ErrNoPrintButFail) {
 			_, _ = fmt.Fprintln(rootCmd.ErrOrStderr(), err)

@@ -18,7 +18,7 @@ import (
 
 const (
 	FlagProject     = "project"
-	FlagUpstream    = "upstream"
+	FlagEndpoint    = "endpoint"
 	projectEnvKey   = "ORY_PROJECT_ID"
 	projectApiToken = "ORY_API_TOKEN"
 )
@@ -73,7 +73,7 @@ func NewAdminClient(cmd *cobra.Command) *client.OryKratos {
 		cmdx.Fatalf("You have to set the Ory Cloud Project ID, try --help for details.")
 	}
 
-	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, FlagUpstream))
+	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, FlagEndpoint))
 	if err != nil {
 		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
 	}
@@ -86,6 +86,6 @@ func NewAdminClient(cmd *cobra.Command) *client.OryKratos {
 }
 
 func RegisterClientFlags(flags *pflag.FlagSet) {
-	flags.StringP(FlagProject, FlagProject[:1], "", fmt.Sprintf("Set your Ory Cloud Project ID. Alternatively set using the %s environmental variable.", projectEnvKey))
-	flags.String(FlagUpstream, "https://oryapis.com", "Use a different upstream domain.")
+	flags.StringP(FlagProject, FlagProject[:1], "", fmt.Sprintf("Must be set to your Ory Cloud Project Slug. Alternatively set using the %s environmental variable.", projectEnvKey))
+	flags.String(FlagEndpoint, "https://oryapis.com", "Use a different endpoint.")
 }
