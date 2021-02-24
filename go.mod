@@ -8,8 +8,6 @@ replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.
 
 replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210118092700-c2358be1e867
 
-replace github.com/ory/x => ../x
-
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -31,7 +29,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.2
 	github.com/ory/kratos v0.5.5-alpha.1.0.20210222162419-48e5b9302d17
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
-	github.com/ory/x v0.0.195
+	github.com/ory/x v0.0.198
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
@@ -41,8 +39,5 @@ require (
 	github.com/tidwall/gjson v1.6.7
 	github.com/tidwall/sjson v1.1.4
 	github.com/urfave/negroni v1.0.0
-	github.com/ziutek/mymysql v1.5.4 // indirect
-	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	gotest.tools v2.2.0+incompatible // indirect
 )
