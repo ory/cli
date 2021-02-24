@@ -19,7 +19,7 @@ builds:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
       # - "-extldflags '-static'"
     binary: ory
     env:
@@ -37,7 +37,7 @@ builds:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
     binary: ory
     env:
       - CGO_ENABLED=1
@@ -51,7 +51,7 @@ builds:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
     binary: ory
     env:
       - CGO_ENABLED=1
@@ -68,7 +68,7 @@ builds:
       # Remove once https://github.com/golang/go/issues/40795 is closed
       - -buildmode=exe
     ldflags:
-      - -s -w -X github.com/ory/cli/cmd.BuildVersion={{.Tag}} -X github.com/ory/cli/cmd.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/cmd.BuildTime={{.Date}}
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
       - "-extldflags '-static'"
     binary: ory
     env:
