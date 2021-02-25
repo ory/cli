@@ -8,6 +8,8 @@ replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.
 
 replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210118092700-c2358be1e867
 
+replace github.com/ory/kratos => ../../../../../tmp/kratos
+
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -27,7 +29,7 @@ require (
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.0
 	github.com/ory/jsonschema/v3 v3.0.2
-	github.com/ory/kratos v0.5.5-alpha.1.0.20210222162419-48e5b9302d17
+	github.com/ory/kratos v0.5.5-alpha.1.0.20210225142555-c4c6ed9619fa
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
 	github.com/ory/x v0.0.198
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
