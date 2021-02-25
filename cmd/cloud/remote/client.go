@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	FlagProject     = "project"
-	FlagEndpoint    = "endpoint"
-	projectEnvKey   = "ORY_PROJECT_ID"
-	projectApiToken = "ORY_API_TOKEN"
+	FlagProject        = "project"
+	FlagEndpoint       = "endpoint"
+	projectEnvKey      = "ORY_PROJECT_ID"
+	projectAccessToken = "ORY_ACCESS_TOKEN"
 )
 
 type tokenTransporter struct {
@@ -29,12 +29,12 @@ type tokenTransporter struct {
 }
 
 func (t *tokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", "bearer " + t.token)
+	req.Header.Set("Authorization", "Bearer "+t.token)
 	return t.RoundTripper.RoundTrip(req)
 }
 
 func NewHTTPClient(cmd *cobra.Command) *http.Client {
-	token := os.Getenv(projectApiToken)
+	token := os.Getenv(projectAccessToken)
 	if len(token) == 0 {
 		cmdx.Fatalf(`Ory API Token could not be detected! Did you forget to set the environment variable "%s"?
 
@@ -42,28 +42,28 @@ You can create an API Token in the Ory Console. Once created, set the environmen
 
 **Unix (Linux, macOS)**
 
-$ export ORY_API_TOKEN="<your-api-token-here>"
+$ export ORY_ACCESS_TOKEN="<your-api-token-here>"
 $ ory ...
 
 **Windows (Powershell)**
 
-> $env:ORY_API_TOKEN = '<your-api-token-here>'
+> $env:ORY_ACCESS_TOKEN = '<your-api-token-here>'
 > ory ...
 
 **Windows (cmd.exe)**
 
-> set ORY_API_TOKEN = "<your-api-token-here>"
+> set ORY_ACCESS_TOKEN = "<your-api-token-here>"
 > ory ...
-`, projectApiToken)
+`, projectAccessToken)
 		return nil
 	}
 
 	return &http.Client{
 		Transport: httpx.NewResilientRoundTripper(&tokenTransporter{
 			RoundTripper: http.DefaultTransport,
-			token: token,
-		}, time.Millisecond * 500, time.Second*30),
-		Timeout:   time.Second * 10,
+			token:        token,
+		}, time.Millisecond*500, time.Second*30),
+		Timeout: time.Second * 10,
 	}
 }
 
