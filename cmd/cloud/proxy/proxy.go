@@ -207,8 +207,16 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 			return
 		}
 
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+		returnToLogin := func() {
+			http.Redirect(w, r, urlx.CopyWithQuery(urlx.AppendPaths(endpoint, "api", "kratos", "public", "self-service", "login", "browser"), url.Values{"return_to": {scheme + "://" + r.Host}}).String(), http.StatusFound)
+		}
+
 		session, err := checkSession(cmd, hc, r, target)
-		if err != nil || !gjson.GetBytes(session, "active").Bool(){
+		if err != nil || !gjson.GetBytes(session, "active").Bool() {
 			if isJsonRequest {
 				innerErr := herodot.ErrUnauthorized.WithReasonf("The provided credentials are expired, malformed, missing, or otherwise invalid.")
 				if err != nil {
@@ -218,7 +226,7 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 				writer.WriteError(w, r, errors.WithStack(innerErr))
 				return
 			}
-			http.Redirect(w, r, urlx.AppendPaths(endpoint, "api", "kratos", "public", "self-service", "login", "browser").String(), http.StatusFound)
+			returnToLogin()
 			return
 		}
 
@@ -227,20 +235,19 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 				writer.WriteError(w, r, errors.WithStack(herodot.ErrUnauthorized.WithReasonf("The provided credentials are expired, malformed, missing, or otherwise invalid.")))
 				return
 			}
-			http.Redirect(w, r, urlx.AppendPaths(endpoint, "api", "kratos", "public", "self-service", "login", "browser").String(), http.StatusFound)
+			returnToLogin()
 			return
 		}
 
 		now := time.Now().UTC()
-		raw, err := jwt.Signed(sig).Claims(&
-			jwt.Claims{
-				Issuer:    target.String(),
-				Subject:   gjson.GetBytes(session, "identity.id").String(),
-				Expiry:    jwt.NewNumericDate(now.Add(time.Minute)),
-				NotBefore: jwt.NewNumericDate(now),
-				IssuedAt:  jwt.NewNumericDate(now),
-				ID:        uuid.Must(uuid.NewV4()).String(),
-			}).Claims(map[string]interface{}{"session": session}).CompactSerialize()
+		raw, err := jwt.Signed(sig).Claims(&jwt.Claims{
+			Issuer:    target.String(),
+			Subject:   gjson.GetBytes(session, "identity.id").String(),
+			Expiry:    jwt.NewNumericDate(now.Add(time.Minute)),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ID:        uuid.Must(uuid.NewV4()).String(),
+		}).Claims(map[string]interface{}{"session": session}).CompactSerialize()
 		if err != nil {
 			writer.WriteError(w, r, err)
 			return
