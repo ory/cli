@@ -19,6 +19,7 @@ var orbs = []string{
 	"ory/changelog",
 	"ory/nancy",
 	"ory/docs",
+	"ory/prettier",
 	"ory/golangci",
 }
 
