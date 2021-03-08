@@ -3,11 +3,10 @@ package remote
 import (
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 
-	"github.com/ory/kratos-client-go/client"
+	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringsx"
@@ -66,22 +65,15 @@ $ ory ...
 	}
 }
 
-func NewAdminClient(cmd *cobra.Command) *client.OryKratos {
+func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
 	project := stringsx.Coalesce(flagx.MustGetString(cmd, FlagProject), os.Getenv(projectEnvKey))
 	if project == "" {
 		cmdx.Fatalf("You have to set the Ory Cloud Project ID, try --help for details.")
 	}
 
-	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, FlagEndpoint))
-	if err != nil {
-		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
-	}
-
-	return client.NewHTTPClientWithConfig(nil, &client.TransportConfig{
-		Host:     fmt.Sprintf("%s.projects.%s", project, upstream.Host),
-		BasePath: "/api/kratos/admin/",
-		Schemes:  []string{upstream.Scheme},
-	})
+	conf := kratos.NewConfiguration()
+	conf.Servers = kratos.ServerConfigurations{{URL: flagx.MustGetString(cmd, FlagEndpoint)}}
+	return kratos.NewAPIClient(conf)
 }
 
 func RegisterClientFlags(flags *pflag.FlagSet) {

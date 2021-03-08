@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/ory/cli/cmd/cloud/remote"
-	"github.com/ory/kratos-client-go/client"
+	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
 	"github.com/spf13/cobra"
@@ -35,7 +35,7 @@ func NewRootCmd() *cobra.Command {
 }
 
 func Execute() {
-	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *client.OryKratos {
+	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
 		return remote.NewAdminClient(cmd)
 	})
 	ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
