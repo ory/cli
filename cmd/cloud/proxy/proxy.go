@@ -27,6 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -120,7 +121,8 @@ An example payload of the JSON Web Token is:
 			if err != nil {
 				return err
 			}
-			mw.UseFunc(checkOry(cmd, writer, key, signer, endpoint))
+
+			mw.UseFunc(checkOry(cmd, writer, key, signer, endpoint)) // This must be the last method before the handler
 			mw.UseHandler(handler)
 
 			addr := fmt.Sprintf(":%d", flagx.MustGetInt(cmd, PortFlag))
@@ -177,9 +179,18 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 		publicKeys.Keys = append(publicKeys.Keys, key.Public())
 	}
 
+	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
+
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		if r.URL.Path == "/.ory/jwks.json" {
 			writer.Write(w, r, publicKeys)
+			return
+		}
+
+		if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
+			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
+			fmt.Printf("\n\nupstreaming: %s \n%s\n\n", r.URL, endpoint)
+			oryUpstream.ServeHTTP(w, r)
 			return
 		}
 
@@ -201,21 +212,15 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 
 		isJsonRequest := accepted.Type+"/"+accepted.Subtype == "application/json"
 
-		target, err := getEndpointURL(cmd)
-		if err != nil {
-			writer.WriteError(w, r, errors.WithStack(err))
-			return
-		}
-
 		scheme := "http"
 		if r.TLS != nil {
 			scheme = "https"
 		}
 		returnToLogin := func() {
-			http.Redirect(w, r, urlx.CopyWithQuery(urlx.AppendPaths(endpoint, "api", "kratos", "public", "self-service", "login", "browser"), url.Values{"return_to": {scheme + "://" + r.Host}}).String(), http.StatusFound)
+			http.Redirect(w, r, fmt.Sprintf("/.ory/kratos/public/self-service/login/browser?return_to=%s://%s", scheme, r.Host), http.StatusFound)
 		}
 
-		session, err := checkSession(cmd, hc, r, target)
+		session, err := checkSession(hc, r, endpoint)
 		if err != nil || !gjson.GetBytes(session, "active").Bool() {
 			if isJsonRequest {
 				innerErr := herodot.ErrUnauthorized.WithReasonf("The provided credentials are expired, malformed, missing, or otherwise invalid.")
@@ -241,7 +246,7 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 
 		now := time.Now().UTC()
 		raw, err := jwt.Signed(sig).Claims(&jwt.Claims{
-			Issuer:    target.String(),
+			Issuer:    endpoint.String(),
 			Subject:   gjson.GetBytes(session, "identity.id").String(),
 			Expiry:    jwt.NewNumericDate(now.Add(time.Minute)),
 			NotBefore: jwt.NewNumericDate(now),
@@ -259,7 +264,8 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 	}
 }
 
-func checkSession(cmd *cobra.Command, c *http.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
+func checkSession(c *http.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
+	target = urlx.Copy(target)
 	target.Path = filepath.Join(target.Path, "api", "kratos", "public", "sessions", "whoami")
 	req, err := http.NewRequest("GET", target.String(), nil)
 	if err != nil {

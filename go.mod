@@ -1,6 +1,6 @@
 module github.com/ory/cli
 
-go 1.15
+go 1.16
 
 // Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 // github.com/ory/kratos/internal/httpclient
