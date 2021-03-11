@@ -11,6 +11,7 @@ import (
 	"text/template"
 
 	"github.com/gobuffalo/fizz"
+
 	"github.com/ory/x/logrusx"
 	"github.com/ory/x/stringsx"
 

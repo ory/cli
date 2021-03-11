@@ -14,11 +14,12 @@ import (
 	"github.com/getkin/kin-openapi/openapi2"
 	"github.com/getkin/kin-openapi/openapi2conv"
 	"github.com/ghodss/yaml"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
 	"github.com/ory/x/fetcher"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringsx"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
 )
 
 var migrateCmd = &cobra.Command{

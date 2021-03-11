@@ -8,9 +8,10 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/ory/x/flagx"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
+
+	"github.com/ory/x/flagx"
 )
 
 const ExampleConfigFile = `version: v1.20.2

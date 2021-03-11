@@ -12,6 +12,7 @@ import (
 
 	"github.com/gobuffalo/fizz"
 	"github.com/gobuffalo/pop/v5"
+
 	"github.com/ory/x/logrusx"
 
 	"github.com/pkg/errors"

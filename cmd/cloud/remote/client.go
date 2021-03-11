@@ -6,12 +6,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringsx"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 )
 
 const (

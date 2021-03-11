@@ -3,19 +3,20 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/ory/cli/cmd/cloud/identities"
 	"github.com/ory/cli/cmd/cloud/proxy"
 	"github.com/ory/cli/cmd/dev"
-	"github.com/pkg/errors"
+
+	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloud/remote"
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
-	"github.com/spf13/cobra"
 )
 
 func NewRootCmd() *cobra.Command {
@@ -38,9 +39,9 @@ func Execute() {
 	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
 		return remote.NewAdminClient(cmd)
 	})
-	ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
-		return remote.NewHTTPClient(cmd)
-	})
+	//ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
+	//	return remote.NewHTTPClient(cmd)
+	//})
 
 	rootCmd := NewRootCmd()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {

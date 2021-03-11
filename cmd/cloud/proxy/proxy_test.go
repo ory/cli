@@ -16,13 +16,6 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/ory/cli/cmd"
-	"github.com/ory/cli/cmd/cloud/proxy"
-	"github.com/ory/cli/cmd/cloud/remote"
-	"github.com/ory/herodot"
-	"github.com/ory/x/cmdx"
-	"github.com/ory/x/logrusx"
-	"github.com/ory/x/urlx"
 	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
 	"github.com/square/go-jose/v3"
@@ -30,6 +23,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
+
+	"github.com/ory/cli/cmd"
+	"github.com/ory/cli/cmd/cloud/proxy"
+	"github.com/ory/cli/cmd/cloud/remote"
+	"github.com/ory/herodot"
+	"github.com/ory/x/cmdx"
+	"github.com/ory/x/logrusx"
+	"github.com/ory/x/urlx"
 )
 
 const (
