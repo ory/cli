@@ -20,6 +20,14 @@ import (
 	"github.com/elnormous/contenttype"
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/pkg/errors"
+	"github.com/smallstep/truststore"
+	"github.com/spf13/cobra"
+	"github.com/square/go-jose/v3"
+	"github.com/square/go-jose/v3/jwt"
+	"github.com/tidwall/gjson"
+	"github.com/urfave/negroni"
+
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/cli/x"
 	"github.com/ory/graceful"
@@ -31,13 +39,6 @@ import (
 	"github.com/ory/x/reqlog"
 	"github.com/ory/x/tlsx"
 	"github.com/ory/x/urlx"
-	"github.com/pkg/errors"
-	"github.com/smallstep/truststore"
-	"github.com/spf13/cobra"
-	"github.com/square/go-jose/v3"
-	"github.com/square/go-jose/v3/jwt"
-	"github.com/tidwall/gjson"
-	"github.com/urfave/negroni"
 )
 
 const (

@@ -1,8 +1,9 @@
 package ci
 
 import (
-	"github.com/ory/cli/cmd/dev/ci/deps"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/cli/cmd/dev/ci/deps"
 
 	"github.com/ory/cli/cmd/dev/ci/github"
 	"github.com/ory/cli/cmd/dev/ci/monorepo"

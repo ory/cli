@@ -1,10 +1,11 @@
 package identities
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/kratos/cmd/identities"
 	"github.com/ory/x/cmdx"
-	"github.com/spf13/cobra"
 )
 
 var Main = &cobra.Command{

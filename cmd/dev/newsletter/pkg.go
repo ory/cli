@@ -84,6 +84,7 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 	req, err := retryablehttp.NewRequest("GET", u.String(), nil)
 	pkg.Check(err)
 	req.SetBasicAuth("gochimp3", apiKey)
+
 	client := httpx.NewResilientClient()
 	res, err := client.Do(req)
 	pkg.Check(err)
