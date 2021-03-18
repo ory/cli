@@ -1,12 +1,18 @@
 package proxy
 
 import (
+	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
+	"github.com/caddyserver/certmagic"
 	"github.com/elnormous/contenttype"
-	"github.com/gobuffalo/x"
 	"github.com/gofrs/uuid/v3"
 	"github.com/ory/cli/cmd/cloud/remote"
+	"github.com/ory/cli/x"
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
 	"github.com/ory/x/flagx"
@@ -14,8 +20,10 @@ import (
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
 	"github.com/ory/x/reqlog"
+	"github.com/ory/x/tlsx"
 	"github.com/ory/x/urlx"
 	"github.com/pkg/errors"
+	"github.com/smallstep/truststore"
 	"github.com/spf13/cobra"
 	"github.com/square/go-jose/v3"
 	"github.com/square/go-jose/v3/jwt"
@@ -35,6 +43,8 @@ const (
 	PortFlag           = "port"
 	AllowAnonymousFlag = "allow-anonymous"
 )
+
+var caDefaultStorage = &certmagic.FileStorage{Path: x.AppDataDir()}
 
 func NewProxyCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
@@ -104,7 +114,7 @@ An example payload of the JSON Web Token is:
 				return errors.New("flag --project must be set")
 			}
 
-			l := logrusx.New("ory/proxy", x.Version)
+			l := logrusx.New("ory/proxy", x.BuildVersion)
 
 			handler := httputil.NewSingleHostReverseProxy(upstream)
 			writer := herodot.NewJSONWriter(l)
@@ -125,18 +135,32 @@ An example payload of the JSON Web Token is:
 			mw.UseFunc(checkOry(cmd, writer, key, signer, endpoint)) // This must be the last method before the handler
 			mw.UseHandler(handler)
 
-			addr := fmt.Sprintf(":%d", flagx.MustGetInt(cmd, PortFlag))
-			server := graceful.WithDefaults(&http.Server{
-				Addr:    addr,
-				Handler: mw,
-			})
-
-			l.Printf("Starting the http reverse proxy on: %s", server.Addr)
-			if err := graceful.Graceful(server.ListenAndServe, server.Shutdown); err != nil {
-				l.Fatalln("Failed to gracefully shutdown http reverse proxy")
+			c, cleanup, err := createTLSCertificate()
+			if err != nil {
+				return err
 			}
 
-			l.Println("Http reverse proxy was shutdown gracefully")
+			addr := fmt.Sprintf(":%d", flagx.MustGetInt(cmd, PortFlag))
+			server := graceful.WithDefaults(&http.Server{
+				Addr:      addr,
+				Handler:   mw,
+				TLSConfig: &tls.Config{Certificates: []tls.Certificate{*c}},
+			})
+
+			l.Printf("Starting the https reverse proxy on: %s", server.Addr)
+			if err := graceful.Graceful(func() error {
+				return server.ListenAndServeTLS("", "")
+			}, func(ctx context.Context) error {
+				if err := server.Shutdown(ctx); err != nil {
+					return err
+				}
+
+				return cleanup()
+			}); err != nil {
+				l.Fatalln("Failed to gracefully shutdown https reverse proxy")
+			}
+
+			l.Println("http reverse proxy was shutdown gracefully")
 			return nil
 		},
 	}
@@ -182,14 +206,34 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		originalHost := r.Host
+
 		if r.URL.Path == "/.ory/jwks.json" {
 			writer.Write(w, r, publicKeys)
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
-			fmt.Printf("\n\nupstreaming: %s \n%s\n\n", r.URL, endpoint)
+		// We proxy ory things
+		if strings.HasPrefix(r.URL.Path, "/.ory") {
+			// Proxy API
+			if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
+				q := r.URL.Query()
+				q.Set("alias", originalHost)
+
+				r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
+				r.Host = endpoint.Host
+				r.URL.RawQuery = q.Encode()
+
+				oryUpstream.ServeHTTP(w, r)
+				return
+			}
+
+			// Proxy UI
+			q := r.URL.Query()
+			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory", "")
+			r.Host = endpoint.Host
+			r.URL.RawQuery = q.Encode()
+
 			oryUpstream.ServeHTTP(w, r)
 			return
 		}
@@ -260,6 +304,7 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 
 		r.Header.Set("Authorization", "Bearer "+raw)
 		r.Header.Del("Cookie")
+
 		next(w, r)
 	}
 }
@@ -318,4 +363,39 @@ func urlFromRequest(r *http.Request) *url.URL {
 		Path:     r.URL.Path,
 		RawQuery: r.URL.RawQuery,
 	}
+}
+
+func createTLSCertificate() (*tls.Certificate, func() error, error) {
+	key, err := rsa.GenerateKey(rand.Reader, 4096)
+
+	c, err := tlsx.CreateSelfSignedCertificate(key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	block, err := tlsx.PEMBlockForKey(key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.Raw})
+	pemKey := pem.EncodeToMemory(block)
+	cert, err := tls.X509KeyPair(pemCert, pemKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := truststore.Install(c,
+		truststore.WithDebug(),
+		truststore.WithFirefox(),
+		truststore.WithJava()); err != nil {
+		return nil, nil, err
+	}
+
+	return &cert, func() error {
+		return truststore.Uninstall(c,
+			truststore.WithDebug(),
+			truststore.WithFirefox(),
+			truststore.WithJava())
+	}, nil
 }
