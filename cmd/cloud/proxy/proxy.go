@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/caddyserver/certmagic"
 	"github.com/elnormous/contenttype"
 	"github.com/gofrs/uuid/v3"
 	"github.com/ory/cli/cmd/cloud/remote"
@@ -42,9 +41,8 @@ import (
 const (
 	PortFlag           = "port"
 	AllowAnonymousFlag = "allow-anonymous"
+	NoCertInstallFlag  = "dont-install-cert"
 )
-
-var caDefaultStorage = &certmagic.FileStorage{Path: x.AppDataDir()}
 
 func NewProxyCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
@@ -114,6 +112,11 @@ An example payload of the JSON Web Token is:
 				return errors.New("flag --project must be set")
 			}
 
+			c, cleanup, err := createTLSCertificate(cmd)
+			if err != nil {
+				return err
+			}
+
 			l := logrusx.New("ory/proxy", x.BuildVersion)
 
 			handler := httputil.NewSingleHostReverseProxy(upstream)
@@ -135,11 +138,6 @@ An example payload of the JSON Web Token is:
 			mw.UseFunc(checkOry(cmd, writer, key, signer, endpoint)) // This must be the last method before the handler
 			mw.UseHandler(handler)
 
-			c, cleanup, err := createTLSCertificate()
-			if err != nil {
-				return err
-			}
-
 			addr := fmt.Sprintf(":%d", flagx.MustGetInt(cmd, PortFlag))
 			server := graceful.WithDefaults(&http.Server{
 				Addr:      addr,
@@ -151,6 +149,7 @@ An example payload of the JSON Web Token is:
 			if err := graceful.Graceful(func() error {
 				return server.ListenAndServeTLS("", "")
 			}, func(ctx context.Context) error {
+				l.Println("http reverse proxy was shutdown gracefully")
 				if err := server.Shutdown(ctx); err != nil {
 					return err
 				}
@@ -160,7 +159,6 @@ An example payload of the JSON Web Token is:
 				l.Fatalln("Failed to gracefully shutdown https reverse proxy")
 			}
 
-			l.Println("http reverse proxy was shutdown gracefully")
 			return nil
 		},
 	}
@@ -171,6 +169,7 @@ An example payload of the JSON Web Token is:
 	}
 
 	proxyCmd.Flags().Int(PortFlag, int(port), "The port the proxy should listen on.")
+	proxyCmd.Flags().Bool(NoCertInstallFlag, false, "If set will not try to add the HTTPS certificate to your certificate store.")
 	proxyCmd.Flags().StringSliceP(AllowAnonymousFlag, AllowAnonymousFlag[:1], []string{}, "Allow one or more URLs to be accessed without authentication.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
@@ -214,23 +213,11 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 		}
 
 		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/.ory") {
-			// Proxy API
-			if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
-				q := r.URL.Query()
-				q.Set("alias", originalHost)
-
-				r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
-				r.Host = endpoint.Host
-				r.URL.RawQuery = q.Encode()
-
-				oryUpstream.ServeHTTP(w, r)
-				return
-			}
-
-			// Proxy UI
+		if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
 			q := r.URL.Query()
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory", "")
+			q.Set("alias", originalHost)
+
+			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
 			r.Host = endpoint.Host
 			r.URL.RawQuery = q.Encode()
 
@@ -245,21 +232,22 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 			}
 		}
 
+		var isJsonRequest bool
 		accepted, _, err := contenttype.GetAcceptableMediaType(r, []contenttype.MediaType{
 			contenttype.NewMediaType("text/html"), // default offer
 			contenttype.NewMediaType("application/json"),
 		})
 		if err != nil {
-			writer.WriteError(w, r, err)
-			return
+			isJsonRequest = false
+		} else {
+			isJsonRequest = accepted.Type+"/"+accepted.Subtype == "application/json"
 		}
-
-		isJsonRequest := accepted.Type+"/"+accepted.Subtype == "application/json"
 
 		scheme := "http"
 		if r.TLS != nil {
 			scheme = "https"
 		}
+
 		returnToLogin := func() {
 			http.Redirect(w, r, fmt.Sprintf("/.ory/kratos/public/self-service/login/browser?return_to=%s://%s", scheme, r.Host), http.StatusFound)
 		}
@@ -365,7 +353,7 @@ func urlFromRequest(r *http.Request) *url.URL {
 	}
 }
 
-func createTLSCertificate() (*tls.Certificate, func() error, error) {
+func createTLSCertificate(cmd *cobra.Command) (*tls.Certificate, func() error, error) {
 	key, err := rsa.GenerateKey(rand.Reader, 4096)
 
 	c, err := tlsx.CreateSelfSignedCertificate(key)
@@ -385,17 +373,27 @@ func createTLSCertificate() (*tls.Certificate, func() error, error) {
 		return nil, nil, err
 	}
 
-	if err := truststore.Install(c,
-		truststore.WithDebug(),
+	const passwordMessage = "To modify your operating system certificate store, you might might be prompted for your password now:"
+
+	if flagx.MustGetBool(cmd, NoCertInstallFlag) {
+		return &cert, func() error {
+			return nil
+		}, nil
+	}
+
+	_, _ = fmt.Fprintln(os.Stdout, "Trying to install temporary TLS (HTTPS) certificate for localhost in your operating system. This allows to access the proxy using HTTPS.")
+	_, _ = fmt.Fprintln(os.Stdout, passwordMessage)
+	opts := []truststore.Option{
 		truststore.WithFirefox(),
-		truststore.WithJava()); err != nil {
+		truststore.WithJava(),
+	}
+
+	if err := truststore.Install(c, opts...); err != nil {
 		return nil, nil, err
 	}
 
 	return &cert, func() error {
-		return truststore.Uninstall(c,
-			truststore.WithDebug(),
-			truststore.WithFirefox(),
-			truststore.WithJava())
+		_, _ = fmt.Fprintln(os.Stdout, passwordMessage)
+		return truststore.Uninstall(c, opts...)
 	}, nil
 }

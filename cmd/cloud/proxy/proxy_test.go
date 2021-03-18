@@ -2,6 +2,7 @@ package proxy_test
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
@@ -50,6 +51,8 @@ var (
 	}
   }
 }`)
+
+	insecureClient = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 )
 
 func newCommand(t *testing.T, ctx context.Context) *cmdx.CommandExecuter {
@@ -64,7 +67,7 @@ func newUpstream(t *testing.T, keyURL string, writer herodot.Writer) *httptest.S
 			return
 		}
 
-		res, err := http.Get(keyURL)
+		res, err := insecureClient.Get(keyURL)
 		if err != nil {
 			writer.WriteError(w, r, errors.WithStack(err))
 			return
@@ -115,8 +118,8 @@ func cloudAPi(t *testing.T, writer herodot.Writer) *url.URL {
 	return parsed
 }
 
-func getRequest(t *testing.T, href string) ([]byte, *http.Response) {
-	res, err := http.DefaultClient.Get(href)
+func getRequest(t *testing.T, c *http.Client, href string) ([]byte, *http.Response) {
+	res, err := c.Get(href)
 	require.NoError(t, err)
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
@@ -124,15 +127,15 @@ func getRequest(t *testing.T, href string) ([]byte, *http.Response) {
 	return body, res
 }
 
-func assertAnonymous(t *testing.T, href string) {
-	body, _ := getRequest(t, href)
+func assertAnonymous(t *testing.T, c *http.Client, href string) {
+	body, _ := getRequest(t, c, href)
 	assert.EqualValues(t, string(body), anonymous, "%s", body)
 }
 
 func TestProxy(t *testing.T) {
 	port, err := freeport.GetFreePort()
 	require.NoError(t, err)
-	proxyURL := fmt.Sprintf("http://127.0.0.1:%d", port)
+	proxyURL := fmt.Sprintf("https://127.0.0.1:%d", port)
 
 	l := logrusx.New("ory cli", "tests")
 	writer := herodot.NewJSONWriter(l)
@@ -145,7 +148,7 @@ func TestProxy(t *testing.T) {
 	ctx = context.WithValue(ctx, remote.FlagEndpoint, cloudApi)
 
 	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+remote.FlagProject, "demo", "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--allow-anonymous", "/public/1", "--allow-anonymous", "/public/2")
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+remote.FlagProject, "demo", "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--allow-anonymous", "/public/1", "--allow-anonymous", "/public/2")
 		assert.ErrorIs(t, err, context.Canceled)
 		t.Logf("stdout:\n%s", stdout)
 		t.Logf("stderr:\n%s", stderr)
@@ -160,7 +163,7 @@ func TestProxy(t *testing.T) {
 			t.Fatal("Proxy did not come alive")
 		}
 
-		res, err := http.Get(proxyURL + "/.ory/jwks.json")
+		res, err := insecureClient.Get(proxyURL + "/.ory/jwks.json")
 		if err != nil {
 			t.Logf("Proxy is not yet alive: %s", err)
 			continue
@@ -176,14 +179,14 @@ func TestProxy(t *testing.T) {
 	}
 
 	t.Run("allows anonymous paths", func(t *testing.T) {
-		assertAnonymous(t, proxyURL+"/public/1")
-		assertAnonymous(t, proxyURL+"/public/2")
+		assertAnonymous(t, insecureClient, proxyURL+"/public/1")
+		assertAnonymous(t, insecureClient, proxyURL+"/public/2")
 	})
 
 	t.Run("forwards the request if authenticated", func(t *testing.T) {
 		req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
 		req.Header.Set("Authorization", "ory")
-		res, err := http.DefaultClient.Do(req)
+		res, err := insecureClient.Do(req)
 		require.NoError(t, err)
 		defer res.Body.Close()
 
@@ -198,7 +201,7 @@ func TestProxy(t *testing.T) {
 	t.Run("responds with 401 json if json request", func(t *testing.T) {
 		req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
 		req.Header.Set("Accept", "application/json")
-		res, err := http.DefaultClient.Do(req)
+		res, err := insecureClient.Do(req)
 		require.NoError(t, err)
 		defer res.Body.Close()
 
@@ -210,14 +213,19 @@ func TestProxy(t *testing.T) {
 	})
 
 	t.Run("responds with 302 redirect to login if HTML request", func(t *testing.T) {
-		for k, accept := range []string{} {
+		for k, accept := range []string{
+			"text/html",
+			"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"application/xhtml+xml",
+		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
 				req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
 
-				res, err := http.DefaultClient.Do(req)
+				res, err := insecureClient.Do(req)
 				require.NoError(t, err)
 				defer res.Body.Close()
 
@@ -225,8 +233,35 @@ func TestProxy(t *testing.T) {
 				require.NoError(t, err)
 
 				assert.EqualValues(t, http.StatusOK, res.StatusCode)
-				assert.EqualValues(t, urlx.AppendPaths(cloudApi, "/api/kratos/public/self-service/login/browser").String(), res.Request.URL.String())
-				assert.EqualValues(t, "The provided credentials are expired, malformed, missing, or otherwise invalid.", gjson.GetBytes(body, "reason").String(), "%s", body)
+				assert.EqualValues(t, proxyURL+"/.ory/kratos/public/self-service/login/browser?return_to="+proxyURL, res.Request.URL.String())
+				assert.EqualValues(t, "login", string(body))
+			})
+		}
+	})
+
+	t.Run("responds forwards hosted pages", func(t *testing.T) {
+		for k, accept := range []string{
+			"text/html",
+			"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"application/xhtml+xml",
+		} {
+			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
+				req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
+				if accept != "" {
+					req.Header.Set("Accept", accept)
+				}
+
+				res, err := insecureClient.Do(req)
+				require.NoError(t, err)
+				defer res.Body.Close()
+
+				body, err := ioutil.ReadAll(res.Body)
+				require.NoError(t, err)
+
+				assert.EqualValues(t, http.StatusOK, res.StatusCode)
+				assert.EqualValues(t, proxyURL+"/.ory/kratos/public/self-service/login/browser?return_to="+proxyURL, res.Request.URL.String())
+				assert.EqualValues(t, "login", string(body))
 			})
 		}
 	})
