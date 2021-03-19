@@ -1,2 +1,4 @@
 dist/
 pkged.go
+*.crt
+*.key
