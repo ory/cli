@@ -136,7 +136,7 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
-			mw.UseFunc(checkOry(cmd, writer, key, signer, endpoint)) // This must be the last method before the handler
+			mw.UseFunc(checkOry(cmd, writer, l, key, signer, endpoint)) // This must be the last method before the handler
 			mw.UseHandler(handler)
 
 			addr := fmt.Sprintf(":%d", flagx.MustGetInt(cmd, PortFlag))
@@ -194,7 +194,7 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 	return sig, key, nil
 }
 
-func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	allowBypass := flagx.MustGetStringSlice(cmd, AllowAnonymousFlag)
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
@@ -222,6 +222,10 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 			r.Host = endpoint.Host
 			r.URL.RawQuery = q.Encode()
 
+			l.WithRequest(r).
+				WithField("forwarding_path", r.URL.String()).
+				WithField("forwarding_host", r.Host).
+				Debug("Forwarding request to Ory.")
 			oryUpstream.ServeHTTP(w, r)
 			return
 		}
@@ -382,7 +386,7 @@ func createTLSCertificate(cmd *cobra.Command) (*tls.Certificate, func() error, e
 		}, nil
 	}
 
-	_, _ = fmt.Fprintln(os.Stdout, "Trying to install temporary TLS (HTTPS) certificate for localhost in your operating system. This allows to access the proxy using HTTPS.")
+	_, _ = fmt.Fprintln(os.Stdout, "Trying to install temporary TLS (HTTPS) certificate for localhost on your operating system. This allows to access the proxy using HTTPS.")
 	_, _ = fmt.Fprintln(os.Stdout, passwordMessage)
 	opts := []truststore.Option{
 		truststore.WithFirefox(),
