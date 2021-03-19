@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/hashicorp/go-retryablehttp"
 	"html/template"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -80,10 +80,10 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 	u.Scheme = "https"
 	u.Host = fmt.Sprintf(gochimp3.URIFormat, gochimp3.DatacenterRegex.FindString(apiKey))
 	u.Path = filepath.Join(gochimp3.Version, path)
-	req, err := http.NewRequest("GET", u.String(), nil)
+	req, err := retryablehttp.NewRequest("GET", u.String(), nil)
 	pkg.Check(err)
 	req.SetBasicAuth("gochimp3", apiKey)
-	client := httpx.NewResilientClientLatencyToleranceMedium(nil)
+	client := httpx.NewResilientClient()
 	res, err := client.Do(req)
 	pkg.Check(err)
 	defer res.Body.Close()

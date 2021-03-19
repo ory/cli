@@ -9,7 +9,6 @@ var Main = &cobra.Command{
 	Short: "Helpers for OpenAPI 3.0",
 }
 
-
 func init() {
 	Main.AddCommand(
 		migrateCmd,
