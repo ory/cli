@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/elnormous/contenttype"
 	"github.com/gofrs/uuid/v3"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/cli/x"
 	"github.com/ory/graceful"
@@ -195,7 +196,7 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 
 func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	allowBypass := flagx.MustGetStringSlice(cmd, AllowAnonymousFlag)
-	hc := httpx.NewResilientClientLatencyToleranceHigh(http.DefaultTransport)
+	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
 	var publicKeys jose.JSONWebKeySet
 	for _, key := range keys.Keys {
@@ -297,10 +298,10 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, keys *jose.JSONWebKeySe
 	}
 }
 
-func checkSession(c *http.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
+func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
 	target = urlx.Copy(target)
 	target.Path = filepath.Join(target.Path, "api", "kratos", "public", "sessions", "whoami")
-	req, err := http.NewRequest("GET", target.String(), nil)
+	req, err := retryablehttp.NewRequest("GET", target.String(), nil)
 	if err != nil {
 		return nil, errors.WithStack(herodot.ErrInternalServerError)
 	}

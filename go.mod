@@ -12,7 +12,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/caddyserver/certmagic v0.12.1-0.20201215190346-201f83a06067
+	github.com/bxcodec/faker v2.0.1+incompatible // indirect
+	github.com/corbym/gocrest v1.0.3 // indirect
 	github.com/deckarep/golang-set v1.7.1
 	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
 	github.com/evanphx/json-patch v0.5.2
@@ -20,21 +21,26 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/fizz v1.13.1-0.20201104174146-3416f0e6618f
-	github.com/gobuffalo/pop/v5 v5.3.2-0.20210128124218-e397a61c1704
+	github.com/gobuffalo/pop/v5 v5.3.3
 	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/golang/mock v1.5.0 // indirect
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
-	github.com/google/uuid v1.1.5
+	github.com/google/uuid v1.2.0
+	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/justinas/nosurf v1.1.0 // indirect
+	github.com/magefile/mage v1.10.0 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
-	github.com/ory/herodot v0.9.0
-	github.com/ory/jsonschema/v3 v3.0.2
-	github.com/ory/kratos v0.5.5-alpha.1.0.20210225142555-c4c6ed9619fa
+	github.com/ory/herodot v0.9.3
+	github.com/ory/jsonschema/v3 v3.0.3
+	github.com/ory/kratos v0.5.5-alpha.1.0.20210319103511-3726ed4d145a
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
-	github.com/ory/x v0.0.198
+	github.com/ory/sdk/swagutil v0.0.0-20200505101021-3f40b808145c // indirect
+	github.com/ory/x v0.0.207
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.9.0 // indirect
@@ -47,6 +53,7 @@ require (
 	github.com/tidwall/gjson v1.6.7
 	github.com/tidwall/sjson v1.1.4
 	github.com/urfave/negroni v1.0.0
-	go.uber.org/zap v1.16.0 // indirect
+	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/sys v0.0.0-20210319071255-635bc2c9138d // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

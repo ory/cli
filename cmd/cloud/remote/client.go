@@ -2,7 +2,6 @@ package remote
 
 import (
 	"fmt"
-	"github.com/ory/x/httpx"
 	"net/http"
 	"net/url"
 	"os"
@@ -59,10 +58,10 @@ $ ory ...
 	}
 
 	return &http.Client{
-		Transport: httpx.NewResilientRoundTripper(&tokenTransporter{
+		Transport: &tokenTransporter{
 			RoundTripper: http.DefaultTransport,
 			token:        token,
-		}, time.Millisecond*500, time.Second*30),
+		},
 		Timeout: time.Second * 10,
 	}
 }

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/gobuffalo/fizz"
-	"text/template"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/pkg/errors"
