@@ -8,12 +8,13 @@ replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.5.
 
 replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210118092700-c2358be1e867
 
+// https://github.com/seatgeek/logrus-gelf-formatter/pull/5
+replace github.com/seatgeek/logrus-gelf-formatter => github.com/zepatrik/logrus-gelf-formatter v0.0.0-20210305135027-b8b3731dba10
+
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/Masterminds/sprig/v3 v3.1.0 // indirect
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/bxcodec/faker v2.0.1+incompatible // indirect
-	github.com/corbym/gocrest v1.0.3 // indirect
 	github.com/deckarep/golang-set v1.7.1
 	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
 	github.com/evanphx/json-patch v0.5.2
@@ -30,8 +31,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/justinas/nosurf v1.1.0 // indirect
-	github.com/magefile/mage v1.10.0 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
@@ -39,7 +38,6 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.3
 	github.com/ory/kratos v0.5.5-alpha.1.0.20210319103511-3726ed4d145a
 	github.com/ory/kratos-client-go v0.5.4-alpha.1
-	github.com/ory/sdk/swagutil v0.0.0-20200505101021-3f40b808145c // indirect
 	github.com/ory/x v0.0.207
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
@@ -53,7 +51,5 @@ require (
 	github.com/tidwall/gjson v1.6.7
 	github.com/tidwall/sjson v1.1.4
 	github.com/urfave/negroni v1.0.0
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/sys v0.0.0-20210319071255-635bc2c9138d // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
