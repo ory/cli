@@ -3,12 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"os"
+
 	"github.com/ory/cli/cmd/cloud/identities"
 	"github.com/ory/cli/cmd/cloud/proxy"
 	"github.com/ory/cli/cmd/dev"
 	"github.com/pkg/errors"
-	"net/http"
-	"os"
 
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/kratos-client-go/client"

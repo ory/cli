@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/getkin/kin-openapi/openapi2"
 	"github.com/getkin/kin-openapi/openapi2conv"
@@ -13,11 +19,6 @@ import (
 	"github.com/ory/x/stringsx"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"text/template"
 )
 
 var migrateCmd = &cobra.Command{

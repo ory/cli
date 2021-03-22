@@ -1,10 +1,11 @@
 package x
 
 import (
-	"github.com/ory/x/logrusx"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/ory/x/logrusx"
 )
 
 // homeDirUnsafe is a low-level function that returns

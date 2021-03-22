@@ -3,13 +3,14 @@ package fizzx
 import (
 	"bytes"
 	"fmt"
-	"github.com/gobuffalo/fizz"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/gobuffalo/fizz"
 
 	"github.com/gobuffalo/pop/v5"
 	"github.com/pkg/errors"
