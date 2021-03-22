@@ -5,6 +5,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/ory/cli/cmd"
 	"github.com/ory/cli/cmd/cloud/proxy"
@@ -20,15 +30,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"os"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 const (
@@ -148,7 +149,7 @@ func TestProxy(t *testing.T) {
 	ctx = context.WithValue(ctx, remote.FlagEndpoint, cloudApi)
 
 	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+remote.FlagProject, "demo", "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--allow-anonymous", "/public/1", "--allow-anonymous", "/public/2")
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+remote.FlagProject, "demo", "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")
 		assert.ErrorIs(t, err, context.Canceled)
 		t.Logf("stdout:\n%s", stdout)
 		t.Logf("stderr:\n%s", stderr)
@@ -184,7 +185,7 @@ func TestProxy(t *testing.T) {
 	})
 
 	t.Run("forwards the request if authenticated", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
+		req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
 		req.Header.Set("Authorization", "ory")
 		res, err := insecureClient.Do(req)
 		require.NoError(t, err)
@@ -199,7 +200,7 @@ func TestProxy(t *testing.T) {
 	})
 
 	t.Run("responds with 401 json if json request", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
+		req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
 		req.Header.Set("Accept", "application/json")
 		res, err := insecureClient.Do(req)
 		require.NoError(t, err)
@@ -220,7 +221,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
@@ -247,7 +248,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}

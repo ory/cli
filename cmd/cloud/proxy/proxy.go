@@ -8,6 +8,15 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/elnormous/contenttype"
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
@@ -29,20 +38,12 @@ import (
 	"github.com/square/go-jose/v3/jwt"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/negroni"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
-	PortFlag           = "port"
-	AllowAnonymousFlag = "allow-anonymous"
-	NoCertInstallFlag  = "dont-install-cert"
+	PortFlag          = "port"
+	ProtectPathsFlag  = "protect-path-prefix"
+	NoCertInstallFlag = "dont-install-cert"
 )
 
 func NewProxyCmd() *cobra.Command {
@@ -51,13 +52,11 @@ func NewProxyCmd() *cobra.Command {
 		Short: "Secure Endpoint Using the Ory Reverse Proxy",
 		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application.
 
-All incoming requests will be checked for a valid session, and if a valid session exists, the request will be forwarded
-to your application. To exclude paths from authentication - useful for public pages such as your landing page - use
-the --%s flag:
+To require login before accessing paths in your application, use the --%[1]s flag:
 
-	$ ory proxy -port 4000 http://localhost:3000 --%s /login --%s /dashboard
+	$ ory proxy -port 4000 http://localhost:3000 --%[1]s /members --%[1]s /admin
 
-The --%s flag is currently using a string exact match - except that the host is case insensitive. Future versions will
+The --%[1]s flag is currently using a string prefix match. Future versions will
 include support for regular expressions and glob matching.
 
 If the request is authenticated, a JSON Web Token will be sent in the HTTP Authorization Header containing the
@@ -94,7 +93,7 @@ An example payload of the JSON Web Token is:
 	  }
 	}
 
-`, AllowAnonymousFlag, AllowAnonymousFlag, AllowAnonymousFlag, AllowAnonymousFlag),
+`, ProtectPathsFlag),
 		/*
 		   The --%s values support regular expression templating, meaning that you can use regular expressions within "<>":
 
@@ -171,7 +170,7 @@ An example payload of the JSON Web Token is:
 
 	proxyCmd.Flags().Int(PortFlag, int(port), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(NoCertInstallFlag, false, "If set will not try to add the HTTPS certificate to your certificate store.")
-	proxyCmd.Flags().StringSliceP(AllowAnonymousFlag, AllowAnonymousFlag[:1], []string{}, "Allow one or more URLs to be accessed without authentication.")
+	proxyCmd.Flags().StringSlice(ProtectPathsFlag, []string{}, "Require authentication before accessing these paths.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
 }
@@ -195,7 +194,7 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 }
 
 func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	allowBypass := flagx.MustGetStringSlice(cmd, AllowAnonymousFlag)
+	protectPaths := flagx.MustGetStringSlice(cmd, ProtectPathsFlag)
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
 	var publicKeys jose.JSONWebKeySet
@@ -230,11 +229,17 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys
 			return
 		}
 
-		for _, allow := range allowBypass {
-			if allow == urlFromRequest(r).Path {
-				next(w, r)
-				return
+		var shouldProtect bool
+		for _, protect := range protectPaths {
+			if strings.HasPrefix(urlFromRequest(r).Path, protect) {
+				shouldProtect = true
+				break
 			}
+		}
+
+		if !shouldProtect {
+			next(w, r)
+			return
 		}
 
 		var isJsonRequest bool

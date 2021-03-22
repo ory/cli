@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/hashicorp/go-retryablehttp"
 	"html/template"
 	"io"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/gomarkdown/markdown/ast"
 
