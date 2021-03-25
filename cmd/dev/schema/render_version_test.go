@@ -53,7 +53,7 @@ func TestAddVersionToSchema(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, os.Chdir(testDir))
 
-	addVersionToSchema(nil, []string{"hydra", "v1.0.0"})
+	addVersionToSchema(nil, []string{"hydra", "v1.0.0", ".schema/config.schema.json"})
 
 	require.NoError(t, os.Chdir(wd))
 

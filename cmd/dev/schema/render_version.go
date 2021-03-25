@@ -39,7 +39,7 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 		return
 	}
 
-	ref := "https://raw.githubusercontent.com/ory" + path.Join(project, newVersion, args[2])
+	ref := "https://raw.githubusercontent.com/ory/" + path.Join(project, newVersion, args[2])
 	newVersionEntry := fmt.Sprintf(`
 {
 	"allOf": [
