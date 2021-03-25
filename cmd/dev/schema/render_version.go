@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/ory/x/jsonschemax"
@@ -22,9 +23,9 @@ import (
 var _ = pkger.Include("../../../.schema")
 
 var RenderVersion = &cobra.Command{
-	Use:   "render-version <project-name> <new-version>",
-	Args:  cobra.ExactArgs(2),
-	Short: "Renders the version schema for <project-name> and <new-version> in the current directory.",
+	Use:   "render-version <project-name> <new-version> <schema-path>",
+	Args:  cobra.ExactArgs(3),
+	Short: "Renders the version schema for <project-name> and <new-version> in the current directory. The `$ref` is pointing to the <schema-path> relative to the repo root.",
 	Run:   addVersionToSchema,
 }
 
@@ -38,7 +39,7 @@ func addVersionToSchema(_ *cobra.Command, args []string) {
 		return
 	}
 
-	ref := fmt.Sprintf("https://raw.githubusercontent.com/ory/%s/%s/.schema/config.schema.json", project, newVersion)
+	ref := "https://raw.githubusercontent.com/ory" + path.Join(project, newVersion, args[2])
 	newVersionEntry := fmt.Sprintf(`
 {
 	"allOf": [
