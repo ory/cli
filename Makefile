@@ -24,14 +24,15 @@ endef
 $(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
 $(call make-lint-dependency)
 
-.bin/clidoc:
-		go build -o .bin/clidoc ./cmd/clidoc/.
+.bin/clidoc: Makefile go.mod go.sum cmd
+		go build -tags nodev -o .bin/clidoc ./cmd/clidoc/.
 
 docs/cli: .bin/clidoc
+		curl -o docs/sidebar.json https://raw.githubusercontent.com/ory/docs/master/docs/sidebar.json
 		clidoc .
 
 .bin/cli: go.mod go.sum Makefile
-		go build -o .bin/cli -tags sqlite,nodev github.com/ory/cli
+		go build -o .bin/cli -tags sqlite github.com/ory/cli
 
 .bin/golangci-lint: Makefile
 		bash <(curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh) -d -b .bin v1.28.3
