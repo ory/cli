@@ -2,3 +2,5 @@ dist/
 pkged.go
 *.crt
 *.key
+docs/
+

@@ -2,10 +2,11 @@ package remote
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-retryablehttp"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

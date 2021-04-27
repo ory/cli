@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
-
 	"github.com/ory/cli/cmd/cloud/identities"
 	"github.com/ory/cli/cmd/cloud/proxy"
 	"github.com/ory/cli/cmd/dev"
+
+	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 
@@ -26,10 +26,13 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	c.AddCommand(
-		dev.Main,
-		identities.Main,
-		proxy.NewProxyCmd(),
-		versionCmd,
+		append(
+			devCommand,
+			dev.Main,
+			identities.Main,
+			proxy.NewProxyCmd(),
+			versionCmd,
+		)...,
 	)
 
 	return c
