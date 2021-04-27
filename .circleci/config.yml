@@ -24,7 +24,9 @@ jobs:
     working_directory: /go/src/github.com/ory/cli
     steps:
       - checkout
-      - run: bash <(curl -s https://raw.githubusercontent.com/ory/ci/master/src/scripts/install/git.sh)
+      - run: |
+          mkdir -p docs/docs
+          bash <(curl -s https://raw.githubusercontent.com/ory/ci/master/src/scripts/install/git.sh)
       - run: make docs/cli
       - run: |
           docsdir=$(mktemp -d)
@@ -45,7 +47,7 @@ workflows:
               only: /.*/
       - docs:
           filters:
-            tags:
+            branches:
               only: master
       - goreleaser/release:
           requires:
