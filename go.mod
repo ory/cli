@@ -10,10 +10,7 @@ replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210413
 
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
 
-replace github.com/ory/kratos => github.com/ory/kratos v0.5.5-alpha.1.0.20210413083616-484dabec91b9
-
-// https://github.com/seatgeek/logrus-gelf-formatter/pull/5
-replace github.com/seatgeek/logrus-gelf-formatter => github.com/zepatrik/logrus-gelf-formatter v0.0.0-20210305135027-b8b3731dba10
+replace github.com/ory/kratos => ../kratos
 
 require (
 	github.com/Masterminds/semver/v3 v3.1.1

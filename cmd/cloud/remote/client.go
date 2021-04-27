@@ -2,6 +2,7 @@ package remote
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-retryablehttp"
 	"net/http"
 	"os"
 	"time"
@@ -59,7 +60,7 @@ $ ory ...
 
 	return &http.Client{
 		Transport: &tokenTransporter{
-			RoundTripper: http.DefaultTransport,
+			RoundTripper: retryablehttp.NewClient().StandardClient().Transport,
 			token:        token,
 		},
 		Timeout: time.Second * 10,
