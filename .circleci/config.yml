@@ -31,7 +31,7 @@ jobs:
       - run: |
           docsdir=$(mktemp -d)
           git clone --depth 1 git@github.com:ory/docs.git "$docsdir"
-          cp -r docs "$docsdir"
+          yes | cp -rf docs "$docsdir"
           cd "$docsdir"
           git add -A && \
             git commit -a -m "autogen(docs): regenerate ory/cli reference" --allow-empty && \
