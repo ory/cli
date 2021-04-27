@@ -39,9 +39,6 @@ func Execute() {
 	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
 		return remote.NewAdminClient(cmd)
 	})
-	//ctx = context.WithValue(ctx, cliclient.HTTPClientContextKey, func(cmd *cobra.Command) *http.Client {
-	//	return remote.NewHTTPClient(cmd)
-	//})
 
 	rootCmd := NewRootCmd()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
