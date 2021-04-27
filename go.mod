@@ -10,8 +10,6 @@ replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210413
 
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
 
-replace github.com/ory/kratos => ../kratos
-
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -29,13 +27,12 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.5
 	github.com/ory/jsonschema/v3 v3.0.3
-	github.com/ory/kratos v0.5.5-alpha.1.0.20210319103511-3726ed4d145a
+	github.com/ory/kratos v0.5.5-alpha.1.0.20210427100113-b37dea4770b0
 	github.com/ory/kratos-client-go v0.5.4-alpha.1.0.20210308170950-06c2c1c071a8
 	github.com/ory/x v0.0.224
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2

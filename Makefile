@@ -31,7 +31,7 @@ docs/cli: .bin/clidoc
 		clidoc .
 
 .bin/cli: go.mod go.sum Makefile
-		go build -o .bin/cli -tags sqlite github.com/ory/cli
+		go build -o .bin/cli -tags sqlite,nodev github.com/ory/cli
 
 .bin/golangci-lint: Makefile
 		bash <(curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh) -d -b .bin v1.28.3
