@@ -1,10 +1,14 @@
 package remote
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/tidwall/gjson"
 
 	"github.com/hashicorp/go-retryablehttp"
 
@@ -14,7 +18,6 @@ import (
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-	"github.com/ory/x/stringsx"
 )
 
 const (
@@ -68,10 +71,30 @@ $ ory ...
 	}
 }
 
+func GetProjectSlug(cmd *cobra.Command) (string, error) {
+	url := flagx.MustGetString(cmd, FlagEndpoint)
+	client := NewHTTPClient(cmd)
+
+	b := &bytes.Buffer{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/projects/%s/slug", url, os.Getenv(projectEnvKey)), b)
+	if err != nil {
+		return "", err
+	}
+	rsp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	body, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return "", err
+	}
+	return gjson.GetBytes(body, "slug").Str, nil
+}
+
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
-	project := stringsx.Coalesce(flagx.MustGetString(cmd, FlagProject), os.Getenv(projectEnvKey))
-	if project == "" {
-		cmdx.Fatalf("You have to set the Ory Cloud Project ID, try --help for details.")
+	project, err := GetProjectSlug(cmd)
+	if project == "" || err != nil {
+		cmdx.Fatalf("Could not retrieve project slug: %+v", err)
 	}
 
 	conf := kratos.NewConfiguration()
