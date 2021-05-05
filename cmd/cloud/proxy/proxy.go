@@ -345,7 +345,7 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	upstream.Host = fmt.Sprintf("%s.projects.%s",project, upstream.Host)
+	upstream.Host = fmt.Sprintf("%s.projects.%s", project, upstream.Host)
 
 	return upstream, nil
 }

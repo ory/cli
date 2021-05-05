@@ -1,7 +1,6 @@
 package remote
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -74,12 +73,7 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 	url := flagx.MustGetString(cmd, FlagEndpoint)
 	client := NewHTTPClient(cmd)
 
-	b := &bytes.Buffer{}
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/projects/%s/slug", url, os.Getenv(projectEnvKey)), b)
-	if err != nil {
-		return "", err
-	}
-	rsp, err := client.Do(req)
+	rsp, err := client.Get(fmt.Sprintf("%s/projects/%s/slug", url, os.Getenv(projectEnvKey)))
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +81,7 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return gjson.GetBytes(body, "slug").Str, nil
+	return gjson.GetBytes(body, "slug").String(), nil
 }
 
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
