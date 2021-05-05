@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	FlagProject        = "project"
 	FlagEndpoint       = "endpoint"
 	projectEnvKey      = "ORY_PROJECT_ID"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
@@ -103,6 +102,5 @@ func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
 }
 
 func RegisterClientFlags(flags *pflag.FlagSet) {
-	flags.StringP(FlagProject, FlagProject[:1], "", fmt.Sprintf("Must be set to your Ory Cloud Project Slug. Alternatively set using the %s environmental variable.", projectEnvKey))
 	flags.String(FlagEndpoint, "https://oryapis.com", "Use a different endpoint.")
 }

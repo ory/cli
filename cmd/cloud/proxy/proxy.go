@@ -109,10 +109,6 @@ An example payload of the JSON Web Token is:
 				return errors.Wrap(err, "unable to parse upstream URL")
 			}
 
-			if flagx.MustGetString(cmd, remote.FlagProject) == "" {
-				return errors.New("flag --project must be set")
-			}
-
 			c, cleanup, err := createTLSCertificate(cmd)
 			if err != nil {
 				return err
@@ -345,8 +341,12 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
+	project, err := remote.GetProjectSlug(cmd)
+	if err != nil {
+		return nil, err
+	}
+	upstream.Host = fmt.Sprintf("%s.projects.%s",project, upstream.Host)
 
-	upstream.Host = fmt.Sprintf("%s.projects.%s", flagx.MustGetString(cmd, remote.FlagProject), upstream.Host)
 	return upstream, nil
 }
 
