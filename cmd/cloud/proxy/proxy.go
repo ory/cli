@@ -51,7 +51,7 @@ func NewProxyCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
 		Use:   "proxy [upstream]",
 		Short: "Secure Endpoint Using the Ory Reverse Proxy",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(1),
 		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application.
 
 To require login before accessing paths in your application, use the --%[1]s flag:
