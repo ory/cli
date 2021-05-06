@@ -21,7 +21,6 @@ import (
 
 const (
 	FlagEndpoint       = "endpoint"
-	projectEnvKey      = "ORY_PROJECT_ID"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
 )
 
@@ -73,7 +72,7 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 	url := flagx.MustGetString(cmd, FlagEndpoint)
 	client := NewHTTPClient(cmd)
 
-	rsp, err := client.Get(fmt.Sprintf("%s/projects/%s/slug", url, os.Getenv(projectEnvKey)))
+	rsp, err := client.Get(fmt.Sprintf("%s/token/slug", url))
 	if err != nil {
 		return "", err
 	}
