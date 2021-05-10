@@ -2,6 +2,7 @@ package remote
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -74,19 +75,19 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 
 	rsp, err := client.Get(fmt.Sprintf("%s/token/slug", url))
 	if err != nil {
-		return "", err
+		return "", errors.WithStack(err)
 	}
 	body, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
-		return "", err
+		return "", errors.WithStack(err)
 	}
 	return gjson.GetBytes(body, "slug").String(), nil
 }
 
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
-	project, err := GetProjectSlug(cmd)
-	if project == "" || err != nil {
-		cmdx.Fatalf("Could not retrieve project slug: %+v", err)
+	_, err := GetProjectSlug(cmd)
+	if err != nil {
+		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
 	}
 
 	conf := kratos.NewConfiguration()
