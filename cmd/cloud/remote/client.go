@@ -2,12 +2,13 @@ package remote
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/tidwall/gjson"
 
@@ -22,10 +23,11 @@ import (
 )
 
 const (
-	FlagEndpoint       = "endpoint"
+	FlagAPIEndpoint    = "api-endpoint"
+	FlagConsoleURL     = "console-url"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
-	tokenPath = "token/slug"
-	publicSuffix = "/public"
+	tokenPath          = "backoffice/token/slug"
+	kratosAdminPath    = "api/kratos/admin"
 )
 
 type tokenTransporter struct {
@@ -38,7 +40,7 @@ func (t *tokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) 
 	return t.RoundTripper.RoundTrip(req)
 }
 
-func NewHTTPClient(cmd *cobra.Command) *http.Client {
+func NewHTTPClient() *http.Client {
 	token := os.Getenv(projectAccessToken)
 	if len(token) == 0 {
 		cmdx.Fatalf(`Ory API Token could not be detected! Did you forget to set the environment variable "%s"?
@@ -73,12 +75,8 @@ $ ory ...
 }
 
 func GetProjectSlug(cmd *cobra.Command) (string, error) {
-	url := flagx.MustGetString(cmd, FlagEndpoint)
-	client := NewHTTPClient(cmd)
-	if strings.HasSuffix(url, publicSuffix) {
-		url = strings.TrimSuffix(url, publicSuffix)
-	}
-	rsp, err := client.Get(fmt.Sprintf("%s/%s", url, tokenPath))
+	client := NewHTTPClient()
+	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", flagx.MustGetString(cmd, FlagConsoleURL), tokenPath))
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -90,15 +88,23 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 }
 
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
-	p, err := GetProjectSlug(cmd)
-	if err != nil || p == "" {
+	slug, err := GetProjectSlug(cmd)
+	if err != nil || slug == "" {
 		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
 	}
+	upstream, err := url.ParseRequestURI(fmt.Sprintf("https://%s.projects.%s/%s", slug, flagx.MustGetString(cmd, FlagAPIEndpoint), kratosAdminPath))
+	if err != nil {
+		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
+	}
+
 	conf := kratos.NewConfiguration()
-	conf.Servers = kratos.ServerConfigurations{{URL: flagx.MustGetString(cmd, FlagEndpoint)}}
+	conf.Servers = kratos.ServerConfigurations{{URL: upstream.String()}}
+	conf.HTTPClient = NewHTTPClient()
+
 	return kratos.NewAPIClient(conf)
 }
 
 func RegisterClientFlags(flags *pflag.FlagSet) {
-	flags.String(FlagEndpoint, "https://oryapis.com", "Use a different endpoint.")
+	flags.String(FlagAPIEndpoint, "https://oryapis.com", "Use a different endpoint.")
+	flags.String(FlagConsoleURL, "https://console.ory.sh", "Use a different URL.")
 }

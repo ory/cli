@@ -147,7 +147,7 @@ func TestProxy(t *testing.T) {
 
 	upstream := newUpstream(t, proxyURL+"/.ory/jwks.json", writer)
 	cloudApi := cloudAPi(t, writer)
-	ctx = context.WithValue(ctx, remote.FlagEndpoint, cloudApi)
+	ctx = context.WithValue(ctx, remote.FlagAPIEndpoint, cloudApi)
 
 	go func() {
 		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")

@@ -334,11 +334,11 @@ func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (js
 }
 
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
-	if target, ok := cmd.Context().Value(remote.FlagEndpoint).(*url.URL); ok {
+	if target, ok := cmd.Context().Value(remote.FlagAPIEndpoint).(*url.URL); ok {
 		return target, nil
 	}
 
-	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, remote.FlagEndpoint))
+	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, remote.FlagAPIEndpoint))
 	if err != nil {
 		return nil, err
 	}
