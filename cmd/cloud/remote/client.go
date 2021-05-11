@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/tidwall/gjson"
@@ -23,6 +24,8 @@ import (
 const (
 	FlagEndpoint       = "endpoint"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
+	tokenPath = "token/slug"
+	publicSuffix = "/public"
 )
 
 type tokenTransporter struct {
@@ -72,8 +75,10 @@ $ ory ...
 func GetProjectSlug(cmd *cobra.Command) (string, error) {
 	url := flagx.MustGetString(cmd, FlagEndpoint)
 	client := NewHTTPClient(cmd)
-
-	rsp, err := client.Get(fmt.Sprintf("%s/token/slug", url))
+	if strings.HasSuffix(url, publicSuffix) {
+		url = strings.TrimSuffix(url, publicSuffix)
+	}
+	rsp, err := client.Get(fmt.Sprintf("%s/%s", url, tokenPath))
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -85,11 +90,10 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 }
 
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
-	_, err := GetProjectSlug(cmd)
-	if err != nil {
+	p, err := GetProjectSlug(cmd)
+	if err != nil || p == "" {
 		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
 	}
-
 	conf := kratos.NewConfiguration()
 	conf.Servers = kratos.ServerConfigurations{{URL: flagx.MustGetString(cmd, FlagEndpoint)}}
 	return kratos.NewAPIClient(conf)

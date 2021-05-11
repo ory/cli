@@ -125,12 +125,12 @@ An example payload of the JSON Web Token is:
 
 			signer, key, err := newSigner(l)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			endpoint, err := getEndpointURL(cmd)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			mw.UseFunc(checkOry(cmd, writer, l, key, signer, endpoint)) // This must be the last method before the handler
@@ -344,7 +344,7 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	}
 	project, err := remote.GetProjectSlug(cmd)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	upstream.Host = fmt.Sprintf("%s.projects.%s", project, upstream.Host)
 
