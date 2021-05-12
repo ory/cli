@@ -14,12 +14,10 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 
-	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
 	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/flagx"
 )
 
 const (
@@ -74,16 +72,24 @@ $ ory ...
 	}
 }
 
-func GetProjectSlug(cmd *cobra.Command) (string, error) {
-	//if s, ok := cmd.Context().Value(TestKeyConstSlug).(string); ok {
-	//	return s, nil
-	//}
-	client := NewHTTPClient()
-	url, err := url.ParseRequestURI(flagx.MustGetString(cmd, FlagConsoleURL))
+func IsUrl(str string) (*url.URL,bool,error) {
+	u, err := url.ParseRequestURI(str)
 	if err != nil {
+		return nil,false,err
+	}
+	if u.Host == "" {
+		return nil, false, errors.New(fmt.Sprintf("Could not parse requested url: %s", str))
+	}
+	return u,true,nil
+}
+
+func GetProjectSlug(consoleURL string) (string, error) {
+	client := NewHTTPClient()
+	u, ok, err := IsUrl(consoleURL)
+	if err != nil || !ok || u == nil {
 		return "", errors.WithStack(err)
 	}
-	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", url.Host, tokenPath))
+	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", u.Host, tokenPath))
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -94,15 +100,19 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 	return gjson.GetBytes(body, "slug").String(), nil
 }
 
-func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
-	slug, err := GetProjectSlug(cmd)
+func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
+	slug, err := GetProjectSlug(consoleURL)
 	if err != nil {
 		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
 	}
 	if slug == "" {
-		cmdx.Fatalf("Could not retrieve valid project slug from %s", flagx.MustGetString(cmd, FlagConsoleURL))
+		cmdx.Fatalf("No slug associated with given token")
 	}
-	upstream, err := url.ParseRequestURI(fmt.Sprintf("https://%s.projects.%s/%s", slug, flagx.MustGetString(cmd, FlagAPIEndpoint), kratosAdminPath))
+	api, err := url.ParseRequestURI(apiURL)
+	if err != nil {
+		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
+	}
+	upstream, err := url.ParseRequestURI(fmt.Sprintf("https://%s.projects.%s/%s", slug, api.Host, kratosAdminPath))
 	if err != nil {
 		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
 	}

@@ -342,7 +342,7 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	project, err := remote.GetProjectSlug(cmd)
+	project, err := remote.GetProjectSlug(flagx.MustGetString(cmd, remote.FlagConsoleURL))
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
