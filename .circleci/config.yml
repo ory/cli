@@ -11,10 +11,11 @@ jobs:
       - image: circleci/golang:1.16
         environment:
           - GO111MODULE=on
+#        user: "root"
     working_directory: /go/src/github.com/ory/cli
     steps:
       - checkout
-      - run: sudo go test -failfast ./...
+      - run: make test
 
   docs:
     docker:
