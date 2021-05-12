@@ -15,7 +15,7 @@ jobs:
     working_directory: /go/src/github.com/ory/cli
     steps:
       - checkout
-      - run: export PATH=$PATH && sudo make test
+      - run: bash -c "export PATH=/home/circleci/.local/bin:/home/circleci/bin:/go/bin:/usr/local/go/bin:/usr/local/sbi && make test"
 
   docs:
     docker:
