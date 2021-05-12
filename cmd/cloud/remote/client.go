@@ -75,8 +75,15 @@ $ ory ...
 }
 
 func GetProjectSlug(cmd *cobra.Command) (string, error) {
+	//if s, ok := cmd.Context().Value(TestKeyConstSlug).(string); ok {
+	//	return s, nil
+	//}
 	client := NewHTTPClient()
-	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", flagx.MustGetString(cmd, FlagConsoleURL), tokenPath))
+	url, err := url.ParseRequestURI(flagx.MustGetString(cmd, FlagConsoleURL))
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", url.Host, tokenPath))
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -89,8 +96,11 @@ func GetProjectSlug(cmd *cobra.Command) (string, error) {
 
 func NewAdminClient(cmd *cobra.Command) *kratos.APIClient {
 	slug, err := GetProjectSlug(cmd)
-	if err != nil || slug == "" {
+	if err != nil {
 		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
+	}
+	if slug == "" {
+		cmdx.Fatalf("Could not retrieve valid project slug from %s", flagx.MustGetString(cmd, FlagConsoleURL))
 	}
 	upstream, err := url.ParseRequestURI(fmt.Sprintf("https://%s.projects.%s/%s", slug, flagx.MustGetString(cmd, FlagAPIEndpoint), kratosAdminPath))
 	if err != nil {
