@@ -15,7 +15,7 @@ jobs:
     working_directory: /go/src/github.com/ory/cli
     steps:
       - checkout
-      - run: make test
+      - run: export PATH=$PATH && sudo make test
 
   docs:
     docker:
