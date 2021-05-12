@@ -1,8 +1,8 @@
 package remote_test
 
 import (
-	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -18,15 +18,32 @@ import (
 	"github.com/ory/x/logrusx"
 )
 
-var (
+const (
+	kratosAdminPath = "/api/kratos/admin"
+	backofficeSlugPath = "/backoffice/token/slug"
 	slug           = "pedantic-shannon-6947p3gdsf"
-	slugJSON       = json.RawMessage(`{"slug":"` + slug + `"}`)
-	insecureClient = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 )
+
+var (
+	slugJSON       = json.RawMessage(`{"slug":"` + slug + `"}`)
+)
+
+type Output struct {
+	slug string
+	errorMSG string
+	kratosURL *url.URL
+}
+
+type TestingStruct struct {
+	description string
+	input []string
+	output Output
+
+}
 
 func fakeProjectEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 	router := httprouter.New()
-	router.GET("/api/kratos/admin/identities", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	router.GET(kratosAdminPath + "/identities", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		writer.Write(w, r, []byte("[]"))
 	})
 	api := httptest.NewServer(router)
@@ -38,7 +55,7 @@ func fakeProjectEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 
 func fakeSlugEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 	router := httprouter.New()
-	router.GET("/backoffice/token/slug", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	router.GET(backofficeSlugPath, func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		writer.Write(w, r, slugJSON)
 	})
 	api := httptest.NewServer(router)
@@ -54,31 +71,67 @@ func TestClient(t *testing.T) {
 
 	kratosApi := fakeProjectEndpoint(t, writer)
 	slugApi := fakeSlugEndpoint(t, writer)
-	rsp, err := http.Get(slugApi.String() + "/backoffice/token/slug")
+	rsp, err := http.Get(slugApi.String() + backofficeSlugPath)
 	bodyBytes, err := ioutil.ReadAll(rsp.Body)
 	require.NoError(t, err)
 	assert.Contains(t, string(bodyBytes), slug)
 	assert.NotEmpty(t, rsp)
 	assert.NoError(t, err)
 
-	var FlagTest = []struct {
-		description string
-		in          []string
-		out         []string
-	}{
-		{"Missing schema", []string{"oryapis:8080", "api.console.ory:8080"}, []string{"", "Could not parse requested url: api.console.ory:8080"}},
-		{"Invalid urls", []string{"hi/there?", "hi/there?"}, []string{"", "invalid URI for request"}},
-		{"Valid urls", []string{kratosApi.String(), slugApi.String()}, []string{slug, ""}},
+	FlagTest := []TestingStruct{
+		{
+			description: "Missing schema",
+			input:       []string{"oryapis:8080", "api.console.ory:8080"},
+			output: Output{
+				slug:      "",
+				errorMSG:  "Could not parse requested url: api.console.ory:8080",
+				kratosURL: nil,
+			},
+		},
+		{
+			description: "Invalid urls",
+			input:       []string{"hi/there?", "hi/there?"},
+			output: Output{
+				slug:      "",
+				errorMSG:  "invalid URI for request",
+				kratosURL: nil,
+			},
+		},
+		{
+			description: "Valid urls",
+			input:       []string{kratosApi.String(), slugApi.String()},
+			output: Output{
+				slug:      slug,
+				errorMSG:  "",
+				kratosURL: &url.URL{
+					Scheme: kratosApi.Scheme,
+					Host: fmt.Sprintf("%s.projects.%s", slug, kratosApi.Host),
+					Path: kratosAdminPath,
+				},
+			},
+		},
 	}
 
 	t.Run("function=GetProjectSlug", func(t *testing.T) {
 		for _, tt := range FlagTest {
 			t.Run(tt.description, func(t *testing.T) {
-				s, err := remote.GetProjectSlug(tt.in[1])
+				s, err := remote.GetProjectSlug(tt.input[1])
 				if err != nil {
-					assert.Contains(t, err.Error(), tt.out[1])
+					assert.Contains(t, err.Error(), tt.output.errorMSG)
 				}
-				assert.EqualValues(t, tt.out[0], s)
+				assert.EqualValues(t, tt.output.slug, s)
+			})
+		}
+	})
+
+	t.Run("function=CreateKratosURL", func(t *testing.T) {
+		for _, tt := range FlagTest {
+			t.Run(tt.description, func(t *testing.T) {
+				u, err := remote.CreateKratosURL(tt.input[0], tt.input[1])
+				if err != nil {
+					assert.Contains(t, err.Error(), tt.output.errorMSG)
+				}
+				assert.EqualValues(t, tt.output.kratosURL, u)
 			})
 		}
 	})

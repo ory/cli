@@ -72,21 +72,21 @@ $ ory ...
 	}
 }
 
-func IsUrl(str string) (*url.URL, bool, error) {
+func IsUrl(str string) (*url.URL, error) {
 	u, err := url.ParseRequestURI(str)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 	if u.Host == "" {
-		return nil, false, errors.New(fmt.Sprintf("Could not parse requested url: %s", str))
+		return nil, errors.New(fmt.Sprintf("Could not parse requested url: %s", str))
 	}
-	return u, true, nil
+	return u, nil
 }
 
 func GetProjectSlug(consoleURL string) (string, error) {
 	client := NewHTTPClient()
-	u, ok, err := IsUrl(consoleURL)
-	if err != nil || !ok || u == nil {
+	u, err := IsUrl(consoleURL)
+	if err != nil || u == nil {
 		return "", errors.WithStack(err)
 	}
 	uu := ""
@@ -106,17 +106,17 @@ func GetProjectSlug(consoleURL string) (string, error) {
 	return gjson.GetBytes(body, "slug").String(), nil
 }
 
-func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
+func CreateKratosURL(apiURL, consoleURL string) (*url.URL, error) {
 	slug, err := GetProjectSlug(consoleURL)
 	if err != nil {
-		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
+		return nil, errors.WithStack(err)
 	}
 	if slug == "" {
-		cmdx.Fatalf("No slug associated with given token")
+		return nil, errors.New("Could not retrieve slug from requested url")
 	}
-	api, err := url.ParseRequestURI(apiURL)
+	api, err := IsUrl(apiURL)
 	if err != nil {
-		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
+		return nil, errors.WithStack(err)
 	}
 	uu := ""
 	if api.Scheme != "" {
@@ -124,13 +124,20 @@ func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
 	} else {
 		uu = fmt.Sprintf("https://%s.projects.%s/%s", slug, api.Host, kratosAdminPath)
 	}
-	upstream, err := url.ParseRequestURI(uu)
+	upstream, err := IsUrl(uu)
 	if err != nil {
-		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
+		return nil, errors.WithStack(err)
 	}
+	return upstream, nil
+}
 
+func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
+	u, err := CreateKratosURL(apiURL,consoleURL)
+	if err != nil {
+		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
+	}
 	conf := kratos.NewConfiguration()
-	conf.Servers = kratos.ServerConfigurations{{URL: upstream.String()}}
+	conf.Servers = kratos.ServerConfigurations{{URL: u.String()}}
 	conf.HTTPClient = NewHTTPClient()
 
 	return kratos.NewAPIClient(conf)
