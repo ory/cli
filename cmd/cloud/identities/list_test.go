@@ -37,7 +37,7 @@ const (
 	kratosAdminPath    = "/api/kratos/admin/identities"
 	backofficeSlugPath = "/backoffice/token/slug"
 	slug               = "pedantic-shannon-6947p3gdsf"
-	testHostfile = "/tmp/hostfile"
+	//testHostfile = "/tmp/hostfile"
 )
 
 var (
@@ -125,7 +125,7 @@ func TestIdentityListFakeAPI(t *testing.T) {
 	hosts, err := txeh.NewHostsDefault()
 	require.NoError(t, err)
 	hosts.AddHost("127.0.0.1", fmt.Sprintf("%s.projects.127.0.0.1", slug))
-	err = hosts.SaveAs(testHostfile)
+	err = hosts.Save()
 	require.NoError(t, err)
 	defer func() {
 		hosts.RemoveHost(fmt.Sprintf("%s.projects.127.0.0.1", slug))
