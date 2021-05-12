@@ -1,34 +1,34 @@
 package identities_test
 
 import (
-"context"
-"os"
-"os/exec"
-"testing"
+	"context"
+	"os"
+	"os/exec"
+	"testing"
 
-"github.com/spf13/cobra"
-"github.com/stretchr/testify/require"
+	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/require"
 
-"github.com/ory/cli/cmd/cloud/remote"
-"github.com/ory/kratos-client-go"
-"github.com/ory/kratos/cmd/cliclient"
+	"github.com/ory/cli/cmd/cloud/remote"
+	"github.com/ory/kratos-client-go"
+	"github.com/ory/kratos/cmd/cliclient"
 
-"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 
-"github.com/ory/cli/cmd"
-"github.com/ory/x/cmdx"
+	"github.com/ory/cli/cmd"
+	"github.com/ory/x/cmdx"
 )
 
 const (
 	TokenKey    = "ORY_ACCESS_TOKEN"
 	TokenValue  = "nCCXCGpG6S6ejFEHfbuZvpaW9Ts84Pkq"
 	APIEndpoint = "https://oryapis:8080"
-	ConsoleURL  = "https://console.ory:8080"
+	ConsoleURL  = "https://api.console.ory:8080"
 )
 
 var (
 	ctx = context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
-		return remote.NewAdminClient(APIEndpoint,ConsoleURL)
+		return remote.NewAdminClient(APIEndpoint, ConsoleURL)
 	})
 )
 

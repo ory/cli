@@ -3,8 +3,9 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/ory/x/flagx"
 	"os"
+
+	"github.com/ory/x/flagx"
 
 	"github.com/pkg/errors"
 
@@ -39,7 +40,7 @@ func NewRootCmd() *cobra.Command {
 
 func Execute() {
 	ctx := context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
-		return remote.NewAdminClient(flagx.MustGetString(cmd, remote.FlagAPIEndpoint),flagx.MustGetString(cmd, remote.FlagConsoleURL))
+		return remote.NewAdminClient(flagx.MustGetString(cmd, remote.FlagAPIEndpoint), flagx.MustGetString(cmd, remote.FlagConsoleAPI))
 	})
 
 	rootCmd := NewRootCmd()

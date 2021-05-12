@@ -22,7 +22,7 @@ import (
 
 const (
 	FlagAPIEndpoint    = "api-endpoint"
-	FlagConsoleURL     = "console-url"
+	FlagConsoleAPI     = "console-url"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
 	tokenPath          = "backoffice/token/slug"
 	kratosAdminPath    = "api/kratos/admin"
@@ -72,15 +72,15 @@ $ ory ...
 	}
 }
 
-func IsUrl(str string) (*url.URL,bool,error) {
+func IsUrl(str string) (*url.URL, bool, error) {
 	u, err := url.ParseRequestURI(str)
 	if err != nil {
-		return nil,false,err
+		return nil, false, err
 	}
 	if u.Host == "" {
 		return nil, false, errors.New(fmt.Sprintf("Could not parse requested url: %s", str))
 	}
-	return u,true,nil
+	return u, true, nil
 }
 
 func GetProjectSlug(consoleURL string) (string, error) {
@@ -89,7 +89,13 @@ func GetProjectSlug(consoleURL string) (string, error) {
 	if err != nil || !ok || u == nil {
 		return "", errors.WithStack(err)
 	}
-	rsp, err := client.Get(fmt.Sprintf("https://api.%s/%s", u.Host, tokenPath))
+	uu := ""
+	if u.Scheme != "" {
+		uu = fmt.Sprintf("%s://%s/%s", u.Scheme, u.Host, tokenPath)
+	} else {
+		uu = fmt.Sprintf("%s/%s", u.Host, tokenPath)
+	}
+	rsp, err := client.Get(uu)
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
@@ -112,7 +118,13 @@ func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
 	if err != nil {
 		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
 	}
-	upstream, err := url.ParseRequestURI(fmt.Sprintf("https://%s.projects.%s/%s", slug, api.Host, kratosAdminPath))
+	uu := ""
+	if api.Scheme != "" {
+		uu = fmt.Sprintf("%s://%s.projects.%s/%s",api.Scheme, slug, api.Host, kratosAdminPath)
+	} else {
+		uu = fmt.Sprintf("https://%s.projects.%s/%s", slug, api.Host, kratosAdminPath)
+	}
+	upstream, err := url.ParseRequestURI(uu)
 	if err != nil {
 		cmdx.Must(err, "Unable to parse upstream URL because: %s", err)
 	}
@@ -126,5 +138,5 @@ func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
 
 func RegisterClientFlags(flags *pflag.FlagSet) {
 	flags.String(FlagAPIEndpoint, "https://oryapis.com", "Use a different endpoint.")
-	flags.String(FlagConsoleURL, "https://console.ory.sh", "Use a different URL.")
+	flags.String(FlagConsoleAPI, "https://console.ory.sh", "Use a different URL.")
 }
