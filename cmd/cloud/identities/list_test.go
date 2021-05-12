@@ -64,13 +64,13 @@ func TestIdentityListWithToken(t *testing.T) {
 	}
 	// Run the test in a subprocess
 	cmd := exec.Command(os.Args[0], "-test.run=TestIdentityListWithToken")
-	cmd.Env = append(os.Environ(), "TEST_WILL_PANIC=1")
+	cmd.Env = append(os.Environ(), "TEST_WILL_PANIC=1", TokenKey+"="+TokenValue)
 	out, err := cmd.CombinedOutput()
 	assert.NotNil(t, err)
 	// Cast the error as *exec.ExitError and compare the result
 	e, ok := err.(*exec.ExitError)
 	assert.Equal(t, true, ok)
-	assert.Contains(t, string(out), "Could not retrieve valid project slug from https://console.ory.sh")
+	assert.Contains(t, string(out), "Could not retrieve project slug: Could not retrieve slug from requested url")
 	assert.Equal(t, "exit status 1", e.Error())
 }
 
@@ -83,7 +83,7 @@ func TestIdentityListFakeAPI(t *testing.T) {
 	}
 	// Run the test in a subprocess
 	cmd := exec.Command(os.Args[0], "-test.run=TestIdentityListFakeAPI")
-	cmd.Env = append(os.Environ(), "TEST_WILL_PANIC=1")
+	cmd.Env = append(os.Environ(), "TEST_WILL_PANIC=1", TokenKey+"="+TokenValue)
 	out, err := cmd.CombinedOutput()
 	assert.NotNil(t, err)
 	// Cast the error as *exec.ExitError and compare the result

@@ -120,7 +120,7 @@ func CreateKratosURL(apiURL, consoleURL string) (*url.URL, error) {
 	}
 	uu := ""
 	if api.Scheme != "" {
-		uu = fmt.Sprintf("%s://%s.projects.%s/%s",api.Scheme, slug, api.Host, kratosAdminPath)
+		uu = fmt.Sprintf("%s://%s.projects.%s/%s", api.Scheme, slug, api.Host, kratosAdminPath)
 	} else {
 		uu = fmt.Sprintf("https://%s.projects.%s/%s", slug, api.Host, kratosAdminPath)
 	}
@@ -132,7 +132,7 @@ func CreateKratosURL(apiURL, consoleURL string) (*url.URL, error) {
 }
 
 func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
-	u, err := CreateKratosURL(apiURL,consoleURL)
+	u, err := CreateKratosURL(apiURL, consoleURL)
 	if err != nil {
 		cmdx.Fatalf("Could not retrieve project slug: %s", errors.WithStack(err).Error())
 	}

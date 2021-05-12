@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 
 	"github.com/julienschmidt/httprouter"
@@ -19,31 +20,32 @@ import (
 )
 
 const (
-	kratosAdminPath = "/api/kratos/admin"
+	kratosAdminPath    = "/api/kratos/admin"
 	backofficeSlugPath = "/backoffice/token/slug"
-	slug           = "pedantic-shannon-6947p3gdsf"
+	slug               = "pedantic-shannon-6947p3gdsf"
+	TokenKey           = "ORY_ACCESS_TOKEN"
+	TokenValue         = "nCCXCGpG6S6ejFEHfbuZvpaW9Ts84Pkq"
 )
 
 var (
-	slugJSON       = json.RawMessage(`{"slug":"` + slug + `"}`)
+	slugJSON = json.RawMessage(`{"slug":"` + slug + `"}`)
 )
 
 type Output struct {
-	slug string
-	errorMSG string
+	slug      string
+	errorMSG  string
 	kratosURL *url.URL
 }
 
 type TestingStruct struct {
 	description string
-	input []string
-	output Output
-
+	input       []string
+	output      Output
 }
 
 func fakeProjectEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 	router := httprouter.New()
-	router.GET(kratosAdminPath + "/identities", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	router.GET(kratosAdminPath+"/identities", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		writer.Write(w, r, []byte("[]"))
 	})
 	api := httptest.NewServer(router)
@@ -66,6 +68,7 @@ func fakeSlugEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 }
 
 func TestClient(t *testing.T) {
+	os.Setenv(TokenKey, TokenValue)
 	l := logrusx.New("ory cli", "tests")
 	writer := herodot.NewJSONWriter(l)
 
@@ -101,12 +104,12 @@ func TestClient(t *testing.T) {
 			description: "Valid urls",
 			input:       []string{kratosApi.String(), slugApi.String()},
 			output: Output{
-				slug:      slug,
-				errorMSG:  "",
+				slug:     slug,
+				errorMSG: "",
 				kratosURL: &url.URL{
 					Scheme: kratosApi.Scheme,
-					Host: fmt.Sprintf("%s.projects.%s", slug, kratosApi.Host),
-					Path: kratosAdminPath,
+					Host:   fmt.Sprintf("%s.projects.%s", slug, kratosApi.Host),
+					Path:   kratosAdminPath,
 				},
 			},
 		},
