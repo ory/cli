@@ -150,7 +150,7 @@ func TestProxy(t *testing.T) {
 	ctx = context.WithValue(ctx, remote.FlagAPIEndpoint, cloudApi)
 
 	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")
 		assert.ErrorIs(t, err, context.Canceled)
 		t.Logf("stdout:\n%s", stdout)
 		t.Logf("stderr:\n%s", stderr)
