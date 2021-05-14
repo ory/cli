@@ -51,6 +51,7 @@ func NewProxyCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
 		Use:   "proxy [upstream]",
 		Short: "Secure Endpoint Using the Ory Reverse Proxy",
+		Args:  cobra.ExactArgs(1),
 		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application.
 
 To require login before accessing paths in your application, use the --%[1]s flag:
@@ -109,10 +110,6 @@ An example payload of the JSON Web Token is:
 				return errors.Wrap(err, "unable to parse upstream URL")
 			}
 
-			if flagx.MustGetString(cmd, remote.FlagProject) == "" {
-				return errors.New("flag --project must be set")
-			}
-
 			c, cleanup, err := createTLSCertificate(cmd)
 			if err != nil {
 				return err
@@ -128,12 +125,12 @@ An example payload of the JSON Web Token is:
 
 			signer, key, err := newSigner(l)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			endpoint, err := getEndpointURL(cmd)
 			if err != nil {
-				return err
+				return errors.WithStack(err)
 			}
 
 			mw.UseFunc(checkOry(cmd, writer, l, key, signer, endpoint)) // This must be the last method before the handler
@@ -337,16 +334,20 @@ func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (js
 }
 
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
-	if target, ok := cmd.Context().Value(remote.FlagEndpoint).(*url.URL); ok {
+	if target, ok := cmd.Context().Value(remote.FlagAPIEndpoint).(*url.URL); ok {
 		return target, nil
 	}
 
-	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, remote.FlagEndpoint))
+	upstream, err := url.ParseRequestURI(flagx.MustGetString(cmd, remote.FlagAPIEndpoint))
 	if err != nil {
 		return nil, err
 	}
+	project, err := remote.GetProjectSlug(flagx.MustGetString(cmd, remote.FlagConsoleAPI))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	upstream.Host = fmt.Sprintf("%s.projects.%s", project, upstream.Host)
 
-	upstream.Host = fmt.Sprintf("%s.projects.%s", flagx.MustGetString(cmd, remote.FlagProject), upstream.Host)
 	return upstream, nil
 }
 
