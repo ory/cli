@@ -33,7 +33,7 @@ require (
 	github.com/ory/herodot v0.9.5
 	github.com/ory/jsonschema/v3 v3.0.3
 	github.com/ory/kratos v0.6.0-alpha.2
-	github.com/ory/kratos-client-go v0.5.4-alpha.1.0.20210308170950-06c2c1c071a8
+	github.com/ory/kratos-client-go v0.6.1-alpha.1
 	github.com/ory/x v0.0.236
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
@@ -44,7 +44,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/gjson v1.7.1
 	github.com/tidwall/sjson v1.1.5
-	github.com/txn2/txeh v1.3.0 // indirect
+	github.com/txn2/txeh v1.3.0
 	github.com/urfave/negroni v1.0.0
 	gopkg.in/yaml.v2 v2.4.0
 )

@@ -11,11 +11,10 @@ jobs:
       - image: circleci/golang:1.16
         environment:
           - GO111MODULE=on
-#        user: "root"
     working_directory: /go/src/github.com/ory/cli
     steps:
       - checkout
-      - run: sudo bash -c "export PATH=$PATH:/home/circleci/.local/bin:/home/circleci/bin:/go/bin:/usr/local/go/bin:/usr/local/sbi && make test"
+      - run: make test
 
   docs:
     docker:

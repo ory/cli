@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"github.com/ory/herodot"
-	"github.com/ory/x/logrusx"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +11,11 @@ import (
 	"os"
 	"os/exec"
 	"testing"
+
+	"github.com/julienschmidt/httprouter"
+
+	"github.com/ory/herodot"
+	"github.com/ory/x/logrusx"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
@@ -24,16 +26,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/txn2/txeh"
+
 	"github.com/ory/cli/cmd"
 	"github.com/ory/x/cmdx"
-	"github.com/txn2/txeh"
 )
 
 const (
-	TokenKey    = "ORY_ACCESS_TOKEN"
-	TokenValue  = "nCCXCGpG6S6ejFEHfbuZvpaW9Ts84Pkq"
-	APIEndpoint = "https://oryapis:8080"
-	ConsoleURL  = "https://api.console.ory:8080"
+	TokenKey           = "ORY_ACCESS_TOKEN"
+	TokenValue         = "nCCXCGpG6S6ejFEHfbuZvpaW9Ts84Pkq"
+	APIEndpoint        = "https://oryapis:8080"
+	ConsoleURL         = "https://api.console.ory:8080"
 	kratosAdminPath    = "/api/kratos/admin/identities"
 	backofficeSlugPath = "/backoffice/token/slug"
 	slug               = "pedantic-shannon-6947p3gdsf"
@@ -44,8 +47,8 @@ var (
 	ctx = context.WithValue(context.Background(), cliclient.ClientContextKey, func(cmd *cobra.Command) *kratos.APIClient {
 		return remote.NewAdminClient(APIEndpoint, ConsoleURL)
 	})
-	slugJSON = json.RawMessage(`{"slug":"` + slug + `"}`)
-	identityJSON=json.RawMessage(`[{"id":"cbd285ee-b342-4384-bb32-74bba6d937d8","schema_id":"default","schema_url":"https://`+ slug + `.projects.oryapis:8080/api/kratos/public/schemas/default","traits":{"username":"qwerty"}}]`)
+	slugJSON     = json.RawMessage(`{"slug":"` + slug + `"}`)
+	identityJSON = json.RawMessage(`[{"id":"cbd285ee-b342-4384-bb32-74bba6d937d8","schema_id":"default","schema_url":"https://` + slug + `.projects.oryapis:8080/api/kratos/public/schemas/default","traits":{"username":"qwerty"}}]`)
 )
 
 func newCommand(t *testing.T, ctx context.Context) *cmdx.CommandExecuter {
@@ -77,6 +80,9 @@ func fakeSlugEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 }
 
 func TestIdentityListNoToken(t *testing.T) {
+	// See https://github.com/ory-corp/cloud/issues/865
+	t.Skipf("Skipping until merged with cloud repo")
+
 	if os.Getenv("TEST_WILL_PANIC") == "1" {
 		err := os.Unsetenv("TokenKey")
 		require.NoError(t, err)
@@ -96,6 +102,9 @@ func TestIdentityListNoToken(t *testing.T) {
 }
 
 func TestIdentityListWithToken(t *testing.T) {
+	// See https://github.com/ory-corp/cloud/issues/865
+	t.Skipf("Skipping until merged with cloud repo")
+
 	if os.Getenv("TEST_WILL_PANIC") == "1" {
 		err := os.Setenv(TokenKey, TokenValue)
 		require.NoError(t, err)
@@ -115,6 +124,9 @@ func TestIdentityListWithToken(t *testing.T) {
 }
 
 func TestIdentityListFakeAPI(t *testing.T) {
+	// See https://github.com/ory-corp/cloud/issues/865
+	t.Skipf("Skipping until merged with cloud repo")
+
 	l := logrusx.New("ory cli", "tests")
 	writer := herodot.NewJSONWriter(l)
 	kratosApi := fakeProjectEndpoint(t, writer)

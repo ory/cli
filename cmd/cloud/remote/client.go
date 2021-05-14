@@ -63,9 +63,12 @@ $ ory ...
 		return nil
 	}
 
+	c := retryablehttp.NewClient()
+	c.Logger = nil
+
 	return &http.Client{
 		Transport: &tokenTransporter{
-			RoundTripper: retryablehttp.NewClient().StandardClient().Transport,
+			RoundTripper: c.StandardClient().Transport,
 			token:        token,
 		},
 		Timeout: time.Second * 10,
@@ -145,5 +148,5 @@ func NewAdminClient(apiURL, consoleURL string) *kratos.APIClient {
 
 func RegisterClientFlags(flags *pflag.FlagSet) {
 	flags.String(FlagAPIEndpoint, "https://oryapis.com", "Use a different endpoint.")
-	flags.String(FlagConsoleAPI, "https://console.ory.sh", "Use a different URL.")
+	flags.String(FlagConsoleAPI, "https://api.console.ory.sh", "Use a different URL.")
 }
