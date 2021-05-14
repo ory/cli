@@ -30,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 		append(
 			devCommand,
 			identities.Main,
-			proxy.NewProxyCmd(),
+			proxy.Main,
 			versionCmd,
 		)...,
 	)

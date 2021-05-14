@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -36,7 +37,6 @@ import (
 	"github.com/ory/x/httpx"
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
-	"github.com/ory/x/reqlog"
 	"github.com/ory/x/tlsx"
 	"github.com/ory/x/urlx"
 )
@@ -45,18 +45,19 @@ const (
 	PortFlag          = "port"
 	ProtectPathsFlag  = "protect-path-prefix"
 	NoCertInstallFlag = "dont-install-cert"
+	NoOpenFlag        = "no-open"
 )
 
-func NewProxyCmd() *cobra.Command {
+func NewProxyLocalCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:   "proxy [upstream]",
-		Short: "Secure Endpoint Using the Ory Reverse Proxy",
+		Use:   "local [upstream]",
+		Short: "Develop an application locally and integrate it with Ory",
 		Args:  cobra.ExactArgs(1),
-		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application.
+		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application. This works best on local (your computer) environments, for example when developing a React, NodeJS, Java, PHP app.
 
 To require login before accessing paths in your application, use the --%[1]s flag:
 
-	$ ory proxy -port 4000 http://localhost:3000 --%[1]s /members --%[1]s /admin
+	$ ory proxy --port 4000 http://localhost:3000 --%[1]s /members --%[1]s /admin
 
 The --%[1]s flag is currently using a string prefix match. Future versions will
 include support for regular expressions and glob matching.
@@ -121,7 +122,7 @@ An example payload of the JSON Web Token is:
 			writer := herodot.NewJSONWriter(l)
 
 			mw := negroni.New()
-			mw.Use(reqlog.NewMiddlewareFromLogger(l, "ory"))
+			// mw.Use(reqlog.NewMiddlewareFromLogger(l, "ory"))
 
 			signer, key, err := newSigner(l)
 			if err != nil {
@@ -144,6 +145,16 @@ An example payload of the JSON Web Token is:
 			})
 
 			l.Printf("Starting the https reverse proxy on: %s", server.Addr)
+			proxyUrl := fmt.Sprintf("https://localhost:%d/", flagx.MustGetInt(cmd, PortFlag))
+			l.Printf(`To access your application through the Ory Proxy, open:
+
+	%s`, proxyUrl)
+			if !flagx.MustGetBool(cmd, NoOpenFlag) {
+				if err := exec.Command("open", proxyUrl).Run(); err != nil {
+					l.WithError(err).Warn("Unable to automatically open the proxy URL in your browser. Please open it manually!")
+				}
+			}
+
 			if err := graceful.Graceful(func() error {
 				return server.ListenAndServeTLS("", "")
 			}, func(ctx context.Context) error {
@@ -169,6 +180,7 @@ An example payload of the JSON Web Token is:
 	proxyCmd.Flags().Int(PortFlag, int(port), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(NoCertInstallFlag, false, "If set will not try to add the HTTPS certificate to your certificate store.")
 	proxyCmd.Flags().StringSlice(ProtectPathsFlag, []string{}, "Require authentication before accessing these paths.")
+	proxyCmd.Flags().Bool(NoOpenFlag, false, "Do not open the browser when the proxy starts.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
 }
