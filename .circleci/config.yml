@@ -33,10 +33,10 @@ jobs:
           git clone --depth 1 git@github.com:ory/docs.git "$docsdir"
           yes | cp -rf docs "$docsdir"
           cd "$docsdir"
-          git add -A && \
-            git commit -a -m "autogen(docs): regenerate ory/cli reference" --allow-empty && \
-            git pull -ff && \
-            git push
+          git add -A
+          git commit -a -m "autogen(docs): regenerate ory/cli reference" --allow-empty
+          git pull -ff
+          git push
 
 workflows:
   default:
