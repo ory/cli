@@ -29,6 +29,7 @@ jobs:
           bash <(curl -s https://raw.githubusercontent.com/ory/ci/master/src/scripts/install/git.sh)
       - run: make docs/cli
       - run: |
+          set -x
           docsdir=$(mktemp -d)
           git clone --depth 1 git@github.com:ory/docs.git "$docsdir"
           yes | cp -rf docs "$docsdir"
