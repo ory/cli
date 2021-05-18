@@ -6,7 +6,7 @@ go 1.16
 // github.com/ory/kratos/internal/httpclient
 replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.6.3-alpha.1
 
-replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210518080622-b3cdb0904745
+replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210518162551-d1b15217867c
 
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
 
@@ -32,7 +32,7 @@ require (
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.6
 	github.com/ory/jsonschema/v3 v3.0.3
-	github.com/ory/kratos v0.6.3-alpha.1
+	github.com/ory/kratos v0.6.3-alpha.1.0.20210518162551-d1b15217867c
 	github.com/ory/kratos-client-go v0.6.3-alpha.1
 	github.com/ory/x v0.0.238
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2

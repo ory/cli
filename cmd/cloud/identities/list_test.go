@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ory/cli/cmd/cloud/remote"
-	"github.com/ory/kratos-client-go"
+	kratos "github.com/ory/kratos-client-go"
 	"github.com/ory/kratos/cmd/cliclient"
 
 	"github.com/stretchr/testify/assert"
