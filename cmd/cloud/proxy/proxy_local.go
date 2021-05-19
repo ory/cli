@@ -275,7 +275,7 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys
 		}
 
 		returnToLogin := func() {
-			http.Redirect(w, r, fmt.Sprintf("/.ory/api/kratos/public/self-service/login/browser?return_to=%s://%s", scheme, r.Host), http.StatusFound)
+			http.Redirect(w, r, fmt.Sprintf("/.ory/api/kratos/public/self-service/login/browser?return_to=%s://%s%s", scheme, r.Host, r.URL.Path), http.StatusFound)
 		}
 
 		session, err := checkSession(hc, r, endpoint)

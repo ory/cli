@@ -235,7 +235,7 @@ func TestProxy(t *testing.T) {
 				require.NoError(t, err)
 
 				assert.EqualValues(t, http.StatusOK, res.StatusCode)
-				assert.EqualValues(t, proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL, res.Request.URL.String())
+				assert.EqualValues(t, proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/1", res.Request.URL.String())
 				assert.EqualValues(t, "login", string(body))
 			})
 		}
@@ -262,7 +262,7 @@ func TestProxy(t *testing.T) {
 				require.NoError(t, err)
 
 				assert.EqualValues(t, http.StatusOK, res.StatusCode)
-				assert.EqualValues(t, proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL, res.Request.URL.String())
+				assert.EqualValues(t, proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/2", res.Request.URL.String())
 				assert.EqualValues(t, "login", string(body))
 			})
 		}
