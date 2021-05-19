@@ -134,6 +134,12 @@ An example payload of the JSON Web Token is:
 				return errors.WithStack(err)
 			}
 
+			mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+				// Disable HSTS because it is very annoying to use in localhost.
+				w.Header().Set("Strict-Transport-Security", "max-age=0;")
+				n(w, r)
+			})
+
 			mw.UseFunc(checkOry(cmd, writer, l, key, signer, endpoint)) // This must be the last method before the handler
 			mw.UseHandler(handler)
 
