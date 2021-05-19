@@ -229,11 +229,11 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys
 		}
 
 		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/.ory/kratos/public") {
+		if strings.HasPrefix(r.URL.Path, "/.ory/api/kratos/public") {
 			q := r.URL.Query()
 			q.Set("alias", originalHost)
 
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/kratos/public", "/api/kratos/public")
+			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/api/kratos/public", "/api/kratos/public")
 			r.Host = endpoint.Host
 			r.URL.RawQuery = q.Encode()
 
@@ -275,7 +275,7 @@ func checkOry(cmd *cobra.Command, writer herodot.Writer, l *logrusx.Logger, keys
 		}
 
 		returnToLogin := func() {
-			http.Redirect(w, r, fmt.Sprintf("/.ory/kratos/public/self-service/login/browser?return_to=%s://%s", scheme, r.Host), http.StatusFound)
+			http.Redirect(w, r, fmt.Sprintf("/.ory/api/kratos/public/self-service/login/browser?return_to=%s://%s", scheme, r.Host), http.StatusFound)
 		}
 
 		session, err := checkSession(hc, r, endpoint)
