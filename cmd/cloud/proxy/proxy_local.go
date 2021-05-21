@@ -57,7 +57,7 @@ func NewProxyLocalCmd() *cobra.Command {
 
 To require login before accessing paths in your application, use the --%[1]s flag:
 
-	$ ory proxy --port 4000 http://localhost:3000 --%[1]s /members --%[1]s /admin
+	$ ory local proxy --port 4000 http://localhost:3000 --%[1]s /members --%[1]s /admin
 
 The --%[1]s flag is currently using a string prefix match. Future versions will
 include support for regular expressions and glob matching.
