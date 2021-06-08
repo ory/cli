@@ -6,16 +6,17 @@ go 1.16
 // github.com/ory/kratos/internal/httpclient
 replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.6.3-alpha.1
 
-replace github.com/ory/kratos/corp => github.com/ory/kratos/corp v0.0.0-20210518162551-d1b15217867c
-
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
 
 require (
+	github.com/DataDog/datadog-go v4.7.0+incompatible // indirect
+	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/containerd/containerd v1.5.2 // indirect
 	github.com/deckarep/golang-set v1.7.1
 	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
-	github.com/evanphx/json-patch v0.5.2
+	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/getkin/kin-openapi v0.48.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-sql-driver/mysql v1.5.0
@@ -28,14 +29,16 @@ require (
 	github.com/jackc/pgx/v4 v4.10.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/markbates/pkger v0.17.1
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.6
 	github.com/ory/jsonschema/v3 v3.0.3
-	github.com/ory/kratos v0.6.3-alpha.1.0.20210518162551-d1b15217867c
+	github.com/ory/kratos v0.6.3-alpha.1.0.20210608132104-c622300b42cd
 	github.com/ory/kratos-client-go v0.6.3-alpha.1
-	github.com/ory/x v0.0.238
+	github.com/ory/x v0.0.247
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
+	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/smallstep/truststore v0.9.6
 	github.com/spf13/cobra v1.1.3
@@ -45,6 +48,9 @@ require (
 	github.com/tidwall/gjson v1.7.1
 	github.com/tidwall/sjson v1.1.5
 	github.com/txn2/txeh v1.3.0
+	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/urfave/negroni v1.0.0
+	github.com/ziutek/mymysql v1.5.4 // indirect
+	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
