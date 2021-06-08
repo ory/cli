@@ -8,8 +8,6 @@ replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.6.
 
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
 
-replace github.com/ory/kratos => ../kratos
-
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
