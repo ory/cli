@@ -15,7 +15,7 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/deckarep/golang-set v1.7.1
 	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
-	github.com/evanphx/json-patch v0.5.2
+	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/getkin/kin-openapi v0.48.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-sql-driver/mysql v1.5.0
@@ -32,8 +32,8 @@ require (
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.6
 	github.com/ory/jsonschema/v3 v3.0.3
-	github.com/ory/kratos v0.6.3-alpha.1.0.20210518162551-d1b15217867c
-	github.com/ory/kratos-client-go v0.6.3-alpha.1
+	github.com/ory/kratos v0.6.3-alpha.1
+	github.com/ory/kratos-client-go v0.5.4-alpha.1.0.20210308170950-06c2c1c071a8
 	github.com/ory/x v0.0.238
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1

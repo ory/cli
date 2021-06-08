@@ -224,8 +224,9 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/evanphx/json-patch v0.5.2 h1:xVCHIVMUu1wtM/VkR9jVZ45N3FhZfYMMYGorLCR8P3k=
 github.com/evanphx/json-patch v0.5.2/go.mod h1:ZWS5hhDbVDyob71nXKNL0+PWn6ToqBHMikGIFbs31qQ=
+github.com/evanphx/json-patch v4.9.0+incompatible h1:kLcOMZeuLAJvL2BPWLMIj5oaZQobrkAqrL+WFZwQses=
+github.com/evanphx/json-patch v4.9.0+incompatible/go.mod h1:50XU6AFN0ol/bzJsmQLiYLvXMP4fmwYFNcr97nuDLSk=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.9.0 h1:8xPHl4/q1VyqGIPif1F+1V3Y3lSmrq01EabUW3CoW5s=
 github.com/fatih/color v1.9.0/go.mod h1:eQcE1qtQxscV5RaZvpXrrb8Drkc3/DdQ+uUYCNjL+zU=
@@ -1113,7 +1114,6 @@ github.com/ory/analytics-go/v4 v4.0.0/go.mod h1:FMx9cLRD9xN+XevPvZ5FDMfignpmcqPP
 github.com/ory/cli v0.0.35/go.mod h1:8iyLto6q8TiVgxbm4/D64Mt+Tavk1k18g786ZDM298Q=
 github.com/ory/cli v0.0.41/go.mod h1:l5KYqpqmTB81BF+SlHwgH56Fp5IY+TMIdFKTPDkPolw=
 github.com/ory/cli v0.0.49/go.mod h1:IH1juqUjTWCVFM3PzINym92O0AACtSqQ6p/jgqaxvec=
-github.com/ory/cli v0.0.50/go.mod h1:kgv+/oErzOq61/ELYNQMR5mgDoBc7Tm3/NM7QyxT7Fs=
 github.com/ory/dockertest v3.3.5+incompatible h1:iLLK6SQwIhcbrG783Dghaaa3WPzGc+4Emza6EbVUUGA=
 github.com/ory/dockertest v3.3.5+incompatible/go.mod h1:1vX4m9wsvi00u5bseYwXaSnhNrne+V0E6LAcBILJdPs=
 github.com/ory/dockertest/v3 v3.5.4/go.mod h1:J8ZUbNB2FOhm1cFZW9xBpDsODqsSWcyYgtJYVPcnF70=
@@ -1140,7 +1140,6 @@ github.com/ory/herodot v0.8.3/go.mod h1:rvLjxOAlU5omtmgjCfazQX2N82EpMfl3BytBWc1j
 github.com/ory/herodot v0.9.0/go.mod h1:GYF7mp8/WFRYDYJBR989lipjgx3NTjjdVdUC+hpB8mc=
 github.com/ory/herodot v0.9.2/go.mod h1:Da2HXR8mpwPbPrH+Gv9qV8mM5gI3v+PoJ69BA4l2RAk=
 github.com/ory/herodot v0.9.3/go.mod h1:g3yAI/d6wPdGnOt3dbYUj5JGTZBNuUVLuuDqHnfc1lM=
-github.com/ory/herodot v0.9.5/go.mod h1:g3yAI/d6wPdGnOt3dbYUj5JGTZBNuUVLuuDqHnfc1lM=
 github.com/ory/herodot v0.9.6 h1:S2VSmlWgyhyogB4gH3659B3+1Pv9lJCv2a1uxigw1eg=
 github.com/ory/herodot v0.9.6/go.mod h1:g3yAI/d6wPdGnOt3dbYUj5JGTZBNuUVLuuDqHnfc1lM=
 github.com/ory/jsonschema/v3 v3.0.1/go.mod h1:jgLHekkFk0uiGdEWGleC+tOm6JSSP8cbf17PnBuGXlw=
@@ -1149,9 +1148,8 @@ github.com/ory/jsonschema/v3 v3.0.3 h1:Y7KT4n84ROq8pJ3IMf9JDAulXqYKSU5xUtHjdQFbC
 github.com/ory/jsonschema/v3 v3.0.3/go.mod h1:JvXwbx7IxAkIAo7Qo5OSC1lea+w12DtYGV8h+MTAfnA=
 github.com/ory/kratos v0.5.5-alpha.1.0.20210210153145-e5a863030890/go.mod h1:TRBoejm9kt5Wvxf4uxa78FTZPmWenAGuN/BgYK5TkFI=
 github.com/ory/kratos v0.5.5-alpha.1.0.20210319103511-3726ed4d145a/go.mod h1:VdWQqc4JnfYWgAmI68rqlQqJfwKkgafRTPPm9nNnwEY=
-github.com/ory/kratos v0.6.0-alpha.2/go.mod h1:oF3J9illU6GoaF8w8twQvCBaDRdRdAGaAOHvjU2GLCA=
-github.com/ory/kratos v0.6.3-alpha.1.0.20210518162551-d1b15217867c h1:5zW5ZZH5guRaurHcrpOfDSUw4FrOVquvUmcynJo/dWI=
-github.com/ory/kratos v0.6.3-alpha.1.0.20210518162551-d1b15217867c/go.mod h1:Npmnm9PSmY8refjYdbY3dctomDeMB7qud5W95mt0zb0=
+github.com/ory/kratos v0.6.3-alpha.1 h1:QVkUvhddkgDqFv3WFWyM+ol5nCa4IN+vy8NPg3tq3tI=
+github.com/ory/kratos v0.6.3-alpha.1/go.mod h1:AXsjnYkfRdbpC8KtoBFapIW+ohcj1+IQradiCCxHyLw=
 github.com/ory/kratos-client-go v0.6.3-alpha.1 h1:nKD4KshiHLfBW+KsNK6o03zGLeRG1pZqnkw9h37R5NE=
 github.com/ory/kratos-client-go v0.6.3-alpha.1/go.mod h1:dOQIsar76K07wMPJD/6aMhrWyY+sFGEagLDLso1CpsA=
 github.com/ory/kratos/corp v0.0.0-20210518162551-d1b15217867c h1:vEE/HdXpFo1ZpXsdp4NVerI4Y0rq9y9H9lqLgrMg8Sg=
@@ -1177,7 +1175,6 @@ github.com/ory/x v0.0.181/go.mod h1:SGETCUk1DgQC30bb7y4hjhkKGQ1x0YOsldrmGmy6MNc=
 github.com/ory/x v0.0.189/go.mod h1:uJK3Re/AF6F3LCNnwqzeU/ftmexCpjqwfdyrDc6PbcM=
 github.com/ory/x v0.0.205/go.mod h1:A1s4iwmFIppRXZLF3J9GGWeY/HpREVm0Dk5z/787iek=
 github.com/ory/x v0.0.207/go.mod h1:sBgvUAcmc2lmtOBe5VMcV2vNAlADT4bkFHomG29y7N4=
-github.com/ory/x v0.0.236/go.mod h1:0mSGWLFgcqckIvgexka1GJK/sshYrFFkU7lPajzGTFw=
 github.com/ory/x v0.0.238 h1:b2Q2BiJI72BZ6GmsrtvQk9H5aNXSgr44HvRGc4tM7Gs=
 github.com/ory/x v0.0.238/go.mod h1:KPgNsUzpztH15EZdw5HjurtTe+mXQ34yqMCCTb5BZAc=
 github.com/pact-foundation/pact-go v1.0.4/go.mod h1:uExwJY4kCzNPcHRj+hCR/HBbOOIwwtUjcrb0b5/5kLM=
