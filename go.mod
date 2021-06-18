@@ -6,9 +6,11 @@ go 1.16
 // github.com/ory/kratos/internal/httpclient
 replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.6.3-alpha.1
 
-replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.2-0.20210412125924-f5ad9021d6ac
+replace github.com/ory/x => github.com/ory/x v0.0.254
 
-replace github.com/ory/x => github.com/ory/x v0.0.250
+replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.4-0.20210608105745-bb07a373cc0e
+
+replace github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.7-0.20210414154423-1157a4212dcb
 
 replace github.com/ory/kratos => github.com/ory/kratos v0.6.3-alpha.1.0.20210608145203-b5c1658e01ca
 
@@ -30,7 +32,7 @@ require (
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-retryablehttp v0.6.8
-	github.com/jackc/pgx/v4 v4.10.1
+	github.com/jackc/pgx/v4 v4.11.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/markbates/pkger v0.17.1
 	github.com/morikuni/aec v1.0.0 // indirect
