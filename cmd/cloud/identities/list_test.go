@@ -80,7 +80,7 @@ func fakeSlugEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
 }
 
 func TestIdentityListNoToken(t *testing.T) {
-	// See https://github.com/ory-corp/cloud/issues/865
+	// See https://github.com/ory/cli/issues/88
 	t.Skipf("Skipping until merged with cloud repo")
 
 	if os.Getenv("TEST_WILL_PANIC") == "1" {
@@ -102,7 +102,7 @@ func TestIdentityListNoToken(t *testing.T) {
 }
 
 func TestIdentityListWithToken(t *testing.T) {
-	// See https://github.com/ory-corp/cloud/issues/865
+	// See https://github.com/ory/cli/issues/88
 	t.Skipf("Skipping until merged with cloud repo")
 
 	if os.Getenv("TEST_WILL_PANIC") == "1" {
@@ -124,7 +124,7 @@ func TestIdentityListWithToken(t *testing.T) {
 }
 
 func TestIdentityListFakeAPI(t *testing.T) {
-	// See https://github.com/ory-corp/cloud/issues/865
+	// See https://github.com/ory/cli/issues/88
 	t.Skipf("Skipping until merged with cloud repo")
 
 	l := logrusx.New("ory cli", "tests")
