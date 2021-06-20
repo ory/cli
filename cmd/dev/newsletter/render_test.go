@@ -26,9 +26,9 @@ func TestRenderMarkdown(t *testing.T) {
 }
 
 func TestRenderMarkdownLong(t *testing.T) {
-	cl, err := ioutil.ReadFile("stub/changelog.md")
+	cl, err := ioutil.ReadFile("stub/changelog.md.expected")
 	require.NoError(t, err)
-	expected, err := ioutil.ReadFile("stub/changelog.html")
+	expected, err := ioutil.ReadFile("stub/changelog.html.expected")
 	require.NoError(t, err)
 
 	tmplRaw, err := ioutil.ReadFile("../../../view/mail-body.html")
@@ -54,5 +54,5 @@ func TestRenderMarkdownLong(t *testing.T) {
 	}))
 
 	require.NoError(t, ioutil.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
-	assert.EqualValues(t, string(expected), strings.TrimSpace(body.String()))
+	assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(body.String()))
 }
