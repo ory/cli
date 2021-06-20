@@ -55,6 +55,20 @@
     @media screen and (min-width:600px) {
       h1 { font-size: 24px !important; line-height: 32px !important; }
     }
+
+    /* make lists a bit prettier */
+    ul li p:last-child {
+      margin-bottom: 0px;
+      padding-bottom: 0px;
+    }
+    ul li p:first-child {
+      margin-top: 0px;
+      padding-top: 0px;
+    }
+    ul li p + p {
+      padding-bottom: 1em !important;
+      padding-left: .5em;
+    }
   </style>
 
 </head>
