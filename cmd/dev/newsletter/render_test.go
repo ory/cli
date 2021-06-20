@@ -1,8 +1,13 @@
 package newsletter
 
 import (
+	"bytes"
+	"html/template"
+	"io/ioutil"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,4 +23,36 @@ func TestRenderMarkdown(t *testing.T) {
 `+"```\nfoo\n```"+`
 
 `)))))
+}
+
+func TestRenderMarkdownLong(t *testing.T) {
+	cl, err := ioutil.ReadFile("stub/changelog.md")
+	require.NoError(t, err)
+	expected, err := ioutil.ReadFile("stub/changelog.html")
+	require.NoError(t, err)
+
+	tmplRaw, err := ioutil.ReadFile("../../../view/mail-body.html")
+	tmpl, err := template.New("view").Parse(string(tmplRaw))
+	require.NoError(t, err)
+	var body bytes.Buffer
+	require.NoError(t, tmpl.Execute(&body, struct {
+		Version     string
+		GitTag      string
+		ProjectName string
+		RepoName    string
+		Changelog   template.HTML
+		Message     template.HTML
+		BrandColor  string
+	}{
+		Version:     "v0.1.0",
+		GitTag:      "v0.1.0",
+		ProjectName: "Ory Kratos",
+		RepoName:    "ory/kratos",
+		Changelog:   renderMarkdown(cl),
+		Message:     "iuaw4hri",
+		BrandColor:  "#5528FF",
+	}))
+
+	require.NoError(t, ioutil.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
+	assert.EqualValues(t, string(expected), strings.TrimSpace(body.String()))
 }

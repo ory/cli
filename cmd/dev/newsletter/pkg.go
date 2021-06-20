@@ -71,8 +71,8 @@ func renderMarkdown(source []byte) template.HTML {
 			parser.Autolink | parser.Strikethrough | parser.SpaceHeadings | parser.DefinitionLists)
 
 	rendered := string(markdown.ToHTML(source, markdownParser, markdownRenderer))
-	rendered = strings.ReplaceAll(rendered, "<p>", "")
-	rendered = strings.ReplaceAll(rendered, "</p>", "<br>")
+	//rendered = strings.ReplaceAll(rendered, "<p>", "")
+	//rendered = strings.ReplaceAll(rendered, "</p>", "<br>")
 	return template.HTML(rendered)
 }
 

@@ -55,8 +55,10 @@ var draft = &cobra.Command{
 			count = changelogGeneratorReleaseCount(cliFromTag, pkg.GitListTags())
 		}
 
-		pkg.Check(pkg.NewCommand("npx", "conventional-changelog-cli@v2.0.34", "--config",
+		pkg.Check(pkg.NewCommand("npx", "conventional-changelog-cli@v2.1.1", "--config",
 			path.Join(presetDir, "email.js"), "-r", strconv.Itoa(count), "-o", changelogFile).Run())
+
+		pkg.Check(pkg.NewCommand("npx", "prettier", "-w", changelogFile).Run())
 
 		changelog, err := ioutil.ReadFile(changelogFile)
 		pkg.Check(err)
