@@ -13,7 +13,7 @@ import (
 )
 
 func TestRenderMarkdown(t *testing.T) {
-	assert.EqualValues(t, `<img width="600" border="0" style="display: block; max-width: 100%; min-width: 100px; width: 100%;" src=".foo/bar" alt="Some image" /><br>
+	assert.EqualValues(t, `<p><img width="600" border="0" style="display: block; max-width: 100%; min-width: 100px; width: 100%;" src=".foo/bar" alt="Some image" /></p>
 
 <pre style="word-break: break-all; white-space: pre-wrap"><code>foo
 </code></pre>`,
