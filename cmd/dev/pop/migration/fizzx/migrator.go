@@ -14,6 +14,7 @@ import (
 	"github.com/gobuffalo/pop/v5"
 
 	"github.com/ory/x/logrusx"
+	"github.com/ory/x/stringslice"
 
 	"github.com/pkg/errors"
 )
@@ -75,12 +76,20 @@ func (m Migrator) UpTo(step int) (applied int, err error) {
 			return m.migrationIsCompatible(c.Dialect.Name(), mf)
 		})
 		sort.Sort(mfs)
+
+		alreadyRan := make([]string, 0, len(mfs))
+
 		for _, mi := range mfs {
+			if stringslice.Has(alreadyRan, mi.Version) {
+				continue
+			}
 
 			tuples, err := mi.Run()
 			if err != nil {
 				return err
 			}
+
+			alreadyRan = append(alreadyRan, mi.Version)
 
 			for _, tuple := range tuples {
 				m.l.WithField("sql", tuple.Statement).WithField("id", tuple.ID).Debug("Trying to execute SQL up migration.")
@@ -149,11 +158,20 @@ func (m Migrator) Down(step int) error {
 		if step > 0 && len(mfs) >= step {
 			mfs = mfs[:step]
 		}
+
+		alreadyRan := make([]string, 0, len(mfs))
+
 		for _, mi := range mfs {
+			if stringslice.Has(alreadyRan, mi.Version) {
+				continue
+			}
+
 			tuples, err := mi.Run()
 			if err != nil {
 				return err
 			}
+
+			alreadyRan = append(alreadyRan, mi.Version)
 
 			for _, tuple := range tuples {
 				m.l.WithField("sql", tuple.Statement).WithField("id", tuple.ID).Debug("Trying to execute SQL down migration.")
