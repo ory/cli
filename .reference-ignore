@@ -1,3 +1,4 @@
 **/node_modules
 docs
 CHANGELOG.md
+cmd/dev/newsletter/stub/*
