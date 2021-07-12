@@ -3,4 +3,4 @@ pkged.go
 *.crt
 *.key
 docs/
-
+node_modules

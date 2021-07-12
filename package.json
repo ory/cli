@@ -1,1 +1,16 @@
-{"private":true,"version":"0.0.0-pre.3"}
+{
+  "private": true,
+  "version": "0.0.0-pre.3",
+  "prettier": "ory-prettier-styles",
+  "config": {
+    "prettierTarget": "{**/,}*{.js,.md,.ts}"
+  },
+  "scripts": {
+    "format": "prettier --write ${npm_package_config_prettierTarget}",
+    "format:check": "prettier --check ${npm_package_config_prettierTarget}"
+},
+  "devDependencies": {
+    "ory-prettier-styles": "1.1.1",
+    "prettier": "2.2.1"
+  }
+}
