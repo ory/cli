@@ -8,17 +8,17 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <style type="text/css">
 
-     
+
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
     img { -ms-interpolation-mode: bicubic; }
 
-     
+
     img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
     table { border-collapse: collapse !important; }
     body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
 
-     
+
     a[x-apple-data-detectors] {
       color: inherit !important;
       text-decoration: none !important;
@@ -28,7 +28,7 @@
       line-height: inherit !important;
     }
 
-     
+
     u + #body a {
       color: #5528FF;
       text-decoration: none;
@@ -38,7 +38,7 @@
       line-height: inherit;
     }
 
-     
+
     #MessageViewBody a {
       color: #5528FF;
       text-decoration: none;
@@ -48,7 +48,7 @@
       line-height: inherit;
     }
 
-     
+
     a { color: #5528FF; font-weight: 500; text-decoration: none; }
     a:hover { color: #000000 !important; text-decoration: none !important; }
 
@@ -56,7 +56,7 @@
       h1 { font-size: 24px !important; line-height: 32px !important; }
     }
 
-     
+
     ul li p:last-child {
       margin-bottom: 0px;
       padding-bottom: 0px;
@@ -81,9 +81,9 @@
 <div role="article" lang="en" style="background-color: white; color: #2b2b2b; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; font-weight: 400; line-height: 28px; margin: 0 auto; max-width: 600px; padding: 40px 20px 40px 20px; overflow-wrap: break-word; word-wrap: break-word">
 
   <header>
-    
+
       <a href="https://github.com/ory/ory/kratos" target="_blank"><img alt="ORY ory/kratos" src="https://raw.githubusercontent.com/ory/meta/master/static/banners/ory/kratos.png" width="600" border="0" style="display: block; max-width: 100%; min-width: 100px; width: 100%;"></a>
-    
+
       <h1 style="color: #000000; font-size: 24px; font-weight: 500; line-height: 32px; margin: 16px 0; text-align: center;">
         <a href="https://github.com/ory/ory/kratos/releases/tag/v0.1.0" target="_blank">Ory Kratos v0.1.0</a><br>
         <span style="font-size: 16px; font-weight: 400;">is here!</span><br>
@@ -93,7 +93,7 @@
 
 
   <main>
-    
+
     <article>
       <br>
       iuaw4hri<br>
@@ -1226,12 +1226,12 @@ Settled on 3 iterations.
       Changes requiring your attention may have been introduced since the last release, please read the&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/CHANGELOG.md" target="_blank">changelog</a>&nbsp;with care.
     </article>
     <br /><br />
-    
+
     <article style="border-top: 1px solid #5528FF;">
       <p style="font-size: 16px; font-weight: 400; line-height: 2; margin-top: 16px; text-align: center">Interested in working at ORY full time?<br>&nbsp;<a href="https://www.ory.sh/jobs/" target="_blank">We are hiring!</a></p>
     </article>
   </main>
-  
+
   <footer style="border-top: 1px solid #5528FF;">
     <p style="font-size: 12px; font-weight: 400; line-height: 16px; margin-top: 32px; text-align: center">
       <em>Copyright © *|CURRENT_YEAR|* *|LIST:COMPANY|*, All rights reserved.</em>
