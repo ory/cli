@@ -7,17 +7,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewProxyLocalCmd() *cobra.Command {
+func NewProxyProductionCmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:   "local [upstream]",
-		Short: "Develop an application locally and integrate it with Ory",
-		Args:  cobra.ExactArgs(1),
-		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application. This works best on local (your computer) environments, for example when developing a React, NodeJS, Java, PHP app.
+		Use:   "production [upstream] [domain]",
+		Short: "Run an Ory integrated application in a remote environment",
+		Args:  cobra.ExactArgs(2),
+		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application.
 
-To require login before accessing paths in your application, use the --%[1]s flag:
+This command is targeted for remote, hosted, internet-facing applications. If you wish to develop an application locally,
+please use "ory proxy local" instead.
 
-	$ ory proxy local --port 4000 --%[1]s /members --%[1]s /admin \
-		http://localhost:3000
+To require authentication before accessing paths in your application, use the --%[1]s flag:
+
+	$ ory proxy remote --port 4000 --%[1]s /members --%[1]s /admin \
+		http://localhost:3000 \
+		your-domain.com
 
 %[2]s`, ProtectPathsFlag, jwtHelp),
 		/*
@@ -32,12 +36,13 @@ To require login before accessing paths in your application, use the --%[1]s fla
 			conf := &config{
 				port:                flagx.MustGetInt(cmd, PortFlag),
 				protectPathPrefixes: flagx.MustGetStringSlice(cmd, ProtectPathsFlag),
-				noCert:              flagx.MustGetBool(cmd, NoCertInstallFlag),
-				noOpen:              flagx.MustGetBool(cmd, NoOpenFlag),
+				noCert:              true,
+				noOpen:              true,
 				apiEndpoint:         flagx.MustGetString(cmd, remote.FlagAPIEndpoint),
 				consoleEndpoint:     flagx.MustGetString(cmd, remote.FlagConsoleAPI),
-				isLocal:             true,
-				upstream: args[0],
+				upstream:            args[0],
+				domain:              args[1],
+				isLocal:             false,
 			}
 
 			return run(cmd, conf)
@@ -45,9 +50,7 @@ To require login before accessing paths in your application, use the --%[1]s fla
 	}
 
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
-	proxyCmd.Flags().Bool(NoCertInstallFlag, false, "If set will not try to add the HTTPS certificate to your certificate store.")
 	proxyCmd.Flags().StringSlice(ProtectPathsFlag, []string{}, "Require authentication before accessing these paths.")
-	proxyCmd.Flags().Bool(NoOpenFlag, false, "Do not open the browser when the proxy starts.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
 }

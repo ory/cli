@@ -22,7 +22,7 @@ import (
 
 const (
 	FlagAPIEndpoint    = "api-endpoint"
-	FlagConsoleAPI     = "console-url"
+	FlagConsoleAPI     = "console-api-endpoint"
 	projectAccessToken = "ORY_ACCESS_TOKEN"
 	tokenPath          = "backoffice/token/slug"
 	kratosAdminPath    = "api/kratos/admin"
