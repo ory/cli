@@ -18,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/elnormous/contenttype"
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
@@ -42,21 +41,19 @@ import (
 
 const (
 	PortFlag          = "port"
-	ProtectPathsFlag  = "protect-path-prefix"
 	NoCertInstallFlag = "dont-install-cert"
 	NoOpenFlag        = "no-open"
 )
 
 type config struct {
-	port                int
-	protectPathPrefixes []string
-	noCert              bool
-	noOpen              bool
-	apiEndpoint         string
-	consoleEndpoint     string
-	domain              string
-	isLocal             bool
-	upstream string
+	port            int
+	noCert          bool
+	noOpen          bool
+	apiEndpoint     string
+	consoleEndpoint string
+	domain          string
+	isLocal         bool
+	upstream        string
 }
 
 func portFromEnv() int {
@@ -67,7 +64,7 @@ func portFromEnv() int {
 	return int(port)
 }
 
-func run(cmd *cobra.Command,  conf *config) error {
+func run(cmd *cobra.Command, conf *config) error {
 	upstream, err := url.ParseRequestURI(conf.upstream)
 	if err != nil {
 		return errors.Wrap(err, "unable to parse upstream URL")
@@ -158,7 +155,6 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 }
 
 func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	protectPaths := conf.protectPathPrefixes
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
 	var publicKeys jose.JSONWebKeySet
@@ -167,23 +163,34 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 	}
 
 	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
+	oryUpstream.ModifyResponse = func(res *http.Response) error {
+		redir, _ := res.Location()
+		if redir != nil {
+			redir.Host = conf.domain
+			// TODO: prefix with .ory bla
+			res.Header.Set("Location", redir.String())
+		}
+
+		cookies := res.Cookies()
+		res.Header.Del("Set-Cookie")
+		for _, c := range cookies {
+			c.Domain = conf.domain
+			res.Header.Add("Set-Cookie", c.String())
+		}
+
+		return nil
+	}
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		originalHost := r.Host
-
 		if r.URL.Path == "/.ory/jwks.json" {
 			writer.Write(w, r, publicKeys)
 			return
 		}
 
 		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/.ory/api/kratos/public") {
-			q := r.URL.Query()
-			q.Set("alias", originalHost)
-
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/api/kratos/public", "/api/kratos/public")
+		if strings.HasPrefix(r.URL.Path, "/.ory") {
+			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/", "/")
 			r.Host = endpoint.Host
-			r.URL.RawQuery = q.Encode()
 
 			l.WithRequest(r).
 				WithField("forwarding_path", r.URL.String()).
@@ -191,94 +198,12 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 				Debug("Forwarding request to Ory.")
 			oryUpstream.ServeHTTP(w, r)
 			return
-		}
-		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/hosted") || strings.HasPrefix(r.URL.Path, "/static") || strings.HasPrefix(r.URL.Path, "/env.js")  {
-			q := r.URL.Query()
-			q.Set("alias", originalHost)
-
-			r.Host = endpoint.Host
-			r.URL.RawQuery = q.Encode()
-
-			l.WithRequest(r).
-				WithField("forwarding_path", r.URL.String()).
-				WithField("forwarding_host", r.Host).
-				Debug("Forwarding request to Ory.")
-			oryUpstream.ServeHTTP(w, r)
-			return
-		}
-
-		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/.ory/hosted") {
-			q := r.URL.Query()
-			q.Set("alias", originalHost)
-
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/hosted", "/hosted")
-			r.Host = endpoint.Host
-			r.URL.RawQuery = q.Encode()
-
-			l.WithRequest(r).
-				WithField("forwarding_path", r.URL.String()).
-				WithField("forwarding_host", r.Host).
-				Debug("Forwarding request to Ory.")
-			oryUpstream.ServeHTTP(w, r)
-			return
-		}
-
-		var shouldProtect bool
-		for _, protect := range protectPaths {
-			if strings.HasPrefix(urlFromRequest(r).Path, protect) {
-				shouldProtect = true
-				break
-			}
-		}
-
-		if !shouldProtect {
-			next(w, r)
-			return
-		}
-
-		var isJsonRequest bool
-		accepted, _, err := contenttype.GetAcceptableMediaType(r, []contenttype.MediaType{
-			contenttype.NewMediaType("text/html"), // default offer
-			contenttype.NewMediaType("application/json"),
-		})
-		if err != nil {
-			isJsonRequest = false
-		} else {
-			isJsonRequest = accepted.Type+"/"+accepted.Subtype == "application/json"
-		}
-
-		scheme := "http"
-		if r.TLS != nil {
-			scheme = "https"
-		}
-
-		returnToLogin := func() {
-			http.Redirect(w, r, fmt.Sprintf("/.ory/api/kratos/public/self-service/login/browser?return_to=%s://%s%s", scheme, r.Host, r.URL.Path), http.StatusFound)
 		}
 
 		session, err := checkSession(hc, r, endpoint)
+		r.Header.Del("Authorization")
 		if err != nil || !gjson.GetBytes(session, "active").Bool() {
-			if isJsonRequest {
-				innerErr := herodot.ErrUnauthorized.WithReasonf("The provided credentials are expired, malformed, missing, or otherwise invalid.")
-				if err != nil {
-					innerErr.Wrap(err)
-				}
-
-				writer.WriteError(w, r, errors.WithStack(innerErr))
-				return
-			}
-			returnToLogin()
-			return
-		}
-
-		if !gjson.GetBytes(session, "active").Bool() {
-			if isJsonRequest {
-				writer.WriteError(w, r, errors.WithStack(herodot.ErrUnauthorized.WithReasonf("The provided credentials are expired, malformed, missing, or otherwise invalid.")))
-				return
-			}
-			returnToLogin()
+			next(w, r)
 			return
 		}
 
@@ -297,8 +222,6 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 		}
 
 		r.Header.Set("Authorization", "Bearer "+raw)
-		r.Header.Del("Cookie")
-
 		next(w, r)
 	}
 }
@@ -346,20 +269,6 @@ func getEndpointURL(cmd *cobra.Command, conf *config) (*url.URL, error) {
 	upstream.Host = fmt.Sprintf("%s.projects.%s", project, upstream.Host)
 
 	return upstream, nil
-}
-
-func urlFromRequest(r *http.Request) *url.URL {
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-
-	return &url.URL{
-		Scheme:   scheme,
-		Host:     r.Host,
-		Path:     r.URL.Path,
-		RawQuery: r.URL.RawQuery,
-	}
 }
 
 func createTLSCertificate(conf *config) (*tls.Certificate, func() error, error) {

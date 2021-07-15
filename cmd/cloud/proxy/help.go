@@ -1,14 +1,17 @@
 package proxy
 
-const jwtHelp = `The --%[1]s flag is currently using a string prefix match. Future versions will
-include support for regular expressions and glob matching.
+const jwtHelp = `
+If the request is not authenticated, the HTTP Authorization Header will be empty:
 
-If the request is authenticated, a JSON Web Token will be sent in the HTTP Authorization Header containing the
+	GET / HTTP/1.1
+	Host: localhost:3000
+
+If the request was authenticated, a JSON Web Token will be sent in the HTTP Authorization Header containing the
 Ory Session:
 
 	GET / HTTP/1.1
 	Host: localhost:3000
-	Authorization Bearer <the-json-web-token>
+	Authorization: Bearer <the-json-web-token>
 
 The JSON Web Token claims contain:
 
