@@ -164,17 +164,27 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 
 	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
 	oryUpstream.ModifyResponse = func(res *http.Response) error {
+		if !strings.EqualFold(res.Request.Host, endpoint.Host) {
+			// not ory
+			return nil
+		}
+
 		redir, _ := res.Location()
 		if redir != nil {
-			redir.Host = conf.domain
-			// TODO: prefix with .ory bla
-			res.Header.Set("Location", redir.String())
+			if strings.EqualFold(redir.Host , endpoint.Host) {
+				redir.Host = conf.domain
+				redir.Path = "/.ory" + redir.Path
+				res.Header.Set("Location", redir.String())
+			}
 		}
 
 		cookies := res.Cookies()
 		res.Header.Del("Set-Cookie")
 		for _, c := range cookies {
-			c.Domain = conf.domain
+			if !strings.EqualFold(c.Domain , endpoint.Hostname()) {
+				continue
+			}
+			c.Domain = ""
 			res.Header.Add("Set-Cookie", c.String())
 		}
 
@@ -191,6 +201,9 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 		if strings.HasPrefix(r.URL.Path, "/.ory") {
 			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/", "/")
 			r.Host = endpoint.Host
+			q := r.URL.Query()
+			q.Set("isProxy", "true")
+			r.URL.RawQuery = q.Encode()
 
 			l.WithRequest(r).
 				WithField("forwarding_path", r.URL.String()).
