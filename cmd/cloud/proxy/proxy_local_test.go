@@ -16,21 +16,18 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/phayes/freeport"
-	"github.com/pkg/errors"
-	"github.com/square/go-jose/v3"
-	"github.com/square/go-jose/v3/jwt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/tidwall/gjson"
-
 	"github.com/ory/cli/cmd"
 	"github.com/ory/cli/cmd/cloud/proxy"
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/herodot"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/logrusx"
-	"github.com/ory/x/urlx"
+	"github.com/phayes/freeport"
+	"github.com/pkg/errors"
+	"github.com/square/go-jose/v3"
+	"github.com/square/go-jose/v3/jwt"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -150,7 +147,7 @@ func TestProxy(t *testing.T) {
 	ctx = context.WithValue(ctx, remote.FlagAPIEndpoint, cloudApi)
 
 	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port))
 		assert.ErrorIs(t, err, context.Canceled)
 		t.Logf("stdout:\n%s", stdout)
 		t.Logf("stderr:\n%s", stderr)
@@ -185,35 +182,6 @@ func TestProxy(t *testing.T) {
 		assertAnonymous(t, insecureClient, proxyURL+"/public/2")
 	})
 
-	t.Run("forwards the request if authenticated", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
-		req.Header.Set("Authorization", "ory")
-		res, err := insecureClient.Do(req)
-		require.NoError(t, err)
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		require.NoError(t, err)
-
-		assert.EqualValues(t, http.StatusOK, res.StatusCode)
-		assert.EqualValues(t, gjson.GetBytes(session, "identity.id").String(), gjson.GetBytes(body, "sub").String())
-		assert.EqualValues(t, urlx.AppendPaths(cloudApi).String(), gjson.GetBytes(body, "iss").String())
-	})
-
-	t.Run("responds with 401 json if json request", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
-		req.Header.Set("Accept", "application/json")
-		res, err := insecureClient.Do(req)
-		require.NoError(t, err)
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		require.NoError(t, err)
-
-		assert.EqualValues(t, http.StatusUnauthorized, res.StatusCode)
-		assert.EqualValues(t, "The provided credentials are expired, malformed, missing, or otherwise invalid.", gjson.GetBytes(body, "error.reason").String(), "%s", body)
-	})
-
 	t.Run("responds with 302 redirect to login if HTML request", func(t *testing.T) {
 		for k, accept := range []string{
 			"text/html",
@@ -222,7 +190,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/1", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
@@ -249,7 +217,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/2", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
