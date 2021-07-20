@@ -12,6 +12,6 @@ var Main = &cobra.Command{
 func init() {
 	Main.AddCommand(
 		NewProxyLocalCmd(),
-		//NewProxyProductionCmd(),
+		NewProxyProductionCmd(),
 	)
 }

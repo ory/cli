@@ -131,7 +131,7 @@ func assertAnonymous(t *testing.T, c *http.Client, href string) {
 	assert.EqualValues(t, string(body), anonymous, "%s", body)
 }
 
-func TestProxy(t *testing.T) {
+func startProxy(t *testing.T, start func(ctx context.Context, upstream *httptest.Server, port int)) string {
 	port, err := freeport.GetFreePort()
 	require.NoError(t, err)
 	proxyURL := fmt.Sprintf("https://127.0.0.1:%d", port)
@@ -146,12 +146,7 @@ func TestProxy(t *testing.T) {
 	cloudApi := cloudAPi(t, writer)
 	ctx = context.WithValue(ctx, remote.FlagAPIEndpoint, cloudApi)
 
-	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port))
-		assert.ErrorIs(t, err, context.Canceled)
-		t.Logf("stdout:\n%s", stdout)
-		t.Logf("stderr:\n%s", stderr)
-	}()
+	go start(ctx, upstream, port)
 
 	var tries int
 	for {
@@ -176,6 +171,17 @@ func TestProxy(t *testing.T) {
 
 		break
 	}
+
+	return proxyURL
+}
+
+func TestProxyLocal(t *testing.T) {
+	proxyURL := startProxy(t, func(ctx context.Context, upstream *httptest.Server, port int) {
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port))
+		assert.ErrorIs(t, err, context.Canceled)
+		t.Logf("stdout:\n%s", stdout)
+		t.Logf("stderr:\n%s", stderr)
+	})
 
 	t.Run("allows anonymous paths", func(t *testing.T) {
 		assertAnonymous(t, insecureClient, proxyURL+"/public/1")

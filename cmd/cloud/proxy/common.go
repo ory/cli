@@ -51,7 +51,7 @@ type config struct {
 	noOpen          bool
 	apiEndpoint     string
 	consoleEndpoint string
-	domain          string
+	hostPort        string
 	isLocal         bool
 	upstream        string
 }
@@ -110,7 +110,7 @@ func run(cmd *cobra.Command, conf *config) error {
 	})
 
 	l.Printf("Starting the https reverse proxy on: %s", server.Addr)
-	proxyUrl := fmt.Sprintf("https://%s:%d/", conf.domain, conf.port)
+	proxyUrl := fmt.Sprintf("https://%s", conf.hostPort)
 	l.Printf(`To access your application through the Ory Proxy, open:
 
 	%s`, proxyUrl)
@@ -154,6 +154,10 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 	return sig, key, nil
 }
 
+func initUrl(method string) string {
+	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser", method)
+}
+
 func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
@@ -171,8 +175,8 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 
 		redir, _ := res.Location()
 		if redir != nil {
-			if strings.EqualFold(redir.Host , endpoint.Host) {
-				redir.Host = conf.domain
+			if strings.EqualFold(redir.Host, endpoint.Host) {
+				redir.Host = conf.hostPort
 				redir.Path = "/.ory" + redir.Path
 				res.Header.Set("Location", redir.String())
 			}
@@ -181,7 +185,7 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 		cookies := res.Cookies()
 		res.Header.Del("Set-Cookie")
 		for _, c := range cookies {
-			if !strings.EqualFold(c.Domain , endpoint.Hostname()) {
+			if !strings.EqualFold(c.Domain, endpoint.Hostname()) {
 				continue
 			}
 			c.Domain = ""
@@ -194,6 +198,32 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		if r.URL.Path == "/.ory/jwks.json" {
 			writer.Write(w, r, publicKeys)
+			return
+		}
+
+		if r.URL.Path == "/.ory/login" {
+			writer.Write(w, r, publicKeys)
+			return
+		}
+
+		switch r.URL.Path {
+		case "/.ory/jwks.json":
+			writer.Write(w, r, publicKeys)
+			return
+		case "/.ory/init/login":
+			http.Redirect(w, r, initUrl("login"), http.StatusSeeOther)
+			return
+		case "/.ory/init/registration":
+			http.Redirect(w, r, initUrl("registration"), http.StatusSeeOther)
+			return
+		case "/.ory/init/recovery":
+			http.Redirect(w, r, initUrl("recovery"), http.StatusSeeOther)
+			return
+		case "/.ory/init/verification":
+			http.Redirect(w, r, initUrl("verification"), http.StatusSeeOther)
+			return
+		case "/.ory/init/settings":
+			http.Redirect(w, r, initUrl("settings"), http.StatusSeeOther)
 			return
 		}
 
