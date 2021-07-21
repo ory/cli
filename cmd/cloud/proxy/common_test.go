@@ -22,7 +22,6 @@ import (
 	"github.com/square/go-jose/v3/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tidwall/gjson"
 
 	"github.com/ory/cli/cmd"
 	"github.com/ory/cli/cmd/cloud/proxy"
@@ -30,7 +29,6 @@ import (
 	"github.com/ory/herodot"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/logrusx"
-	"github.com/ory/x/urlx"
 )
 
 const (
@@ -134,7 +132,7 @@ func assertAnonymous(t *testing.T, c *http.Client, href string) {
 	assert.EqualValues(t, string(body), anonymous, "%s", body)
 }
 
-func TestProxy(t *testing.T) {
+func startProxy(t *testing.T, start func(ctx context.Context, upstream *httptest.Server, port int)) string {
 	port, err := freeport.GetFreePort()
 	require.NoError(t, err)
 	proxyURL := fmt.Sprintf("https://127.0.0.1:%d", port)
@@ -149,12 +147,7 @@ func TestProxy(t *testing.T) {
 	cloudApi := cloudAPi(t, writer)
 	ctx = context.WithValue(ctx, remote.FlagAPIEndpoint, cloudApi)
 
-	go func() {
-		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port), "--"+proxy.ProtectPathsFlag, "/private/1", "--"+proxy.ProtectPathsFlag, "/private/2")
-		assert.ErrorIs(t, err, context.Canceled)
-		t.Logf("stdout:\n%s", stdout)
-		t.Logf("stderr:\n%s", stderr)
-	}()
+	go start(ctx, upstream, port)
 
 	var tries int
 	for {
@@ -180,38 +173,20 @@ func TestProxy(t *testing.T) {
 		break
 	}
 
+	return proxyURL
+}
+
+func TestProxyLocal(t *testing.T) {
+	proxyURL := startProxy(t, func(ctx context.Context, upstream *httptest.Server, port int) {
+		stdout, stderr, err := newCommand(t, ctx).Exec(os.Stdin, "proxy", "local", upstream.URL, "--"+proxy.NoCertInstallFlag, "--"+proxy.NoOpenFlag, "--"+proxy.PortFlag, fmt.Sprintf("%d", port))
+		assert.ErrorIs(t, err, context.Canceled)
+		t.Logf("stdout:\n%s", stdout)
+		t.Logf("stderr:\n%s", stderr)
+	})
+
 	t.Run("allows anonymous paths", func(t *testing.T) {
 		assertAnonymous(t, insecureClient, proxyURL+"/public/1")
 		assertAnonymous(t, insecureClient, proxyURL+"/public/2")
-	})
-
-	t.Run("forwards the request if authenticated", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
-		req.Header.Set("Authorization", "ory")
-		res, err := insecureClient.Do(req)
-		require.NoError(t, err)
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		require.NoError(t, err)
-
-		assert.EqualValues(t, http.StatusOK, res.StatusCode)
-		assert.EqualValues(t, gjson.GetBytes(session, "identity.id").String(), gjson.GetBytes(body, "sub").String())
-		assert.EqualValues(t, urlx.AppendPaths(cloudApi).String(), gjson.GetBytes(body, "iss").String())
-	})
-
-	t.Run("responds with 401 json if json request", func(t *testing.T) {
-		req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
-		req.Header.Set("Accept", "application/json")
-		res, err := insecureClient.Do(req)
-		require.NoError(t, err)
-		defer res.Body.Close()
-
-		body, err := ioutil.ReadAll(res.Body)
-		require.NoError(t, err)
-
-		assert.EqualValues(t, http.StatusUnauthorized, res.StatusCode)
-		assert.EqualValues(t, "The provided credentials are expired, malformed, missing, or otherwise invalid.", gjson.GetBytes(body, "error.reason").String(), "%s", body)
 	})
 
 	t.Run("responds with 302 redirect to login if HTML request", func(t *testing.T) {
@@ -222,7 +197,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private/1", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/1", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
@@ -249,7 +224,7 @@ func TestProxy(t *testing.T) {
 			"application/xhtml+xml",
 		} {
 			t.Run("case="+strconv.Itoa(k), func(t *testing.T) {
-				req, _ := http.NewRequest("GET", proxyURL+"/private/2", nil)
+				req, _ := http.NewRequest("GET", proxyURL+"/.ory/api/kratos/public/self-service/login/browser?return_to="+proxyURL+"/private/2", nil)
 				if accept != "" {
 					req.Header.Set("Accept", accept)
 				}
