@@ -2,9 +2,11 @@ package proxy
 
 import (
 	"fmt"
+
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/x/flagx"
-	"github.com/spf13/cobra"
 )
 
 func NewProxyLocalCmd() *cobra.Command {
@@ -37,7 +39,7 @@ func NewProxyLocalCmd() *cobra.Command {
 				consoleEndpoint: flagx.MustGetString(cmd, remote.FlagConsoleAPI),
 				isLocal:         true,
 				upstream:        args[0],
-				hostPort:        fmt.Sprintf("localhost:%d",port),
+				hostPort:        fmt.Sprintf("localhost:%d", port),
 			}
 
 			return run(cmd, conf)

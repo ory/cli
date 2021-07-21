@@ -154,8 +154,8 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 	return sig, key, nil
 }
 
-func initUrl(method string) string {
-	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser", method)
+func initUrl(method string, conf *config) string {
+	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser?return_to=%s", method, "https://"+conf.hostPort)
 }
 
 func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
@@ -177,7 +177,7 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 		if redir != nil {
 			if strings.EqualFold(redir.Host, endpoint.Host) {
 				redir.Host = conf.hostPort
-				redir.Path = "/.ory" + redir.Path
+				redir.Path = "/.ory" + strings.TrimPrefix(redir.Path, "/.ory")
 				res.Header.Set("Location", redir.String())
 			}
 		}
@@ -211,19 +211,19 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			writer.Write(w, r, publicKeys)
 			return
 		case "/.ory/init/login":
-			http.Redirect(w, r, initUrl("login"), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl("login", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/registration":
-			http.Redirect(w, r, initUrl("registration"), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl("registration", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/recovery":
-			http.Redirect(w, r, initUrl("recovery"), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl("recovery", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/verification":
-			http.Redirect(w, r, initUrl("verification"), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl("verification", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/settings":
-			http.Redirect(w, r, initUrl("settings"), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl("settings", conf), http.StatusSeeOther)
 			return
 		}
 

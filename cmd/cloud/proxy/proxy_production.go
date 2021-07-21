@@ -2,9 +2,11 @@ package proxy
 
 import (
 	"fmt"
+
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/x/flagx"
-	"github.com/spf13/cobra"
 )
 
 func NewProxyProductionCmd() *cobra.Command {
