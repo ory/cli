@@ -3,6 +3,8 @@ package proxy
 import (
 	"fmt"
 
+	"github.com/ory/x/urlx"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloud/remote"
@@ -40,6 +42,7 @@ func NewProxyLocalCmd() *cobra.Command {
 				isLocal:         true,
 				upstream:        args[0],
 				hostPort:        fmt.Sprintf("localhost:%d", port),
+				selfURL:         urlx.ParseOrPanic(fmt.Sprintf("https://localhost:%d", port)),
 			}
 
 			return run(cmd, conf)

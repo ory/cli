@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
@@ -8,6 +9,8 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -17,6 +20,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tidwall/sjson"
+
+	"github.com/ory/x/stringsx"
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
@@ -54,6 +61,7 @@ type config struct {
 	hostPort        string
 	isLocal         bool
 	upstream        string
+	selfURL         *url.URL
 }
 
 func portFromEnv() int {
@@ -154,8 +162,8 @@ func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
 	return sig, key, nil
 }
 
-func initUrl(method string, conf *config) string {
-	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser?return_to=%s", method, "https://"+conf.hostPort)
+func initUrl(r *http.Request, method string, conf *config) string {
+	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser?return_to=%s", method, stringsx.Coalesce(r.Referer(), conf.selfURL.String()))
 }
 
 func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
@@ -192,16 +200,42 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			res.Header.Add("Set-Cookie", c.String())
 		}
 
+		if res.ContentLength == 0 {
+			return nil
+		}
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return err
+		}
+		res.Body = ioutil.NopCloser(bytes.NewReader(body))
+
+		// Modify the Logout URL
+		lo := gjson.GetBytes(body, "logout_url")
+		if !lo.Exists() {
+			return nil
+		}
+
+		p, err := url.ParseRequestURI(lo.String())
+		if err != nil {
+			return err
+		}
+		p.Host = conf.hostPort
+		p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
+		body, err = sjson.SetBytes(body, "logout_url", p.String())
+		if err != nil {
+			return err
+		}
+
+		res.Body = ioutil.NopCloser(bytes.NewReader(body))
 		return nil
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		if r.URL.Path == "/.ory/jwks.json" {
-			writer.Write(w, r, publicKeys)
-			return
-		}
-
-		if r.URL.Path == "/.ory/login" {
+		if r.URL.Path == "/.ory/proxy/jwks.json" {
 			writer.Write(w, r, publicKeys)
 			return
 		}
@@ -211,20 +245,24 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			writer.Write(w, r, publicKeys)
 			return
 		case "/.ory/init/login":
-			http.Redirect(w, r, initUrl("login", conf), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl(r, "login", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/registration":
-			http.Redirect(w, r, initUrl("registration", conf), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl(r, "registration", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/recovery":
-			http.Redirect(w, r, initUrl("recovery", conf), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl(r, "recovery", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/verification":
-			http.Redirect(w, r, initUrl("verification", conf), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl(r, "verification", conf), http.StatusSeeOther)
 			return
 		case "/.ory/init/settings":
-			http.Redirect(w, r, initUrl("settings", conf), http.StatusSeeOther)
+			http.Redirect(w, r, initUrl(r, "settings", conf), http.StatusSeeOther)
 			return
+		case "/.ory/api/kratos/public/self-service/logout":
+			q := r.URL.Query()
+			q.Set("return_to", conf.selfURL.String())
+			r.URL.RawQuery = q.Encode()
 		}
 
 		// We proxy ory things

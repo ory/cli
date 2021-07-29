@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/spf13/cobra"
 
@@ -25,7 +26,7 @@ If you want to expose the application / proxy at a specific port, append the por
 
 	$ ory proxy remote --port 4000 \
 		http://127.0.0.1:3000 \
-		example.org:8080
+		https://example.org:8080
 
 %s
 `, jwtHelp),
@@ -38,6 +39,11 @@ If you want to expose the application / proxy at a specific port, append the por
 		   To test your Regular Expression, head over to https://regex101.com and select "Golang" on the left.
 		*/
 		RunE: func(cmd *cobra.Command, args []string) error {
+			selfUrl, err := url.ParseRequestURI(args[1])
+			if err != nil {
+				return err
+			}
+
 			conf := &config{
 				port:            flagx.MustGetInt(cmd, PortFlag),
 				noCert:          true,
@@ -46,7 +52,8 @@ If you want to expose the application / proxy at a specific port, append the por
 				consoleEndpoint: flagx.MustGetString(cmd, remote.FlagConsoleAPI),
 				isLocal:         false,
 				upstream:        args[0],
-				hostPort:        args[1],
+				hostPort:        selfUrl.Host,
+				selfURL:         selfUrl,
 			}
 
 			return run(cmd, conf)
