@@ -18,13 +18,13 @@ func NewProxyProductionCmd() *cobra.Command {
 		Long: fmt.Sprintf(`This command starts a reverse proxy which can be deployed in front of your application. This command works for remote environments,
 for example when deploying a React, NodeJS, Java, PHP, ... app to a server / the cloud.
 
-	$ ory proxy remote --port 4000 \
+	$ ory proxy production --port 4000 \
 		http://localhost:3000 \
 		example.org
 
 If you want to expose the application / proxy at a specific port, append the port to the domain name:
 
-	$ ory proxy remote --port 4000 \
+	$ ory proxy production --port 4000 \
 		http://127.0.0.1:3000 \
 		https://example.org:8080
 
