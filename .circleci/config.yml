@@ -26,6 +26,19 @@ jobs:
       - checkout
       - run: .circleci/docs.sh
 
+  npm-publish:
+    docker:
+      - image: circleci/golang:1.16
+        environment:
+          - GO111MODULE=on
+    working_directory: /go/src/github.com/ory/cli
+    steps:
+      - checkout
+      - run: npm i
+      - run: npm version --no-git-tag-version $CIRCLE_TAG
+      - run: npm run build
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+      - run: npm publish --access public
 
 workflows:
   default:
@@ -41,6 +54,15 @@ workflows:
       - goreleaser/release:
           requires:
             - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+
+      - npm-publish:
+          requires:
+            - goreleaser/release
           filters:
             branches:
               ignore: /.*/

@@ -4,3 +4,6 @@ pkged.go
 *.key
 docs/
 node_modules
+ory
+bin/
+unpacked_bin/
