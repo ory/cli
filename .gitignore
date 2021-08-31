@@ -4,3 +4,5 @@ pkged.go
 *.key
 docs/
 node_modules
+ory
+bin/
