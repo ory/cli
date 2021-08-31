@@ -1,16 +1,25 @@
 {
-  "private": true,
-  "version": "0.0.0-pre.3",
-  "prettier": "ory-prettier-styles",
+  "version": "0.0.60",
+  "prettier": "@ory/cli",
   "config": {
     "prettierTarget": "{**/,}*{.js,.md,.ts}"
   },
+  "goBinary": {
+    "name": "ory",
+    "path": "./",
+    "url": "https://github.com/ory/cli/releases/download/v{{version}}/ory_{{version}}_{{platform}}_{{arch}}.tar.gz"
+  },
   "scripts": {
+    "postinstall": "go-npm install",
+    "preuninstall": "go-npm uninstall",
     "format": "prettier --write ${npm_package_config_prettierTarget}",
     "format:check": "prettier --check ${npm_package_config_prettierTarget}"
-},
+  },
   "devDependencies": {
-    "ory-prettier-styles": "1.1.1",
-    "prettier": "2.2.1"
+    "ory-prettier-styles": "1.1.2",
+    "prettier": "2.3.2"
+  },
+  "dependencies": {
+    "@ory/npm-bin": "^0.2.5"
   }
 }
