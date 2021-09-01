@@ -31,9 +31,8 @@ jobs:
       - image: cimg/node:16.8.0
     steps:
       - checkout
-      - run: npm i
+      - run: npm install
       - run: npm version --no-git-tag-version $CIRCLE_TAG
-      - run: npm run build
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run: npm publish --access public
 
