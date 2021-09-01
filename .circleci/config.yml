@@ -28,10 +28,7 @@ jobs:
 
   npm-publish:
     docker:
-      - image: circleci/golang:1.16
-        environment:
-          - GO111MODULE=on
-    working_directory: /go/src/github.com/ory/cli
+      - image: cimg/node:16.8.0
     steps:
       - checkout
       - run: npm i
