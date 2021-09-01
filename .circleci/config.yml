@@ -32,6 +32,7 @@ jobs:
     steps:
       - checkout
       - run: npm install
+      - run: npm test
       - run: npm version --no-git-tag-version $CIRCLE_TAG
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
       - run: npm publish --access public
