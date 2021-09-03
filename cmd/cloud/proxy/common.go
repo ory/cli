@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
@@ -166,6 +167,59 @@ func initUrl(r *http.Request, method string, conf *config) string {
 	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser?return_to=%s", method, stringsx.Coalesce(r.Referer(), conf.selfURL.String()))
 }
 
+func readBody(res *http.Response) ([]byte, error) {
+	if res.ContentLength == 0 {
+		return nil, nil
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	switch res.Header.Get("Content-Encoding") {
+	case "gzip":
+		reader, err := gzip.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+
+		var decoded bytes.Buffer
+		if _, err := io.Copy(&decoded, reader); err != nil {
+			return nil, err
+		}
+
+		body = decoded.Bytes()
+	}
+
+	res.Body = ioutil.NopCloser(bytes.NewReader(body))
+	return body, nil
+}
+
+func writeBody(res *http.Response, body []byte) error {
+	switch res.Header.Get("Content-Encoding") {
+	case "gzip":
+		var buf bytes.Buffer
+		writer := gzip.NewWriter(&buf)
+		if _, err := writer.Write(body); err != nil {
+			return err
+		}
+		if err := writer.Close(); err != nil {
+			return err
+		}
+
+		res.Body = ioutil.NopCloser(bytes.NewReader(buf.Bytes()))
+		return nil
+	default:
+		res.Body = ioutil.NopCloser(bytes.NewReader(body))
+		return nil
+	}
+}
+
 func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
@@ -175,6 +229,8 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 	}
 
 	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
+
+	// Did someone say "HACK THE PLANET"? Or rather "HACK THE COOKIES"? Yup...
 	oryUpstream.ModifyResponse = func(res *http.Response) error {
 		if !strings.EqualFold(res.Request.Host, endpoint.Host) {
 			// not ory
@@ -204,34 +260,42 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			return nil
 		}
 
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := readBody(res)
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				return nil
-			}
 			return err
-		}
-		res.Body = ioutil.NopCloser(bytes.NewReader(body))
-
-		// Modify the Logout URL
-		lo := gjson.GetBytes(body, "logout_url")
-		if !lo.Exists() {
+		} else if body == nil {
 			return nil
 		}
 
-		p, err := url.ParseRequestURI(lo.String())
-		if err != nil {
-			return err
-		}
-		p.Host = conf.hostPort
-		p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
-		body, err = sjson.SetBytes(body, "logout_url", p.String())
-		if err != nil {
-			return err
+		// Modify the Logout URL
+		if lo := gjson.GetBytes(body, "logout_url"); lo.Exists() {
+			p, err := url.ParseRequestURI(lo.String())
+			if err != nil {
+				return err
+			}
+			p.Host = conf.hostPort
+			p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
+			body, err = sjson.SetBytes(body, "logout_url", p.String())
+			if err != nil {
+				return err
+			}
 		}
 
-		res.Body = ioutil.NopCloser(bytes.NewReader(body))
-		return nil
+		// Modify flow URLs
+		if lo := gjson.GetBytes(body, "ui.action"); lo.Exists() {
+			p, err := url.ParseRequestURI(lo.String())
+			if err != nil {
+				return err
+			}
+			p.Host = conf.hostPort
+			p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
+			body, err = sjson.SetBytes(body, "ui.action", p.String())
+			if err != nil {
+				return err
+			}
+		}
+
+		return writeBody(res, body)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
