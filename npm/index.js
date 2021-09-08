@@ -14,5 +14,7 @@ module.exports = binwrap({
     "linux-x64": root + "/ory_"+version+"_linux_64-bit.tar.gz",
     "win32-x64": root + "/ory_"+version+"_windows_64-bit.zip",
     "darwin-x64": root + "/ory_"+version+"_macOS_64-bit.tar.gz",
+    // We do not have an M1 build yet:
+    "darwin-arm64": root + "/ory_"+version+"_macOS_64-bit.tar.gz",
   }
 });
