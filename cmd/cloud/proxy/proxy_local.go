@@ -33,16 +33,23 @@ func NewProxyLocalCmd() *cobra.Command {
 		*/
 		RunE: func(cmd *cobra.Command, args []string) error {
 			port := flagx.MustGetInt(cmd, PortFlag)
+			proto := "http"
+			isHTTP := flagx.MustGetBool(cmd, WithoutHTTPSFlag)
+			if !isHTTP {
+				proto = "https"
+			}
 			conf := &config{
 				port:            flagx.MustGetInt(cmd, PortFlag),
 				noCert:          flagx.MustGetBool(cmd, NoCertInstallFlag),
 				noOpen:          flagx.MustGetBool(cmd, NoOpenFlag),
 				apiEndpoint:     flagx.MustGetString(cmd, remote.FlagAPIEndpoint),
 				consoleEndpoint: flagx.MustGetString(cmd, remote.FlagConsoleAPI),
+				noJWT:           flagx.MustGetBool(cmd, WithoutJWTFlag),
+				noHTTPS:         isHTTP,
 				isLocal:         true,
 				upstream:        args[0],
 				hostPort:        fmt.Sprintf("localhost:%d", port),
-				selfURL:         urlx.ParseOrPanic(fmt.Sprintf("https://localhost:%d", port)),
+				selfURL:         urlx.ParseOrPanic(fmt.Sprintf("%s://localhost:%d", proto, port)),
 			}
 
 			return run(cmd, conf)
@@ -52,6 +59,8 @@ func NewProxyLocalCmd() *cobra.Command {
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(NoCertInstallFlag, false, "If set will not try to add the HTTPS certificate to your certificate store.")
 	proxyCmd.Flags().Bool(NoOpenFlag, false, "Do not open the browser when the proxy starts.")
+	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
+	proxyCmd.Flags().Bool(WithoutHTTPSFlag, false, "Run the proxy without HTTPS. Useful if you have TLS termination or are handling HTTPS otherwise.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
 }

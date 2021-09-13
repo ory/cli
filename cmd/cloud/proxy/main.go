@@ -13,5 +13,6 @@ func init() {
 	Main.AddCommand(
 		NewProxyLocalCmd(),
 		NewProxyProductionCmd(),
+		NewProxyAPICmd(),
 	)
 }

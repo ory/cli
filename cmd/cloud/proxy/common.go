@@ -51,15 +51,20 @@ const (
 	PortFlag          = "port"
 	NoCertInstallFlag = "dont-install-cert"
 	NoOpenFlag        = "no-open"
+	WithoutJWTFlag    = "no-jwt"
+	WithoutHTTPSFlag  = "no-https"
 )
 
 type config struct {
 	port            int
 	noCert          bool
 	noOpen          bool
+	noUpstream      bool
 	apiEndpoint     string
 	consoleEndpoint string
 	hostPort        string
+	noJWT           bool
+	noHTTPS         bool
 	isLocal         bool
 	upstream        string
 	selfURL         *url.URL
@@ -79,11 +84,6 @@ func run(cmd *cobra.Command, conf *config) error {
 		return errors.Wrap(err, "unable to parse upstream URL")
 	}
 
-	c, cleanup, err := createTLSCertificate(conf)
-	if err != nil {
-		return err
-	}
-
 	l := logrusx.New("ory/proxy", x.BuildVersion)
 
 	handler := httputil.NewSingleHostReverseProxy(upstream)
@@ -92,7 +92,7 @@ func run(cmd *cobra.Command, conf *config) error {
 	mw := negroni.New()
 	// mw.Use(reqlog.NewMiddlewareFromLogger(l, "ory"))
 
-	signer, key, err := newSigner(l)
+	signer, key, err := newSigner(l, conf)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -111,15 +111,31 @@ func run(cmd *cobra.Command, conf *config) error {
 	mw.UseFunc(checkOry(conf, writer, l, key, signer, endpoint)) // This must be the last method before the handler
 	mw.UseHandler(handler)
 
+	cleanup := func() error {
+		return nil
+	}
+
+	proto := "http"
+	var tlsConfig *tls.Config
+	if !conf.noHTTPS {
+		c, cl, err := createTLSCertificate(conf)
+		if err != nil {
+			return err
+		}
+		cleanup = cl
+		tlsConfig = &tls.Config{Certificates: []tls.Certificate{*c}}
+		proto = "https"
+	}
+
 	addr := fmt.Sprintf(":%d", conf.port)
 	server := graceful.WithDefaults(&http.Server{
 		Addr:      addr,
 		Handler:   mw,
-		TLSConfig: &tls.Config{Certificates: []tls.Certificate{*c}},
+		TLSConfig: tlsConfig,
 	})
 
-	l.Printf("Starting the https reverse proxy on: %s", server.Addr)
-	proxyUrl := fmt.Sprintf("https://%s", conf.hostPort)
+	l.Printf("Starting the %s reverse proxy on: %s", proto, server.Addr)
+	proxyUrl := fmt.Sprintf("%s://%s", proto, conf.hostPort)
 	l.Printf(`To access your application through the Ory Proxy, open:
 
 	%s`, proxyUrl)
@@ -130,6 +146,10 @@ func run(cmd *cobra.Command, conf *config) error {
 	}
 
 	if err := graceful.Graceful(func() error {
+		if conf.noHTTPS {
+			return server.ListenAndServe()
+		}
+
 		return server.ListenAndServeTLS("", "")
 	}, func(ctx context.Context) error {
 		l.Println("http reverse proxy was shutdown gracefully")
@@ -139,13 +159,17 @@ func run(cmd *cobra.Command, conf *config) error {
 
 		return cleanup()
 	}); err != nil {
-		l.Fatalln("Failed to gracefully shutdown https reverse proxy")
+		l.Fatalf("Failed to gracefully shutdown %s reverse proxy\n", proto)
 	}
 
 	return nil
 }
 
-func newSigner(l *logrusx.Logger) (jose.Signer, *jose.JSONWebKeySet, error) {
+func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySet, error) {
+	if conf.noJWT {
+		return nil, &jose.JSONWebKeySet{}, nil
+	}
+
 	l.WithField("started_at", time.Now()).Info("")
 	key, err := jwksx.GenerateSigningKeys(
 		uuid.Must(uuid.NewV4()).String(),
@@ -345,9 +369,19 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			return
 		}
 
+		if conf.noUpstream {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
+		}
+
 		session, err := checkSession(hc, r, endpoint)
 		r.Header.Del("Authorization")
 		if err != nil || !gjson.GetBytes(session, "active").Bool() {
+			next(w, r)
+			return
+		}
+
+		if conf.noJWT {
 			next(w, r)
 			return
 		}
