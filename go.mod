@@ -6,7 +6,7 @@ go 1.16
 // github.com/ory/kratos/internal/httpclient
 replace github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.6.3-alpha.1
 
-replace github.com/ory/x => github.com/ory/x v0.0.254
+replace github.com/ory/x => github.com/ory/x v0.0.280
 
 replace github.com/gobuffalo/pop/v5 => github.com/gobuffalo/pop/v5 v5.3.4-0.20210608105745-bb07a373cc0e
 
@@ -21,7 +21,6 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/containerd/containerd v1.5.2 // indirect
 	github.com/deckarep/golang-set v1.7.1
-	github.com/elnormous/contenttype v0.0.0-20210110050721-79150725153f
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/getkin/kin-openapi v0.48.0
 	github.com/ghodss/yaml v1.0.0
@@ -47,7 +46,7 @@ require (
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/smallstep/truststore v0.9.6
-	github.com/spf13/cobra v1.1.3
+	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/square/go-jose/v3 v3.0.0-20200630053402-0a67ce9b0693
 	github.com/stretchr/testify v1.7.0
@@ -56,7 +55,5 @@ require (
 	github.com/txn2/txeh v1.3.0
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/urfave/negroni v1.0.0
-	github.com/ziutek/mymysql v1.5.4 // indirect
-	gopkg.in/gorp.v1 v1.7.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

@@ -50,6 +50,8 @@ If you want to expose the application / proxy at a specific port, append the por
 				noOpen:          true,
 				apiEndpoint:     flagx.MustGetString(cmd, remote.FlagAPIEndpoint),
 				consoleEndpoint: flagx.MustGetString(cmd, remote.FlagConsoleAPI),
+				noJWT:           flagx.MustGetBool(cmd, WithoutJWTFlag),
+				noHTTPS:         flagx.MustGetBool(cmd, WithoutHTTPSFlag),
 				isLocal:         false,
 				upstream:        args[0],
 				hostPort:        selfUrl.Host,
@@ -61,6 +63,8 @@ If you want to expose the application / proxy at a specific port, append the por
 	}
 
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
+	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
+	proxyCmd.Flags().Bool(WithoutHTTPSFlag, false, "Run the proxy without HTTPS. Useful if you have TLS termination or are handling HTTPS otherwise.")
 	remote.RegisterClientFlags(proxyCmd.PersistentFlags())
 	return proxyCmd
 }
