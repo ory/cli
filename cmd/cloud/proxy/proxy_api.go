@@ -2,8 +2,7 @@ package proxy
 
 import (
 	"fmt"
-
-	"github.com/ory/x/urlx"
+	"net/url"
 
 	"github.com/spf13/cobra"
 
@@ -13,12 +12,12 @@ import (
 
 func NewProxyAPICmd() *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:   "api",
+		Use:   "api [host]",
 		Short: "Proxy Ory's APIs.",
-		Args:  cobra.ExactArgs(0),
+		Args:  cobra.ExactArgs(1),
 		Long: fmt.Sprintf(`This command starts a proxy for Ory's APIs without reverse proxying anything else.
 
-	$ ory proxy api --port 4000`),
+	$ ory proxy api --port 4000 https://example.org`),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			port := flagx.MustGetInt(cmd, PortFlag)
 			proto := "http"
@@ -26,6 +25,12 @@ func NewProxyAPICmd() *cobra.Command {
 			if !isHTTP {
 				proto = "https"
 			}
+
+			selfUrl, err := url.ParseRequestURI(args[0])
+			if err != nil {
+				return err
+			}
+
 			conf := &config{
 				noUpstream:      true,
 				port:            flagx.MustGetInt(cmd, PortFlag),
@@ -37,8 +42,8 @@ func NewProxyAPICmd() *cobra.Command {
 				noHTTPS:         isHTTP,
 				isLocal:         false,
 				upstream:        fmt.Sprintf("%s://localhost:%d", proto, port),
-				hostPort:        fmt.Sprintf("localhost:%d", port),
-				selfURL:         urlx.ParseOrPanic(fmt.Sprintf("%s://localhost:%d", proto, port)),
+				hostPort:        selfUrl.Host,
+				selfURL:         selfUrl,
 			}
 
 			return run(cmd, conf)
