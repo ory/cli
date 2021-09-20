@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 
 	"github.com/ory/x/jsonschemax"
@@ -29,13 +30,15 @@ var RenderVersion = &cobra.Command{
 	Run:   addVersionToSchema,
 }
 
-func addVersionToSchema(_ *cobra.Command, args []string) {
+var preReleaseVersion = regexp.MustCompile(".*[-.]pre\\.")
+
+func addVersionToSchema(cmd *cobra.Command, args []string) {
 	const destFile = ".schema/version.schema.json"
 	project := args[0]
 	newVersion := args[1]
 
-	if strings.Contains(newVersion, ".pre.") {
-		fmt.Printf("Going to silently skip version schema rendering because '%s' contains '.pre.'", newVersion)
+	if preReleaseVersion.MatchString(newVersion) {
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Going to silently skip version schema rendering because '%s' is a pre release", newVersion)
 		return
 	}
 

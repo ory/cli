@@ -1,3 +1,4 @@
+//go:build nodev
 // +build nodev
 
 package cmd
