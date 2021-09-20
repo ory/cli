@@ -2,24 +2,56 @@ package schema
 
 import (
 	"bytes"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 
-	"github.com/containerd/continuity/fs"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func getAllFiles(t *testing.T, dir string) (files []string) {
+	entries, err := ioutil.ReadDir(dir)
+	require.NoError(t, err)
+
+	for _, e := range entries {
+		switch {
+		case e.IsDir():
+			files = append(files, getAllFiles(t, path.Join(dir, e.Name()))...)
+		default:
+			files = append(files, path.Join(dir, e.Name()))
+		}
+	}
+	return
+}
+
+func copyDir(t *testing.T, src, dst string) {
+	files := getAllFiles(t, src)
+	for _, fn := range files {
+		srcF, err := os.Open(fn)
+		require.NoError(t, err)
+		dstFn := path.Join(dst, strings.TrimLeft(fn, src))
+		require.NoError(t, os.MkdirAll(path.Dir(dstFn), 0777))
+		dstF, err := os.OpenFile(dstFn, os.O_WRONLY|os.O_CREATE, 0666)
+		require.NoError(t, err)
+		_, err = io.Copy(dstF, srcF)
+		require.NoError(t, err)
+		require.NoError(t, srcF.Close())
+		require.NoError(t, dstF.Close())
+	}
+}
 
 func TestAddVersionToSchema(t *testing.T) {
 	t.Run("case=simple snapshot", func(t *testing.T) {
 		testDir, err := ioutil.TempDir("", "version-schema-test-")
 		require.NoError(t, err)
 
-		require.NoError(t, fs.CopyDir("fixtures/render_version_test", testDir))
+		copyDir(t, "fixtures/render_version_test", testDir)
 
 		wd, err := os.Getwd()
 		require.NoError(t, err)
@@ -41,7 +73,7 @@ func TestAddVersionToSchema(t *testing.T) {
 		cmd := &cobra.Command{}
 
 		testDir := t.TempDir()
-		require.NoError(t, fs.CopyDir(testDir, "fixtures/render_version_test"))
+		copyDir(t, "fixtures/render_version_test", testDir)
 
 		expected, err := os.ReadFile(filepath.Join("fixtures", "render_version_test", ".schema", "version.schema.json"))
 		require.NoError(t, err)
