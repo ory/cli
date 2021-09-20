@@ -1,3 +1,4 @@
+//go:build pins
 // +build pins
 
 package cli
