@@ -49,7 +49,9 @@ In case where the release pipeline failed and you re-create another release wher
 		wd, err := os.Getwd()
 		pkg.Check(err)
 
-		project := pkg.ProjectFromDir(wd)
+		cfg, err := pkg.ReadConfig()
+		pkg.Check(err)
+
 		dry := flagx.MustGetBool(cmd, "dry")
 		gitCleanTags()
 
@@ -96,6 +98,25 @@ Are you sure you want to proceed without creating a pre version first?`, current
 		}
 		pkg.Confirm("Are you sure you want to bump to v%s? Previous version was v%s.", nextVersion, currentVersion)
 
+		if len(cfg.PreReleaseHooks) != 0 {
+			fmt.Println("Running pre-release hooks...")
+
+			for _, h := range cfg.PreReleaseHooks {
+				parts := strings.Split(h, " ")
+
+				var err error
+				if len(parts) > 1 {
+					err = pkg.NewCommand(parts[0], parts[1:]...).Run()
+				} else {
+					err = pkg.NewCommand(parts[0]).Run()
+				}
+
+				if err != nil {
+					pkg.Fatalf("Pre-release hook failed: %s\nAborting release.", err.Error())
+				}
+			}
+		}
+
 		var fromVersion *semver.Version
 		if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) > 0 {
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
@@ -117,7 +138,7 @@ Are you sure you want to proceed without creating a pre version first?`, current
 
 		pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
 
-		switch project {
+		switch cfg.Project {
 		case "hydra":
 			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
 		case "kratos":
