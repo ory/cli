@@ -155,6 +155,7 @@ Are you sure you want to proceed without creating a pre version first?`, current
 			pkg.Check(pkg.NewCommandIn(wd, "rm", "-rf", "./docs/versioned_docs/version-"+docTag).Run())
 			pkg.Check(pkg.NewCommandIn(wd, "rm", "-rf", "./docs/versioned_sidebars/version-"+docTag+"-sidebars.json").Run())
 			pkg.Check(pkg.NewCommandIn(filepath.Join(wd, "docs"), "npm", "run", "docusaurus", "docs:version", docTag).Run())
+			pkg.Check(pkg.NewCommandIn(filepath.Join(wd, "docs"), "npm", "run", "format").Run())
 		}
 
 		pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
