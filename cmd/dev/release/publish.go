@@ -1,6 +1,7 @@
 package release
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -55,8 +56,28 @@ In case where the release pipeline failed and you re-create another release wher
 		dry := flagx.MustGetBool(cmd, "dry")
 		gitCleanTags()
 
-		currentVersion, err := semver.StrictNewVersion(strings.TrimPrefix(pkg.GitGetCurrentTag(), "v"))
-		pkg.Check(err, "Unable to parse current git tag %s: %s", pkg.GitGetCurrentTag(), err)
+		var latestTag string
+		for {
+			var o, e bytes.Buffer
+			args := []string{"describe", "--abbrev=0", "--tags"}
+			if latestTag != "" {
+				args = append(args, latestTag+"^")
+			}
+			cmd := pkg.NewCommand("git", args...)
+			cmd.Stdout = &o
+			cmd.Stderr = &e
+			if cmd.Run() != nil {
+				pkg.Fatalf("could not get git tag: %s%s", o.String(), e.String())
+			}
+			latestTag = strings.TrimSpace(o.String())
+
+			if !cfg.IgnoreTags.MatchString(latestTag) {
+				break
+			}
+		}
+
+		currentVersion, err := semver.StrictNewVersion(strings.TrimPrefix(latestTag, "v"))
+		pkg.Check(err, "Unable to parse current git tag %s: %s", latestTag, err)
 
 		var nextVersion semver.Version
 		switch args[0] {
