@@ -1,16 +1,21 @@
 package pkg
 
 import (
-	"gopkg.in/yaml.v2"
 	"os"
+	"regexp"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/ory/x/stringsx"
 )
 
 type (
 	Config struct {
-		Project         oryProject `yaml:"project"`
-		PreReleaseHooks []string   `yaml:"pre_release_hooks"`
+		Project           oryProject     `yaml:"project"`
+		PreReleaseHooks   []string       `yaml:"pre_release_hooks"`
+		IgnoreTagPatterns []string       `yaml:"ignore_tags"`
+		IgnoreTags        *regexp.Regexp `yaml:"-"`
 	}
 	oryProject string
 )
@@ -23,6 +28,11 @@ func ReadConfig() (*Config, error) {
 
 	var c Config
 	if err := yaml.Unmarshal(raw, &c); err != nil {
+		return nil, err
+	}
+
+	c.IgnoreTags, err = regexp.Compile(strings.Join(c.IgnoreTagPatterns, "|"))
+	if err != nil {
 		return nil, err
 	}
 	return &c, nil
