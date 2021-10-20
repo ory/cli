@@ -134,10 +134,15 @@ changelog:
 
 brews:
   -
+    name: ory
+    description: Interface with Ory using this CLI!
+    license: "Apache-2.0"
     tap:
       owner: ory
-      name: homebrew-ory
+      name: homebrew-tap
     goarm: 6
+    test: |
+      system "#{bin}/ory version"
     ids:
       - ory-macos
     homepage:  https://www.ory.sh

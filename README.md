@@ -11,8 +11,7 @@ $ bash <(curl https://raw.githubusercontent.com/ory/cli/master/install.sh) -b $G
 ## macOS
 
 ```shell-session
-$ brew tap ory/ory
-$ brew install ory/ory/ory
+$ brew install ory/tap/cli
 ```
 
 ## Releases
