@@ -9,8 +9,6 @@ before:
   hooks:
     - go mod download
     - git checkout -- go.sum
-    - go install github.com/markbates/pkger/cmd/pkger
-    - pkger
 
 builds:
   -

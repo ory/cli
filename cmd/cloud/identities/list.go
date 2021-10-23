@@ -6,5 +6,6 @@ import (
 )
 
 func init() {
-	remote.RegisterClientFlags(identities.ListCmd.PersistentFlags())
+	listCmd := identities.NewListCmd()
+	remote.RegisterClientFlags(listCmd.PersistentFlags())
 }

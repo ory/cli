@@ -7,7 +7,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"github.com/markbates/pkger"
+	"github.com/ory/cli/view"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ory/gochimp3"
@@ -102,7 +103,11 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 	}
 
 	var body bytes.Buffer
-	pkg.Check(readTemplate(pkger.Open("/view/mail-body.html")).Execute(&body, struct {
+
+	t, err := template.New("mail-body.html").Parse(string(view.MailBody))
+	pkg.Check(err)
+
+	pkg.Check(t.Execute(&body, struct {
 		Version     string
 		GitTag      string
 		ProjectName string
