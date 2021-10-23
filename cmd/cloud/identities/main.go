@@ -14,13 +14,17 @@ var Main = &cobra.Command{
 }
 
 func init() {
-	cmdx.RegisterFormatFlags(identities.ListCmd.PersistentFlags())
-	cmdx.RegisterFormatFlags(identities.GetCmd.PersistentFlags())
+	listCmd := identities.NewListCmd()
+	getCmd := identities.NewGetCmd()
+	deleteCmd := identities.NewDeleteCmd()
+
+	cmdx.RegisterFormatFlags(listCmd.PersistentFlags())
+	cmdx.RegisterFormatFlags(getCmd.PersistentFlags())
 	remote.RegisterClientFlags(Main.PersistentFlags())
 
 	Main.AddCommand(
-		identities.DeleteCmd,
-		identities.GetCmd,
-		identities.ListCmd,
+		listCmd,
+		getCmd,
+		deleteCmd,
 	)
 }

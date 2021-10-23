@@ -10,9 +10,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ory/cli/spec"
+
 	"github.com/ory/x/jsonschemax"
 
-	"github.com/markbates/pkger"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/sjson"
 
@@ -20,8 +21,6 @@ import (
 	"github.com/ory/jsonschema/v3"
 	_ "github.com/ory/jsonschema/v3/httploader"
 )
-
-var _ = pkger.Include("../../../.schema")
 
 var RenderVersion = &cobra.Command{
 	Use:   "render-version <project-name> <new-version> <schema-path>",
@@ -68,12 +67,7 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 	var prettyVersionSchema bytes.Buffer
 	pkg.Check(json.Indent(&prettyVersionSchema, renderedVersionSchema, "", strings.Repeat(" ", 4)))
 
-	f, err := pkger.Open("/.schema/version_meta.schema.json")
-	pkg.Check(err)
-	metaSchema, err := ioutil.ReadAll(f)
-	pkg.Check(err)
-	pkg.Check(f.Close())
-	schema, err := jsonschema.CompileString("version_meta.schema.json", string(metaSchema))
+	schema, err := jsonschema.CompileString("version_meta.schema.json", string(spec.VersionSchema))
 	pkg.Check(err)
 
 	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))

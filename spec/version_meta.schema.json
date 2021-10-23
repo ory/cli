@@ -1,5 +1,5 @@
 {
-  "$id": "https://github.com/ory/cli/.schema/version_meta.schema.json",
+  "$id": "https://github.com/ory/cli/spec/version_meta.schema.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "The meta schema for Ory's version schemas.",
   "type": "object",

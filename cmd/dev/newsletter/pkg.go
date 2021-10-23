@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -18,7 +17,6 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/markbates/pkger/pkging"
 
 	"github.com/ory/gochimp3"
 	"github.com/ory/x/httpx"
@@ -29,18 +27,6 @@ import (
 var defaultRenderer = html.NewRenderer(html.RendererOptions{
 	Flags: html.CommonFlags | html.HrefTargetBlank,
 })
-
-func readTemplate(file pkging.File, err error) *template.Template {
-	pkg.Check(err)
-	defer pkg.Check(file.Close())
-
-	contents, err := ioutil.ReadAll(file)
-	pkg.Check(err)
-
-	t, err := template.New(file.Name()).Parse(string(contents))
-	pkg.Check(err)
-	return t
-}
 
 // return (ast.GoToNext, true) to tell html renderer to skip rendering this node
 // (because you've rendered it)
