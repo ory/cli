@@ -57,23 +57,27 @@ In case where the release pipeline failed and you re-create another release wher
 		gitCleanTags()
 
 		var latestTag string
-		for {
-			var o, e bytes.Buffer
-			args := []string{"describe", "--abbrev=0", "--tags"}
-			if latestTag != "" {
-				args = append(args, latestTag+"^")
-			}
-			cmd := pkg.NewCommand("git", args...)
-			cmd.Stdout = &o
-			cmd.Stderr = &e
-			if cmd.Run() != nil {
-				pkg.Fatalf("could not get git tag: %s%s", o.String(), e.String())
-			}
-			latestTag = strings.TrimSpace(o.String())
+		if cfg.IgnoreTags != nil && len(cfg.IgnoreTags.String()) > 0 {
+			for {
+				var o, e bytes.Buffer
+				args := []string{"describe", "--abbrev=0", "--tags"}
+				if latestTag != "" {
+					args = append(args, latestTag+"^")
+				}
+				cmd := pkg.NewCommand("git", args...)
+				cmd.Stdout = &o
+				cmd.Stderr = &e
+				if cmd.Run() != nil {
+					pkg.Fatalf("could not get git tag: %s%s", o.String(), e.String())
+				}
+				latestTag = strings.TrimSpace(o.String())
 
-			if !cfg.IgnoreTags.MatchString(latestTag) {
-				break
+				if !cfg.IgnoreTags.MatchString(latestTag) {
+					break
+				}
 			}
+		} else {
+			latestTag = pkg.GitGetCurrentTag()
 		}
 
 		currentVersion, err := semver.StrictNewVersion(strings.TrimPrefix(latestTag, "v"))
