@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"github.com/pkg/errors"
 	"os"
 	"regexp"
 	"strings"
@@ -23,6 +24,9 @@ type (
 func ReadConfig() (*Config, error) {
 	raw, err := os.ReadFile(".orycli.yml")
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.Errorf("The file .orycli.yml does not exist in this repository. It is required to be able to create a release. Did you create the file?")
+		}
 		return nil, err
 	}
 
