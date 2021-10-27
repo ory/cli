@@ -5,13 +5,15 @@ This is the ORY Command Line Interface (CLI).
 ## Unix (Linux / macOS)
 
 ```shell-session
-$ bash <(curl https://raw.githubusercontent.com/ory/cli/master/install.sh) -b $GOPATH/bin
+$ bash <(curl https://raw.githubusercontent.com/ory/cli/master/install.sh)
+$ ory help
 ```
 
 ## macOS
 
 ```shell-session
 $ brew install ory/tap/cli
+$ ory help
 ```
 
 ## Releases
