@@ -67,6 +67,8 @@ workflows:
               only: /.*/
 
       - goreleaser/newsletter-draft:
+          chimp-list: 058a056618
+          chimp-segment: 11398953
           requires:
             - goreleaser/release
           filters:
