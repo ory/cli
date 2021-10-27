@@ -20,7 +20,6 @@ builds:
       - sqlite
     ldflags:
       - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-      # - "-extldflags '-static'"
     binary: ory
     env:
       - CGO_ENABLED=1
@@ -65,8 +64,6 @@ builds:
     flags:
       - -tags
       - sqlite
-      # Remove once https://github.com/golang/go/issues/40795 is closed
-      - -buildmode=exe
     ldflags:
       - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
       - "-extldflags '-static'"
@@ -79,6 +76,29 @@ builds:
       - amd64
     goos:
       - windows
+  -
+    id: ory
+    flags:
+      - -tags
+      - nodev
+    ldflags:
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
+    binary: ory
+    env:
+      - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 5
+      - 6
+      - 7
+    goos:
+      - linux
+      - windows
+      - darwin
 
 archives:
   - builds:
@@ -164,8 +184,9 @@ release:
 
 dockers:
   - dockerfile: Dockerfile
+    use: buildx
     ids:
-      - ory-sqlite-linux-libmusl
+      - ory
     image_templates:
       - "oryd/ory:{{ .Tag }}"
       - "oryd/ory:latest"
