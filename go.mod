@@ -30,6 +30,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/markbates/pkger v0.17.1
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
