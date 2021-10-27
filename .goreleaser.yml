@@ -152,7 +152,7 @@ changelog:
 
 brews:
   -
-    name: ory
+    name: cli
     description: Interface with Ory using this CLI!
     license: "Apache-2.0"
     tap:
