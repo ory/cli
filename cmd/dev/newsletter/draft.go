@@ -83,10 +83,10 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 	var segmentOptions *gochimp3.CampaignCreationSegmentOptions
 	if segmentID > 0 {
 		var payload struct {
-			Options *gochimp3.CampaignCreationSegmentOptions `json:"options"`
+			Options gochimp3.CampaignCreationSegmentOptions `json:"options"`
 		}
 		newMailchimpRequest(chimpKey, fmt.Sprintf("/lists/%s/segments/%d", listID, segmentID), &payload)
-		segmentOptions = payload.Options
+		segmentOptions = &payload.Options
 		segmentOptions.SavedSegmentId = segmentID
 	}
 
