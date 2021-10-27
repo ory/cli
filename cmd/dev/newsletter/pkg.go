@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"html/template"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -75,7 +78,14 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 	res, err := client.Do(req)
 	pkg.Check(err)
 	defer res.Body.Close()
-	pkg.Check(json.NewDecoder(res.Body).Decode(payload))
+
+	body, err := ioutil.ReadAll(res.Body)
+	pkg.Check(err)
+	if res.StatusCode != http.StatusOK {
+		pkg.Check(errors.Errorf("received unexpected status code: %d", res.StatusCode), "%s", body)
+	}
+
+	pkg.Check(json.NewDecoder(bytes.NewReader(body)).Decode(payload))
 }
 
 func campaignID() string {
