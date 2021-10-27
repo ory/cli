@@ -166,7 +166,7 @@ brews:
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
-      email: aeneas@ory.sh
+      email: 3372410+aeneasr@users.noreply.github.com
 
 scoop:
   bucket:
