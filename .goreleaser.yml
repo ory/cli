@@ -10,6 +10,10 @@ before:
     - go mod download
     - git checkout -- go.sum
 
+universal_binaries:
+- id: ory
+  replace: true
+
 builds:
   -
     id: ory-sqlite-darwin
@@ -27,6 +31,22 @@ builds:
       - amd64
     goos:
       - darwin
+  -
+    id: kratos-sqlite-darwin-arm
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
+    binary: kratos
+    env:
+      - CGO_ENABLED=1
+      - CC=oa64-clang
+      - CXX=oa64-clang++
+    goarch:
+      - arm64
+    goos:
+      - darwin
 
   -
     id: ory-sqlite-linux
@@ -40,8 +60,10 @@ builds:
       - CGO_ENABLED=1
     goarch:
       - amd64
+      - arm64
     goos:
       - linux
+
   -
     id: ory-sqlite-linux-libmusl
     flags:
@@ -57,6 +79,7 @@ builds:
       - amd64
     goos:
       - linux
+
   -
     id: ory-sqlite-windows
     flags:
@@ -109,10 +132,12 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-libmusl_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
-  - builds:
-    - ory-sqlite-darwin
-    id: ory-macos
+  - id: ory-macos
+    builds:
+      - kratos-sqlite-darwin-arm
+      - kratos-sqlite-darwin
     replacements:
       darwin: macOS
       386: 32-bit
@@ -120,6 +145,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-libmusl_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - builds:
     - ory-sqlite-linux
@@ -131,6 +157,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-libmusl_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - builds:
       - ory-sqlite-linux-libmusl
@@ -162,7 +189,7 @@ brews:
     test: |
       system "#{bin}/ory version"
     ids:
-      - ory-macos
+      - ory-sqlite-darwin
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
@@ -181,10 +208,50 @@ release:
   prerelease: auto
 
 dockers:
-  - dockerfile: Dockerfile
+  - image_templates:
+      - "foo/bar:{{ .Version }}-amd64"
     use: buildx
+    dockerfile: Dockerfile
     ids:
       - ory
+    build_flag_templates:
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "foo/bar:{{ .Version }}-arm64v8"
+    use: buildx
+    goarch: arm64
+    dockerfile: Dockerfile
+    ids:
+      - ory
+    build_flag_templates:
+      - "--platform=linux/arm64/v8"
+
+docker_manifests:
+  # You can have multiple Docker manifests.
+  -
+    # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: tag
+
+    # Name template for the manifest.
+    # Defaults to empty.
+    name_template: "oryd/ory:{{ .Tag }}"
+
+    # Image name templates to be added to this manifest.
+    # Defaults to empty.
     image_templates:
-      - "oryd/ory:{{ .Tag }}"
-      - "oryd/ory:latest"
+      - "oryd/ory:{{ .Tag }}-amd64"
+      - "oryd/ory:{{ .Tag }}-arm64/v8"
+
+  -
+    # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: latest
+
+    # Name template for the manifest.
+    # Defaults to empty.
+    name_template: "oryd/ory:latest"
+
+    # Image name templates to be added to this manifest.
+    # Defaults to empty.
+    image_templates:
+      - "oryd/ory:latest-amd64"
+      - "oryd/ory:latest-arm64/v8"
