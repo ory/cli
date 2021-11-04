@@ -355,6 +355,6 @@ docker_manifests:
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/{{ .ProjectName }}:latest-amd64"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
