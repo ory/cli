@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"github.com/ory/cli/buildinfo"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -37,7 +38,6 @@ import (
 	"github.com/urfave/negroni"
 
 	"github.com/ory/cli/cmd/cloud/remote"
-	"github.com/ory/cli/x"
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
 	"github.com/ory/x/httpx"
@@ -84,7 +84,7 @@ func run(cmd *cobra.Command, conf *config) error {
 		return errors.Wrap(err, "unable to parse upstream URL")
 	}
 
-	l := logrusx.New("ory/proxy", x.BuildVersion)
+	l := logrusx.New("ory/proxy", buildinfo.Version)
 
 	handler := httputil.NewSingleHostReverseProxy(upstream)
 	writer := herodot.NewJSONWriter(l)

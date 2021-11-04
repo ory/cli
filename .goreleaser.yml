@@ -11,18 +11,18 @@ before:
     - git checkout -- go.sum
 
 universal_binaries:
-- id: ory
+- id: default
   replace: true
 
 builds:
   -
-    id: ory-sqlite-darwin
+    id: macos-cgo
     flags:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-    binary: ory
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -34,47 +34,80 @@ builds:
       - darwin
 
   -
-    id: ory-sqlite-linux
+    id: linux-cgo-amd64
     flags:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-    binary: ory
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
     env:
       - CGO_ENABLED=1
     goarch:
       - amd64
+    goos:
+      - linux
+
+  -
+    id: linux-cgo-arm64
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+    goarch:
       - arm64
     goos:
       - linux
 
   -
-    id: ory-sqlite-linux-libmusl
+    id: linux-cgo-arm
     flags:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-    binary: ory
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
+    env:
+      - CGO_ENABLED=1
+      - CC=arm-linux-gnueabihf-gcc
+    goarch:
+      - arm
+    goarm:
+      - 5
+      - 6
+      - 7
+    goos:
+      - linux
+
+  -
+    id: alpine-cgo
+    flags:
+      - -tags
+      - sqlite
+    ldflags:
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
     env:
       - CGO_ENABLED=1
       - CC=musl-gcc
     goarch:
       - amd64
-      - arm64
     goos:
       - linux
 
   -
-    id: ory-sqlite-windows
+    id: windows-cgo
     flags:
       - -tags
       - sqlite
     ldflags:
-      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-      - "-extldflags '-static'"
-    binary: ory
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
     env:
       - CGO_ENABLED=1
       - CC=x86_64-w64-mingw32-gcc
@@ -85,13 +118,13 @@ builds:
       - windows
 
   -
-    id: ory
+    id: default
     flags:
       - -tags
       - nodev
     ldflags:
-      - -s -w -X github.com/ory/cli/x.BuildVersion={{.Tag}} -X github.com/ory/cli/x.BuildGitHash={{.FullCommit}} -X github.com/ory/cli/x.BuildTime={{.Date}}
-    binary: ory
+      - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
+    binary: "{{ .ProjectName }}"
     env:
       - CGO_ENABLED=0
     goarch:
@@ -109,22 +142,9 @@ builds:
       - darwin
 
 archives:
-  - builds:
-    - ory-sqlite-windows
-    id: ory-windows
-    replacements:
-      darwin: macOS
-      386: 32-bit
-      amd64: 64-bit
-    format_overrides:
-      - goos: windows
-        format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-
-  - id: ory-macos
+  - id: windows
     builds:
-      - kratos-sqlite-darwin-arm
-      - kratos-sqlite-darwin
+    - windows-cgo
     replacements:
       darwin: macOS
       386: 32-bit
@@ -132,11 +152,10 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
-  - builds:
-    - ory-sqlite-linux
-    id: ory-linux
+  - id: macos
+    builds:
+      - macos-cgo
     replacements:
       darwin: macOS
       386: 32-bit
@@ -144,11 +163,10 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
-  - builds:
-      - ory-sqlite-linux-libmusl
-    id: ory-linux-libmusl
+  - id: ory-linux
+    builds:
+    - ory-cgo-linux
     replacements:
       darwin: macOS
       386: 32-bit
@@ -156,7 +174,18 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-libmusl_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+  - id: ory-linux-libmusl
+    builds:
+      - ory-cgo-linux-libmusl
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 snapshot:
   name_template: "{{ .Tag }}-next"
@@ -174,9 +203,9 @@ brews:
       name: homebrew-tap
     goarm: 6
     test: |
-      system "#{bin}/ory version"
+      system "#{bin}/{{ .ProjectName }} version"
     ids:
-      - ory-sqlite-darwin
+      - macos-cgo
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
@@ -185,33 +214,60 @@ brews:
 scoop:
   bucket:
     owner: ory
-    name: scoop-ory
-  homepage:  https://www.ory.sh
+    name: scoop-{{ .ProjectName }}
+  homepage: https://www.ory.sh
   commit_author:
     name: aeneasr
-    email: aeneas@ory.sh
+    email: 3372410+aeneasr@users.noreply.github.com
 
 release:
   prerelease: auto
 
 dockers:
   - image_templates:
-      - "oryd/ory:{{ .Version }}-amd64"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-amd64"
     use: buildx
     dockerfile: Dockerfile
     ids:
-      - ory
+      - linux-cgo-amd64
     build_flag_templates:
       - "--platform=linux/amd64"
   - image_templates:
-      - "oryd/ory:{{ .Version }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm64/v8"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
     ids:
-      - ory
+      - linux-cgo-arm64
     build_flag_templates:
       - "--platform=linux/arm64/v8"
+  - image_templates:
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v7"
+    use: buildx
+    goarch: arm64
+    dockerfile: Dockerfile
+    ids:
+      - linux-cgo-arm
+    build_flag_templates:
+      - "--platform=linux/arm64/v7"
+  - image_templates:
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v6"
+    use: buildx
+    goarch: arm64
+    dockerfile: Dockerfile
+    ids:
+      - linux-cgo-arm
+    build_flag_templates:
+      - "--platform=linux/arm64/v6"
+  - image_templates:
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v5"
+    use: buildx
+    goarch: arm64
+    dockerfile: Dockerfile
+    ids:
+      - linux-cgo-arm
+    build_flag_templates:
+      - "--platform=linux/arm64/v5"
 
 docker_manifests:
   # You can have multiple Docker manifests.
@@ -221,13 +277,67 @@ docker_manifests:
 
     # Name template for the manifest.
     # Defaults to empty.
-    name_template: "oryd/ory:{{ .Tag }}"
+    name_template: "oryd/{{ .ProjectName }}:v{{ .Tag }}"
 
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/ory:{{ .Tag }}-amd64"
-      - "oryd/ory:{{ .Tag }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+
+  -
+    # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: major
+
+    # Name template for the manifest.
+    # Defaults to empty.
+    name_template: "oryd/{{ .ProjectName }}:vv{{ .Major }}"
+
+    # Image name templates to be added to this manifest.
+    # Defaults to empty.
+    image_templates:
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+
+  -
+    # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: minor
+
+    # Name template for the manifest.
+    # Defaults to empty.
+    name_template: "oryd/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}"
+
+    # Image name templates to be added to this manifest.
+    # Defaults to empty.
+    image_templates:
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+
+  -
+    # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
+    id: patch
+
+    # Name template for the manifest.
+    # Defaults to empty.
+    name_template: "oryd/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}.{{ .Patch }}"
+
+    # Image name templates to be added to this manifest.
+    # Defaults to empty.
+    image_templates:
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -235,10 +345,13 @@ docker_manifests:
 
     # Name template for the manifest.
     # Defaults to empty.
-    name_template: "oryd/ory:latest"
+    name_template: "oryd/{{ .ProjectName }}:latest"
 
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/ory:latest-amd64"
-      - "oryd/ory:latest-arm64/v8"
+      - "oryd/{{ .ProjectName }}:latest-amd64"
+      - "oryd/{{ .ProjectName }}:latest-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
