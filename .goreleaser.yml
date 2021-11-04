@@ -244,46 +244,43 @@ dockers:
       - "oryd/{{ .ProjectName }}:v{{ .Version }}-amd64"
     use: buildx
     dockerfile: Dockerfile
+    goarch: amd64
     ids:
       - linux-cgo-amd64
     build_flag_templates:
       - "--platform=linux/amd64"
+
   - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm64"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
     ids:
       - linux-cgo-arm64
     build_flag_templates:
-      - "--platform=linux/arm64/v8"
+      - "--platform=linux/arm64"
+
   - image_templates:
       - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv7"
     use: buildx
-    goarch: arm64
+    goarch: arm
+    goarm: 7
     dockerfile: Dockerfile
     ids:
       - linux-cgo-arm
     build_flag_templates:
-      - "--platform=linux/arm64/v7"
+      - "--platform=linux/arm/v7"
+
   - image_templates:
       - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv6"
     use: buildx
-    goarch: arm64
+    goarch: arm
+    goarm: 6
     dockerfile: Dockerfile
     ids:
       - linux-cgo-arm
     build_flag_templates:
-      - "--platform=linux/arm64/v6"
-  - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv5"
-    use: buildx
-    goarch: arm64
-    dockerfile: Dockerfile
-    ids:
-      - linux-cgo-arm
-    build_flag_templates:
-      - "--platform=linux/arm64/v5"
+      - "--platform=linux/arm/v6"
 
 docker_manifests:
   # You can have multiple Docker manifests.
@@ -299,10 +296,8 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -316,10 +311,8 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -333,10 +326,8 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -350,10 +341,8 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -367,7 +356,5 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:latest-amd64"
-      - "oryd/{{ .ProjectName }}:latest-arm64/v8"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
