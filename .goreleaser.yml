@@ -152,6 +152,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: macos-cgo
     builds:
@@ -163,6 +164,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: linux-cgo
     builds:
@@ -176,6 +178,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: alpine-cgo
     builds:
@@ -187,7 +190,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite-libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: default
     builds:
@@ -218,7 +221,7 @@ brews:
     test: |
       system "#{bin}/{{ .ProjectName }} version"
     ids:
-      - macos
+      - macos-cgo
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
@@ -246,7 +249,7 @@ dockers:
     build_flag_templates:
       - "--platform=linux/amd64"
   - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm64/v8"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm64v8"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
@@ -255,7 +258,7 @@ dockers:
     build_flag_templates:
       - "--platform=linux/arm64/v8"
   - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v7"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv7"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
@@ -264,7 +267,7 @@ dockers:
     build_flag_templates:
       - "--platform=linux/arm64/v7"
   - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v6"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv6"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
@@ -273,7 +276,7 @@ dockers:
     build_flag_templates:
       - "--platform=linux/arm64/v6"
   - image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Version }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:v{{ .Version }}-armv5"
     use: buildx
     goarch: arm64
     dockerfile: Dockerfile
@@ -290,16 +293,16 @@ docker_manifests:
 
     # Name template for the manifest.
     # Defaults to empty.
-    name_template: "oryd/{{ .ProjectName }}:v{{ .Tag }}"
+    name_template: "oryd/{{ .ProjectName }}:{{ .Tag }}"
 
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -312,11 +315,11 @@ docker_manifests:
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -329,11 +332,11 @@ docker_manifests:
     # Image name templates to be added to this manifest.
     # Defaults to empty.
     image_templates:
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm64/v8"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -347,10 +350,10 @@ docker_manifests:
     # Defaults to empty.
     image_templates:
       - "oryd/{{ .ProjectName }}:{{ .Tag }}-amd64"
-      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64/v8"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-arm64v8"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
 
   -
     # ID of the manifest, needed if you want to filter by it later on (e.g. on custom publishers).
@@ -365,6 +368,6 @@ docker_manifests:
     image_templates:
       - "oryd/{{ .ProjectName }}:latest-amd64"
       - "oryd/{{ .ProjectName }}:latest-arm64/v8"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v7"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v6"
-      - "oryd/{{ .ProjectName }}:v{{ .Tag }}-arm/v5"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv7"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv6"
+      - "oryd/{{ .ProjectName }}:{{ .Tag }}-armv5"
