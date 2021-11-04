@@ -230,7 +230,7 @@ brews:
 scoop:
   bucket:
     owner: ory
-    name: scoop-{{ .ProjectName }}
+    name: "scoop-{{ .ProjectName }}"
   homepage: https://www.ory.sh
   commit_author:
     name: aeneasr
