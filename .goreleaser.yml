@@ -221,6 +221,7 @@ brews:
     test: |
       system "#{bin}/{{ .ProjectName }} version"
     ids:
+      - linux-cgo
       - macos-cgo
     homepage:  https://www.ory.sh
     commit_author:
