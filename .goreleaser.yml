@@ -142,7 +142,7 @@ builds:
       - darwin
 
 archives:
-  - id: windows
+  - id: windows-cgo
     builds:
     - windows-cgo
     replacements:
@@ -153,7 +153,7 @@ archives:
       - goos: windows
         format: zip
 
-  - id: macos
+  - id: macos-cgo
     builds:
       - macos-cgo
     replacements:
@@ -164,9 +164,11 @@ archives:
       - goos: windows
         format: zip
 
-  - id: ory-linux
+  - id: linux-cgo
     builds:
-    - ory-cgo-linux
+    - linux-cgo-arm64
+    - linux-cgo-amd64
+    - linux-cgo-arm
     replacements:
       darwin: macOS
       386: 32-bit
@@ -175,9 +177,9 @@ archives:
       - goos: windows
         format: zip
 
-  - id: ory-linux-libmusl
+  - id: alpine-cgo
     builds:
-      - ory-cgo-linux-libmusl
+      - alpine-cgo
     replacements:
       darwin: macOS
       386: 32-bit
@@ -186,6 +188,17 @@ archives:
       - goos: windows
         format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+  - id: default
+    builds:
+      - default
+    replacements:
+      darwin: macOS
+      386: 32-bit
+      amd64: 64-bit
+    format_overrides:
+      - goos: windows
+        format: zip
 
 snapshot:
   name_template: "{{ .Tag }}-next"
@@ -205,7 +218,7 @@ brews:
     test: |
       system "#{bin}/{{ .ProjectName }} version"
     ids:
-      - macos-cgo
+      - macos
     homepage:  https://www.ory.sh
     commit_author:
       name: aeneasr
