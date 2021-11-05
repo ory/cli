@@ -30,7 +30,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/markbates/pkger v0.17.1
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
@@ -38,7 +37,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.4
 	github.com/ory/kratos v0.6.3-alpha.1.0.20210608145540-005c8b8e28f3
 	github.com/ory/kratos-client-go v0.6.3-alpha.1
-	github.com/ory/x v0.0.300
+	github.com/ory/x v0.0.308
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
 	github.com/smallstep/truststore v0.9.6
