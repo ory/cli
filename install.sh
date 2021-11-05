@@ -95,8 +95,8 @@ adjust_format() {
 adjust_os() {
   # adjust archive name based on OS
   case ${OS} in
-    386) OS=32-bit ;;
-    amd64) OS=64-bit ;;
+    386) OS=32bit ;;
+    amd64) OS=64bit ;;
     darwin) OS=macOS ;;
   esac
   true
@@ -104,8 +104,8 @@ adjust_os() {
 adjust_arch() {
   # adjust archive name based on ARCH
   case ${ARCH} in
-    386) ARCH=32-bit ;;
-    amd64) ARCH=64-bit ;;
+    386) ARCH=32bit ;;
+    amd64) ARCH=64bit ;;
     darwin) ARCH=macOS ;;
   esac
   true
@@ -375,7 +375,7 @@ adjust_arch
 
 log_info "found version: ${VERSION} for ${TAG}/${OS}/${ARCH}"
 
-NAME=${PROJECT_NAME}_${VERSION}_${OS}${FLAVOR}_${ARCH}
+NAME=${PROJECT_NAME}_${VERSION}-${OS}${FLAVOR}_${ARCH}
 TARBALL=${NAME}.${FORMAT}
 TARBALL_URL=${GITHUB_DOWNLOAD}/${TAG}/${TARBALL}
 CHECKSUM=${PROJECT_NAME}_${VERSION}_checksums.txt
