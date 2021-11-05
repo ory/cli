@@ -308,7 +308,7 @@ docker_manifests:
 
     # Name template for the manifest.
     # Defaults to empty.
-    name_template: "oryd/{{ .ProjectName }}:vv{{ .Major }}"
+    name_template: "oryd/{{ .ProjectName }}:v{{ .Major }}"
 
     # Image name templates to be added to this manifest.
     # Defaults to empty.
