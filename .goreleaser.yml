@@ -152,7 +152,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: macos-cgo
     builds:
@@ -164,7 +164,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: linux-cgo
     builds:
@@ -178,7 +178,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_sqlite_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: alpine-cgo
     builds:
