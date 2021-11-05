@@ -12,7 +12,7 @@ before:
 
 universal_binaries:
 - id: default
-  replace: true
+  replace: false
 
 builds:
   -
