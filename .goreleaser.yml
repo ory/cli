@@ -202,6 +202,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
 snapshot:
   name_template: "{{ .Tag }}-next"
