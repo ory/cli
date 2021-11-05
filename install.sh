@@ -4,7 +4,7 @@ set -e
 usage() {
   this=$1
   cat <<EOF
-$this: download the binary
+$this: download the $PROJECT_NAME binary
 
 Usage: $this [-b] bindir [-d] [tag]
   -b sets bindir or installation directory, Defaults to ./bin
