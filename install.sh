@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+FLAVOR="_sqlite"
+
 usage() {
   this=$1
   cat <<EOF
@@ -8,10 +10,11 @@ $this: download the $PROJECT_NAME binary
 
 Usage: $this [-b] bindir [-d] [tag]
   -b sets bindir or installation directory, Defaults to ./bin
-  -l downloads the large version of the binary, usually with CGO enabled
+  -s downloads the static binary build without SQLite support
   -d turns on debug logging
+
    [tag] is a tag from
-   https://github.com/ory/cli/releases
+   https://github.com/ory/$PROJECT_NAME/releases
    If tag is missing, then the latest will be used.
 
 EOF
@@ -23,10 +26,10 @@ parse_args() {
   # over-ridden by flag below
 
   BINDIR=${BINDIR:-./bin}
-  while getopts "b:dhl?x" arg; do
+  while getopts "b:dhs?x" arg; do
     case "$arg" in
       b) BINDIR="$OPTARG" ;;
-      l) FLAVOR="-sqlite" ;;
+      s) FLAVOR="" ;;
       d) log_set_priority 10 ;;
       h | \?) usage "$0" ;;
       x) set -x ;;
@@ -345,7 +348,6 @@ PROJECT_NAME="ory"
 OWNER=ory
 REPO="cli"
 BINARY=ory
-FLAVOR=""
 FORMAT=tar.gz
 OS=$(uname_os)
 ARCH=$(uname_arch)
