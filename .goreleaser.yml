@@ -11,7 +11,7 @@ before:
     - git checkout -- go.sum
 
 universal_binaries:
-- id: default
+- id: macos-cgo
   replace: false
 
 builds:
@@ -119,9 +119,6 @@ builds:
 
   -
     id: default
-    flags:
-      - -tags
-      - nodev
     ldflags:
       - "-s -w -X github.com/ory/cli/buildinfo.Version={{.Tag}} -X github.com/ory/cli/buildinfo.GitHash={{.FullCommit}} -X github.com/ory/cli/buildinfo.Time={{.Date}}"
     binary: "{{ .ProjectName }}"
@@ -190,7 +187,7 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}-sqlite-libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}-{{ .Os }}_sqlite_libmusl_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 
   - id: default
     builds:
