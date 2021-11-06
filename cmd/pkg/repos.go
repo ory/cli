@@ -1,10 +1,11 @@
 package pkg
 
 import (
-	"github.com/pkg/errors"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"gopkg.in/yaml.v2"
 

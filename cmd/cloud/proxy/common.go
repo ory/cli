@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/ory/cli/buildinfo"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -22,6 +21,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/ory/cli/buildinfo"
 
 	"github.com/tidwall/sjson"
 
