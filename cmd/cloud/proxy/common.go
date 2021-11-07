@@ -1,19 +1,10 @@
 package proxy
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/tls"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -22,53 +13,43 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ory/x/proxy"
+
 	"github.com/ory/cli/buildinfo"
-
-	"github.com/tidwall/sjson"
-
-	"github.com/ory/x/stringsx"
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
-	"github.com/smallstep/truststore"
 	"github.com/spf13/cobra"
 	"github.com/square/go-jose/v3"
 	"github.com/square/go-jose/v3/jwt"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/negroni"
 
-	"github.com/ory/cli/cmd/cloud/remote"
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
 	"github.com/ory/x/httpx"
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
-	"github.com/ory/x/tlsx"
 	"github.com/ory/x/urlx"
 )
 
 const (
-	PortFlag          = "port"
-	NoCertInstallFlag = "dont-install-cert"
-	NoOpenFlag        = "no-open"
-	WithoutJWTFlag    = "no-jwt"
-	WithoutHTTPSFlag  = "no-https"
+	PortFlag         = "port"
+	OpenFlag         = "open"
+	WithoutJWTFlag   = "no-jwt"
+	CookieDomainFlag = "cookie-domain"
+	ServiceURL       = "sdk-url"
 )
 
 type config struct {
-	port            int
-	noCert          bool
-	noOpen          bool
-	noUpstream      bool
-	apiEndpoint     string
-	consoleEndpoint string
-	hostPort        string
-	noJWT           bool
-	noHTTPS         bool
-	isLocal         bool
-	upstream        string
-	selfURL         *url.URL
+	port         int
+	noOpen       bool
+	noJWT        bool
+	upstream     string
+	cookieDomain string
+	publicURL    *url.URL
+	oryURL       *url.URL
 }
 
 func portFromEnv() int {
@@ -87,18 +68,16 @@ func run(cmd *cobra.Command, conf *config) error {
 
 	l := logrusx.New("ory/proxy", buildinfo.Version)
 
-	handler := httputil.NewSingleHostReverseProxy(upstream)
 	writer := herodot.NewJSONWriter(l)
 
 	mw := negroni.New()
-	// mw.Use(reqlog.NewMiddlewareFromLogger(l, "ory"))
 
 	signer, key, err := newSigner(l, conf)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	endpoint, err := getEndpointURL(cmd, conf)
+	endpoint, err := getEndpointURL(cmd)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -109,49 +88,73 @@ func run(cmd *cobra.Command, conf *config) error {
 		n(w, r)
 	})
 
-	mw.UseFunc(checkOry(conf, writer, l, key, signer, endpoint)) // This must be the last method before the handler
-	mw.UseHandler(handler)
+	mw.UseFunc(checkOry(conf, l, writer, key, signer, endpoint)) // This must be the last method before the handler
+
+	mw.UseHandler(proxy.New(
+		func(_ context.Context, r *http.Request) (*proxy.HostConfig, error) {
+			if strings.HasPrefix(r.URL.Path, "/.ory") {
+				return &proxy.HostConfig{
+					CookieDomain:   conf.cookieDomain,
+					UpstreamHost:   conf.oryURL.Host,
+					UpstreamScheme: conf.oryURL.Scheme,
+					TargetHost:     conf.oryURL.Host,
+					PathPrefix:     "/.ory",
+				}, nil
+			}
+
+			return &proxy.HostConfig{
+				CookieDomain:   conf.cookieDomain,
+				UpstreamHost:   upstream.Host,
+				UpstreamScheme: upstream.Scheme,
+				TargetHost:     upstream.Host,
+				PathPrefix:     "",
+			}, nil
+		},
+		proxy.WithRespMiddleware(func(resp *http.Response, config *proxy.HostConfig, body []byte) ([]byte, error) {
+			l, err := resp.Location()
+			if err == nil {
+				// Redirect to main page if path is the default ui welcome page.
+				if l.Path == "/.ory/ui/welcome" {
+					l.Path = "/"
+					resp.Header.Set("Location", l.String())
+				}
+			}
+
+			return body, nil
+		}),
+		proxy.WithReqMiddleware(func(r *http.Request, c *proxy.HostConfig, body []byte) ([]byte, error) {
+			if r.URL.Host == conf.oryURL.Host {
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, "/.ory")
+				r.Host = conf.oryURL.Host
+			}
+
+			return body, nil
+		})))
 
 	cleanup := func() error {
 		return nil
 	}
 
 	proto := "http"
-	var tlsConfig *tls.Config
-	if !conf.noHTTPS {
-		c, cl, err := createTLSCertificate(conf)
-		if err != nil {
-			return err
-		}
-		cleanup = cl
-		tlsConfig = &tls.Config{Certificates: []tls.Certificate{*c}}
-		proto = "https"
-	}
-
 	addr := fmt.Sprintf(":%d", conf.port)
 	server := graceful.WithDefaults(&http.Server{
-		Addr:      addr,
-		Handler:   mw,
-		TLSConfig: tlsConfig,
+		Addr:    addr,
+		Handler: mw,
 	})
 
 	l.Printf("Starting the %s reverse proxy on: %s", proto, server.Addr)
-	proxyUrl := fmt.Sprintf("%s://%s", proto, conf.hostPort)
 	l.Printf(`To access your application through the Ory Proxy, open:
 
-	%s`, proxyUrl)
+	%s`, conf.publicURL.String())
+
 	if !conf.noOpen {
-		if err := exec.Command("open", proxyUrl).Run(); err != nil {
+		if err := exec.Command("open", conf.publicURL.String()).Run(); err != nil {
 			l.WithError(err).Warn("Unable to automatically open the proxy URL in your browser. Please open it manually!")
 		}
 	}
 
 	if err := graceful.Graceful(func() error {
-		if conf.noHTTPS {
-			return server.ListenAndServe()
-		}
-
-		return server.ListenAndServeTLS("", "")
+		return server.ListenAndServe()
 	}, func(ctx context.Context) error {
 		l.Println("http reverse proxy was shutdown gracefully")
 		if err := server.Shutdown(ctx); err != nil {
@@ -188,139 +191,12 @@ func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySe
 	return sig, key, nil
 }
 
-func initUrl(r *http.Request, method string, conf *config) string {
-	return fmt.Sprintf("/.ory/api/kratos/public/self-service/%s/browser?return_to=%s", method, stringsx.Coalesce(r.Referer(), conf.selfURL.String()))
-}
-
-func readBody(res *http.Response) ([]byte, error) {
-	if res.ContentLength == 0 {
-		return nil, nil
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	switch res.Header.Get("Content-Encoding") {
-	case "gzip":
-		reader, err := gzip.NewReader(bytes.NewReader(body))
-		if err != nil {
-			return nil, err
-		}
-		defer reader.Close()
-
-		var decoded bytes.Buffer
-		if _, err := io.Copy(&decoded, reader); err != nil {
-			return nil, err
-		}
-
-		body = decoded.Bytes()
-	}
-
-	res.Body = ioutil.NopCloser(bytes.NewReader(body))
-	return body, nil
-}
-
-func writeBody(res *http.Response, body []byte) error {
-	switch res.Header.Get("Content-Encoding") {
-	case "gzip":
-		var buf bytes.Buffer
-		writer := gzip.NewWriter(&buf)
-		if _, err := writer.Write(body); err != nil {
-			return err
-		}
-		if err := writer.Close(); err != nil {
-			return err
-		}
-
-		res.Body = ioutil.NopCloser(bytes.NewReader(buf.Bytes()))
-		return nil
-	default:
-		res.Body = ioutil.NopCloser(bytes.NewReader(body))
-		return nil
-	}
-}
-
-func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+func checkOry(conf *config, l *logrusx.Logger, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
 	var publicKeys jose.JSONWebKeySet
 	for _, key := range keys.Keys {
 		publicKeys.Keys = append(publicKeys.Keys, key.Public())
-	}
-
-	oryUpstream := httputil.NewSingleHostReverseProxy(endpoint)
-
-	// Did someone say "HACK THE PLANET"? Or rather "HACK THE COOKIES"? Yup...
-	oryUpstream.ModifyResponse = func(res *http.Response) error {
-		if !strings.EqualFold(res.Request.Host, endpoint.Host) {
-			// not ory
-			return nil
-		}
-
-		redir, _ := res.Location()
-		if redir != nil {
-			if strings.EqualFold(redir.Host, endpoint.Host) {
-				redir.Host = conf.hostPort
-				redir.Path = "/.ory" + strings.TrimPrefix(redir.Path, "/.ory")
-				res.Header.Set("Location", redir.String())
-			}
-		}
-
-		cookies := res.Cookies()
-		res.Header.Del("Set-Cookie")
-		for _, c := range cookies {
-			if !strings.EqualFold(c.Domain, endpoint.Hostname()) {
-				continue
-			}
-			c.Domain = ""
-			res.Header.Add("Set-Cookie", c.String())
-		}
-
-		if res.ContentLength == 0 {
-			return nil
-		}
-
-		body, err := readBody(res)
-		if err != nil {
-			return err
-		} else if body == nil {
-			return nil
-		}
-
-		// Modify the Logout URL
-		if lo := gjson.GetBytes(body, "logout_url"); lo.Exists() {
-			p, err := url.ParseRequestURI(lo.String())
-			if err != nil {
-				return err
-			}
-			p.Host = conf.hostPort
-			p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
-			body, err = sjson.SetBytes(body, "logout_url", p.String())
-			if err != nil {
-				return err
-			}
-		}
-
-		// Modify flow URLs
-		if lo := gjson.GetBytes(body, "ui.action"); lo.Exists() {
-			p, err := url.ParseRequestURI(lo.String())
-			if err != nil {
-				return err
-			}
-			p.Host = conf.hostPort
-			p.Path = "/.ory" + strings.TrimPrefix(p.Path, "/.ory")
-			body, err = sjson.SetBytes(body, "ui.action", p.String())
-			if err != nil {
-				return err
-			}
-		}
-
-		return writeBody(res, body)
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
@@ -333,46 +209,6 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 		case "/.ory/jwks.json":
 			writer.Write(w, r, publicKeys)
 			return
-		case "/.ory/init/login":
-			http.Redirect(w, r, initUrl(r, "login", conf), http.StatusSeeOther)
-			return
-		case "/.ory/init/registration":
-			http.Redirect(w, r, initUrl(r, "registration", conf), http.StatusSeeOther)
-			return
-		case "/.ory/init/recovery":
-			http.Redirect(w, r, initUrl(r, "recovery", conf), http.StatusSeeOther)
-			return
-		case "/.ory/init/verification":
-			http.Redirect(w, r, initUrl(r, "verification", conf), http.StatusSeeOther)
-			return
-		case "/.ory/init/settings":
-			http.Redirect(w, r, initUrl(r, "settings", conf), http.StatusSeeOther)
-			return
-		case "/.ory/api/kratos/public/self-service/logout":
-			q := r.URL.Query()
-			q.Set("return_to", conf.selfURL.String())
-			r.URL.RawQuery = q.Encode()
-		}
-
-		// We proxy ory things
-		if strings.HasPrefix(r.URL.Path, "/.ory") {
-			r.URL.Path = strings.ReplaceAll(r.URL.Path, "/.ory/", "/")
-			r.Host = endpoint.Host
-			q := r.URL.Query()
-			q.Set("isProxy", "true")
-			r.URL.RawQuery = q.Encode()
-
-			l.WithRequest(r).
-				WithField("forwarding_path", r.URL.String()).
-				WithField("forwarding_host", r.Host).
-				Debug("Forwarding request to Ory.")
-			oryUpstream.ServeHTTP(w, r)
-			return
-		}
-
-		if conf.noUpstream {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			return
 		}
 
 		session, err := checkSession(hc, r, endpoint)
@@ -382,7 +218,7 @@ func checkOry(conf *config, writer herodot.Writer, l *logrusx.Logger, keys *jose
 			return
 		}
 
-		if conf.noJWT {
+		if conf.noJWT || strings.HasPrefix(r.URL.Path, "/.ory") {
 			next(w, r)
 			return
 		}
@@ -432,66 +268,4 @@ func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (js
 	}
 
 	return body, nil
-}
-
-func getEndpointURL(cmd *cobra.Command, conf *config) (*url.URL, error) {
-	if target, ok := cmd.Context().Value(remote.FlagAPIEndpoint).(*url.URL); ok {
-		return target, nil
-	}
-	upstream, err := url.ParseRequestURI(conf.apiEndpoint)
-	if err != nil {
-		return nil, err
-	}
-	project, err := remote.GetProjectSlug(conf.consoleEndpoint)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	upstream.Host = fmt.Sprintf("%s.projects.%s", project, upstream.Host)
-
-	return upstream, nil
-}
-
-func createTLSCertificate(conf *config) (*tls.Certificate, func() error, error) {
-	key, err := rsa.GenerateKey(rand.Reader, 4096)
-
-	c, err := tlsx.CreateSelfSignedCertificate(key)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	block, err := tlsx.PEMBlockForKey(key)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c.Raw})
-	pemKey := pem.EncodeToMemory(block)
-	cert, err := tls.X509KeyPair(pemCert, pemKey)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	const passwordMessage = "To modify your operating system certificate store, you might might be prompted for your password now:"
-
-	if conf.noCert {
-		return &cert, func() error {
-			return nil
-		}, nil
-	}
-
-	_, _ = fmt.Fprintln(os.Stdout, "Trying to install temporary TLS (HTTPS) certificate for localhost on your operating system. This allows to access the proxy using HTTPS.")
-	_, _ = fmt.Fprintln(os.Stdout, passwordMessage)
-	opts := []truststore.Option{
-		truststore.WithFirefox(),
-		truststore.WithJava(),
-	}
-
-	if err := truststore.Install(c, opts...); err != nil {
-		return nil, nil, err
-	}
-
-	return &cert, func() error {
-		_, _ = fmt.Fprintln(os.Stdout, passwordMessage)
-		return truststore.Uninstall(c, opts...)
-	}, nil
 }

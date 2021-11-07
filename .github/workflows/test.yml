@@ -1,0 +1,28 @@
+name: Run Tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17'
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm ci
+      - run: go build -o ory .
+        env:
+          ORY_SDK_URL: https://playground.projects.oryapis.com/
+      - run: |
+          ./ory proxy https://httpbin.org/anything &
+          npm run test
+        env:
+          ORY_KRATOS_URL: https://playground.projects.oryapis.com/

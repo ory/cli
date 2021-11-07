@@ -9,7 +9,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ory/cli/cmd/cloud/identities"
 	"github.com/ory/cli/cmd/cloud/proxy"
 
 	"github.com/spf13/cobra"
@@ -29,8 +28,7 @@ func NewRootCmd() *cobra.Command {
 	c.AddCommand(
 		append(
 			devCommand,
-			identities.Main,
-			proxy.Main,
+			proxy.NewMainCmd(),
 			versionCmd,
 		)...,
 	)
