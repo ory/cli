@@ -9,10 +9,9 @@ module.exports = binwrap({
   dirname: __dirname,
   binaries: ['ory'],
   urls: {
-    'linux-x64': root + '/ory_' + version + '_linux_64-bit.tar.gz',
-    'win32-x64': root + '/ory_' + version + '_windows_64-bit.zip',
-    'darwin-x64': root + '/ory_' + version + '_macOS_64-bit.tar.gz',
-    // We do not have an M1 build yet:
-    'darwin-arm64': root + '/ory_' + version + '_macOS_64-bit.tar.gz'
+    'linux-x64': root + '/ory_' + version + '-linux_64bit.tar.gz',
+    'win32-x64': root + '/ory_' + version + '-windows_64bit.zip',
+    'darwin-x64': root + '/ory_' + version + '-macOS_64bit.tar.gz',
+    'darwin-arm64': root + '/ory_' + version + '-macOS_arm64.tar.gz'
   }
 })
