@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -147,19 +146,6 @@ Are you sure you want to proceed without creating a pre version first?`, current
 			fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
 			pkg.Check(err, "Unable to parse include-changelog-since git tag v%s: %s", ov, err)
 			checkIfTagExists(fromVersion)
-		}
-
-		if _, err := os.Stat(filepath.Join(wd, "docs", "scripts", "docker-tag.js")); err == nil {
-			nv := "v" + nextVersion.String()
-			pkg.Check(pkg.NewCommandIn(filepath.Join(wd, "docs"), "npm", "i").Run())
-			pkg.Check(pkg.NewCommandIn(wd, "node", "./docs/scripts/docker-tag.js", "docs/config.js", nv).Run())
-
-			docTag := fmt.Sprintf("v%d.%d", nextVersion.Major(), nextVersion.Minor())
-			pkg.Check(pkg.NewCommandIn(wd, "node", "./docs/scripts/rerelease.js", docTag).Run())
-			pkg.Check(pkg.NewCommandIn(wd, "rm", "-rf", "./docs/versioned_docs/version-"+docTag).Run())
-			pkg.Check(pkg.NewCommandIn(wd, "rm", "-rf", "./docs/versioned_sidebars/version-"+docTag+"-sidebars.json").Run())
-			pkg.Check(pkg.NewCommandIn(filepath.Join(wd, "docs"), "npm", "run", "docusaurus", "docs:version", docTag).Run())
-			pkg.Check(pkg.NewCommandIn(filepath.Join(wd, "docs"), "npm", "run", "format").Run())
 		}
 
 		pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
