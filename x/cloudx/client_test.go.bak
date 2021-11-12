@@ -1,4 +1,4 @@
-package remote_test
+package cloudx_test
 
 import (
 	"encoding/json"
@@ -39,8 +39,8 @@ type Output struct {
 
 type TestingStruct struct {
 	description string
-	input       []string
-	output      Output
+	input  []string
+	output Output
 }
 
 func fakeProjectEndpoint(t *testing.T, writer herodot.Writer) *url.URL {
@@ -138,5 +138,4 @@ func TestClient(t *testing.T) {
 			})
 		}
 	})
-
 }
