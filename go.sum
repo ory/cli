@@ -667,8 +667,8 @@ github.com/gobuffalo/events v1.1.8/go.mod h1:UFy+W6X6VbCWS8k2iT81HYX65dMtiuVycMy
 github.com/gobuffalo/events v1.1.9/go.mod h1:/0nf8lMtP5TkgNbzYxR6Bl4GzBy5s5TebgNTdRfRbPM=
 github.com/gobuffalo/events v1.3.1/go.mod h1:9JOkQVoyRtailYVE/JJ2ZQ/6i4gTjM5t2HsZK4C1cSA=
 github.com/gobuffalo/events v1.4.1/go.mod h1:SjXgWKpeSuvQDvGhgMz5IXx3Czu+IbL+XPLR41NvVQY=
-github.com/gobuffalo/fizz v1.14.1-0.20211203104732-77d07c9a06b6 h1:qP0mk1Ak49CwldxY5FMK+FsmfZH+zSr0hfBWj/TGZko=
-github.com/gobuffalo/fizz v1.14.1-0.20211203104732-77d07c9a06b6/go.mod h1:Jx4EIFHcsTYagdHgGGJULYuaNVYSToVjIKSp5gsFOJ0=
+github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7 h1:Bvz779+XRuEasPqcJgLEja1+IqqEIyM8TXQrzHy6CvM=
+github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7/go.mod h1:Jx4EIFHcsTYagdHgGGJULYuaNVYSToVjIKSp5gsFOJ0=
 github.com/gobuffalo/flect v0.0.0-20180907193754-dc14d8acaf9f/go.mod h1:rCiQgmAE4axgBNl3jZWzS5rETRYTGOsrixTRaCPzNdA=
 github.com/gobuffalo/flect v0.0.0-20181002182613-4571df4b1daf/go.mod h1:rCiQgmAE4axgBNl3jZWzS5rETRYTGOsrixTRaCPzNdA=
 github.com/gobuffalo/flect v0.0.0-20181007231023-ae7ed6bfe683/go.mod h1:rCiQgmAE4axgBNl3jZWzS5rETRYTGOsrixTRaCPzNdA=
