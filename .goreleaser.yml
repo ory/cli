@@ -1,6 +1,6 @@
 includes:
   - from_url:
-      url: https://raw.githubusercontent.com/ory/xgoreleaser/2161c61a0c0a33644ba6cd28d4b3a7538101981b/build.tmpl.yml
+      url: https://raw.githubusercontent.com/ory/xgoreleaser/a796a4dd9aa8c6e93190004c748c46a9c497586a/build.tmpl.yml
 
 variables:
   brew_name: cli
