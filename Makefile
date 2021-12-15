@@ -57,4 +57,4 @@ format: .bin/goimports
 # Runs tests in short mode, without database adapters
 .PHONY: docker
 docker:
-		docker build -f Dockerfile-build -t oryd/ory:latest-sqlite .
+		docker build -f .docker/Dockerfile-build -t oryd/ory:latest-sqlite .

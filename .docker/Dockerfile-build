@@ -4,8 +4,8 @@ RUN apk -U --no-cache add build-base git gcc bash
 
 WORKDIR /go/src/github.com/ory/cli
 
-ADD go.mod go.mod
-ADD go.sum go.sum
+ADD ./go.mod go.mod
+ADD ./go.sum go.sum
 
 ENV GO111MODULE on
 ENV CGO_ENABLED 1

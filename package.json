@@ -13,7 +13,7 @@
     "test:cypress": "cypress run",
     "test:binwrap": "binwrap-test",
     "test:cypress:dev": "cypress open",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm run test:binwrap",
     "format": "prettier --write ${npm_package_config_prettierTarget}",
     "format:check": "prettier --check ${npm_package_config_prettierTarget}"
   },
