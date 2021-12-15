@@ -107,7 +107,7 @@ func (m Migrator) UpTo(step int) (applied int, err error) {
 					if tuple.Statement != "" {
 						if err := tx.RawQuery(tuple.Statement).Exec(); err != nil {
 							c.Select("SHOW")
-							return errors.Wrapf(err, "unable to execute migration %s", tuple.ID)
+							return errors.Wrapf(err, "unable to execute migration %s (%s) with contents: %s", tuple.ID, c.Dialect.Name(), tuple.Statement)
 						}
 					}
 
@@ -188,7 +188,7 @@ func (m Migrator) Down(step int) error {
 				if err := c.Transaction(func(tx *pop.Connection) error {
 					if tuple.Statement != "" {
 						if err := tx.RawQuery(tuple.Statement).Exec(); err != nil {
-							return errors.Wrapf(err, "unable to execute migration %s", tuple.ID)
+							return errors.Wrapf(err, "unable to execute migration %s (%s) with contents: %s", tuple.ID, c.Dialect.Name(), tuple.Statement)
 						}
 					}
 
