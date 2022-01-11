@@ -15,7 +15,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -71,6 +71,7 @@ jobs:
     env:
       MAILCHIMP_SEGMENT_ID: 11398953
       MAILCHIMP_LIST_ID: 058a056618
+      MAILCHIMP_API_KEY: ${{ secrets.MAILCHIMP_API_KEY }}
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -99,6 +100,7 @@ jobs:
     environment: production
     env:
       MAILCHIMP_LIST_ID: 11398953
+      MAILCHIMP_API_KEY: ${{ secrets.MAILCHIMP_API_KEY }}
     steps:
       - run: |
           bash <(curl -s https://raw.githubusercontent.com/ory/ci/master/src/scripts/releaser/campaign-send.sh)
