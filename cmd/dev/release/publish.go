@@ -152,10 +152,10 @@ Are you sure you want to proceed without creating a pre version first?`, current
 
 		switch cfg.Project {
 		case "hydra":
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
+			pkg.GitTagRelease(pkg.GitClone("https://github.com/ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
 		case "kratos":
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
-			pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion, nil)
+			pkg.GitTagRelease(pkg.GitClone("https://github.com/ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
+			pkg.GitTagRelease(pkg.GitClone("https://github.com/ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion, nil)
 		}
 
 		fmt.Printf("Successfully released version: v%s\n", nextVersion.String())

@@ -34,7 +34,7 @@ var draft = &cobra.Command{
 				[]byte(`{"private": true, "version": "0.0.0"}`), 0600))
 		}
 
-		presetDir := pkg.GitClone("git@github.com:ory/changelog.git")
+		presetDir := pkg.GitClone("https://github.com/ory/changelog.git")
 		pkg.Check(pkg.NewCommandIn(presetDir, "npm", "i").Run())
 
 		commitMessage := pkg.CommandGetOutput("git", "log", "--format=%B", "-n", "1", gitHash)
