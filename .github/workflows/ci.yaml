@@ -18,7 +18,6 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.17'
-      - run: make test
 
   docs:
     name: Generate docs
@@ -29,7 +28,22 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.17'
-      - run: .github/docs.sh
+      - run: |
+          mkdir -p docs/docs
+          make docs/cli
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          echo 'docsdir='"$(mktemp -d)" >> $GITHUB_ENV
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          path: ${{ env.docsdir }}
+      - run: |
+          cd "$docsdir"
+          git add -A
+          git commit -a -m "autogen(docs): regenerate ory/cli reference" --allow-empty
+          git pull -ff
+          git push
 
   release:
     name: Generate release
