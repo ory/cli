@@ -25,8 +25,8 @@ var draft = &cobra.Command{
 	Short: "Create a Mailchimp draft campaign for the release notification",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		gitHash := pkg.CircleSHA1()
-		circleTag := pkg.CircleTag()
+		gitHash := pkg.GitHubSHA()
+		circleTag := pkg.GitHubTag()
 
 		// Required by conventional-changelog-generator
 		if _, err := os.Stat("package.json"); os.IsNotExist(err) {
