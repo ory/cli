@@ -72,8 +72,9 @@ If you want to send only to a segment within that list, add the Segment ID as we
 }
 
 func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*gochimp3.CampaignResponse, error) {
-	tag := pkg.CircleTag()
-	repoName := pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME")
+	tag := pkg.GitHubTag()
+	// GITHUB_REPOSITORY is in the form of 'owner/repo'.
+	repoName := strings.Split(pkg.MustGetEnv("GITHUB_REPOSITORY"), "/")[1]
 	projectName := "ORY " + strings.Title(strings.ToLower(repoName))
 
 	changelog := renderMarkdown(changelogRaw)

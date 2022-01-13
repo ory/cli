@@ -91,9 +91,9 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 
 func campaignID() string {
 	return fmt.Sprintf("%s-%s-%s",
-		pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME"),
-		substr(pkg.CircleSHA1(), 0, 6),
-		pkg.CircleTag())
+		strings.Split(pkg.MustGetEnv("GITHUB_REPOSITORY"), "/"),
+		substr(pkg.GitHubSHA(), 0, 6),
+		pkg.GitHubTag())
 }
 
 func substr(input string, start int, length int) string {
