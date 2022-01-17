@@ -3,16 +3,16 @@ package pkg
 import (
 	"os"
 	"strings"
+
+	"github.com/ory/x/stringsx"
 )
 
 func GitHubSHA() string {
-	gitHash := os.Getenv("GITHUB_SHA")
-	if len(gitHash) == 0 {
-		gitHash = strings.TrimSpace(CommandGetOutput("git", "rev-parse", "HEAD"))
-		if len(gitHash) > 16 {
-			gitHash = gitHash[:16]
-		}
-	}
+	gitHash := stringsx.Coalesce(
+		os.Getenv("CIRCLE_SHA1"),
+		os.Getenv("GITHUB_SHA"),
+		strings.TrimSpace(CommandGetOutput("git", "rev-parse", "HEAD")),
+	)
 	return gitHash
 }
 
@@ -20,9 +20,12 @@ func GitHubTag() string {
 	var ghTag string
 	if os.Getenv("GITHUB_REF_TYPE") == "tag" {
 		ghTag = os.Getenv("GITHUB_REF_NAME")
-		if len(ghTag) == 0 {
-			ghTag = strings.TrimSpace(CommandGetOutput("git", "tag", "--points-at", "HEAD"))
-		}
 	}
-	return ghTag
+
+	tag := stringsx.Coalesce(
+		os.Getenv("CIRCLE_TAG"),
+		ghTag,
+		strings.TrimSpace(CommandGetOutput("git", "tag", "--points-at", "HEAD")),
+	)
+	return tag
 }
