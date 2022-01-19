@@ -42,9 +42,9 @@ jobs:
         with:
           repository: ory/docs
           path: ${{ env.docsdir }}
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.ORY_BOT_PAT }}
       - env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
+          GITHUB_TOKEN: ${{ secrets.ORY_BOT_PAT }}
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: ory/ci/releaser@master
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
 
   npm-publish:
