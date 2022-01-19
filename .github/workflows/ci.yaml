@@ -94,7 +94,7 @@ jobs:
           mailchmip_segment_id: 11398953
           mailchimp_api_key: ${{ secrets.MAILCHIMP_API_KEY }}
           draft: 'true'
-          ssh_key: ${{ secrets.SSH_KEY }}
+          ssh_key: ${{ secrets.ORY_BOT_SSH_KEY }}
 
   slack-approval-notification:
     name: Pending approval Slack notification
