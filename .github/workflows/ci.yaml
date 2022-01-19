@@ -26,12 +26,17 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          path: current-repo
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.17'
       - run: |
+          cd current-repo
           mkdir -p docs/docs
           make docs/cli
+          cp -rf docs ../docs
+          cd ..
           echo 'docsdir='"./docs" >> $GITHUB_ENV
       - uses: actions/checkout@v2
         with:
