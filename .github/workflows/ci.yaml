@@ -66,6 +66,8 @@ jobs:
           token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
           cosign_pwd: ${{ secrets.COSIGN_PWD }}
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          docker_password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
   npm-publish:
     name: Publish to npm
