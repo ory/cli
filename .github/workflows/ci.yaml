@@ -65,6 +65,7 @@ jobs:
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
+          cosign_pwd: ${{ secrets.COSIGN_PWD }}
 
   npm-publish:
     name: Publish to npm
