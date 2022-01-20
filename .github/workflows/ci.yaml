@@ -79,7 +79,7 @@ jobs:
         with:
           node-version: '16'
       - env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
         run: |
           npm install
           npm version --no-git-tag-version ${{ github.ref_name }}
