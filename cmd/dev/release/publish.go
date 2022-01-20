@@ -3,11 +3,11 @@ package release
 import (
 	"bytes"
 	"fmt"
+	"github.com/Masterminds/semver/v3"
 	"os"
 	"regexp"
 	"strings"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/x/flagx"
@@ -115,7 +115,6 @@ Are you sure you want to proceed without creating a pre version first?`, current
 		}
 
 		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
-		pkg.Check(pkg.NewCommand("circleci", "config", "check").Run())
 
 		if dry {
 			fmt.Println("Don't worry, this is a dry run!")
