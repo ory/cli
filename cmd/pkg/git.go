@@ -69,8 +69,11 @@ func Confirm(message string, args ...interface{}) {
 	Check(err)
 
 	answer = strings.TrimSpace(answer)
-	if answer != "y" {
+	if answer == "n" {
 		Fatalf("Aborting because your answer was: %s", answer)
+	} else if answer != "y" {
+		message = "Are you sure you want to proceed without creating a pre version first?"
+		Confirm(message)
 	}
 }
 
