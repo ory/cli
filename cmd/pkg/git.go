@@ -63,17 +63,21 @@ func GitClone(repo string) string {
 }
 
 func Confirm(message string, args ...interface{}) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("%s [y/n] ", fmt.Sprintf(message, args...))
-	answer, err := reader.ReadString('\n')
-	Check(err)
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Printf("%s [y/n] ", fmt.Sprintf(message, args...))
+		answer, err := reader.ReadString('\n')
+		Check(err)
 
-	answer = strings.TrimSpace(answer)
-	if answer == "n" {
-		Fatalf("Aborting because your answer was: %s", answer)
-	} else if answer != "y" {
-		message = "Are you sure you want to proceed without creating a pre version first?"
-		Confirm(message)
+		answer = strings.TrimSpace(answer)
+		if answer == "n" {
+			Fatalf("Aborting because your answer was: %s", answer)
+		} else if answer != "y" {
+			continue
+		} else {
+			// answer is 'y'
+			break
+		}
 	}
 }
 
