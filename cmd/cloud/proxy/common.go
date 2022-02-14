@@ -183,7 +183,11 @@ func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySe
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to generate JSON Web Key")
 	}
-	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.ES256, Key: key.Keys[0].Key}, (&jose.SignerOptions{}).WithType("JWT"))
+
+	var signerOpts = (&jose.SignerOptions{}).WithType("JWT")
+	signerOpts.WithHeader("kid", key.Keys[0].KeyID)
+	sig, err := jose.NewSigner(jose.SigningKey{Algorithm: jose.ES256, Key: key.Keys[0].Key}, signerOpts)
+
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to create signer")
 	}
