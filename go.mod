@@ -22,7 +22,7 @@ require (
 	github.com/getkin/kin-openapi v0.48.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/gobuffalo/fizz v1.13.1-0.20201104174146-3416f0e6618f
+	github.com/gobuffalo/fizz v1.14.0
 	github.com/gobuffalo/pop/v5 v5.3.4
 	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gomarkdown/markdown v0.0.0-20201113031856-722100d81a8e
@@ -30,10 +30,11 @@ require (
 	github.com/hashicorp/go-hclog v0.12.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/jackc/pgx/v4 v4.13.0
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.12
-	github.com/ory/jsonschema/v3 v3.0.4
+	github.com/ory/jsonschema/v3 v3.0.5
 	github.com/ory/kratos-client-go v0.6.3-alpha.1
 	github.com/ory/x v0.0.309
 	github.com/pkg/errors v0.9.1
@@ -44,7 +45,7 @@ require (
 	github.com/tidwall/gjson v1.9.4
 	github.com/tidwall/sjson v1.2.2
 	github.com/urfave/negroni v1.0.0
-	golang.org/x/term v0.0.0-20210317153231-de623e64d2a6
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
