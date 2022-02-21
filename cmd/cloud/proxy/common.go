@@ -98,6 +98,7 @@ func run(cmd *cobra.Command, conf *config) error {
 					UpstreamHost:   conf.oryURL.Host,
 					UpstreamScheme: conf.oryURL.Scheme,
 					TargetHost:     conf.oryURL.Host,
+					TargetScheme:   conf.oryURL.Scheme,
 					PathPrefix:     "/.ory",
 				}, nil
 			}
@@ -107,6 +108,7 @@ func run(cmd *cobra.Command, conf *config) error {
 				UpstreamHost:   upstream.Host,
 				UpstreamScheme: upstream.Scheme,
 				TargetHost:     upstream.Host,
+				TargetScheme:   upstream.Scheme,
 				PathPrefix:     "",
 			}, nil
 		},
