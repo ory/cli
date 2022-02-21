@@ -7,3 +7,4 @@ node_modules
 ory
 bin/
 unpacked_bin/
+.idea
