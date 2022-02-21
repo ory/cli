@@ -67,7 +67,7 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 	var prettyVersionSchema bytes.Buffer
 	pkg.Check(json.Indent(&prettyVersionSchema, renderedVersionSchema, "", strings.Repeat(" ", 4)))
 
-	schema, err := jsonschema.CompileString("version_meta.schema.json", string(spec.VersionSchema))
+	schema, err := jsonschema.CompileString(cmd.Context(), "version_meta.schema.json", string(spec.VersionSchema))
 	pkg.Check(err)
 
 	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))
