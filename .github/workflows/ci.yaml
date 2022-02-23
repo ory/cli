@@ -23,36 +23,11 @@ jobs:
   docs:
     name: Generate docs
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/master' }}
     steps:
-      - uses: ory/ci/checkout@master
+      - uses: ory/ci/docs/cli-next@master
         with:
-          path: current-repo
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.17'
-      - run: |
-          cd current-repo
-          mkdir -p docs/docs
-          make docs/cli
-          cp -rf docs ../docs
-          cd ..
-          echo 'docsdir='"./docs" >> $GITHUB_ENV
-      - uses: ory/ci/checkout@master
-        with:
-          repository: ory/docs
-          path: ${{ env.docsdir }}
           token: ${{ secrets.ORY_BOT_PAT }}
-      - env:
-          GITHUB_TOKEN: ${{ secrets.ORY_BOT_PAT }}
-        run: |
-          git config --global user.email "60093411+ory-bot@users.noreply.github.com"
-          git config --global user.name "ory-bot"
-          cd "$docsdir"
-          git add -A
-          git commit -a -m "autogen(docs): regenerate ory/cli reference" --allow-empty
-          git pull -ff
-          git push
+          output-dir: docs/cli/cli
 
   release:
     name: Generate release
