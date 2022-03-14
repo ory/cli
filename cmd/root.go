@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ory/cli/cmd/cloud/auth"
 	"github.com/ory/cli/cmd/cloud/proxy"
+	"github.com/ory/x/cloudx"
 	"github.com/ory/x/cmdx"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -22,6 +23,10 @@ func NewRootCmd() *cobra.Command {
 			devCommand,
 			auth.NewMainCmd(),
 			proxy.NewMainCmd(),
+			cloudx.NewCreateCmd(),
+			cloudx.NewListCmd(),
+			cloudx.NewPatchCmd(),
+			cloudx.NewUpdateCmd(),
 			versionCmd,
 		)...,
 	)

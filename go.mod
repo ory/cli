@@ -14,6 +14,8 @@ replace github.com/ory/kratos => github.com/ory/kratos v0.7.6-alpha.1.0.20211023
 
 replace github.com/ory/x => ../x
 
+replace github.com/ory/client-go => ../client-go
+
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
