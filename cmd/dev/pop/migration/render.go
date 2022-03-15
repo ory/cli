@@ -87,10 +87,13 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 			panic(fmt.Sprintf("Expected at least one dialect out of [sqlite, mysql, postgres, cockroach], but got %v", dialects))
 		}
 
-		pkg.Check(os.MkdirAll(args[1], 0777))
-
 		dump := flagx.MustGetBool(cmd, "dump")
 		replace := flagx.MustGetBool(cmd, "replace")
+
+		if replace {
+			pkg.Check(os.RemoveAll(args[1]))
+		}
+		pkg.Check(os.MkdirAll(args[1], 0777))
 
 		var wg sync.WaitGroup
 		runner := func(name, dsn string) {

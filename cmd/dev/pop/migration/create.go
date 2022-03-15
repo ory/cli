@@ -21,7 +21,7 @@ var createCmd = &cobra.Command{
 
 		suffix := ".fizz"
 		if len(d) > 0 {
-			if stringslice.Has(supportedDialects, d) {
+			if !stringslice.Has(supportedDialects, d) {
 				return fmt.Errorf(`expected dialect to be one of %v but got: %s`, supportedDialects, d)
 			}
 			suffix = fmt.Sprintf(".%s.sql", d)

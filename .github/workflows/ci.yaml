@@ -1,0 +1,131 @@
+name: CI Tasks for Ory CLI
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - '*'
+  pull_request:
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ory/ci/checkout@master
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.17'
+      - run: |
+          make test
+
+  docs:
+    name: Generate docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ory/ci/docs/cli-next@master
+        with:
+          token: ${{ secrets.ORY_BOT_PAT }}
+          output-dir: docs/cli/cli
+
+  release:
+    name: Generate release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs:
+      - test
+    steps:
+      - uses: ory/ci/releaser@master
+        with:
+          token: ${{ secrets.ORY_BOT_PAT }}
+          goreleaser_key: ${{ secrets.GORELEASER_KEY }}
+          cosign_pwd: ${{ secrets.COSIGN_PWD }}
+          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
+          docker_password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+  npm-publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs:
+      - release
+    steps:
+      - uses: ory/ci/checkout@master
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
+        run: |
+          npm install
+          npm version --no-git-tag-version ${{ github.ref_name }}
+          npm run test:binwrap
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          npm publish --access public
+
+  newsletter-draft:
+    name: Draft newsletter
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs:
+      - release
+    steps:
+      - uses: ory/ci/newsletter@master
+        with:
+          mailchimp_list_id: 058a056618
+          mailchmip_segment_id: 11398953
+          mailchimp_api_key: ${{ secrets.MAILCHIMP_API_KEY }}
+          draft: 'true'
+          ssh_key: ${{ secrets.ORY_BOT_SSH_KEY }}
+
+  slack-approval-notification:
+    name: Pending approval Slack notification
+    runs-on: ubuntu-latest
+    if: ${{ github.ref_type == 'tag' }}
+    needs:
+      - newsletter-draft
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+    steps:
+      - uses: slackapi/slack-github-action@v1.16.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Pending approval for newsletter send (*${{ github.repository }}*)"
+                  },
+                  "accessory": {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View workflow",
+                      "emoji": true
+                    },
+                    "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                    "action_id": "workflow_link"
+                  }
+                }
+              ]
+            }
+
+  newsletter-send:
+    name: Send newsletter
+    runs-on: ubuntu-latest
+    needs:
+      - newsletter-draft
+    if: ${{ github.ref_type == 'tag' }}
+    environment: production
+    steps:
+      - uses: ory/ci/newsletter@master
+        with:
+          mailchimp_list_id: 058a056618
+          mailchmip_segment_id: 11398953
+          mailchimp_api_key: ${{ secrets.MAILCHIMP_API_KEY }}
+          draft: 'false'
+          ssh_key: ${{ secrets.ORY_BOT_SSH_KEY }}

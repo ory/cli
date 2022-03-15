@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -90,10 +91,18 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 }
 
 func campaignID() string {
+	var repoName string
+	ghRepo := strings.Split(os.Getenv("GITHUB_REPOSITORY"), "/")
+	if len(ghRepo) == 2 {
+		repoName = ghRepo[1]
+	} else {
+		repoName = pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME")
+	}
+
 	return fmt.Sprintf("%s-%s-%s",
-		pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME"),
-		substr(pkg.CircleSHA1(), 0, 6),
-		pkg.CircleTag())
+		repoName,
+		substr(pkg.GitHubSHA(), 0, 6),
+		pkg.GitHubTag())
 }
 
 func substr(input string, start int, length int) string {
