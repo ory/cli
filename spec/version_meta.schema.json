@@ -12,60 +12,107 @@
         "oneOf": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": ["allOf"],
-            "additionalProperties": false,
-            "properties": {
-              "allOf": {
-                "type": "array",
-                "additionalItems": false,
-                "minItems": 2,
-                "items": [
-                  {
-                    "type": "object",
-                    "required": [
-                      "properties"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                      "properties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "allOf"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "allOf": {
+                    "type": "array",
+                    "additionalItems": false,
+                    "minItems": 2,
+                    "items": [
+                      {
                         "type": "object",
                         "required": [
-                          "version"
+                          "properties",
+                          "required"
                         ],
                         "additionalProperties": false,
                         "properties": {
-                          "version": {
+                          "properties": {
                             "type": "object",
                             "required": [
-                              "const"
+                              "version"
                             ],
                             "additionalProperties": false,
                             "properties": {
-                              "const": {
-                                "type": "string"
+                              "version": {
+                                "type": "object",
+                                "required": [
+                                  "const"
+                                ],
+                                "additionalProperties": false,
+                                "properties": {
+                                  "const": {
+                                    "type": "string"
+                                  }
+                                }
                               }
+                            }
+                          },
+                          "required": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
                             }
                           }
                         }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "$ref"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "$ref": {
+                            "type": "string"
+                          }
+                        }
                       }
-                    }
-                  },
-                  {
-                    "type": "object",
-                    "required": [
-                      "$ref"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                      "$ref": {
-                        "type": "string"
-                      }
-                    }
+                    ]
                   }
-                ]
+                }
+              },
+              {
+                "const": {
+                  "allOf": [
+                    {
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "version": {
+                              "type": "string",
+                              "maxLength": 0
+                            }
+                          },
+                          "required": [
+                            "version"
+                          ]
+                        },
+                        {
+                          "not": {
+                            "properties": {
+                              "version": {}
+                            },
+                            "required": [
+                              "version"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "$ref": "#/oneOf/0/allOf/1"
+                    }
+                  ]
+                }
               }
-            }
+            ]
           }
         }
       }

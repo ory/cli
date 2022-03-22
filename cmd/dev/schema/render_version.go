@@ -5,8 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ory/jsonschema/v3/httploader"
-	"github.com/ory/x/httpx"
 	"io/ioutil"
 	"os"
 	"path"
@@ -14,11 +12,12 @@ import (
 	"strings"
 
 	"github.com/ory/cli/spec"
+	"github.com/ory/jsonschema/v3/httploader"
+	"github.com/ory/x/httpx"
 
 	"github.com/ory/x/jsonschemax"
 
 	"github.com/spf13/cobra"
-	"github.com/tidwall/sjson"
 
 	"github.com/ory/cli/cmd/pkg"
 	"github.com/ory/jsonschema/v3"
@@ -53,7 +52,10 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 				"version": {
 					"const": "%s"
 				}
-			}
+			},
+			"required": [
+				"version"
+			]
 		},
 		{
 			"$ref": "%s"
@@ -61,24 +63,36 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 	]
 }`, newVersion, ref)
 
-	versionSchema, err := ioutil.ReadFile(destFile)
+	f, err := os.Open(destFile)
+	pkg.Check(err)
+	defer f.Close()
+
+	var versionSchema map[string]json.RawMessage
+	pkg.Check(json.NewDecoder(f).Decode(&versionSchema))
+
+	var oneOf []json.RawMessage
+	if err := json.Unmarshal(versionSchema["oneOf"], &oneOf); err != nil {
+		pkg.Check(err)
+	}
+
+	// prepend the newest entry
+	oneOf = append([]json.RawMessage{json.RawMessage(newVersionEntry)}, oneOf...)
+
+	versionSchema["oneOf"], err = json.Marshal(oneOf)
 	pkg.Check(err)
 
-	renderedVersionSchema, err := sjson.SetBytes(versionSchema, "oneOf.-1", json.RawMessage(newVersionEntry))
+	prettyVersionSchema, err := json.MarshalIndent(versionSchema, "", strings.Repeat(" ", 4))
 	pkg.Check(err)
-
-	var prettyVersionSchema bytes.Buffer
-	pkg.Check(json.Indent(&prettyVersionSchema, renderedVersionSchema, "", strings.Repeat(" ", 4)))
 
 	ctx := context.WithValue(cmd.Context(), httploader.ContextKey, httpx.NewResilientClient())
 	schema, err := jsonschema.CompileString(ctx, "version_meta.schema.json", string(spec.VersionSchema))
 	pkg.Check(err)
 
-	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))
+	err = schema.Validate(bytes.NewReader(prettyVersionSchema))
 	if err != nil {
-		jsonschemax.FormatValidationErrorForCLI(os.Stderr, prettyVersionSchema.Bytes(), err)
+		jsonschemax.FormatValidationErrorForCLI(os.Stderr, prettyVersionSchema, err)
 		os.Exit(1)
 	}
 
-	pkg.Check(ioutil.WriteFile(destFile, prettyVersionSchema.Bytes(), 0600))
+	pkg.Check(ioutil.WriteFile(destFile, prettyVersionSchema, 0600))
 }

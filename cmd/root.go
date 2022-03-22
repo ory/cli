@@ -3,12 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/buildinfo"
 	"github.com/ory/x/cloudx"
 	"github.com/ory/x/cmdx"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-	"os"
 )
 
 func NewRootCmd() *cobra.Command {

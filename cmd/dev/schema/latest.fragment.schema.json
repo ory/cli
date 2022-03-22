@@ -1,0 +1,32 @@
+{
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "version": {
+              "type": "string",
+              "maxLength": 0
+            }
+          },
+          "required": [
+            "version"
+          ]
+        },
+        {
+          "not": {
+            "properties": {
+              "version": {}
+            },
+            "required": [
+              "version"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "$ref": "#/oneOf/0/allOf/1"
+    }
+  ]
+}
