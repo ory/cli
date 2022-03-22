@@ -3,10 +3,11 @@ package release
 import (
 	"bytes"
 	"fmt"
-	"github.com/Masterminds/semver/v3"
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/Masterminds/semver/v3"
 
 	"github.com/spf13/cobra"
 
