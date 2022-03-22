@@ -2,8 +2,11 @@ package schema
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ory/jsonschema/v3/httploader"
+	"github.com/ory/x/httpx"
 	"io/ioutil"
 	"os"
 	"path"
@@ -67,7 +70,8 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 	var prettyVersionSchema bytes.Buffer
 	pkg.Check(json.Indent(&prettyVersionSchema, renderedVersionSchema, "", strings.Repeat(" ", 4)))
 
-	schema, err := jsonschema.CompileString(cmd.Context(), "version_meta.schema.json", string(spec.VersionSchema))
+	ctx := context.WithValue(cmd.Context(), httploader.ContextKey, httpx.NewResilientClient())
+	schema, err := jsonschema.CompileString(ctx, "version_meta.schema.json", string(spec.VersionSchema))
 	pkg.Check(err)
 
 	err = schema.Validate(bytes.NewBuffer(prettyVersionSchema.Bytes()))

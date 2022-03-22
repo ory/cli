@@ -2,6 +2,7 @@ package schema
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"os"
@@ -57,7 +58,9 @@ func TestAddVersionToSchema(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.Chdir(testDir))
 
-		addVersionToSchema(new(cobra.Command), []string{"hydra", "v1.0.0", ".schema/config.schema.json"})
+		cmd := new(cobra.Command)
+		cmd.ExecuteContext(context.Background())
+		addVersionToSchema(cmd, []string{"hydra", "v1.0.0", ".schema/config.schema.json"})
 
 		require.NoError(t, os.Chdir(wd))
 
