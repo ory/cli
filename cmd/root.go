@@ -27,6 +27,7 @@ func NewRootCmd() *cobra.Command {
 			cloudx.NewPatchCmd(),
 			cloudx.NewUpdateCmd(),
 			cloudx.NewProxyCommand("ory", buildinfo.Version),
+			cloudx.NewTunnelCommand("ory", buildinfo.Version),
 			versionCmd,
 		)...,
 	)
