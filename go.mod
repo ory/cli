@@ -30,14 +30,15 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/jackc/pgx/v4 v4.14.0
+	github.com/markbates/pkger v0.17.1
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/jsonschema/v3 v3.0.7
-	github.com/ory/x v0.0.360
+	github.com/ory/x v0.0.361
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.3.0
+	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/gjson v1.9.4
-	github.com/tidwall/sjson v1.2.2
+	github.com/tidwall/gjson v1.14.0
+	github.com/tidwall/sjson v1.2.4
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -77,6 +78,7 @@ require (
 	github.com/gobuffalo/flect v0.2.4 // indirect
 	github.com/gobuffalo/github_flavored_markdown v1.1.1 // indirect
 	github.com/gobuffalo/helpers v0.6.4 // indirect
+	github.com/gobuffalo/here v0.6.0 // indirect
 	github.com/gobuffalo/nulls v0.4.1 // indirect
 	github.com/gobuffalo/packd v1.0.1 // indirect
 	github.com/gobuffalo/plush/v4 v4.1.9 // indirect
