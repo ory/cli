@@ -136,3 +136,13 @@ func registerAccount(t *testing.T, configDir string) (email, password string) {
 	assertConfig(t, configDir, email, name, false)
 	return email, password
 }
+
+func withReAuth(t *testing.T, email, password string) (*cmdx.CommandExecuter, *bytes.Buffer) {
+	configDir := newConfigDir(t)
+	cmd := configPasswordAwareCmd(configDir, password)
+	// Create the account
+	var r bytes.Buffer
+	r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
+	r.WriteString(email + "\n") // Email fakeEmail()
+	return cmd, &r
+}

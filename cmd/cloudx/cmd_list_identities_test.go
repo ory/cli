@@ -1,7 +1,6 @@
 package cloudx
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 
@@ -12,7 +11,6 @@ import (
 
 func TestListIdentities(t *testing.T) {
 	configDir := newConfigDir(t)
-
 	cmd := configAwareCmd(configDir)
 
 	email, password := registerAccount(t, configDir)
@@ -20,8 +18,8 @@ func TestListIdentities(t *testing.T) {
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s identities", proc), func(t *testing.T) {
-			stdout, _, err := cmd.Exec(nil, proc, "identities", "--format", "json", "--project", project)
-			require.NoError(t, err)
+			stdout, stderr, err := cmd.Exec(nil, proc, "identities", "--format", "json", "--project", project)
+			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.Len(t, out.Array(), 2)
 		})
@@ -35,14 +33,9 @@ func TestListIdentities(t *testing.T) {
 	})
 
 	t.Run("is able to list identities after authenticating", func(t *testing.T) {
-		configDir := newConfigDir(t)
-		cmd := configPasswordAwareCmd(configDir, password)
-		// Create the account
-		var r bytes.Buffer
-		r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
-		r.WriteString(email + "\n") // Email fakeEmail()
-		stdout, _, err := cmd.Exec(&r, "ls", "identities", "--format", "json", "--project", project)
-		require.NoError(t, err)
+		cmd, r := withReAuth(t, email, password)
+		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project)
+		require.NoError(t, err, stderr)
 
 		for _, project := range gjson.Parse(stdout).Array() {
 			assert.Contains(t, "projects", project.Get("id").String())

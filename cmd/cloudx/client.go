@@ -2,8 +2,6 @@ package cloudx
 
 import (
 	"context"
-	"github.com/pkg/errors"
-
 	"fmt"
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
@@ -28,8 +26,8 @@ func ContextWithClient(ctx context.Context) context.Context {
 	return context.WithValue(ctx, cliclient.ClientContextKey, func(cmd *cobra.Command) (*kratos.APIClient, error) {
 		sc, err := NewSnakeCharmer(cmd)
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize HTTP Client: %s", err)
-			return nil, errors.WithStack(cmdx.ErrNoPrintButFail)
+			_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize HTTP Client: %s\n", err)
+			return nil, cmdx.FailSilently(cmd)
 		}
 
 		ac, err := sc.EnsureContext()
@@ -40,8 +38,8 @@ func ContextWithClient(ctx context.Context) context.Context {
 		project := uuid.FromStringOrNil(flagx.MustGetString(cmd, projectFlag))
 
 		if project == uuid.Nil {
-			_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.", projectFlag)
-			return nil, errors.WithStack(cmdx.ErrNoPrintButFail)
+			_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
+			return nil, cmdx.FailSilently(cmd)
 		}
 
 		p, err := sc.GetProject(project.String())
@@ -56,7 +54,8 @@ func ContextWithClient(ctx context.Context) context.Context {
 		conf.HTTPClient = &http.Client{
 			Transport: &tokenTransporter{RoundTripper: c.StandardClient().Transport, token: ac.SessionToken},
 			Timeout:   time.Second * 10}
-		conf.Servers = kratos.ServerConfigurations{{URL: "https://" + p.Slug + ".projects.oryapis.com"}}
+
+		conf.Servers = kratos.ServerConfigurations{{URL: "https://" + p.Slug + ".projects.console.ory.sh"}}
 
 		return kratos.NewAPIClient(conf), nil
 	})
