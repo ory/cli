@@ -27,7 +27,7 @@ jobs:
       - uses: ory/ci/docs/cli-next@master
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
-          output-dir: docs/cli
+          output-dir: docs/guides/cli/reference
 
   release:
     name: Generate release
