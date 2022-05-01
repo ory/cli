@@ -6,35 +6,34 @@ import (
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/ory/x/stringsx"
 
 	cloud "github.com/ory/client-go"
 )
 
-func newKratosClient() (*cloud.APIClient, error) {
-	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_CONSOLE_URL"), "https://project.console.ory.sh"))
+func makeCloudConsoleURL(prefix string) string {
+	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_CONSOLE_URL"), "https://console.ory.sh"))
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to determine the Ory Cloud Project URL")
+		u = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
+	u.Host = prefix + "." + u.Host
+	return u.Scheme + "://" + u.Host
+}
 
+func newKratosClient() (*cloud.APIClient, error) {
 	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: u.String()}}
+	conf.Servers = cloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 10}
 
 	return cloud.NewAPIClient(conf), nil
 }
 
 func newCloudClient(token string) (*cloud.APIClient, error) {
-	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_API_URL"), "https://api.console.ory.sh"))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to determine the Ory Cloud API URL")
-	}
+	u := makeCloudConsoleURL("api")
 
 	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: u.String()}}
-	conf.HTTPClient = NewCloudHTTPClient(token)
+	conf.Servers = cloud.ServerConfigurations{{URL: u}}
+	conf.HTTPClient = newBearerTokenClient(token)
 
 	return cloud.NewAPIClient(conf), nil
 }

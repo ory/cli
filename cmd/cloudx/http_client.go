@@ -5,23 +5,45 @@ import (
 	"time"
 )
 
-type tokenTransporter struct {
+type bearerTokenTransporter struct {
 	http.RoundTripper
-	token string
+	bearerToken string
 }
 
-func (t *tokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) {
-	if t.token != "" {
-		req.Header.Set("Authorization", "Bearer "+t.token)
+func (t *bearerTokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) {
+	if t.bearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+t.bearerToken)
 	}
 	return t.RoundTripper.RoundTrip(req)
 }
 
-func NewCloudHTTPClient(token string) *http.Client {
+func newBearerTokenClient(token string) *http.Client {
 	return &http.Client{
-		Transport: &tokenTransporter{
+		Transport: &bearerTokenTransporter{
 			RoundTripper: http.DefaultTransport,
-			token:        token,
+			bearerToken:  token,
+		},
+		Timeout: time.Second * 30,
+	}
+}
+
+type sessionTokenTransporter struct {
+	http.RoundTripper
+	sessionToken string
+}
+
+func (t *sessionTokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) {
+	if t.sessionToken != "" {
+		req.Header.Set("X-Session-Token", "session "+t.sessionToken)
+	}
+	return t.RoundTripper.RoundTrip(req)
+}
+
+func newSessionTokenClient(token string) *http.Client {
+	return &http.Client{
+		Transport: &sessionTokenTransporter{
+			RoundTripper: http.DefaultTransport,
+			sessionToken: token,
 		},
 		Timeout: time.Second * 30,
 	}

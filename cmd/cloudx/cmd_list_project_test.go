@@ -13,8 +13,8 @@ import (
 func createProject(t *testing.T, configDir string) string {
 	cmd := configAwareCmd(configDir)
 	name := testProjectName()
-	stdout, _, err := cmd.ExecDebug(t, nil, "create", "project", "--name", name, "--format", "json")
-	require.NoError(t, err)
+	stdout, stderr, err := cmd.ExecDebug(t, nil, "create", "project", "--name", name, "--format", "json")
+	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
 	ac := readConfig(t, configDir)
 	id := gjson.Get(stdout, "id").String()
 	assert.Equal(t, ac.SelectedProject.String(), id)

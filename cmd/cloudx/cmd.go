@@ -21,6 +21,7 @@ func NewRootCommand(parent *cobra.Command, project string, version string) *cobr
 	cmd.AddCommand(NewListCmd(parent))
 	cmd.AddCommand(NewPatchCmd())
 	cmd.AddCommand(NewUpdateCmd())
+	cmd.AddCommand(NewImportCmd(parent))
 	cmd.AddCommand(NewGetCmd(parent))
 	cmd.AddCommand(NewProxyCommand(cmdName, version))
 	cmd.AddCommand(NewTunnelCommand(cmdName, version))

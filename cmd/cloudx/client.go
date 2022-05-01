@@ -36,7 +36,6 @@ func ContextWithClient(ctx context.Context) context.Context {
 		}
 
 		project := uuid.FromStringOrNil(flagx.MustGetString(cmd, projectFlag))
-
 		if project == uuid.Nil {
 			_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
 			return nil, cmdx.FailSilently(cmd)
@@ -52,11 +51,10 @@ func ContextWithClient(ctx context.Context) context.Context {
 
 		conf := kratos.NewConfiguration()
 		conf.HTTPClient = &http.Client{
-			Transport: &tokenTransporter{RoundTripper: c.StandardClient().Transport, token: ac.SessionToken},
+			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
 			Timeout:   time.Second * 10}
 
-		conf.Servers = kratos.ServerConfigurations{{URL: "https://" + p.Slug + ".projects.console.ory.sh"}}
-
+		conf.Servers = kratos.ServerConfigurations{{URL: makeCloudConsoleURL(p.Slug + ".projects")}}
 		return kratos.NewAPIClient(conf), nil
 	})
 }
