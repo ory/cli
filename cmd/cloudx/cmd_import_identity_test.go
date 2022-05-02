@@ -25,6 +25,16 @@ func makeRandomIdentity(t *testing.T, email string) string {
 	return path
 }
 
+func importIdentity(t *testing.T, cmd *cmdx.CommandExecuter, project string, stdin *bytes.Buffer) string {
+	email := fakeEmail()
+	stdout, stderr, err := cmd.Exec(stdin, "import", "identities", "--format", "json", "--project", project, makeRandomIdentity(t, email))
+	require.NoError(t, err, stderr)
+	out := gjson.Parse(stdout)
+	assert.True(t, gjson.Valid(stdout))
+	assert.Equal(t, email, out.Get("traits.username").String())
+	return out.Get("id").String()
+}
+
 func TestImportIdentity(t *testing.T) {
 	configDir := newConfigDir(t)
 	cmd := configAwareCmd(configDir)
@@ -39,21 +49,12 @@ func TestImportIdentity(t *testing.T) {
 		require.ErrorIs(t, err, ErrNoConfigQuiet)
 	})
 
-	success := func(t *testing.T, cmd *cmdx.CommandExecuter, stdin *bytes.Buffer) {
-		email := fakeEmail()
-		stdout, stderr, err := cmd.Exec(stdin, "import", "identities", "--format", "json", "--project", project, makeRandomIdentity(t, email))
-		require.NoError(t, err, stderr)
-		out := gjson.Parse(stdout)
-		assert.True(t, gjson.Valid(stdout))
-		assert.Equal(t, email, out.Get("traits.username").String())
-	}
-
 	t.Run("is able to import identities", func(t *testing.T) {
-		success(t, cmd, nil)
+		importIdentity(t, cmd, project, nil)
 	})
 
 	t.Run("is able to import identities after authenticating", func(t *testing.T) {
 		cmd, r := withReAuth(t, email, password)
-		success(t, cmd, r)
+		importIdentity(t, cmd, project, r)
 	})
 }

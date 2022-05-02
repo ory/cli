@@ -16,6 +16,8 @@ func TestListIdentities(t *testing.T) {
 	email, password := registerAccount(t, configDir)
 	project := createProject(t, configDir)
 
+	userID := importIdentity(t, cmd, project, nil)
+
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := newConfigDir(t)
 		cmd := configAwareCmd(configDir)
@@ -29,7 +31,8 @@ func TestListIdentities(t *testing.T) {
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.True(t, gjson.Valid(stdout))
-			assert.Len(t, out.Array(), 0)
+			assert.Len(t, out.Array(), 1)
+			assert.Equal(t, userID, out.Array()[0].Get("id").String())
 		})
 	}
 
@@ -38,6 +41,8 @@ func TestListIdentities(t *testing.T) {
 		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
-		assert.Len(t, gjson.Parse(stdout).Array(), 0)
+		out := gjson.Parse(stdout)
+		assert.Len(t, out.Array(), 1)
+		assert.Equal(t, userID, out.Array()[0].Get("id").String())
 	})
 }

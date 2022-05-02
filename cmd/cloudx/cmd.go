@@ -19,6 +19,7 @@ func NewRootCommand(parent *cobra.Command, project string, version string) *cobr
 	cmd.AddCommand(NewAuthLogoutCmd())
 	cmd.AddCommand(NewCreateCmd())
 	cmd.AddCommand(NewListCmd(parent))
+	cmd.AddCommand(NewDeleteCmd(parent))
 	cmd.AddCommand(NewPatchCmd())
 	cmd.AddCommand(NewUpdateCmd())
 	cmd.AddCommand(NewImportCmd(parent))
