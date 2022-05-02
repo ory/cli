@@ -40,8 +40,8 @@ require (
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.13
 	github.com/ory/jsonschema/v3 v3.0.7
-	github.com/ory/kratos v0.9.0-alpha.3.0.20220403150149-0ef380d4b683
-	github.com/ory/kratos-client-go v0.6.3-alpha.1
+	github.com/ory/kratos v0.9.0-alpha.3.0.20220502115658-1a824a8bc73d
+	github.com/ory/kratos-client-go v0.9.0-alpha.3
 	github.com/ory/x v0.0.380
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
