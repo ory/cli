@@ -3,8 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/ory/kratos/cmd/jsonnet"
 	"os"
+
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/proxy"
+	"github.com/ory/kratos/cmd/jsonnet"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -32,8 +35,8 @@ func NewRootCmd() *cobra.Command {
 			cloudx.NewListCmd(c),
 			cloudx.NewImportCmd(c),
 			cloudx.NewPatchCmd(),
-			cloudx.NewProxyCommand("ory", buildinfo.Version),
-			cloudx.NewTunnelCommand("ory", buildinfo.Version),
+			proxy.NewProxyCommand("ory", buildinfo.Version),
+			proxy.NewTunnelCommand("ory", buildinfo.Version),
 			cloudx.NewUpdateCmd(),
 			cloudx.NewValidateCmd(),
 			versionCmd,
@@ -44,7 +47,7 @@ func NewRootCmd() *cobra.Command {
 }
 
 func Execute() {
-	ctx := cloudx.ContextWithClient(context.Background())
+	ctx := client.ContextWithClient(context.Background())
 	rootCmd := NewRootCmd()
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		if !errors.Is(err, cmdx.ErrNoPrintButFail) {

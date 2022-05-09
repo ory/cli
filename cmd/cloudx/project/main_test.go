@@ -1,4 +1,4 @@
-package cloudx_test
+package project_test
 
 import (
 	"testing"

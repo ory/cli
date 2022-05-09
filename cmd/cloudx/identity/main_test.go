@@ -1,4 +1,4 @@
-package cloudx_test
+package identity_test
 
 import (
 	"testing"
