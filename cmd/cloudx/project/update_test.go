@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"encoding/json"
+	"github.com/ory/x/assertx"
 	"testing"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
@@ -12,7 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
 
-	"github.com/ory/x/assertx"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/snapshotx"
 )
@@ -42,7 +42,7 @@ func TestUpdateProject(t *testing.T) {
 			"services.identity.config.session.cookie",
 		})
 
-		snapshotx.SnapshotTExcept(t, json.RawMessage(stdout), []string{
+		snapshotx.SnapshotT(t, json.RawMessage(stdout), snapshotx.ExceptPaths(
 			"id",
 			"revision_id",
 			"slug",
@@ -51,7 +51,7 @@ func TestUpdateProject(t *testing.T) {
 			"services.identity.config.session.cookie.domain",
 			"services.identity.config.session.cookie.name",
 			"services.identity.config.cookies.domain",
-		})
+		))
 	})
 	t.Run("is able to update a projects name", func(t *testing.T) {
 		name := testhelpers.FakeName()

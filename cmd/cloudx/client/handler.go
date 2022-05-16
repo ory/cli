@@ -487,7 +487,7 @@ func (h *CommandHelper) SignOut() error {
 	return h.WriteConfig(new(AuthContext))
 }
 
-func (h *CommandHelper) ListProjects() ([]cloud.Project, error) {
+func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err

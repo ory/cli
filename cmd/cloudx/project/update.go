@@ -94,7 +94,7 @@ As an example an input could look like:
 
 			p, err := h.UpdateProject(args[0], name, configs)
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintRow(cmd, (*outputProject)(&p.Project))

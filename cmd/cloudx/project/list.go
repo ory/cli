@@ -22,7 +22,7 @@ func NewListProjectsCmd() *cobra.Command {
 
 			projects, err := h.ListProjects()
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintTable(cmd, &outputProjectCollection{projects})

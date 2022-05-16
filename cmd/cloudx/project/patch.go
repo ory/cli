@@ -55,7 +55,7 @@ The format of the patch is a JSON-Patch document. For more details please check:
 
 			p, err := h.PatchProject(args[0], configs, add, replace, remove)
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintRow(cmd, (*outputProject)(&p.Project))

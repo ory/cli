@@ -38,7 +38,7 @@ func NewCreateProjectCmd() *cobra.Command {
 
 			p, err := h.CreateProject(name)
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			_, _ = fmt.Fprintln(h.VerboseErrWriter, "Project created successfully!")

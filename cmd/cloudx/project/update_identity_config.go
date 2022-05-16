@@ -90,7 +90,7 @@ This command expects the contents of the ` + "`/services/identity/config`" + ` k
 
 			p, err := h.UpdateProject(args[0], "", configs)
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Identity.Config))

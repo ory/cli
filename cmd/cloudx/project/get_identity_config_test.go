@@ -17,12 +17,12 @@ import (
 
 func TestGetKratosConfig(t *testing.T) {
 	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
 	email, password := testhelpers.RegisterAccount(t, configDir)
 
 	project := testhelpers.CreateProject(t, configDir)
 
 	t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+		cmd := testhelpers.ConfigAwareCmd(configDir)
 		stdout, _, err := cmd.Exec(nil, "get", "kratos-config", project, "--format", "json")
 		require.NoError(t, err)
 		actual, err := yaml.YAMLToJSON([]byte(stdout))

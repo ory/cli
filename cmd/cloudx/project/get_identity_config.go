@@ -34,7 +34,7 @@ $ ory get kratos-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 
 			project, err := h.GetProject(args[0])
 			if err != nil {
-				return client.PrintOpenAPIError(cmd, err)
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintJSONAble(cmd, outputConfig(project.Services.Identity.Config))

@@ -10,7 +10,7 @@ type (
 	outputConfig            map[string]interface{}
 	outputProject           cloud.Project
 	outputProjectCollection struct {
-		projects []cloud.Project
+		projects []cloud.ProjectMetadata
 	}
 )
 
@@ -48,7 +48,12 @@ func (c *outputProjectCollection) Table() [][]string {
 	for i, ident := range c.projects {
 		rows[i] = []string{
 			ident.Id,
-			ident.Slug,
+			func() string {
+				if ident.Slug != nil {
+					return *ident.Slug
+				}
+				return "<empty>"
+			}(),
 			ident.State,
 			ident.Name,
 		}
