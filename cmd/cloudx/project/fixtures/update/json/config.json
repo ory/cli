@@ -223,6 +223,19 @@
           }
         }
       }
+    },
+    "permission": {
+      "config": {
+        "namespaces": [
+          {
+            "name": "default",
+            "id": 1
+          }
+        ],
+        "limit": {
+          "max_read_depth": 3
+        }
+      }
     }
   },
   "name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON"

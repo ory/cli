@@ -1,7 +1,6 @@
 package project_test
 
 import (
-	"bytes"
 	_ "embed"
 	"encoding/json"
 	"testing"
@@ -20,13 +19,9 @@ import (
 var fixtureKratosConfig []byte
 
 func TestProjectIdentityConfig(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
-	email, password := testhelpers.RegisterAccount(t, configDir)
-
-	project := testhelpers.CreateProject(t, configDir)
+	project := testhelpers.CreateProject(t, defaultConfig)
 	t.Run("is able to update a project", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "update", "kratos-config", project, "--format", "json", "--file", "./fixtures/update-kratos/json/config.json")
+		stdout, _, err := defaultCmd.Exec(nil, "update", "kratos-config", project, "--format", "json", "--file", "./fixtures/update-kratos/json/config.json")
 		require.NoError(t, err)
 
 		assertx.EqualAsJSONExcept(t, json.RawMessage(fixtureKratosConfig), json.RawMessage(stdout), []string{
@@ -38,22 +33,22 @@ func TestProjectIdentityConfig(t *testing.T) {
 			"courier.smtp.from_name",
 		})
 
-		snapshotx.SnapshotTExcept(t, json.RawMessage(stdout), []string{
+		snapshotx.SnapshotT(t, json.RawMessage(stdout), snapshotx.ExceptPaths(
 			"serve.public.base_url",
 			"serve.admin.base_url",
 			"session.cookie.domain",
 			"session.cookie.name",
 			"cookies.domain",
 			"courier.smtp.from_name",
-		})
+		))
 	})
 
 	t.Run("prints good error messages for failing schemas", func(t *testing.T) {
-		stdout, stderr, err := cmd.ExecDebug(t, nil, "update", "identity-config", project, "--format", "json", "--file", "./fixtures/update-kratos/fail/config.json")
+		stdout, stderr, err := defaultCmd.Exec(nil, "update", "identity-config", project, "--format", "json", "--file", "./fixtures/update-kratos/fail/config.json")
 		require.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
 
 		t.Run("stdout", func(t *testing.T) {
-			snapshotx.SnapshotTExcept(t, stdout, nil)
+			snapshotx.SnapshotT(t, stdout)
 		})
 
 		t.Run("stderr", func(t *testing.T) {
@@ -62,13 +57,8 @@ func TestProjectIdentityConfig(t *testing.T) {
 	})
 
 	t.Run("is able to update a project after authenticating", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
-		// Create the account
-		var r bytes.Buffer
-		r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
-		r.WriteString(email + "\n") // Email fakeEmail()
-		_, _, err := cmd.ExecDebug(t, &r, "update", "ic", project, "--format", "json", "--file", "./fixtures/update-kratos/json/config.json")
+		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
+		_, _, err := cmd.Exec(r, "update", "ic", project, "--format", "json", "--file", "./fixtures/update-kratos/json/config.json")
 		require.NoError(t, err)
 	})
 }

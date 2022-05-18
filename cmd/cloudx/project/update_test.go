@@ -1,7 +1,6 @@
 package project_test
 
 import (
-	"bytes"
 	_ "embed"
 	"encoding/json"
 	"github.com/ory/x/assertx"
@@ -21,13 +20,10 @@ import (
 var fixture []byte
 
 func TestUpdateProject(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
-	email, password := testhelpers.RegisterAccount(t, configDir)
+	project := testhelpers.CreateProject(t, defaultConfig)
 
-	project := testhelpers.CreateProject(t, configDir)
 	t.Run("is able to update a project", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "update", "project", project, "--format", "json", "--file", "./fixtures/update/json/config.json")
+		stdout, _, err := defaultCmd.Exec(nil, "update", "project", project, "--format", "json", "--file", "./fixtures/update/json/config.json")
 		require.NoError(t, err)
 
 		assertx.EqualAsJSONExcept(t, json.RawMessage(fixture), json.RawMessage(stdout), []string{
@@ -55,18 +51,18 @@ func TestUpdateProject(t *testing.T) {
 	})
 	t.Run("is able to update a projects name", func(t *testing.T) {
 		name := testhelpers.FakeName()
-		stdout, _, err := cmd.ExecDebug(t, nil, "update", "project", project, "--name", name, "--format", "json", "--file", "./fixtures/update/json/config.json")
+		stdout, _, err := defaultCmd.Exec(nil, "update", "project", project, "--name", name, "--format", "json", "--file", "./fixtures/update/json/config.json")
 		require.NoError(t, err)
 		assert.Equal(t, name, gjson.Get(stdout, "name").String())
 	})
 
 	t.Run("prints good error messages for failing schemas", func(t *testing.T) {
 		updatedName := testhelpers.TestProjectName()
-		stdout, stderr, err := cmd.ExecDebug(t, nil, "update", "project", project, "--name", updatedName, "--format", "json", "--file", "./fixtures/update/fail/config.json")
+		stdout, stderr, err := defaultCmd.Exec(nil, "update", "project", project, "--name", updatedName, "--format", "json", "--file", "./fixtures/update/fail/config.json")
 		require.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
 
 		t.Run("stdout", func(t *testing.T) {
-			snapshotx.SnapshotTExcept(t, stdout, nil)
+			snapshotx.SnapshotT(t, stdout)
 		})
 		t.Run("stderr", func(t *testing.T) {
 			assert.Contains(t, stderr, "oneOf failed")
@@ -74,13 +70,8 @@ func TestUpdateProject(t *testing.T) {
 	})
 
 	t.Run("is able to update a project after authenticating", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
-		// Create the account
-		var r bytes.Buffer
-		r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
-		r.WriteString(email + "\n") // Email fakeEmail()
-		_, _, err := cmd.ExecDebug(t, &r, "update", "project", project, "--format", "json", "--file", "./fixtures/update/json/config.json")
-		require.NoError(t, err)
+		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
+		stdout, stderr, err := cmd.Exec(r, "update", "project", project, "--format", "json", "--file", "./fixtures/update/json/config.json")
+		require.NoError(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 	})
 }

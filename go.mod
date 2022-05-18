@@ -1,6 +1,6 @@
 module github.com/ory/cli
 
-go 1.17
+go 1.18
 
 // Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 // github.com/ory/kratos/internal/httpclient
@@ -41,7 +41,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
-	github.com/ory/x v0.0.386
+	github.com/ory/x v0.0.391
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/spf13/cobra v1.4.0

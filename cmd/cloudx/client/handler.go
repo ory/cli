@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	stderrs "errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -87,8 +88,8 @@ type AuthProject struct {
 	Slug string    `json:"slug"`
 }
 
-var ErrNoConfig = errors.New("no ory configuration file present")
-var ErrNoConfigQuiet = errors.New("please run `ory auth` to initialize your configuration or remove the `--quiet` flag")
+var ErrNoConfig = stderrs.New("no ory configuration file present")
+var ErrNoConfigQuiet = stderrs.New("please run `ory auth` to initialize your configuration or remove the `--quiet` flag")
 
 func getConfigPath(cmd *cobra.Command) (string, error) {
 	path, err := os.UserHomeDir()
@@ -104,15 +105,15 @@ func getConfigPath(cmd *cobra.Command) (string, error) {
 }
 
 type CommandHelper struct {
-	ctx              context.Context
+	Ctx              context.Context
 	VerboseWriter    io.Writer
 	VerboseErrWriter io.Writer
-	configLocation   string
-	noConfirm        bool
-	isQuiet          bool
-	apiDomain        *url.URL
-	stdin            *bufio.Reader
-	pwReader         passwordReader
+	ConfigLocation   string
+	NoConfirm        bool
+	IsQuiet          bool
+	APIDomain        *url.URL
+	Stdin            *bufio.Reader
+	PwReader         passwordReader
 }
 
 const PasswordReader = "password_reader"
@@ -142,19 +143,15 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}
 
 	return &CommandHelper{
-		configLocation:   location,
-		noConfirm:        flagx.MustGetBool(cmd, yesFlag),
-		isQuiet:          flagx.MustGetBool(cmd, cmdx.FlagQuiet),
+		ConfigLocation:   location,
+		NoConfirm:        flagx.MustGetBool(cmd, yesFlag),
+		IsQuiet:          flagx.MustGetBool(cmd, cmdx.FlagQuiet),
 		VerboseWriter:    out,
 		VerboseErrWriter: outErr,
-		stdin:            bufio.NewReader(cmd.InOrStdin()),
-		ctx:              cmd.Context(),
-		pwReader:         pwReader,
+		Stdin:            bufio.NewReader(cmd.InOrStdin()),
+		Ctx:              cmd.Context(),
+		PwReader:         pwReader,
 	}, nil
-}
-
-func (h *CommandHelper) Stdin() *bufio.Reader {
-	return h.stdin
 }
 
 func (h *CommandHelper) SetDefaultProject(id string) error {
@@ -174,31 +171,31 @@ func (h *CommandHelper) SetDefaultProject(id string) error {
 
 func (h *CommandHelper) WriteConfig(c *AuthContext) error {
 	c.Version = Version
-	file, err := os.OpenFile(h.configLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	file, err := os.OpenFile(h.ConfigLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return errors.Wrapf(err, "unable to open file for writing at location: %s", file.Name())
 	}
 	defer file.Close()
 
 	if err := json.NewEncoder(file).Encode(c); err != nil {
-		return errors.Wrapf(err, "unable to write configuration to file: %s", h.configLocation)
+		return errors.Wrapf(err, "unable to write configuration to file: %s", h.ConfigLocation)
 	}
 
 	return nil
 }
 
 func (h *CommandHelper) readConfig() (*AuthContext, error) {
-	contents, err := os.ReadFile(h.configLocation)
+	contents, err := os.ReadFile(h.ConfigLocation)
 	if err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
 			return new(AuthContext), ErrNoConfig
 		}
-		return nil, errors.Wrapf(err, "unable to open ory config file location: %s", h.configLocation)
+		return nil, errors.Wrapf(err, "unable to open ory config file location: %s", h.ConfigLocation)
 	}
 
 	var c AuthContext
 	if err := json.Unmarshal(contents, &c); err != nil {
-		return nil, errors.Wrapf(err, "unable to JSON decode the ory config file: %s", h.configLocation)
+		return nil, errors.Wrapf(err, "unable to JSON decode the ory config file: %s", h.ConfigLocation)
 	}
 
 	return &c, nil
@@ -208,7 +205,7 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 	c, err := h.readConfig()
 	if err != nil {
 		if errors.Is(err, ErrNoConfig) {
-			if h.isQuiet {
+			if h.IsQuiet {
 				return nil, ErrNoConfigQuiet
 			}
 			// Continue to sign in
@@ -222,12 +219,12 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 		if err != nil {
 			return nil, err
 		}
-		sess, _, err := client.V0alpha2Api.ToSession(h.ctx).XSessionToken(c.SessionToken).Execute()
+		sess, _, err := client.V0alpha2Api.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
 		if sess == nil || err != nil {
-			if h.isQuiet {
+			if h.IsQuiet {
 				return nil, errors.New("Your session has expired and you cannot reauthenticate when the --quiet flag is set")
 			}
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("Your CLI session has expired. Do you wish to log in again as \"%s\"?", c.IdentityTraits.Email), h.stdin, h.VerboseErrWriter)
+			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("Your CLI session has expired. Do you wish to log in again as \"%s\"?", c.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
 			if err != nil {
 				return nil, err
 			}
@@ -269,7 +266,7 @@ func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, err
 }
 
 func (h *CommandHelper) signup(c *cloud.APIClient) (*AuthContext, error) {
-	flow, _, err := c.V0alpha2Api.InitializeSelfServiceRegistrationFlowWithoutBrowser(h.ctx).Execute()
+	flow, _, err := c.V0alpha2Api.InitializeSelfServiceRegistrationFlowWithoutBrowser(h.Ctx).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -282,11 +279,11 @@ retryRegistration:
 	isRetry = true
 
 	var form cloud.SubmitSelfServiceRegistrationFlowWithPasswordMethodBody
-	if err := renderForm(h.stdin, h.pwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
+	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
 		return nil, err
 	}
 
-	signup, _, err := c.V0alpha2Api.SubmitSelfServiceRegistrationFlow(h.ctx).
+	signup, _, err := c.V0alpha2Api.SubmitSelfServiceRegistrationFlow(h.Ctx).
 		Flow(flow.Id).SubmitSelfServiceRegistrationFlowBody(cloud.SubmitSelfServiceRegistrationFlowBody{
 		SubmitSelfServiceRegistrationFlowWithPasswordMethodBody: &form,
 	}).Execute()
@@ -306,7 +303,7 @@ retryRegistration:
 	}
 
 	sessionToken := *signup.SessionToken
-	sess, _, err := c.V0alpha2Api.ToSession(h.ctx).XSessionToken(sessionToken).Execute()
+	sess, _, err := c.V0alpha2Api.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -315,7 +312,7 @@ retryRegistration:
 }
 
 func (h *CommandHelper) signin(c *cloud.APIClient, sessionToken string) (*AuthContext, error) {
-	req := c.V0alpha2Api.InitializeSelfServiceLoginFlowWithoutBrowser(h.ctx)
+	req := c.V0alpha2Api.InitializeSelfServiceLoginFlowWithoutBrowser(h.Ctx)
 	if len(sessionToken) > 0 {
 		req = req.XSessionToken(sessionToken).Aal("aal2")
 	}
@@ -355,7 +352,7 @@ retryLogin:
 		}
 	}
 
-	if err := renderForm(h.stdin, h.pwReader, h.VerboseErrWriter, flow.Ui, method, form); err != nil {
+	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, method, form); err != nil {
 		return nil, err
 	}
 
@@ -369,7 +366,7 @@ retryLogin:
 		panic("unexpected type")
 	}
 
-	login, _, err := c.V0alpha2Api.SubmitSelfServiceLoginFlow(h.ctx).XSessionToken(sessionToken).
+	login, _, err := c.V0alpha2Api.SubmitSelfServiceLoginFlow(h.Ctx).XSessionToken(sessionToken).
 		Flow(flow.Id).SubmitSelfServiceLoginFlowBody(body).Execute()
 	if err != nil {
 		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
@@ -387,7 +384,7 @@ retryLogin:
 	}
 
 	sessionToken = stringsx.Coalesce(*login.SessionToken, sessionToken)
-	sess, _, err := c.V0alpha2Api.ToSession(h.ctx).XSessionToken(sessionToken).Execute()
+	sess, _, err := c.V0alpha2Api.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
 	if err == nil {
 		return h.sessionToContext(sess, sessionToken)
 	}
@@ -418,7 +415,7 @@ func (h *CommandHelper) sessionToContext(session *cloud.Session, token string) (
 }
 
 func (h *CommandHelper) Authenticate() (*AuthContext, error) {
-	if h.isQuiet {
+	if h.IsQuiet {
 		return nil, errors.New("can not sign in or sign up when flag --quiet is set")
 	}
 
@@ -430,8 +427,8 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 	}
 
 	if len(ac.SessionToken) > 0 {
-		if !h.noConfirm {
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("You are signed in as \"%s\" already. Do you wish to authenticate with another account?", ac.IdentityTraits.Email), h.stdin, h.VerboseErrWriter)
+		if !h.NoConfirm {
+			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("You are signed in as \"%s\" already. Do you wish to authenticate with another account?", ac.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
 			if err != nil {
 				return nil, err
 			} else if !ok {
@@ -450,7 +447,7 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 		return nil, err
 	}
 
-	signIn, err := cmdx.AskScannerForConfirmation("Do you already have an Ory Console account you wish to use?", h.stdin, h.VerboseErrWriter)
+	signIn, err := cmdx.AskScannerForConfirmation("Do you already have an Ory Console account you wish to use?", h.Stdin, h.VerboseErrWriter)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +495,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 		return nil, err
 	}
 
-	projects, res, err := c.V0alpha2Api.ListProjects(h.ctx).Execute()
+	projects, res, err := c.V0alpha2Api.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -517,7 +514,7 @@ func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.V0alpha2Api.GetProject(h.ctx, id).Execute()
+	project, res, err := c.V0alpha2Api.GetProject(h.Ctx, id).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -536,7 +533,7 @@ func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.V0alpha2Api.CreateProject(h.ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	project, res, err := c.V0alpha2Api.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -628,7 +625,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	res, _, err := c.V0alpha2Api.PatchProject(h.ctx, id).JsonPatch(patches).Execute()
+	res, _, err := c.V0alpha2Api.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -691,14 +688,14 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.V0alpha2Api.GetProject(h.ctx, id).Execute()
+		res, _, err := c.V0alpha2Api.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, err
 		}
 		payload.Name = res.Name
 	}
 
-	res, _, err := c.V0alpha2Api.UpdateProject(h.ctx, id).UpdateProject(payload).Execute()
+	res, _, err := c.V0alpha2Api.UpdateProject(h.Ctx, id).UpdateProject(payload).Execute()
 	if err != nil {
 		return nil, err
 	}

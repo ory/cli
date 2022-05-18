@@ -15,7 +15,10 @@ func NewPatchCmd() *cobra.Command {
 		Short: fmt.Sprintf("Patch resources"),
 	}
 	client.RegisterConfigFlag(cmd.PersistentFlags())
-	cmd.AddCommand(project.NewProjectsPatchCmd())
-	cmd.AddCommand(project.NewPatchKratosConfigCmd())
+	cmd.AddCommand(
+		project.NewProjectsPatchCmd(),
+		project.NewPatchKratosConfigCmd(),
+		project.NewPatchKetoConfigCmd(),
+	)
 	return cmd
 }

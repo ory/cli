@@ -1,6 +1,8 @@
 package project
 
 import (
+	"encoding/json"
+	cloud "github.com/ory/client-go"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -33,34 +35,17 @@ The format of the patch is a JSON-Patch document. For more details please check:
 
 	https://www.ory.sh/docs/reference/api#operation/patchProject
 	https://jsonpatch.com`,
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			h, err := client.NewCommandHelper(cmd)
-			if err != nil {
-				return err
-			}
-
-			files := flagx.MustGetStringSlice(cmd, "file")
-			add := flagx.MustGetStringArray(cmd, "add")
-			replace := flagx.MustGetStringArray(cmd, "replace")
-			remove := flagx.MustGetStringArray(cmd, "remove")
-
-			if len(files)+len(add)+len(replace)+len(remove) == 0 {
-				return errors.New("at least one of --file, --add, --replace, or --remove must be set")
-			}
-
-			configs, err := client.ReadConfigFiles(files)
-			if err != nil {
-				return err
-			}
-
-			p, err := h.PatchProject(args[0], configs, add, replace, remove)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-
-			cmdx.PrintRow(cmd, (*outputProject)(&p.Project))
-			return h.PrintUpdateProjectWarnings(p)
-		},
+		RunE: runPatch(
+			func(s []string) []string {
+				return s
+			},
+			func(s []json.RawMessage) ([]json.RawMessage, error) {
+				return s, nil
+			},
+			func(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
+				cmdx.PrintRow(cmd, (*outputProject)(&p.Project))
+			},
+		),
 	}
 
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the project")
@@ -70,4 +55,40 @@ The format of the patch is a JSON-Patch document. For more details please check:
 	client.RegisterYesFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
+}
+
+func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *cloud.SuccessfulProjectUpdate)) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		h, err := client.NewCommandHelper(cmd)
+		if err != nil {
+			return err
+		}
+
+		files := patchPrefixer(flagx.MustGetStringSlice(cmd, "file"))
+		add := patchPrefixer(flagx.MustGetStringArray(cmd, "add"))
+		replace := patchPrefixer(flagx.MustGetStringArray(cmd, "replace"))
+		remove := patchPrefixer(flagx.MustGetStringArray(cmd, "remove"))
+
+		if len(files)+len(add)+len(replace)+len(remove) == 0 {
+			return errors.New("at least one of --file, --add, --replace, or --remove must be set")
+		}
+
+		configs, err := client.ReadConfigFiles(files)
+		if err != nil {
+			return err
+		}
+
+		configs, err = filePrefixer(configs)
+		if err != nil {
+			return err
+		}
+
+		p, err := h.PatchProject(args[0], configs, add, replace, remove)
+		if err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
+		}
+
+		outputter(cmd, p)
+		return h.PrintUpdateProjectWarnings(p)
+	}
 }

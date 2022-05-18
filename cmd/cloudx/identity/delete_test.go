@@ -13,23 +13,17 @@ import (
 )
 
 func TestDeleteIdentity(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
-
-	email, password := testhelpers.RegisterAccount(t, configDir)
-	project := testhelpers.CreateProject(t, configDir)
-
 	t.Run("is not able to delete identities if not authenticated and quiet flag", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, cmd, project, nil)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
 		configDir := testhelpers.NewConfigDir(t)
 		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", project, userID)
+		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to delete identities", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, cmd, project, nil)
-		stdout, stderr, err := cmd.Exec(nil, "delete", "identity", "--format", "json", "--project", project, userID)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
+		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "identity", "--format", "json", "--project", defaultProject, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -37,9 +31,9 @@ func TestDeleteIdentity(t *testing.T) {
 	})
 
 	t.Run("is able to delete identities after authenticating", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, cmd, project, nil)
-		cmd, r := testhelpers.WithReAuth(t, email, password)
-		stdout, stderr, err := cmd.Exec(r, "delete", "identity", "--format", "json", "--project", project, userID)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
+		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
+		stdout, stderr, err := cmd.Exec(r, "delete", "identity", "--format", "json", "--project", defaultProject, userID)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)

@@ -13,13 +13,9 @@ import (
 )
 
 func TestListIdentities(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
+	project := testhelpers.CreateProject(t, defaultConfig)
 
-	email, password := testhelpers.RegisterAccount(t, configDir)
-	project := testhelpers.CreateProject(t, configDir)
-
-	userID := testhelpers.ImportIdentity(t, cmd, project, nil)
+	userID := testhelpers.ImportIdentity(t, defaultCmd, project, nil)
 
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigDir(t)
@@ -30,7 +26,7 @@ func TestListIdentities(t *testing.T) {
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s identities", proc), func(t *testing.T) {
-			stdout, stderr, err := cmd.Exec(nil, proc, "identities", "--format", "json", "--project", project)
+			stdout, stderr, err := defaultCmd.Exec(nil, proc, "identities", "--format", "json", "--project", project)
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.True(t, gjson.Valid(stdout))
@@ -40,7 +36,7 @@ func TestListIdentities(t *testing.T) {
 	}
 
 	t.Run("is able to list identities after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, email, password)
+		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
 		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))

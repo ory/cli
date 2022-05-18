@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-
 	cloud "github.com/ory/client-go"
 )
 
@@ -52,7 +51,7 @@ func (c *outputProjectCollection) Table() [][]string {
 				if ident.Slug != nil {
 					return *ident.Slug
 				}
-				return "<empty>"
+				return "<none>"
 			}(),
 			ident.State,
 			ident.Name,

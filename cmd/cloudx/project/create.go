@@ -23,11 +23,11 @@ func NewCreateProjectCmd() *cobra.Command {
 			}
 
 			name := flagx.MustGetString(cmd, "name")
-			if len(name) == 0 && flagx.MustGetBool(cmd, string(cmdx.FormatQuiet)) {
+			if len(name) == 0 && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
 				return errors.New("you must specify the --name flag when using --quiet")
 			}
 
-			stdin := h.Stdin()
+			stdin := h.Stdin
 			for name == "" {
 				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Enter a name for your project: ")
 				name, err = stdin.ReadString('\n')

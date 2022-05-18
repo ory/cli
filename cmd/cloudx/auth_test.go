@@ -31,7 +31,7 @@ func TestAuthenticator(t *testing.T) {
 	})
 
 	password := testhelpers.FakePassword()
-	exec := testhelpers.ConfigPasswordAwareCmd(configDir, password)
+	cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
 
 	signIn := func(t *testing.T, email string) (string, string, error) {
 		testhelpers.ClearConfig(t, configDir)
@@ -40,7 +40,7 @@ func TestAuthenticator(t *testing.T) {
 		_, _ = r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
 		_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
 
-		return exec.Exec(&r, "auth")
+		return cmd.Exec(&r, "auth")
 	}
 
 	t.Run("success", func(t *testing.T) {
@@ -56,7 +56,7 @@ func TestAuthenticator(t *testing.T) {
 		_, _ = r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
 		_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 
-		stdout, stderr, err := exec.Exec(&r, "auth")
+		stdout, stderr, err := cmd.Exec(&r, "auth")
 		require.NoError(t, err)
 
 		assert.Contains(t, stderr, "You are now signed in as: "+email, "Expected to be signed in but response was:\n\t%s\n\tstderr: %s", stdout, stderr)
@@ -82,7 +82,7 @@ func TestAuthenticator(t *testing.T) {
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
 			r.WriteString("n\n") // Your CLI session has expired. Do you wish to login again as <email>?
-			_, stderr, err := cmd.ExecDebug(t, &r, "list", "projects")
+			_, stderr, err := cmd.Exec(&r, "list", "projects")
 			require.Error(t, err)
 			assert.Contains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
 		})
@@ -93,7 +93,7 @@ func TestAuthenticator(t *testing.T) {
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
 			r.WriteString("y\n") // Your CLI session has expired. Do you wish to login again as <email>?
-			_, stderr, err := cmd.ExecDebug(t, &r, "list", "projects")
+			_, stderr, err := cmd.Exec(&r, "list", "projects")
 			require.Error(t, err)
 			assert.Contains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
 			expectSignInSuccess(t)
@@ -103,7 +103,7 @@ func TestAuthenticator(t *testing.T) {
 			cmd := testhelpers.ConfigAwareCmd(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
-			_, stderr, err := cmd.ExecDebug(t, nil, "list", "projects", "-q")
+			_, stderr, err := cmd.Exec(nil, "list", "projects", "-q")
 			require.Error(t, err)
 			assert.Equal(t, "Your session has expired and you cannot reauthenticate when the --quiet flag is set", err.Error())
 			assert.NotContains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
@@ -152,7 +152,7 @@ func TestAuthenticator(t *testing.T) {
 				_, _ = r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
 				_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
 
-				stdout, stderr, err := exec.Exec(&r, "auth")
+				stdout, stderr, err := cmd.Exec(&r, "auth")
 				require.Error(t, err, stdout)
 
 				assert.Contains(t, stderr, "Please complete the second authentication challenge", stdout)
@@ -171,7 +171,7 @@ func TestAuthenticator(t *testing.T) {
 				_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
 				_, _ = r.WriteString(code + "\n")  // TOTP code
 
-				stdout, stderr, err := exec.Exec(&r, "auth")
+				stdout, stderr, err := cmd.Exec(&r, "auth")
 				require.NoError(t, err, stdout)
 
 				assert.Contains(t, stderr, "Please complete the second authentication challenge", stdout)
@@ -200,7 +200,7 @@ func TestAuthenticator(t *testing.T) {
 		_, _ = r.WriteString("y\n")        // Please inform me about platform and security updates? [y/n]: n
 		_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 
-		stdout, stderr, err := exec.Exec(&r, "auth", "--"+client.ConfigFlag, configDir)
+		stdout, stderr, err := cmd.Exec(&r, "auth", "--"+client.ConfigFlag, configDir)
 		require.NoError(t, err)
 
 		assert.Contains(t, stderr, "Your account creation attempt failed. Please try again!", stdout) // First try fails
