@@ -9,4 +9,4 @@ import (
 	"github.com/ory/cli/cmd/dev"
 )
 
-var devCommand = []*cobra.Command{dev.Main}
+var devCommands = []*cobra.Command{dev.Main}

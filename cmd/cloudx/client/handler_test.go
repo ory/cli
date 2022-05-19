@@ -7,6 +7,8 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/ory/x/assertx"
+	"github.com/ory/x/snapshotx"
 	"io"
 	"testing"
 
@@ -32,8 +34,7 @@ func TestCommandHelper(t *testing.T) {
 		IsQuiet:          true,
 		VerboseWriter:    io.Discard,
 		VerboseErrWriter: io.Discard,
-		//Stdin:            bufio.NewReader(&bytes.Buffer{}),
-		Ctx: context.Background(),
+		Ctx:              context.Background(),
 	}
 	assertValidProject := func(t *testing.T, actual *cloud.Project) {
 		assert.Equal(t, project, actual.Id)
@@ -77,10 +78,39 @@ func TestCommandHelper(t *testing.T) {
 	})
 
 	t.Run("func=UpdateProject", func(t *testing.T) {
-		t.Run("is able to update a projects name", func(t *testing.T) {
-			res, err := loggedIn.UpdateProject(project, "new-name", []json.RawMessage{config})
+		t.Run("is able to update a project", func(t *testing.T) {
+			res, err := loggedIn.UpdateProject(project, "", []json.RawMessage{config})
 			require.NoError(t, err)
-			assert.Equal(t, "new-name", res.Project.Name)
+
+			assertx.EqualAsJSONExcept(t, config, res.Project, []string{
+				"id",
+				"revision_id",
+				"state",
+				"slug",
+				"services.identity.config.serve",
+				"services.identity.config.cookies",
+				"services.identity.config.identity.default_schema_id",
+				"services.identity.config.identity.schemas",
+				"services.identity.config.session.cookie",
+			})
+
+			snapshotx.SnapshotT(t, res, snapshotx.ExceptPaths(
+				"project.id",
+				"project.revision_id",
+				"project.slug",
+				"project.services.identity.config.serve.public.base_url",
+				"project.services.identity.config.serve.admin.base_url",
+				"project.services.identity.config.session.cookie.domain",
+				"project.services.identity.config.session.cookie.name",
+				"project.services.identity.config.cookies.domain",
+			))
+		})
+
+		t.Run("is able to update a projects name", func(t *testing.T) {
+			name := testhelpers.FakeName()
+			res, err := loggedIn.UpdateProject(project, name, []json.RawMessage{config})
+			require.NoError(t, err)
+			assert.Equal(t, name, res.Project.Name)
 		})
 
 		t.Run("is able to update a project after authenticating", func(t *testing.T) {
