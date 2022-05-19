@@ -681,8 +681,8 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		return nil, errors.WithStack(err)
 	}
 
-	if len(payload.Services.Identity.Config) == 0 {
-		return nil, errors.Errorf("value of key `services.identity.config` is required and can not be empty")
+	if payload.Services.Identity == nil && payload.Services.Permission == nil {
+		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` is required and can not be empty")
 	}
 
 	if name != "" {
@@ -690,7 +690,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	} else if payload.Name == "" {
 		res, _, err := c.V0alpha2Api.GetProject(h.Ctx, id).Execute()
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 		payload.Name = res.Name
 	}

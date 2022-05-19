@@ -2,10 +2,11 @@ package testhelpers
 
 import (
 	"fmt"
-	"github.com/ory/x/cmdx"
 	"os"
 	"runtime/debug"
 	"testing"
+
+	"github.com/ory/x/cmdx"
 )
 
 func UseStaging() {

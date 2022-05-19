@@ -4,40 +4,57 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	_ "embed"
+	"encoding/json"
 	"fmt"
+	"io"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	cloud "github.com/ory/client-go"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"io"
-	"testing"
 )
+
+//go:embed fixtures/update_project/config.json
+var config json.RawMessage
 
 func TestCommandHelper(t *testing.T) {
 	configDir := testhelpers.NewConfigDir(t)
 	email, password := testhelpers.RegisterAccount(t, configDir)
 	project := testhelpers.CreateProject(t, configDir)
 
-	stdIn := &bytes.Buffer{}
 	loggedIn := &client.CommandHelper{
 		ConfigLocation:   configDir,
 		NoConfirm:        true,
 		IsQuiet:          true,
 		VerboseWriter:    io.Discard,
 		VerboseErrWriter: io.Discard,
-		Stdin:            bufio.NewReader(stdIn),
-		Ctx:              context.Background(),
+		//Stdin:            bufio.NewReader(&bytes.Buffer{}),
+		Ctx: context.Background(),
+	}
+	assertValidProject := func(t *testing.T, actual *cloud.Project) {
+		assert.Equal(t, project, actual.Id)
+		assert.NotZero(t, actual.Slug)
+		assert.NotZero(t, actual.Services.Identity.Config)
+		assert.NotZero(t, actual.Services.Permission.Config)
+	}
+	reauth := func() *client.CommandHelper {
+		notYetLoggedIn := *loggedIn
+		notYetLoggedIn.ConfigLocation = testhelpers.NewConfigDir(t)
+		notYetLoggedIn.IsQuiet = false
+		notYetLoggedIn.PwReader = func() ([]byte, error) {
+			return []byte(password), nil
+		}
+		notYetLoggedIn.Stdin = bufio.NewReader(bytes.NewBufferString(
+			"y\n" + // Do you already have an Ory Console account you wish to use? [y/n]: y
+				email + "\n")) // Email fakeEmail()
+		return &notYetLoggedIn
 	}
 
 	t.Run("func=GetProject", func(t *testing.T) {
-		assertValidProject := func(t *testing.T, actual *cloud.Project) {
-			assert.Equal(t, project, actual.Id)
-			assert.NotZero(t, actual.Slug)
-			assert.NotZero(t, actual.Services.Identity.Config)
-			assert.NotZero(t, actual.Services.Permission.Config)
-		}
-
 		t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
 			p, err := loggedIn.GetProject(project)
 			require.NoError(t, err)
@@ -52,19 +69,30 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("is able to get project after authenticating", func(t *testing.T) {
-			notYetLoggedIn := *loggedIn
-			notYetLoggedIn.ConfigLocation = testhelpers.NewConfigDir(t)
-			notYetLoggedIn.IsQuiet = false
-			notYetLoggedIn.PwReader = func() ([]byte, error) {
-				return []byte(password), nil
-			}
-
-			stdIn.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
-			stdIn.WriteString(email + "\n") // Email fakeEmail()
+			notYetLoggedIn := reauth()
 			p, err := notYetLoggedIn.GetProject(project)
 			require.NoError(t, err)
 			assertValidProject(t, p)
 		})
 	})
 
+	t.Run("func=UpdateProject", func(t *testing.T) {
+		t.Run("is able to update a projects name", func(t *testing.T) {
+			res, err := loggedIn.UpdateProject(project, "new-name", []json.RawMessage{config})
+			require.NoError(t, err)
+			assert.Equal(t, "new-name", res.Project.Name)
+		})
+
+		t.Run("is able to update a project after authenticating", func(t *testing.T) {
+			notYetLoggedIn := reauth()
+			res, err := notYetLoggedIn.UpdateProject(project, "", []json.RawMessage{config})
+			require.NoError(t, err)
+			assertValidProject(t, &res.Project)
+
+			for _, w := range res.Warnings {
+				t.Logf("Warning: %s", *w.Message)
+			}
+			assert.Len(t, res.Warnings, 0)
+		})
+	})
 }

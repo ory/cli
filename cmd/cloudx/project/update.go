@@ -1,8 +1,12 @@
 package project
 
 import (
+	"encoding/json"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	cloud "github.com/ory/client-go"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 
@@ -75,36 +79,48 @@ As an example an input could look like:
 	  }
 	}
 `,
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			h, err := client.NewCommandHelper(cmd)
-			if err != nil {
-				return err
-			}
-
-			name := flagx.MustGetString(cmd, "name")
-			files := flagx.MustGetStringSlice(cmd, "file")
-			if len(files) == 0 {
-				return errors.New("--file must be set")
-			}
-
-			configs, err := client.ReadConfigFiles(files)
-			if err != nil {
-				return err
-			}
-
-			p, err := h.UpdateProject(args[0], name, configs)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-
-			cmdx.PrintRow(cmd, (*outputProject)(&p.Project))
-			return h.PrintUpdateProjectWarnings(p)
-		},
+		RunE: runUpdate(prefixFileNop, outputFullProject),
 	}
 
-	cmd.Flags().StringP("name", "n", "", "The name of the project, required when quiet mode is used")
+	cmd.Flags().StringP("name", "n", "", "The new name of the project.")
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the project")
 	client.RegisterYesFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
+}
+
+func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *cloud.SuccessfulProjectUpdate)) func(*cobra.Command, []string) error {
+	return func(cmd *cobra.Command, args []string) (err error) {
+		h, err := client.NewCommandHelper(cmd)
+		if err != nil {
+			return err
+		}
+
+		files := flagx.MustGetStringSlice(cmd, "file")
+		if len(files) == 0 {
+			return errors.New("--file must be set")
+		}
+
+		configs, err := client.ReadConfigFiles(files)
+		if err != nil {
+			return err
+		}
+
+		configs, err = filePrefixer(configs)
+		if err != nil {
+			return err
+		}
+
+		name := ""
+		if n := cmd.Flags().Lookup("name"); n != nil {
+			name = n.Value.String()
+		}
+		p, err := h.UpdateProject(args[0], name, configs)
+		if err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
+		}
+
+		outputter(cmd, p)
+		return h.PrintUpdateProjectWarnings(p)
+	}
 }

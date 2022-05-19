@@ -1,14 +1,11 @@
 package project
 
 import (
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 
 	"github.com/ory/x/cmdx"
-
-	"github.com/ory/x/flagx"
 )
 
 func NewUpdateIdentityConfigCmd() *cobra.Command {
@@ -21,7 +18,6 @@ func NewUpdateIdentityConfigCmd() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Update Ory Cloud Project's Identity Service Configuration",
 		Example: `$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--name \"my updated name\" \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
 	--file https://example.org/config.yaml \
@@ -37,8 +33,7 @@ func NewUpdateIdentityConfigCmd() *cobra.Command {
   }
 }
 
-$ ory update kratos-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--name \"my updated name\" \
+$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/kratos-config.yaml \
     --format yaml
 
@@ -67,38 +62,10 @@ This command expects the contents of the ` + "`/services/identity/config`" + ` k
 	  }
 	}
 `,
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			h, err := client.NewCommandHelper(cmd)
-			if err != nil {
-				return err
-			}
-
-			files := flagx.MustGetStringSlice(cmd, "file")
-			if len(files) == 0 {
-				return errors.New("--file must be set")
-			}
-
-			configs, err := client.ReadConfigFiles(files)
-			if err != nil {
-				return err
-			}
-
-			configs, err = prefixFileIdentityConfig(configs)
-			if err != nil {
-				return err
-			}
-
-			p, err := h.UpdateProject(args[0], "", configs)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-
-			cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Identity.Config))
-			return h.PrintUpdateProjectWarnings(p)
-		},
+		RunE: runUpdate(prefixFileIdentityConfig, outputIdentityConfig),
 	}
 
-	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the project")
+	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the identity config")
 	client.RegisterYesFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())

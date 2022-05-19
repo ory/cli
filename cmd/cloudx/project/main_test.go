@@ -1,9 +1,10 @@
 package project_test
 
 import (
+	"testing"
+
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/ory/x/cmdx"
-	"testing"
 )
 
 var (

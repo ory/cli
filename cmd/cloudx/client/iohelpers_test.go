@@ -11,9 +11,9 @@ import (
 
 func TestReadConfigFiles(t *testing.T) {
 	configs, err := ReadConfigFiles([]string{
-		"fixtures/a.yaml",
-		"fixtures/b.yml",
-		"fixtures/c.json",
+		"fixtures/iohelpers/a.yaml",
+		"fixtures/iohelpers/b.yml",
+		"fixtures/iohelpers/c.json",
 	})
 	require.NoError(t, err)
 	assertx.EqualAsJSON(t, json.RawMessage(`[{"a":true},{"b":true},{"c":true}]`), configs)

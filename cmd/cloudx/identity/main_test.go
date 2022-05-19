@@ -1,8 +1,9 @@
 package identity_test
 
 import (
-	"github.com/ory/x/cmdx"
 	"testing"
+
+	"github.com/ory/x/cmdx"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )

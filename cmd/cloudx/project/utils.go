@@ -3,6 +3,11 @@ package project
 import (
 	"encoding/json"
 
+	"github.com/spf13/cobra"
+
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
+
 	"github.com/tidwall/sjson"
 )
 
@@ -38,4 +43,20 @@ func prefixFileIdentityConfig(configs []json.RawMessage) ([]json.RawMessage, err
 
 func prefixFilePermissionConfig(configs []json.RawMessage) ([]json.RawMessage, error) {
 	return prefixFileConfig("services.permission.config", configs)
+}
+
+func prefixFileNop(s []json.RawMessage) ([]json.RawMessage, error) {
+	return s, nil
+}
+
+func outputFullProject(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
+	cmdx.PrintRow(cmd, (*outputProject)(&p.Project))
+}
+
+func outputIdentityConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Identity.Config))
+}
+
+func outputPermissionConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Permission.Config))
 }

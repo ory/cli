@@ -14,8 +14,11 @@ func NewUpdateCmd() *cobra.Command {
 		Use:   "update",
 		Short: fmt.Sprintf("Update resources"),
 	}
-	cmd.AddCommand(project.NewProjectsUpdateCmd())
-	cmd.AddCommand(project.NewUpdateIdentityConfigCmd())
+	cmd.AddCommand(
+		project.NewProjectsUpdateCmd(),
+		project.NewUpdateIdentityConfigCmd(),
+		project.NewUpdatePermissionConfigCmd(),
+	)
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	return cmd
 }

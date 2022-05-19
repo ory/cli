@@ -3,8 +3,9 @@ package project_test
 import (
 	_ "embed"
 	"encoding/json"
-	"github.com/ory/x/assertx"
 	"testing"
+
+	"github.com/ory/x/assertx"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 

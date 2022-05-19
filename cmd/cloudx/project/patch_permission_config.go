@@ -1,7 +1,6 @@
 package project
 
 import (
-	cloud "github.com/ory/client-go"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -56,9 +55,7 @@ The format of the patch is a JSON-Patch document. For more details please check:
 		RunE: runPatch(
 			prefixPermissionConfig,
 			prefixFilePermissionConfig,
-			func(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
-				cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Permission.Config))
-			},
+			outputPermissionConfig,
 		),
 	}
 

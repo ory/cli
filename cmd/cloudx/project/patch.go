@@ -2,9 +2,11 @@ package project
 
 import (
 	"encoding/json"
-	cloud "github.com/ory/client-go"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	cloud "github.com/ory/client-go"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 
@@ -39,12 +41,8 @@ The format of the patch is a JSON-Patch document. For more details please check:
 			func(s []string) []string {
 				return s
 			},
-			func(s []json.RawMessage) ([]json.RawMessage, error) {
-				return s, nil
-			},
-			func(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
-				cmdx.PrintRow(cmd, (*outputProject)(&p.Project))
-			},
+			prefixFileNop,
+			outputFullProject,
 		),
 	}
 
