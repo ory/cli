@@ -4,11 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
-
-	"github.com/ghodss/yaml"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
@@ -18,29 +13,21 @@ func TestGetProject(t *testing.T) {
 	t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
 		stdout, _, err := defaultCmd.Exec(nil, "get", "project", defaultProject, "--format", "json")
 		require.NoError(t, err)
-		assert.Contains(t, defaultProject, gjson.Parse(stdout).Get("id").String())
-		assert.NotEmpty(t, defaultProject, gjson.Parse(stdout).Get("slug").String())
+		assert.Equal(t, defaultProject, gjson.Get(stdout, "id").String())
+		assert.NotEmpty(t, gjson.Get(stdout, "slug").String())
+	})
+}
+
+func TestGetServiceConfig(t *testing.T) {
+	t.Run("service=kratos", func(t *testing.T) {
+		stdout, _, err := defaultCmd.Exec(nil, "get", "kratos-config", defaultProject, "--format", "json")
+		require.NoError(t, err)
+		assert.True(t, gjson.Get(stdout, "selfservice.flows.error.ui_url").Exists())
 	})
 
-	t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
-		stdout, _, err := defaultCmd.Exec(nil, "get", "project", defaultProject, "--format", "yaml")
+	t.Run("service=keto", func(t *testing.T) {
+		stdout, _, err := defaultCmd.Exec(nil, "get", "keto-config", defaultProject, "--format", "json")
 		require.NoError(t, err)
-		actual, err := yaml.YAMLToJSON([]byte(stdout))
-		require.NoError(t, err)
-		assert.Contains(t, defaultProject, gjson.ParseBytes(actual).Get("id").String())
-	})
-
-	t.Run("is not able to get project if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "get", "project", defaultProject, "--quiet")
-		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
-	})
-
-	t.Run("is able to get project after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, _, err := cmd.Exec(r, "get", "project", defaultProject, "--format", "json")
-		require.NoError(t, err)
-		assert.Contains(t, defaultProject, gjson.Parse(stdout).Get("id").String())
+		assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
 	})
 }

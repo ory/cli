@@ -1,0 +1,279 @@
+You are authenticated as: dev+orycye2eda2f162daf6142dd.hllw7l9bg37o48yc@ory.dev
+The request was malformed or contained invalid parameters
+Unable to validate config: I[#] S[#/oneOf] oneOf failed
+  I[#] S[#/oneOf/0] validation failed
+    I[#] S[#/oneOf/0/allOf/0] allOf failed
+      I[#] S[#/oneOf/0/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/0/allOf/1] allOf failed
+      I[#] S[#/oneOf/0/allOf/1/$ref] doesn't validate with "static://ory.cloud.schema.json#"
+        I[#] S[#/required] missing properties: "identity", "selfservice"
+  I[#] S[#/oneOf/1] validation failed
+    I[#] S[#/oneOf/1/allOf/0] allOf failed
+      I[#] S[#/oneOf/1/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/1/allOf/1] allOf failed
+      I[#] S[#/oneOf/1/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.9.0-alpha.3/embedx/config.schema.json#"
+        I[#] S[#/required] missing properties: "identity", "selfservice"
+  I[#] S[#/oneOf/2] validation failed
+    I[#] S[#/oneOf/2/allOf/0] allOf failed
+      I[#] S[#/oneOf/2/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/2/allOf/1] allOf failed
+      I[#] S[#/oneOf/2/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.9.0-alpha.2/embedx/config.schema.json#"
+        I[#] S[#/required] missing properties: "identity", "selfservice"
+  I[#] S[#/oneOf/3] validation failed
+    I[#] S[#/oneOf/3/allOf/0] allOf failed
+      I[#] S[#/oneOf/3/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/3/allOf/1] allOf failed
+      I[#] S[#/oneOf/3/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.4.6-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "cookie", "whoami" not allowed
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/4] validation failed
+    I[#] S[#/oneOf/4/allOf/0] allOf failed
+      I[#] S[#/oneOf/4/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/4/allOf/1] allOf failed
+      I[#] S[#/oneOf/4/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.0-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/5] validation failed
+    I[#] S[#/oneOf/5/allOf/0] allOf failed
+      I[#] S[#/oneOf/5/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/5/allOf/1] allOf failed
+      I[#] S[#/oneOf/5/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.1-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/6] validation failed
+    I[#] S[#/oneOf/6/allOf/0] allOf failed
+      I[#] S[#/oneOf/6/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/6/allOf/1] allOf failed
+      I[#] S[#/oneOf/6/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.2-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/7] validation failed
+    I[#] S[#/oneOf/7/allOf/0] allOf failed
+      I[#] S[#/oneOf/7/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/7/allOf/1] allOf failed
+      I[#] S[#/oneOf/7/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.3-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/8] validation failed
+    I[#] S[#/oneOf/8/allOf/0] allOf failed
+      I[#] S[#/oneOf/8/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/8/allOf/1] allOf failed
+      I[#] S[#/oneOf/8/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.4-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/9] validation failed
+    I[#] S[#/oneOf/9/allOf/0] allOf failed
+      I[#] S[#/oneOf/9/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/9/allOf/1] allOf failed
+      I[#] S[#/oneOf/9/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.5.5-alpha.1/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session/cookie] S[#/properties/session/properties/cookie/additionalProperties] additionalProperties "name" not allowed
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier] validation failed
+            I[#/courier/smtp] S[#/properties/courier/properties/smtp/additionalProperties] additionalProperties "from_name" not allowed
+            I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/10] validation failed
+    I[#] S[#/oneOf/10/allOf/0] allOf failed
+      I[#] S[#/oneOf/10/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/10/allOf/1] allOf failed
+      I[#] S[#/oneOf/10/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.6.0-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/11] validation failed
+    I[#] S[#/oneOf/11/allOf/0] allOf failed
+      I[#] S[#/oneOf/11/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/11/allOf/1] allOf failed
+      I[#] S[#/oneOf/11/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.6.0-alpha.2/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/12] validation failed
+    I[#] S[#/oneOf/12/allOf/0] allOf failed
+      I[#] S[#/oneOf/12/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/12/allOf/1] allOf failed
+      I[#] S[#/oneOf/12/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.6.1-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/13] validation failed
+    I[#] S[#/oneOf/13/allOf/0] allOf failed
+      I[#] S[#/oneOf/13/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/13/allOf/1] allOf failed
+      I[#] S[#/oneOf/13/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.6.2-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/14] validation failed
+    I[#] S[#/oneOf/14/allOf/0] allOf failed
+      I[#] S[#/oneOf/14/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/14/allOf/1] allOf failed
+      I[#] S[#/oneOf/14/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.6.3-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/15] validation failed
+    I[#] S[#/oneOf/15/allOf/0] allOf failed
+      I[#] S[#/oneOf/15/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/15/allOf/1] allOf failed
+      I[#] S[#/oneOf/15/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.0-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/16] validation failed
+    I[#] S[#/oneOf/16/allOf/0] allOf failed
+      I[#] S[#/oneOf/16/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/16/allOf/1] allOf failed
+      I[#] S[#/oneOf/16/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.1-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/17] validation failed
+    I[#] S[#/oneOf/17/allOf/0] allOf failed
+      I[#] S[#/oneOf/17/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/17/allOf/1] allOf failed
+      I[#] S[#/oneOf/17/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.3-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/18] validation failed
+    I[#] S[#/oneOf/18/allOf/0] allOf failed
+      I[#] S[#/oneOf/18/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/18/allOf/1] allOf failed
+      I[#] S[#/oneOf/18/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.4-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/19] validation failed
+    I[#] S[#/oneOf/19/allOf/0] allOf failed
+      I[#] S[#/oneOf/19/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/19/allOf/1] allOf failed
+      I[#] S[#/oneOf/19/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.5-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/20] validation failed
+    I[#] S[#/oneOf/20/allOf/0] allOf failed
+      I[#] S[#/oneOf/20/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/20/allOf/1] allOf failed
+      I[#] S[#/oneOf/20/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.7.6-alpha.1/driver/config/.schema/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session] S[#/properties/session] validation failed
+            I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+            I[#/session] S[#/properties/session/additionalProperties] additionalProperties "whoami" not allowed
+  I[#] S[#/oneOf/21] validation failed
+    I[#] S[#/oneOf/21/allOf/0] allOf failed
+      I[#] S[#/oneOf/21/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/21/allOf/1] allOf failed
+      I[#] S[#/oneOf/21/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.8.0-alpha.1/embedx/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+  I[#] S[#/oneOf/22] validation failed
+    I[#] S[#/oneOf/22/allOf/0] allOf failed
+      I[#] S[#/oneOf/22/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/22/allOf/1] allOf failed
+      I[#] S[#/oneOf/22/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.8.0-alpha.2/embedx/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+  I[#] S[#/oneOf/23] validation failed
+    I[#] S[#/oneOf/23/allOf/0] allOf failed
+      I[#] S[#/oneOf/23/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/23/allOf/1] allOf failed
+      I[#] S[#/oneOf/23/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.8.0-alpha.3/embedx/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+          I[#/session/lifespan] S[#/properties/session/properties/lifespan/pattern] does not match pattern "^[0-9]+(ns|us|ms|s|m|h)$"
+  I[#] S[#/oneOf/24] validation failed
+    I[#] S[#/oneOf/24/allOf/0] allOf failed
+      I[#] S[#/oneOf/24/allOf/0/required] missing properties: "version"
+    I[#] S[#/oneOf/24/allOf/1] allOf failed
+      I[#] S[#/oneOf/24/allOf/1/$ref] doesn't validate with "https://raw.githubusercontent.com/ory/kratos/v0.8.2-alpha.1/embedx/config.schema.json#"
+        I[#] S[#] validation failed
+          I[#] S[#/required] missing properties: "identity", "selfservice"
+          I[#/courier] S[#/properties/courier/additionalProperties] additionalProperties "templates" not allowed
+  I[#] S[#/oneOf/25/allOf/1] allOf failed
+    I[#] S[#/oneOf/25/allOf/1/$ref] doesn't validate with "#/oneOf/0/allOf/1"
+      I[#] S[#/oneOf/0/allOf/1/$ref] doesn't validate with "static://ory.cloud.schema.json#"
+        I[#] S[#/required] missing properties: "identity", "selfservice"
+

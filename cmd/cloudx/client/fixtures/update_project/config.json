@@ -2,6 +2,37 @@
   "services": {
     "identity": {
       "config": {
+        "courier": {
+          "smtp": {
+            "from_name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON via Ory"
+          },
+          "templates": {
+            "recovery": {
+              "invalid": {
+                "email": {
+                  "body": {}
+                }
+              },
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
+            },
+            "verification": {
+              "invalid": {
+                "email": {
+                  "body": {}
+                }
+              },
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
+            }
+          }
+        },
         "identity": {
           "default_schema_id": "from-base64",
           "schemas": [
