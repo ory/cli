@@ -41,13 +41,13 @@ func FakeName() string {
 	return randx.MustString(16, randx.AlphaLowerNum)
 }
 
-func NewConfigDir(t *testing.T) string {
+func NewConfigDir(t require.TestingT) string {
 	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
 	require.NoError(t, err)
 	return filepath.Join(homeDir, "config.json")
 }
 
-func ReadConfig(t *testing.T, configDir string) *client.AuthContext {
+func ReadConfig(t require.TestingT, configDir string) *client.AuthContext {
 	f, err := os.ReadFile(configDir)
 	require.NoError(t, err)
 	var ac client.AuthContext
@@ -55,7 +55,7 @@ func ReadConfig(t *testing.T, configDir string) *client.AuthContext {
 	return &ac
 }
 
-func ClearConfig(t *testing.T, configDir string) {
+func ClearConfig(t require.TestingT, configDir string) {
 	require.NoError(t, os.RemoveAll(configDir))
 }
 
@@ -108,7 +108,7 @@ func ConfigPasswordAwareCmd(configDir, password string) *cmdx.CommandExecuter {
 	}
 }
 
-func ChangeAccessToken(t *testing.T, configDir string) {
+func ChangeAccessToken(t require.TestingT, configDir string) {
 	ac := ReadConfig(t, configDir)
 	ac.SessionToken = "12341234"
 	data, err := json.Marshal(ac)
@@ -116,7 +116,7 @@ func ChangeAccessToken(t *testing.T, configDir string) {
 	require.NoError(t, os.WriteFile(configDir, data, 0644))
 }
 
-func RegisterAccount(t *testing.T, configDir string) (email, password string) {
+func RegisterAccount(t require.TestingT, configDir string) (email, password string) {
 	password = FakePassword()
 	email = FakeEmail()
 	name := FakeName()
@@ -144,11 +144,13 @@ func RegisterAccount(t *testing.T, configDir string) (email, password string) {
 	require.NoError(t, err)
 
 	assert.Contains(t, stderr, "You are now signed in as: "+email, stdout)
-	AssertConfig(t, configDir, email, name, false)
+	if t, ok := t.(*testing.T); ok {
+		AssertConfig(t, configDir, email, name, false)
+	}
 	return email, password
 }
 
-func WithReAuth(t *testing.T, email, password string) (*cmdx.CommandExecuter, *bytes.Buffer) {
+func WithReAuth(t require.TestingT, email, password string) (*cmdx.CommandExecuter, *bytes.Buffer) {
 	configDir := NewConfigDir(t)
 	cmd := ConfigPasswordAwareCmd(configDir, password)
 	// Create the account
@@ -158,10 +160,10 @@ func WithReAuth(t *testing.T, email, password string) (*cmdx.CommandExecuter, *b
 	return cmd, &r
 }
 
-func CreateProject(t *testing.T, configDir string) string {
+func CreateProject(t require.TestingT, configDir string) string {
 	cmd := ConfigAwareCmd(configDir)
 	name := TestProjectName()
-	stdout, stderr, err := cmd.ExecDebug(t, nil, "create", "project", "--name", name, "--format", "json")
+	stdout, stderr, err := cmd.Exec(nil, "create", "project", "--name", name, "--format", "json")
 	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
 	ac := ReadConfig(t, configDir)
 	id := gjson.Get(stdout, "id").String()
@@ -169,7 +171,7 @@ func CreateProject(t *testing.T, configDir string) string {
 	return id
 }
 
-func MakeRandomIdentity(t *testing.T, email string) string {
+func MakeRandomIdentity(t require.TestingT, email string) string {
 	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
 	require.NoError(t, err)
 	path := filepath.Join(homeDir, "import.json")
@@ -182,7 +184,7 @@ func MakeRandomIdentity(t *testing.T, email string) string {
 	return path
 }
 
-func ImportIdentity(t *testing.T, cmd *cmdx.CommandExecuter, project string, stdin *bytes.Buffer) string {
+func ImportIdentity(t require.TestingT, cmd *cmdx.CommandExecuter, project string, stdin *bytes.Buffer) string {
 	email := FakeEmail()
 	stdout, stderr, err := cmd.Exec(stdin, "import", "identities", "--format", "json", "--project", project, MakeRandomIdentity(t, email))
 	require.NoError(t, err, stderr)

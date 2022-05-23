@@ -1,0 +1,15 @@
+{
+  "limit": {
+    "max_read_depth": 7
+  },
+  "namespaces": [
+    {
+      "id": 1,
+      "name": "files"
+    },
+    {
+      "id": 2,
+      "name": "directories"
+    }
+  ]
+}

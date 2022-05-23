@@ -8,49 +8,54 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewPatchKratosConfigCmd() *cobra.Command {
+func NewPatchKetoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "identity-config <project-id>",
-		Aliases: []string{"ic", "kratos-config"},
+		Use:     "permission-config <project-id>",
+		Aliases: []string{"pc", "keto-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud Project's Identity Config",
-		Example: `$ ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--add '/courier/smtp={"from_name":"My new email name"}' \
-	--replace '/selfservice/methods/password/enabled=false' \
-	--delete '/selfservice/methods/totp/enabled' \
+		Short:   "Patch an Ory Cloud Project's Permission Config",
+		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+	--add '/namespaces={"name":"files", "id": 2}' \
+	--replace '/namespaces/2/name="directories"' \
+	--delete '/limit/max_read_depth' \
 	--format json
 
 {
-  "selfservice": {
-    "methods": {
-      "password": { "enabled": false }
-    }
+  "namespaces": [
+    {
+      "name": "files",
+      "id": 2
+	},
+    {
+      "name": "directories",
+      "id": 3
+    },
     // ...
-  }
+  ]
 }`,
-		Long: `Use this command to patch your current Ory Cloud Project's identity service configuration. Only values
+		Long: `Use this command to patch your current Ory Cloud Project's permission service configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command only updates the identity service configuration
-and also only returns the identity service configuration as a result. This command is useful when you want to
-import an Ory Kratos config as well, for example. This allows for shorter paths when specifying the flags
+Compared to the ` + "`patch project`" + ` command, this command only updates the permission service configuration
+and also only returns the permission service configuration as a result. This command is useful when you want to
+import an Ory Keto config as well, for example. This allows for shorter paths when specifying the flags
 
 	ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-		--replace '/selfservice/methods/password/enabled=false'
+		--replace '/limit/max_read_depth=5'
 
 when compared to the ` + "`patch project`" + ` command:
 
 	ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-		--replace '/services/identity/config/selfservice/methods/password/enabled=false'
+		--replace '/services/permission/config/limit/max_read_depth=5'
 
 The format of the patch is a JSON-Patch document. For more details please check:
 
 	https://www.ory.sh/docs/reference/api#operation/patchProject
 	https://jsonpatch.com`,
 		RunE: runPatch(
-			prefixIdentityConfig,
-			prefixFileIdentityConfig,
-			outputIdentityConfig,
+			prefixPermissionConfig,
+			prefixFilePermissionConfig,
+			outputPermissionConfig,
 		),
 	}
 

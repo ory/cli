@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ory/x/cloudx"
-
 	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/proxy"
 	"github.com/ory/x/cmdx"
 )
 
@@ -21,8 +20,8 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	c.AddCommand(
-		cloudx.NewProxyCommand("", ""),
-		cloudx.NewTunnelCommand("", ""),
+		proxy.NewProxyCommand("", ""),
+		proxy.NewTunnelCommand("", ""),
 	)
 
 	return c

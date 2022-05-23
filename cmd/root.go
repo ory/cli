@@ -23,24 +23,22 @@ func NewRootCmd() *cobra.Command {
 		Short: "The ORY CLI",
 	}
 
+	c.AddCommand(devCommands...)
 	c.AddCommand(
-		append(
-			devCommand,
-			cloudx.NewAuthCmd(),
-			cloudx.NewCreateCmd(),
-			jsonnet.NewFormatCmd(),
-			jsonnet.NewLintCmd(),
-			cloudx.NewDeleteCmd(c),
-			cloudx.NewGetCmd(c),
-			cloudx.NewListCmd(c),
-			cloudx.NewImportCmd(c),
-			cloudx.NewPatchCmd(),
-			proxy.NewProxyCommand("ory", buildinfo.Version),
-			proxy.NewTunnelCommand("ory", buildinfo.Version),
-			cloudx.NewUpdateCmd(),
-			cloudx.NewValidateCmd(),
-			versionCmd,
-		)...,
+		cloudx.NewAuthCmd(),
+		cloudx.NewCreateCmd(),
+		jsonnet.NewFormatCmd(),
+		jsonnet.NewLintCmd(),
+		cloudx.NewDeleteCmd(c),
+		cloudx.NewGetCmd(c),
+		cloudx.NewListCmd(c),
+		cloudx.NewImportCmd(c),
+		cloudx.NewPatchCmd(),
+		proxy.NewProxyCommand("ory", buildinfo.Version),
+		proxy.NewTunnelCommand("ory", buildinfo.Version),
+		cloudx.NewUpdateCmd(),
+		cloudx.NewValidateCmd(),
+		versionCmd,
 	)
 
 	return c

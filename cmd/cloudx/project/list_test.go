@@ -1,7 +1,6 @@
 package project_test
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 
@@ -24,15 +23,20 @@ func TestListProject(t *testing.T) {
 	}
 	t.Logf("Creating projects %v", projects)
 
+	assertHasProjects := func(t *testing.T, stdout string) {
+		out := gjson.Parse(stdout)
+		assert.Len(t, out.Array(), len(projects))
+		out.ForEach(func(_, project gjson.Result) bool {
+			assert.Contains(t, projects, project.Get("id").String())
+			return true
+		})
+	}
+
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s projects", proc), func(t *testing.T) {
 			stdout, _, err := cmd.Exec(nil, proc, "projects", "--format", "json")
 			require.NoError(t, err)
-			out := gjson.Parse(stdout)
-			assert.Len(t, out.Array(), 3)
-			for _, project := range out.Array() {
-				assert.Contains(t, projects, project.Get("id").String())
-			}
+			assertHasProjects(t, stdout)
 		})
 	}
 
@@ -44,16 +48,9 @@ func TestListProject(t *testing.T) {
 	})
 
 	t.Run("is able to list projects after authenticating", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
-		// Create the account
-		var r bytes.Buffer
-		r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
-		r.WriteString(email + "\n") // Email fakeEmail()
-		stdout, _, err := cmd.Exec(&r, "ls", "projects", "--format", "json")
+		cmd, r := testhelpers.WithReAuth(t, email, password)
+		stdout, _, err := cmd.Exec(r, "ls", "projects", "--format", "json")
 		require.NoError(t, err)
-		for _, project := range gjson.Parse(stdout).Array() {
-			assert.Contains(t, projects, project.Get("id").String())
-		}
+		assertHasProjects(t, stdout)
 	})
 }

@@ -11,48 +11,44 @@ import (
 )
 
 func TestPatchProject(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
-	_, _ = testhelpers.RegisterAccount(t, configDir)
-
-	project := testhelpers.CreateProject(t, configDir)
+	project := testhelpers.CreateProject(t, defaultConfig)
 	t.Run("is able to replace a key", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
 		require.NoError(t, err)
 		assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 	})
 
 	t.Run("is able to add a key", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
 		require.NoError(t, err)
 		assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 	})
 
 	t.Run("is able to add a key with string", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
 		require.NoError(t, err)
 		assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 	})
 
 	t.Run("is able to add a key with raw json", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
 		require.NoError(t, err)
 		assert.Equal(t, "https://example.org/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 	})
 
 	t.Run("is able to remove a key", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
 		require.NoError(t, err)
 		assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 	})
 
 	t.Run("fails if no opts are given", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json")
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json")
 		require.Error(t, err, stdout)
 	})
 
 	t.Run("is able to update several keys", func(t *testing.T) {
-		stdout, _, err := cmd.ExecDebug(t, nil, "patch", "project", project, "--format", "json",
+		stdout, _, err := defaultCmd.Exec(nil, "patch", "project", project, "--format", "json",
 			"--replace", `/services/identity/config/selfservice/methods/link/enabled=true`,
 			"--replace", `/services/identity/config/selfservice/methods/oidc/enabled=true`,
 			"--remove", `/services/identity/config/selfservice/methods/profile/enabled`,

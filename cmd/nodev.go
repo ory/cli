@@ -7,4 +7,4 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var devCommand []*cobra.Command
+var devCommands []*cobra.Command

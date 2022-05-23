@@ -18,9 +18,12 @@ func NewGetCmd(parent *cobra.Command) *cobra.Command {
 		Short: fmt.Sprintf("Get a resource"),
 	}
 
-	cmd.AddCommand(project.NewGetProjectCmd())
-	cmd.AddCommand(project.NewGetKratosConfigCmd())
-	cmd.AddCommand(identity.NewGetIdentityCmd(parent))
+	cmd.AddCommand(
+		project.NewGetProjectCmd(),
+		project.NewGetKratosConfigCmd(),
+		project.NewGetKetoConfigCmd(),
+		identity.NewGetIdentityCmd(parent),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
