@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/ory/x/corsx"
+	"github.com/rs/cors"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,10 +37,13 @@ import (
 const (
 	PortFlag               = "port"
 	OpenFlag               = "open"
+	DevFlag                = "dev"
+	DebugFlag              = "debug"
 	WithoutJWTFlag         = "no-jwt"
 	CookieDomainFlag       = "cookie-domain"
 	DefaultRedirectURLFlag = "default-redirect-url"
 	ServiceURL             = "sdk-url"
+	CORSFlag               = "allowed-cors-origins"
 )
 
 type config struct {
@@ -52,6 +57,9 @@ type config struct {
 	pathPrefix        string
 	defaultRedirectTo *url.URL
 	isTunnel          bool
+	isDebug           bool
+	isDev             bool
+	corsOrigins       []string
 }
 
 func portFromEnv() int {
@@ -136,11 +144,30 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		return nil
 	}
 
+	var originFunc func(r *http.Request, origin string) bool
+	if conf.isDev {
+		originFunc = func(r *http.Request, origin string) bool {
+			return true
+		}
+	}
+
 	proto := "http"
 	addr := fmt.Sprintf(":%d", conf.port)
+	ch := cors.New(cors.Options{
+		AllowedOrigins:         conf.corsOrigins,
+		AllowOriginRequestFunc: originFunc,
+		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
+		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
+		ExposedHeaders:         corsx.CORSResponseHeadersSafelist,
+		MaxAge:                 0,
+		AllowCredentials:       true,
+		OptionsPassthrough:     false,
+		Debug:                  conf.isDebug,
+	})
+
 	server := graceful.WithDefaults(&http.Server{
 		Addr:    addr,
-		Handler: mw,
+		Handler: ch.Handler(mw),
 	})
 
 	if conf.isTunnel {

@@ -14,9 +14,10 @@ import (
 
 func NewProxyCommand(self string, version string) *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:   "proxy app-url [publish-url]",
-		Short: "Run your app and Ory on the same domain using a reverse proxy",
-		Args:  cobra.RangeArgs(1, 2),
+		Use:        "proxy app-url [publish-url]",
+		Short:      "Run your app and Ory on the same domain using a reverse proxy",
+		Deprecated: fmt.Sprintf("Please consider using `%s tunnel` instead!", self),
+		Args:       cobra.RangeArgs(1, 2),
 		Long: fmt.Sprintf(`This command starts a reverse proxy which must be deployed in front of your application.
 This proxy works both in development and in production, for example when deploying a
 React, NodeJS, Java, PHP, ... app to a server / the cloud or when developing it locally
