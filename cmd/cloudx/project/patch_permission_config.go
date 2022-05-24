@@ -25,7 +25,7 @@ func NewPatchKetoConfigCmd() *cobra.Command {
     {
       "name": "files",
       "id": 2
-	},
+    },
     {
       "name": "directories",
       "id": 3

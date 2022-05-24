@@ -20,11 +20,11 @@ $ ory get keto-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 
 {
   "namespaces": [
-	{
-	  "name": "files",
+    {
+      "name": "files",
       "id": 1
-	},
-	// ...
+	},1
+    // ...
   ]
 }`,
 		RunE: func(cmd *cobra.Command, args []string) error {
