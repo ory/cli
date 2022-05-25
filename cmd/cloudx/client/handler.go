@@ -545,6 +545,56 @@ func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
 	return project, nil
 }
 
+type PAT struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	OwnerID   string `json:"owner_id"`
+	ProjectID string `json:"project_id"`
+	Value     string `json:"value"`
+}
+
+func (p *PAT) Header() []string {
+	return []string{"ID", "Name", "OwnerID", "ProjectID", "Value"}
+}
+
+func (p *PAT) Columns() []string {
+	return []string{p.ID, p.Name, p.OwnerID, p.ProjectID, p.Value}
+}
+
+func (p *PAT) Interface() interface{} {
+	return p
+}
+
+var _ cmdx.TableRow = &PAT{}
+
+func (h *CommandHelper) CreatePAT(project, name string) (*PAT, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, makeCloudConsoleURL("api")+"/projects/"+project+"/tokens", strings.NewReader(fmt.Sprintf(`{"name":"%s"}`, name)))
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	req.Header.Set("Authorization", "Bearer "+ac.SessionToken)
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		body, err := io.ReadAll(resp.Body)
+		return nil, errors.Errorf("unable to create PAT: %s\n%s\n%v", resp.Status, body, err)
+	}
+	var pat PAT
+	if err := json.NewDecoder(resp.Body).Decode(&pat); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &pat, nil
+}
+
 func handleError(message string, res *http.Response, err error) error {
 	if e, ok := err.(*cloud.GenericOpenAPIError); ok {
 		return errors.Wrapf(err, "%s: %s", message, e.Body())

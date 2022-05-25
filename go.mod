@@ -23,7 +23,6 @@ replace github.com/gobuffalo/pop/v6 => github.com/zepatrik/pop/v6 v6.0.0-2022051
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/bradleyjkemp/cupaloy/v2 v2.6.0
 	github.com/deckarep/golang-set v1.7.1
 	github.com/evanphx/json-patch v4.11.0+incompatible
 	github.com/getkin/kin-openapi v0.48.0
@@ -71,6 +70,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/boombuler/barcode v1.0.1 // indirect
+	github.com/bradleyjkemp/cupaloy/v2 v2.6.0 // indirect
 	github.com/bwmarrin/discordgo v0.23.0 // indirect
 	github.com/bxcodec/faker/v3 v3.3.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect

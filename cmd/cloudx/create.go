@@ -2,6 +2,7 @@ package cloudx
 
 import (
 	"fmt"
+	"github.com/ory/cli/cmd/cloudx/pat"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/project"
@@ -16,7 +17,7 @@ func NewCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: fmt.Sprintf("Create Ory Cloud resources"),
 	}
-	cmd.AddCommand(project.NewCreateProjectCmd())
+	cmd.AddCommand(project.NewCreateProjectCmd(), pat.NewCreatePATCmd())
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterNoiseFlags(cmd.PersistentFlags())
