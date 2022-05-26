@@ -15,20 +15,20 @@ const login = (email, password) => {
 const api = isTunnel ? 'http://localhost:4001' : ''
 
 const loggedIn = (email) => {
-  cy.request(api+'/anything').should((res) => {
-    console.log({body: res.body})
-
+  cy.request(api + '/anything').should((res) => {
+    console.log({ body: res.body })
 
     if (!isTunnel) {
       expect(res.body.headers['Authorization']).to.not.be.empty
       cy.task(
-          'verify',
-          res.body.headers['Authorization'].replace(/bearer /gi, '')
+        'verify',
+        res.body.headers['Authorization'].replace(/bearer /gi, '')
       ).then((decoded) => {
         expect(decoded.session.identity.traits.email).to.equal(email)
       })
     } else {
-      expect(res.body.headers['cookie'].indexOf('ory_session_playground')>-1).to.be.true
+      expect(res.body.headers['cookie'].indexOf('ory_session_playground') > -1)
+        .to.be.true
     }
   })
 }
@@ -83,7 +83,7 @@ describe('ory proxy', () => {
       cy.location('host').should('eq', 'localhost:4001')
     }
 
-    cy.request(api+'/anything').should((res) => {
+    cy.request(api + '/anything').should((res) => {
       expect(res.body.headers['Authorization']).to.be.undefined
     })
   })
