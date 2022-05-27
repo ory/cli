@@ -3,15 +3,17 @@ package project_test
 import (
 	_ "embed"
 	"encoding/json"
-	"github.com/ory/x/assertx"
 	"testing"
+
+	"github.com/ory/x/assertx"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 
-	"github.com/ory/x/cmdx"
-	"github.com/ory/x/snapshotx"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ory/x/cmdx"
+	"github.com/ory/x/snapshotx"
 )
 
 var (

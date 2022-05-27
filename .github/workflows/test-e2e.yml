@@ -25,10 +25,8 @@ jobs:
         run: |
           cd cmd/cloudx/e2e
           npm run server &
-          ./ory tunnel http://localhost:4001 &
+          ./ory tunnel http://localhost:4001 --project playground &
           CYPRESS_IS_TUNNEL=1 npm run test
-        env:
-          ORY_KRATOS_URL: https://playground.projects.oryapis.com/
 
   test-proxy:
     runs-on: ubuntu-latest
@@ -47,7 +45,5 @@ jobs:
       - name: Run Proxy E2E Tests
         run: |
           cd cmd/cloudx/e2e
-          ./ory proxy https://httpbin.org/anything &
+          ./ory proxy https://httpbin.org/anything --project playground &
           npm run test
-        env:
-          ORY_KRATOS_URL: https://playground.projects.oryapis.com/

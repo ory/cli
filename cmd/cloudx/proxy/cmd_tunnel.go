@@ -2,8 +2,9 @@ package proxy
 
 import (
 	"fmt"
-	"github.com/ory/x/corsx"
 	"net/url"
+
+	"github.com/ory/x/corsx"
 
 	"github.com/ory/x/stringsx"
 
@@ -31,27 +32,24 @@ is required for cookies to work.
 The first argument `+"`"+`application-url`+"`"+` points to the location of your application. This location
 will be used as the default redirect URL for the tunnel, for example after a successful login.
 
-    $ %[1]s tunnel https://www.example.org
-    $ %[1]s tunnel http://localhost:3000
+    $ %[1]s tunnel https://www.example.org --project <your-project-slug>
+    $ %[1]s tunnel http://localhost:3000 --project <your-project-slug>
 
 ### Connecting to Ory
 
-Before you start, you need to have a running instance of Ory. Set the environment variable
-ORY_SDK_URL to the path where Ory is available. For Ory Cloud, this is the "SDK URL"
-which can be found in the "API & Services" section of your Ory Cloud Console.
+Before you start, you need to have a running Ory Cloud project. You can create one with the following command:
 
-	$ export ORY_SDK_URL=https://playground.projects.oryapis.com
+	$ %[1]s create project --name "Command Line Project"
 
-Alternatively, you can set this using the --sdk-url flag:
+Pass the project's slug as a flag to the tunnel command:
 
-	$ %[1]s proxy --sdk-url https://playground.projects.oryapis.com \
-		...
+	$ %[1]s tunnel --project <your-project-slug> ...
 
 ### Developing Locally
 
 When developing locally we recommend to use the `+"`"+`--dev`+"`"+` flag, which uses a lax security setting:
 
-    $ %[1]s tunnel --dev \
+    $ %[1]s tunnel --dev --project <your-project-slug> \
 		http://localhost:3000
 
 ### Running on a Server
@@ -62,7 +60,7 @@ domain - for example because you are developing a staging environment - using th
 To run on a server, you need to set the optional second argument  `+"`"+`[tunnel-url]`+"`"+`. It tells the Ory Tunnel
 on which domain it will run (for example https://ory.example.org).
 
-	$ %[1]s tunnel \
+	$ %[1]s tunnel --project <your-project-slug> \
 		https://www.example.org \
 		https://auth.example.org \
 		--cookie-domain example.org \
@@ -76,19 +74,19 @@ Please note that you can not set a path in the `+"`"+`[tunnel-url]`+"`"+`!
 Per default, the tunnel listens on port 4000. If you want to listen on another port, use the
 port flag:
 
-	$ %[1]s tunnel --port 8080 \
+	$ %[1]s tunnel --port 8080 --project <your-project-slug> \
 		https://www.example.org
 
 If your application URL is available on a non-standard HTTP/HTTPS port, you can set that port in the `+"`"+`application-url`+"`"+`:
 
-	$ %[1]s tunnel \
+	$ %[1]s tunnel --project <your-project-slug> \
 		https://example.org:1234
 
 ### Cookies
 
 We recommend setting the `+"`"+`--cookie-domain`+"`"+` value to your top level domain:
 
-	$ %[1]s tunnel \
+	$ %[1]s tunnel  -project <your-project-slug> \
 		--cookie-domain example.org \
 		https://www.example.org \
 		https://auth.example.org
@@ -97,7 +95,8 @@ We recommend setting the `+"`"+`--cookie-domain`+"`"+` value to your top level d
 
 TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+"`"+` flag:
 
-    $ %[1]s tunnel --default-redirect-url /welcome \
+    $ %[1]s tunnel --project <your-project-slug> \
+		--default-redirect-url /welcome \
 		https://www.example.org
 `, self),
 
@@ -156,7 +155,7 @@ TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+
 	}
 
 	proxyCmd.Flags().String(CookieDomainFlag, "", "Set a dedicated cookie domain.")
-	proxyCmd.Flags().String(ServiceURL, "", "Set the Ory SDK URL.")
+	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Cloud Project.")
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")

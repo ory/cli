@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ory/x/corsx"
-	"github.com/rs/cors"
 	"net/http"
 	"net/url"
 	"os"
@@ -14,6 +12,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rs/cors"
+
+	"github.com/ory/x/corsx"
 
 	"github.com/ory/x/proxy"
 
@@ -42,7 +44,7 @@ const (
 	WithoutJWTFlag         = "no-jwt"
 	CookieDomainFlag       = "cookie-domain"
 	DefaultRedirectURLFlag = "default-redirect-url"
-	ServiceURL             = "sdk-url"
+	ProjectFlag            = "project"
 	CORSFlag               = "allowed-cors-origins"
 )
 
@@ -86,19 +88,13 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
-	endpoint, err := getEndpointURL(cmd)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use in localhost.
 		w.Header().Set("Strict-Transport-Security", "max-age=0;")
 		n(w, r)
 	})
 
-	mw.UseFunc(checkOry(conf, l, writer, key, signer, endpoint)) // This must be the last method before the handler
+	mw.UseFunc(checkOry(conf, l, writer, key, signer, conf.oryURL)) // This must be the last method before the handler
 
 	mw.UseHandler(proxy.New(
 		func(_ context.Context, r *http.Request) (*proxy.HostConfig, error) {
@@ -171,28 +167,39 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	})
 
 	if conf.isTunnel {
-		l.Printf("Starting the %s tunnel on: %s", proto, server.Addr)
-		l.Printf(`To access Ory %s via the tunnel, open:
+		_, _ = fmt.Fprintf(os.Stderr, `To access Ory's APIs, use URL
 
-	%s`, name, conf.publicURL.String())
+	%s
+
+and configure your SDKs to point to it, for example in JavaScript:
+
+	import { V0alpha2Api, Configuration } from '@ory/client'
+	const ory = new V0alpha2Api(new Configuration({
+	  basePath: 'http://localhost:4000',
+	  baseOptions: {
+		withCredentials: true
+	  }
+	}))
+
+`, conf.publicURL.String())
 	} else {
-		l.Printf("Starting the %s reverse proxy on: %s", proto, server.Addr)
-		l.Printf(`To access your application via the Ory %s Proxy, open:
+		_, _ = fmt.Fprintf(os.Stderr, `To access your application via the Ory Proxy, open:
 
-	%s`, name, conf.publicURL.String())
+	%s
+`, conf.publicURL.String())
 	}
 
 	if !conf.noOpen {
 		// #nosec G204 - this is ok
 		if err := exec.Command("open", conf.publicURL.String()).Run(); err != nil {
-			l.WithError(err).Warn("Unable to automatically open the proxy URL in your browser. Please open it manually!")
+			_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
 		}
 	}
 
 	if err := graceful.Graceful(func() error {
 		return server.ListenAndServe()
 	}, func(ctx context.Context) error {
-		l.Println("http server was shutdown gracefully")
+		_, _ = fmt.Fprintf(os.Stderr, "http server was shutdown gracefully")
 		if err := server.Shutdown(ctx); err != nil {
 			return err
 		}

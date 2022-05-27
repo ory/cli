@@ -23,16 +23,13 @@ This proxy works both in development and in production, for example when deployi
 React, NodeJS, Java, PHP, ... app to a server / the cloud or when developing it locally
 on your machine.
 
-Before you start, you need a running Ory Cloud project or a self-hosted version of Ory Kratos, Ory Hydra, ...
-Set the environment variable `+"`"+`ORY_SDK_URL`+"`"+` to the path where Ory is available. For Ory Cloud, this is the
-"SDK URL" which can be found in the "API & Services" section of your Ory Cloud Console.
+Before you start, you need to have a running Ory Cloud project. You can create one with the following command:
 
-	$ export ORY_SDK_URL=https://playground.projects.oryapis.com
+	$ %[1]s create project --name "Command Line Project"
 
-Alternatively, you can set this using the --sdk-url flag:
+Pass the project's slug as a flag to the tunnel command:
 
-	$ %[1]s proxy --sdk-url https://playground.projects.oryapis.com \
-		...
+	$ %[1]s proxy --project <your-project-slug> ...
 
 The first argument `+"`"+`app-url`+"`"+` points to the location of your application. If you are
 running the proxy and your app on the same host, this could be localhost.
@@ -48,7 +45,7 @@ host and port this proxy listens on:
 You must set the `+"`"+`[publish-url]`+"`"+` if you are not using the Ory Proxy in locally or in
 development:
 
-	$ %[1]s proxy \
+	$ %[1]s proxy --project <your-project-slug> \
 		http://localhost:3000 \
 		https://example.org
 
@@ -57,13 +54,13 @@ Please note that you can not set a path in the `+"`"+`[publish-url]`+"`"+`!
 Per default, the proxy listens on port 4000. If you want to listen on another port, use the
 port flag:
 
-	$ %[1]s proxy --port 8080 \
+	$ %[1]s proxy --port 8080  --project <your-project-slug> \
 		http://localhost:3000 \
 		https://example.org
 
 If your public URL is available on a non-standard HTTP/HTTPS port, you can set that port in the `+"`"+`[publish-url]`+"`"+`:
 
-	$ %[1]s proxy \
+	$ %[1]s proxy --project <your-project-slug> \
 		http://localhost:3000 \
 		https://example.org:1234
 
@@ -71,7 +68,7 @@ If this proxy runs on a subdomain, and you want Ory's cookies (e.g. the session 
 be available on all of your domain, you can use the following CLI flag to customize the cookie
 domain:
 
-	$ %[1]s proxy \
+	$ %[1]s proxy --project <your-project-slug> \
 		--cookie-domain example.org \
 		http://127.0.0.1:3000 \
 		https://ory.example.org
@@ -79,7 +76,8 @@ domain:
 Per default all default redirects will go to to `+"`"+`[publish-url]`+"`"+`. You can change this behavior using
 the `+"`"+`--default-redirect-url`+"`"+` flag:
 
-    $ %[1]s --default-redirect-url /welcome \
+    $ %[1]s --project <your-project-slug> \
+		--default-redirect-url /welcome \
 		http://127.0.0.1:3000 \
 		https://ory.example.org
 
@@ -166,7 +164,7 @@ An example payload of the JSON Web Token is:
 
 	proxyCmd.Flags().Bool(OpenFlag, false, "Open the browser when the proxy starts.")
 	proxyCmd.Flags().String(CookieDomainFlag, "", "Set a dedicated cookie domain.")
-	proxyCmd.Flags().String(ServiceURL, "", "Set the Ory SDK URL.")
+	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Cloud Project.")
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
 	proxyCmd.Flags().String(DefaultRedirectURLFlag, "", "Set the URL to redirect to per default after e.g. login or account creation.")
@@ -174,9 +172,21 @@ An example payload of the JSON Web Token is:
 }
 
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
-	upstream, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_KRATOS_URL"), os.Getenv("ORY_SDK_URL"), flagx.MustGetString(cmd, ServiceURL)))
+	var target string
+	if fromEnv := stringsx.Coalesce(os.Getenv("ORY_KRATOS_URL"), os.Getenv("ORY_SDK_URL")); len(fromEnv) > 0 {
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Use of ORY_SDK_URL / ORY_KRATOS_URL is deprecated. Please use the --project flag instead.\n")
+		target = fromEnv
+	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
+		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
+	}
+
+	if len(target) == 0 {
+		return nil, errors.Errorf("Please provide your project slug using the --project flag.")
+	}
+
+	upstream, err := url.ParseRequestURI(target)
 	if err != nil {
-		return nil, errors.Errorf("Did you forget to provide the ORY_SDK_URL? I am unable to parse it: %s", err)
+		return nil, errors.Errorf("Unable to parse \"%s\" as an URL: %s", target, err)
 	}
 
 	return upstream, nil
