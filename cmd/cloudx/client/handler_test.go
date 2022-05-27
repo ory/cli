@@ -7,10 +7,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/ory/x/assertx"
-	"github.com/ory/x/snapshotx"
 	"io"
 	"testing"
+
+	"github.com/ory/x/assertx"
+	"github.com/ory/x/snapshotx"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
