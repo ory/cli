@@ -24,16 +24,15 @@ func NewTunnelCommand(self string, version string) *cobra.Command {
 	--allowed-cors-origins https://api.example.org \
 	--allowed-cors-origins https://www.another-app.com
 `, self),
-		Long: fmt.Sprintf(`
-This command runs an HTTP Server which is connected to Ory's APIs, in order for your application and Ory's
+		Long: fmt.Sprintf(`This command runs an HTTP Server which is connected to Ory's APIs, in order for your application and Ory's
 APIs to run on the same top level domain (for example yourapp.com, localhost). Having Ory on your domain
 is required for cookies to work.
 
 The first argument `+"`"+`application-url`+"`"+` points to the location of your application. This location
 will be used as the default redirect URL for the tunnel, for example after a successful login.
 
-    $ %[1]s tunnel https://www.example.org --project <your-project-slug>
-    $ %[1]s tunnel http://localhost:3000 --project <your-project-slug>
+    $ %[1]s tunnel --project <your-project-slug> https://www.example.org
+    $ ORY_PROJECT_SLUG=<your-project-slug> %[1]s tunnel http://localhost:3000
 
 ### Connecting to Ory
 

@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"github.com/ory/x/corsx"
 	"net/url"
 	"os"
 	"sort"
@@ -16,42 +17,73 @@ import (
 
 func NewProxyCommand(self string, version string) *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:   "proxy app-url [publish-url]",
+		Use:   "proxy application-url [publish-url]",
 		Short: "Run your app and Ory on the same domain using a reverse proxy",
 		Args:  cobra.RangeArgs(1, 2),
+		Example: fmt.Sprintf(`%[1]s proxy http://localhost:3000 --dev
+%[1]s proxy http://localhost:3000 https://app.example.com \
+	--allowed-cors-origins https://www.example.org \
+	--allowed-cors-origins https://api.example.org \
+	--allowed-cors-origins https://www.another-app.com
+`, self),
 		Long: fmt.Sprintf(`This command starts a reverse proxy which must be deployed in front of your application.
 This proxy works both in development and in production, for example when deploying a
 React, NodeJS, Java, PHP, ... app to a server / the cloud or when developing it locally
 on your machine.
 
+The first argument `+"`"+`application-url`+"`"+` points to the location of your application. The Ory Proxy
+will pass all traffic through to this URL.
+
+    $ %[1]s proxy --project <your-project-slug> https://www.example.org
+    $ ORY_PROJECT_SLUG=<your-project-slug> %[1]s proxy http://localhost:3000
+
+### Connecting to Ory
+
 Before you start, you need to have a running Ory Cloud project. You can create one with the following command:
 
 	$ %[1]s create project --name "Command Line Project"
 
-Pass the project's slug as a flag to the tunnel command:
+Pass the project's slug as a flag to the proxy command:
 
 	$ %[1]s proxy --project <your-project-slug> ...
 	$ ORY_PROJECT_SLUG=<your-project-slug> %[1]s proxy ...
 
-The first argument `+"`"+`app-url`+"`"+` points to the location of your application. If you are
-running the proxy and your app on the same host, this could be localhost.
+### Developing Locally
 
-The second argument `+"`"+`[publish-url]`+"`"+` is optional. It refers to the public URL of your
-application (e.g. https://www.example.org).
+When developing locally we recommend to use the `+"`"+`--dev`+"`"+` flag, which uses a lax security setting:
+
+	$ %[1]s proxy --dev \
+		--project <your-project-slug> \
+		http://localhost:3000
+
+The first argument `+"`"+`application-url`+"`"+` points to the location of your application. If you are
+running the proxy and your app on the same host, this could be localhost. All traffic arriving at the
+Ory Proxy will be passed through to this URL.
+
+The second argument `+"`"+`[publish-url]`+"`"+` is optional and only needed when going to production.
+It refers to the public URL of your application (e.g. https://www.example.org).
 
 If `+"`"+`[publish-url]`+"`"+` is not set, it will default to the default
 host and port this proxy listens on:
 
 	http://localhost:4000
 
+### Running on a Server
+
+To go to production set up a custom domain (CNAME) for Ory. If you can not set up a custom
+domain - for example because you are developing a staging environment - using the Ory Proxy is an alternative.
+
 You must set the `+"`"+`[publish-url]`+"`"+` if you are not using the Ory Proxy in locally or in
 development:
 
-	$ %[1]s proxy --project <your-project-slug> \
+	$ %[1]s proxy \
+		--project <your-project-slug> \
 		http://localhost:3000 \
 		https://example.org
 
 Please note that you can not set a path in the `+"`"+`[publish-url]`+"`"+`!
+
+### Ports
 
 Per default, the proxy listens on port 4000. If you want to listen on another port, use the
 port flag:
@@ -66,14 +98,20 @@ If your public URL is available on a non-standard HTTP/HTTPS port, you can set t
 		http://localhost:3000 \
 		https://example.org:1234
 
+### Multiple Domains
+
 If this proxy runs on a subdomain, and you want Ory's cookies (e.g. the session cookie) to
 be available on all of your domain, you can use the following CLI flag to customize the cookie
-domain:
+domain. You will also need to allow your subdomains in the CORS headers:
 
 	$ %[1]s proxy --project <your-project-slug> \
 		--cookie-domain example.org \
+		--allowed-cors-origins https://www.example.org \
+		--allowed-cors-origins https://api.example.org \
 		http://127.0.0.1:3000 \
 		https://ory.example.org
+
+### Redirects
 
 Per default all default redirects will go to to `+"`"+`[publish-url]`+"`"+`. You can change this behavior using
 the `+"`"+`--default-redirect-url`+"`"+` flag:
@@ -86,12 +124,14 @@ the `+"`"+`--default-redirect-url`+"`"+` flag:
 Now, all redirects happening e.g. after login will point to `+"`"+`/welcome`+"`"+` instead of `+"`"+`/`+"`"+` unless you
 have specified custom redirects in your Ory configuration or in the flow's `+"`"+`?return_to=`+"`"+` query parameter.
 
+### JSON Web Token
+
 If the request is not authenticated, the HTTP Authorization Header will be empty:
 
 	GET / HTTP/1.1
 	Host: localhost:3000
 
-If the request was authenticated, a JSON Web Token will be sent in the HTTP Authorization Header containing the
+If the request was authenticated, a JSON Web Token can be sent in the HTTP Authorization Header containing the
 Ory Session:
 
 	GET / HTTP/1.1
@@ -148,6 +188,13 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
+			origins, err := corsx.NormalizeOriginStrings(append(
+				flagx.MustGetStringSlice(cmd, CORSFlag), selfURL.String()),
+			)
+			if err != nil {
+				return err
+			}
+
 			conf := &config{
 				port:              flagx.MustGetInt(cmd, PortFlag),
 				noJWT:             flagx.MustGetBool(cmd, WithoutJWTFlag),
@@ -158,6 +205,9 @@ An example payload of the JSON Web Token is:
 				oryURL:            oryURL,
 				pathPrefix:        "/.ory",
 				defaultRedirectTo: redirectURL,
+				isDev:             flagx.MustGetBool(cmd, DevFlag),
+				isDebug:           flagx.MustGetBool(cmd, DebugFlag),
+				corsOrigins:       origins,
 			}
 
 			return run(cmd, conf, version, "cloud")
@@ -170,6 +220,9 @@ An example payload of the JSON Web Token is:
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
 	proxyCmd.Flags().String(DefaultRedirectURLFlag, "", "Set the URL to redirect to per default after e.g. login or account creation.")
+	proxyCmd.Flags().StringSlice(CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
+	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
+	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	return proxyCmd
 }
 
