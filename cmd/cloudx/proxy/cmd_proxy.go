@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -29,6 +31,7 @@ Before you start, you need to have a running Ory Cloud project. You can create o
 Pass the project's slug as a flag to the tunnel command:
 
 	$ %[1]s proxy --project <your-project-slug> ...
+	$ ORY_PROJECT_SLUG=<your-project-slug> %[1]s proxy ...
 
 The first argument `+"`"+`app-url`+"`"+` points to the location of your application. If you are
 running the proxy and your app on the same host, this could be localhost.
@@ -186,17 +189,17 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 		return nil, errors.Errorf("Please provide your project slug using the --%s flag or the %s environment variable.", ProjectFlag, envVarSlug)
 	}
 
-	printDeprecations(cmd)
-
 	upstream, err := url.ParseRequestURI(target)
 	if err != nil {
 		return nil, errors.Errorf("Unable to parse \"%s\" as an URL: %s", target, err)
 	}
 
+	printDeprecations(cmd, target)
+
 	return upstream, nil
 }
 
-func printDeprecations(cmd *cobra.Command) {
+func printDeprecations(cmd *cobra.Command, target string) {
 	if deprecated := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(deprecated) > 0 {
 		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "It is recommended to use the --%s flag or the %s environment variable for better developer exeprience. Environment variables %s and %s will continue to work!\n", ProjectFlag, envVarSlug, envVarSDK, envVarKratos)
 	}
@@ -214,11 +217,12 @@ func printDeprecations(cmd *cobra.Command) {
 	}
 
 	if len(found) > 1 {
-		values := ""
+		var values []string
 		for k, v := range found {
-			values = values + fmt.Sprintf("%s=%s\n\t", k, v)
+			values = append(values, fmt.Sprintf("%s=%s", k, v))
 		}
+		sort.Sort(sort.StringSlice(values))
 
-		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n", values)
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
 	}
 }
