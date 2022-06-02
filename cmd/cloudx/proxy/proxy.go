@@ -199,7 +199,7 @@ and configure your SDKs to point to it, for example in JavaScript:
 	if err := graceful.Graceful(func() error {
 		return server.ListenAndServe()
 	}, func(ctx context.Context) error {
-		_, _ = fmt.Fprintf(os.Stderr, "http server was shutdown gracefully")
+		_, _ = fmt.Fprintf(os.Stderr, "http server was shutdown gracefully\n")
 		if err := server.Shutdown(ctx); err != nil {
 			return err
 		}

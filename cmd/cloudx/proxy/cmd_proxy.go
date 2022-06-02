@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -14,10 +16,9 @@ import (
 
 func NewProxyCommand(self string, version string) *cobra.Command {
 	proxyCmd := &cobra.Command{
-		Use:        "proxy app-url [publish-url]",
-		Short:      "Run your app and Ory on the same domain using a reverse proxy",
-		Deprecated: fmt.Sprintf("Please consider using `%s tunnel` instead!", self),
-		Args:       cobra.RangeArgs(1, 2),
+		Use:   "proxy app-url [publish-url]",
+		Short: "Run your app and Ory on the same domain using a reverse proxy",
+		Args:  cobra.RangeArgs(1, 2),
 		Long: fmt.Sprintf(`This command starts a reverse proxy which must be deployed in front of your application.
 This proxy works both in development and in production, for example when deploying a
 React, NodeJS, Java, PHP, ... app to a server / the cloud or when developing it locally
@@ -30,6 +31,7 @@ Before you start, you need to have a running Ory Cloud project. You can create o
 Pass the project's slug as a flag to the tunnel command:
 
 	$ %[1]s proxy --project <your-project-slug> ...
+	$ ORY_PROJECT_SLUG=<your-project-slug> %[1]s proxy ...
 
 The first argument `+"`"+`app-url`+"`"+` points to the location of your application. If you are
 running the proxy and your app on the same host, this could be localhost.
@@ -171,17 +173,20 @@ An example payload of the JSON Web Token is:
 	return proxyCmd
 }
 
+const envVarSlug = "ORY_PROJECT_SLUG"
+const envVarSDK = "ORY_SDK_URL"
+const envVarKratos = "ORY_KRATOS_URL"
+
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	var target string
-	if fromEnv := stringsx.Coalesce(os.Getenv("ORY_KRATOS_URL"), os.Getenv("ORY_SDK_URL")); len(fromEnv) > 0 {
-		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Use of ORY_SDK_URL / ORY_KRATOS_URL is deprecated. Please use the --project flag instead.\n")
+	if fromEnv := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(fromEnv) > 0 {
 		target = fromEnv
-	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
+	} else if slug := stringsx.Coalesce(os.Getenv(envVarSlug), flagx.MustGetString(cmd, ProjectFlag)); len(slug) > 0 {
 		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
 	}
 
 	if len(target) == 0 {
-		return nil, errors.Errorf("Please provide your project slug using the --project flag.")
+		return nil, errors.Errorf("Please provide your project slug using the --%s flag or the %s environment variable.", ProjectFlag, envVarSlug)
 	}
 
 	upstream, err := url.ParseRequestURI(target)
@@ -189,5 +194,35 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 		return nil, errors.Errorf("Unable to parse \"%s\" as an URL: %s", target, err)
 	}
 
+	printDeprecations(cmd, target)
+
 	return upstream, nil
+}
+
+func printDeprecations(cmd *cobra.Command, target string) {
+	if deprecated := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(deprecated) > 0 {
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "It is recommended to use the --%s flag or the %s environment variable for better developer exeprience. Environment variables %s and %s will continue to work!\n", ProjectFlag, envVarSlug, envVarSDK, envVarKratos)
+	}
+
+	found := map[string]string{}
+	for k, s := range map[string]string{
+		envVarSlug:         os.Getenv(envVarSlug),
+		envVarSDK:          os.Getenv(envVarSDK),
+		envVarKratos:       os.Getenv(envVarKratos),
+		"--" + ProjectFlag: flagx.MustGetString(cmd, ProjectFlag),
+	} {
+		if len(s) > 0 {
+			found[k] = s
+		}
+	}
+
+	if len(found) > 1 {
+		var values []string
+		for k, v := range found {
+			values = append(values, fmt.Sprintf("%s=%s", k, v))
+		}
+		sort.Sort(sort.StringSlice(values))
+
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
+	}
 }
