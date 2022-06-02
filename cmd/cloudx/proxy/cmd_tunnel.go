@@ -16,7 +16,7 @@ import (
 func NewTunnelCommand(self string, version string) *cobra.Command {
 	proxyCmd := &cobra.Command{
 		Use:   "tunnel application-url [tunnel-url]",
-		Short: fmt.Sprintf("Tunnel Ory on a subdomain of your app or a seperate port your app's domain"),
+		Short: fmt.Sprintf("Tunnel Ory on a subdomain of your app or a separate port your app's domain"),
 		Args:  cobra.RangeArgs(1, 2),
 		Example: fmt.Sprintf(`%[1]s tunnel http://localhost:3000 --dev
 %[1]s tunnel https://app.example.com \
