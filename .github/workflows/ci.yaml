@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - master
+      - test/new-action
     tags:
       - '*'
   pull_request:
@@ -24,10 +25,11 @@ jobs:
     name: Generate docs
     runs-on: ubuntu-latest
     steps:
-      - uses: ory/ci/docs/cli-next@master
+      - uses: ory/ci/docs/cli-next@fix/format-cli-docs
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
           output-dir: docs/cli
+          docs-branch: test/new-action
 
   release:
     name: Generate release
