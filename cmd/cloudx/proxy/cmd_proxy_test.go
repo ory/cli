@@ -51,7 +51,7 @@ func TestGetEndpointURL(t *testing.T) {
 		actual, err := getEndpointURL(cmd)
 		require.NoError(t, err)
 		assert.Equal(t, expected, actual.String())
-		assert.Equal(t, "It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer exeprience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_SDK_URL=https://someslug.projects.oryapis.com/\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: https://someslug.projects.oryapis.com/\n\n", b.String())
+		assert.Equal(t, "It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer experience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_SDK_URL=https://someslug.projects.oryapis.com/\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: https://someslug.projects.oryapis.com/\n\n", b.String())
 	})
 
 	t.Run("should fail if legacy value is not a URL", func(t *testing.T) {
