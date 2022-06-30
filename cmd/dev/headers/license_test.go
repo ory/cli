@@ -71,6 +71,7 @@ func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
 	dir.createFile("golang.go", "package test\n\nimport foo\n")
 	dir.createFile("python.py", "a = 1\nb = 2\n")
+	dir.createFile("ruby.rb", "a = 1\nb = 2\n")
 	dir.createFile("rust.rs", "let a = 1;\nlet mut b = 2;\n")
 	dir.createFile("typescript.ts", "const a = 1\nconst b = 2\n")
 	dir.createFile("yaml.yml", "one: two\nalpha: beta")
@@ -78,6 +79,7 @@ func TestAddLicenses(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("golang.go"))
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\na = 1\nb = 2\n", dir.content("python.py"))
+	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\na = 1\nb = 2\n", dir.content("ruby.rb"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nlet a = 1;\nlet mut b = 2;\n", dir.content("rust.rs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("typescript.ts"))
 	assert.Equal(t, "one: two\nalpha: beta", dir.content("yaml.yml")) // don't add license headers to YML files

@@ -21,6 +21,7 @@ const LICENSE_TOKEN = "Copyright ©"
 var formatFuncs = map[string]FormatFunc{
 	"go": PrependDoubleSlash,
 	"py": PrependPound,
+	"rb": PrependPound,
 	"rs": PrependDoubleSlash,
 	"ts": PrependDoubleSlash,
 }
