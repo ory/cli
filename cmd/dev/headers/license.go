@@ -22,8 +22,10 @@ type FormatFunc func(text string) string
 
 // formatFuncs lists all formatFuncs known to this tool.
 var formatFuncs = map[string]FormatFunc{
-	"yml":  YmlComment,
-	"yaml": YmlComment,
+	"go":   PrependDoubleSlash,
+	"ts":   PrependDoubleSlash,
+	"yml":  PrependPound,
+	"yaml": PrependPound,
 }
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
@@ -31,10 +33,10 @@ func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("cannot traverse directory %s: %w", path, err)
+			return fmt.Errorf("cannot read directory %s: %w", path, err)
 		}
 		if info.IsDir() {
-			// filepath.Walk traverses subdirectories
+			// we'll traverse subdirectories through filepath.Walk automatically
 			return nil
 		}
 		filetype := FileExt(path)
@@ -60,7 +62,13 @@ func AddLicenses(dir string, year int) error {
 		fileContentNoHeader := Remove(fileContent, commentFunc, LICENSE_TOKEN)
 		newHeader := commentFunc(licenseText)
 		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
-		file.Seek(0, 0)
+		pos, err := file.Seek(0, 0)
+		if err != nil {
+			return fmt.Errorf("cannot seek to beginning of file %s: %w", path, err)
+		}
+		if pos != 0 {
+			return fmt.Errorf("didn't end up at the beginning of file %s after seeking but at %d: %w", path, pos, err)
+		}
 		err = file.Truncate(0)
 		if err != nil {
 			return fmt.Errorf("cannot truncate file %s: %w", path, err)
@@ -105,14 +113,27 @@ func Remove(text string, commentFunc FormatFunc, token string) string {
 	return strings.Join(result, "\n")
 }
 
-// commentForYML provides a YML comment containing the given text
-func YmlComment(text string) string {
+// PrependPound provides a YML comment containing the given text.
+func PrependPound(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
 			result = append(result, line)
 		} else {
 			result = append(result, fmt.Sprintf("# %s", line))
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
+// PrependDoubleSlash provides a Go comment containing the given text.
+func PrependDoubleSlash(text string) string {
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if line == "" {
+			result = append(result, line)
+		} else {
+			result = append(result, fmt.Sprintf("// %s", line))
 		}
 	}
 	return strings.Join(result, "\n")

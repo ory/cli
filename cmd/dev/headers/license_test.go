@@ -27,7 +27,7 @@ func TestFileExt(t *testing.T) {
 	}
 }
 
-func TestYmlComment(t *testing.T) {
+func TestCommentYml(t *testing.T) {
 	tests := map[string]string{
 		"Hello":          "# Hello",            // single line text
 		"Hello\n":        "# Hello\n",          // single line text
@@ -37,7 +37,23 @@ func TestYmlComment(t *testing.T) {
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
 			t.Parallel()
-			have := headers.YmlComment(give)
+			have := headers.PrependPound(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
+func TestCommentGo(t *testing.T) {
+	tests := map[string]string{
+		"Hello":          "// Hello",             // single line text
+		"Hello\n":        "// Hello\n",           // single line text
+		"Hello\nWorld":   "// Hello\n// World",   // multi-line text
+		"Hello\nWorld\n": "// Hello\n// World\n", // multi-line text
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			t.Parallel()
+			have := headers.PrependDoubleSlash(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -47,18 +63,20 @@ func TestRemoveHeader(t *testing.T) {
 	t.Parallel()
 	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
-	have := headers.Remove(give, headers.YmlComment, "Copyright ©")
+	have := headers.Remove(give, headers.PrependPound, "Copyright ©")
 	assert.Equal(t, want, have)
 }
 
 func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
 	dir.createFile("one.yml", "one: two\nalpha: beta")
-	dir.createFile("two.yml", "three: four\ngamma: delta")
+	dir.createFile("two.go", "package test\n\nimport foo\n")
+	dir.createFile("three.ts", "const a = 1\nconst b = 2\n")
 	err := headers.AddLicenses(dir.path, 2022)
 	assert.NoError(t, err)
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta", dir.content("one.yml"))
-	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\nthree: four\ngamma: delta", dir.content("two.yml"))
+	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("two.go"))
+	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("three.ts"))
 }
 
 // HELPERS
