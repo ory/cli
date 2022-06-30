@@ -29,6 +29,7 @@ var formatFuncs = map[string]FormatFunc{
 	"rb":   PrependPound,
 	"rs":   PrependDoubleSlash,
 	"ts":   PrependDoubleSlash,
+	"vue":  WrapInHtmlComment,
 }
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
@@ -140,6 +141,18 @@ func PrependDoubleSlash(text string) string {
 			result = append(result, line)
 		} else {
 			result = append(result, fmt.Sprintf("// %s", line))
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
+func WrapInHtmlComment(text string) string {
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if line == "" {
+			result = append(result, line)
+		} else {
+			result = append(result, fmt.Sprintf("<!-- %s -->", line))
 		}
 	}
 	return strings.Join(result, "\n")
