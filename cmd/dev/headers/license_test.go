@@ -13,8 +13,10 @@ import (
 
 func TestYmlComment(t *testing.T) {
 	tests := map[string]string{
-		"Hello":        "# Hello\n",          // single line text
-		"Hello\nWorld": "# Hello\n# World\n", // multi-line text
+		"Hello":          "# Hello",            // single line text
+		"Hello\n":        "# Hello\n",          // single line text
+		"Hello\nWorld":   "# Hello\n# World",   // multi-line text
+		"Hello\nWorld\n": "# Hello\n# World\n", // multi-line text
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
@@ -27,12 +29,8 @@ func TestYmlComment(t *testing.T) {
 
 func TestRemoveHeader(t *testing.T) {
 	t.Parallel()
-	give := `# Copyright © 1997 Ory Corp Inc.
-
-name: test
-hello: world`
-	want := `name: test
-hello: world`
+	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
+	want := "name: test\nhello: world\n"
 	have := headers.Remove(give, headers.YmlComment, "Copyright ©")
 	assert.Equal(t, want, have)
 }
@@ -43,8 +41,8 @@ func TestAddLicenses(t *testing.T) {
 	dir.createFile("two.yml", "three: four\ngamma: delta")
 	err := headers.AddLicenses(dir.path, 2022)
 	assert.NoError(t, err)
-	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta\n", dir.content("one.yml"))
-	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\nthree: four\ngamma: delta\n", dir.content("two.yml"))
+	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta", dir.content("one.yml"))
+	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\nthree: four\ngamma: delta", dir.content("two.yml"))
 }
 
 // HELPERS

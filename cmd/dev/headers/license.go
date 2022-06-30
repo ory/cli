@@ -30,6 +30,7 @@ var formatFuncs = map[string]FormatFunc{
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		fmt.Printf("%s\n", path)
 		if err != nil {
 			return fmt.Errorf("cannot traverse directory %s: %w", path, err)
 		}
@@ -37,7 +38,7 @@ func AddLicenses(dir string, year int) error {
 			// filepath.Walk traverses subdirectories
 			return nil
 		}
-		filetype := filepath.Ext(path)
+		filetype := filepath.Ext(path)[1:]
 		commentFunc, ok := formatFuncs[filetype]
 		if !ok {
 			// not a file that we can add comments to --> nothing to do here
@@ -59,7 +60,8 @@ func AddLicenses(dir string, year int) error {
 		fileContent := string(buffer)
 		fileContentNoHeader := Remove(fileContent, commentFunc, LICENSE_TOKEN)
 		newHeader := commentFunc(licenseText)
-		fileContentNewHeader := fmt.Sprintf("%s\n%s", newHeader, fileContentNoHeader)
+		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
+		file.Seek(0, 0)
 		err = file.Truncate(0)
 		if err != nil {
 			return fmt.Errorf("cannot truncate file %s: %w", path, err)
@@ -76,30 +78,38 @@ func AddLicenses(dir string, year int) error {
 	return nil
 }
 
-func Remove(text string, commentFunc FormatFunc, token string) (result string) {
+func Remove(text string, commentFunc FormatFunc, token string) string {
 	commentWithToken := commentFunc(token)
-	inComment := false
+	inComment := 0
+	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if strings.HasPrefix(line, commentWithToken) {
-			inComment = true
+			inComment = 1
 		}
 		if line == "" {
-			inComment = false
+			if inComment > 0 {
+				inComment -= 1
+				continue
+			}
 		}
-		if !inComment {
-			result += line
-			result += "\n"
+		if inComment == 0 {
+			result = append(result, line)
 		}
 	}
-	return result
+	return strings.Join(result, "\n")
 }
 
 // commentForYML provides a YML comment containing the given text
-func YmlComment(text string) (result string) {
+func YmlComment(text string) string {
+	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
-		result += fmt.Sprintf("# %s\n", line)
+		if line == "" {
+			result = append(result, line)
+		} else {
+			result = append(result, fmt.Sprintf("# %s", line))
+		}
 	}
-	return result
+	return strings.Join(result, "\n")
 }
 
 var copyright = &cobra.Command{
