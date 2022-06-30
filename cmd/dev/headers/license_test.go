@@ -75,7 +75,7 @@ func TestWrapInHtmlComment(t *testing.T) {
 	}
 }
 
-func TestRemoveHeader(t *testing.T) {
+func TestRemove(t *testing.T) {
 	t.Parallel()
 	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
