@@ -30,7 +30,6 @@ var formatFuncs = map[string]FormatFunc{
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
-		fmt.Printf("%s\n", path)
 		if err != nil {
 			return fmt.Errorf("cannot traverse directory %s: %w", path, err)
 		}
