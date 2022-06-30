@@ -19,11 +19,13 @@ const LICENSE_TOKEN = "Copyright ©"
 
 // all file formats that get licenses
 var formatFuncs = map[string]FormatFunc{
-	"go": PrependDoubleSlash,
-	"py": PrependPound,
-	"rb": PrependPound,
-	"rs": PrependDoubleSlash,
-	"ts": PrependDoubleSlash,
+	"go":   PrependDoubleSlash,
+	"java": PrependDoubleSlash,
+	"php":  PrependDoubleSlash,
+	"py":   PrependPound,
+	"rb":   PrependPound,
+	"rs":   PrependDoubleSlash,
+	"ts":   PrependDoubleSlash,
 }
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
