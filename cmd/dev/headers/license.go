@@ -38,7 +38,7 @@ func AddLicenses(dir string, year int) error {
 			// filepath.Walk traverses subdirectories
 			return nil
 		}
-		filetype := filepath.Ext(path)[1:]
+		filetype := FileExt(path)
 		commentFunc, ok := formatFuncs[filetype]
 		if !ok {
 			// not a file that we can add comments to --> nothing to do here
@@ -76,6 +76,15 @@ func AddLicenses(dir string, year int) error {
 		return nil
 	})
 	return nil
+}
+
+// FileExt provides the extension of the given file
+func FileExt(filename string) string {
+	ext := filepath.Ext(filename)
+	if len(ext) == 0 {
+		return ""
+	}
+	return ext[1:]
 }
 
 func Remove(text string, commentFunc FormatFunc, token string) string {

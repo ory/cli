@@ -11,6 +11,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFileExt(t *testing.T) {
+	tests := map[string]string{
+		"one.yml":  "yml",
+		"one.yaml": "yaml",
+		"one.md":   "md",
+		"one":      "",
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			t.Parallel()
+			have := headers.FileExt(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
 func TestYmlComment(t *testing.T) {
 	tests := map[string]string{
 		"Hello":          "# Hello",            // single line text
