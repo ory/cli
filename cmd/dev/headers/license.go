@@ -19,6 +19,7 @@ const LICENSE_TOKEN = "Copyright ©"
 
 // all file formats that get licenses
 var formatFuncs = map[string]FormatFunc{
+	"cs":   PrependDoubleSlash,
 	"go":   PrependDoubleSlash,
 	"java": PrependDoubleSlash,
 	"js":   PrependDoubleSlash,

@@ -69,6 +69,7 @@ func TestRemoveHeader(t *testing.T) {
 
 func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
+	dir.createFile("c-sharp.cs", "using System;\n\nnamespace Foo.Bar {\n")
 	dir.createFile("golang.go", "package test\n\nimport foo\n")
 	dir.createFile("java.java", "import java.io.File;\n\nFile myFile = new File();")
 	dir.createFile("javascript.js", "const a = 1\nconst b = 2\n")
@@ -80,6 +81,7 @@ func TestAddLicenses(t *testing.T) {
 	dir.createFile("yaml.yml", "one: two\nalpha: beta")
 	err := headers.AddLicenses(dir.path, 2022)
 	assert.NoError(t, err)
+	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.content("c-sharp.cs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("golang.go"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nimport java.io.File;\n\nFile myFile = new File();", dir.content("java.java"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("javascript.js"))
