@@ -1,3 +1,5 @@
+// Tool for adding a license header to all supported files.
+
 package headers
 
 import (
@@ -8,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	gitIgnore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
 )
 
@@ -35,12 +38,16 @@ var formatFuncs = map[string]FormatFunc{
 // addLicenses adds or updates the Ory license header in all files within the given directory.
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
+	ignore, _ := gitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %s: %w", path, err)
 		}
 		if info.IsDir() {
 			// we'll traverse subdirectories through filepath.Walk automatically
+			return nil
+		}
+		if ignore != nil && ignore.MatchesPath(info.Name()) {
 			return nil
 		}
 		filetype := FileExt(path)
@@ -89,10 +96,10 @@ func AddLicenses(dir string, year int) error {
 	return nil
 }
 
-// FormatFunc defines the signature of functions to create comments for different programming languages.
+// signature of functions to create comments for different programming languages
 type FormatFunc func(text string) string
 
-// FileExt provides the extension of the given file
+// provides the extension of the given filename
 func FileExt(filename string) string {
 	ext := filepath.Ext(filename)
 	if len(ext) == 0 {
@@ -101,6 +108,7 @@ func FileExt(filename string) string {
 	return ext[1:]
 }
 
+// removes the license header from the given text
 func Remove(text string, commentFunc FormatFunc, token string) string {
 	commentWithToken := commentFunc(token)
 	inComment := false

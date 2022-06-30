@@ -85,11 +85,13 @@ func TestRemove(t *testing.T) {
 
 func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
+	dir.createFile(".gitignore", "legacy.go")
 	dir.createFile("c-sharp.cs", "using System;\n\nnamespace Foo.Bar {\n")
 	dir.createFile("dart.dart", "int a = 1;\nint b = 2;")
 	dir.createFile("golang.go", "package test\n\nimport foo\n")
 	dir.createFile("java.java", "import java.io.File;\n\nFile myFile = new File();")
 	dir.createFile("javascript.js", "const a = 1\nconst b = 2\n")
+	dir.createFile("legacy.go", "package ignore_this_file")
 	dir.createFile("php.php", "$a = 1;\n$b = 2;\n")
 	dir.createFile("python.py", "a = 1\nb = 2\n")
 	dir.createFile("ruby.rb", "a = 1\nb = 2\n")
@@ -104,6 +106,7 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("golang.go"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nimport java.io.File;\n\nFile myFile = new File();", dir.content("java.java"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("javascript.js"))
+	assert.Equal(t, "package ignore_this_file", dir.content("legacy.go"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\n$a = 1;\n$b = 2;\n", dir.content("php.php"))
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\na = 1\nb = 2\n", dir.content("python.py"))
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\na = 1\nb = 2\n", dir.content("ruby.rb"))
