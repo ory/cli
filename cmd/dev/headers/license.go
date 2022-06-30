@@ -80,19 +80,19 @@ func AddLicenses(dir string, year int) error {
 
 func Remove(text string, commentFunc FormatFunc, token string) string {
 	commentWithToken := commentFunc(token)
-	inComment := 0
+	inComment := false
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if strings.HasPrefix(line, commentWithToken) {
-			inComment = 1
+			inComment = true
 		}
 		if line == "" {
-			if inComment > 0 {
-				inComment -= 1
+			if inComment {
+				inComment = false
 				continue
 			}
 		}
-		if inComment == 0 {
+		if !inComment {
 			result = append(result, line)
 		}
 	}
