@@ -86,11 +86,9 @@ func Remove(text string, commentFunc FormatFunc, token string) string {
 		if strings.HasPrefix(line, commentWithToken) {
 			inComment = true
 		}
-		if line == "" {
-			if inComment {
-				inComment = false
-				continue
-			}
+		if line == "" && inComment {
+			inComment = false
+			continue
 		}
 		if !inComment {
 			result = append(result, line)
