@@ -17,15 +17,10 @@ const LICENSE_TEMPLATE = "Copyright © %d Ory Corp Inc."
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"
 
-// FormatFunc defines the signature of functions to create comments for different programming languages.
-type FormatFunc func(text string) string
-
-// formatFuncs lists all formatFuncs known to this tool.
+// all file formats that get licenses
 var formatFuncs = map[string]FormatFunc{
-	"go":   PrependDoubleSlash,
-	"ts":   PrependDoubleSlash,
-	"yml":  PrependPound,
-	"yaml": PrependPound,
+	"go": PrependDoubleSlash,
+	"ts": PrependDoubleSlash,
 }
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
@@ -84,6 +79,9 @@ func AddLicenses(dir string, year int) error {
 	})
 	return nil
 }
+
+// FormatFunc defines the signature of functions to create comments for different programming languages.
+type FormatFunc func(text string) string
 
 // FileExt provides the extension of the given file
 func FileExt(filename string) string {

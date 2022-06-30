@@ -27,7 +27,7 @@ func TestFileExt(t *testing.T) {
 	}
 }
 
-func TestCommentYml(t *testing.T) {
+func TestPrependPound(t *testing.T) {
 	tests := map[string]string{
 		"Hello":          "# Hello",            // single line text
 		"Hello\n":        "# Hello\n",          // single line text
@@ -43,7 +43,7 @@ func TestCommentYml(t *testing.T) {
 	}
 }
 
-func TestCommentGo(t *testing.T) {
+func TestPrependDoubleSlash(t *testing.T) {
 	tests := map[string]string{
 		"Hello":          "// Hello",             // single line text
 		"Hello\n":        "// Hello\n",           // single line text
@@ -69,14 +69,14 @@ func TestRemoveHeader(t *testing.T) {
 
 func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
-	dir.createFile("one.yml", "one: two\nalpha: beta")
-	dir.createFile("two.go", "package test\n\nimport foo\n")
-	dir.createFile("three.ts", "const a = 1\nconst b = 2\n")
+	dir.createFile("yaml.yml", "one: two\nalpha: beta")
+	dir.createFile("golang.go", "package test\n\nimport foo\n")
+	dir.createFile("typescript.ts", "const a = 1\nconst b = 2\n")
 	err := headers.AddLicenses(dir.path, 2022)
 	assert.NoError(t, err)
-	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta", dir.content("one.yml"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("two.go"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("three.ts"))
+	assert.Equal(t, "one: two\nalpha: beta", dir.content("yaml.yml")) // don't add license headers to YML files
+	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\npackage test\n\nimport foo\n", dir.content("golang.go"))
+	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.content("typescript.ts"))
 }
 
 // HELPERS
