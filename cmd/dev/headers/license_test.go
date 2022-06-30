@@ -41,7 +41,8 @@ func TestAddLicenses(t *testing.T) {
 	dir := createTmpDir()
 	dir.createFile("one.yml", "one: two\nalpha: beta")
 	dir.createFile("two.yml", "three: four\ngamma: delta")
-	headers.AddLicenses(dir.path, 2022)
+	err := headers.AddLicenses(dir.path, 2022)
+	assert.NoError(t, err)
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta\n", dir.content("one.yml"))
 	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\nthree: four\ngamma: delta\n", dir.content("two.yml"))
 }
