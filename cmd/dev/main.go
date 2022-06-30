@@ -3,6 +3,7 @@ package dev
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/openapi"
 
 	"github.com/ory/cli/cmd/dev/ci"
@@ -32,5 +33,6 @@ func init() {
 		ci.Main,
 		schema.Main,
 		openapi.Main,
+		headers.Main,
 	)
 }
