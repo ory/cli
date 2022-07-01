@@ -9,10 +9,7 @@ import (
 )
 
 func TestCopy_singleFile_fullDestPath(t *testing.T) {
-	t.Parallel()
 	rootDir := testDir{path: "."}
-	rootDir.removeDir("test_copy_src")
-	rootDir.removeDir("test_copy_dst")
 	srcDir := rootDir.createDir("test_copy_src")
 	dstDir := rootDir.createDir("test_copy_dst")
 	srcDir.createFile("README.md", "# the readme\ntext")
@@ -27,7 +24,6 @@ func TestCopy_singleFile_fullDestPath(t *testing.T) {
 }
 
 func TestCopy_singleFile_destDir(t *testing.T) {
-	t.Parallel()
 	rootDir := testDir{path: "."}
 	srcDir := rootDir.createDir("test_copy_src")
 	dstDir := rootDir.createDir("test_copy_dst")
