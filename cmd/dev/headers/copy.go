@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ory/cli/cmd/dev/headers/comments"
 	"github.com/spf13/cobra"
 )
 
@@ -26,8 +27,8 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	filetype := FileExt(src)
-	commentFunc, ok := formatFuncs[filetype]
+	filetype := comments.GetFileType(src)
+	commentFunc, ok := comments.FormatFuncs[filetype]
 	if !ok {
 		// not a file that we can add comments to
 		return os.WriteFile(dst, contentBytes, 0744)

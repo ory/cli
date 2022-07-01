@@ -1,89 +1,12 @@
 package headers_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestFileExt(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"one.yml":  "yml",
-		"one.yaml": "yaml",
-		"one.md":   "md",
-		"one":      "",
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
-			have := headers.FileExt(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestPrependPound(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":          "# Hello",            // single line text
-		"Hello\n":        "# Hello\n",          // single line text
-		"Hello\nWorld":   "# Hello\n# World",   // multi-line text
-		"Hello\nWorld\n": "# Hello\n# World\n", // multi-line text
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
-			have := headers.PrependPound(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestPrependDoubleSlash(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":          "// Hello",             // single line text
-		"Hello\n":        "// Hello\n",           // single line text
-		"Hello\nWorld":   "// Hello\n// World",   // multi-line text
-		"Hello\nWorld\n": "// Hello\n// World\n", // multi-line text
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
-			have := headers.PrependDoubleSlash(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestWrapInHtmlComment(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":          "<!-- Hello -->",                   // single line text
-		"Hello\n":        "<!-- Hello -->\n",                 // single line text
-		"Hello\nWorld":   "<!-- Hello -->\n<!-- World -->",   // multi-line text
-		"Hello\nWorld\n": "<!-- Hello -->\n<!-- World -->\n", // multi-line text
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
-			have := headers.WrapInHtmlComment(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestRemove(t *testing.T) {
-	t.Parallel()
-	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
-	want := "name: test\nhello: world\n"
-	have := headers.Remove(give, headers.PrependPound, "Copyright ©")
-	assert.Equal(t, want, have)
-}
 
 func TestAddLicenses(t *testing.T) {
 	t.Parallel()

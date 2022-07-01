@@ -7,9 +7,9 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/ory/cli/cmd/dev/headers/comments"
 	gitIgnore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
 )
@@ -19,22 +19,6 @@ const LICENSE_TEMPLATE = "Copyright © %d Ory Corp Inc."
 
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"
-
-// all file formats that get licenses
-var formatFuncs = map[string]FormatFunc{
-	"cs":   PrependDoubleSlash,
-	"dart": PrependDoubleSlash,
-	"go":   PrependDoubleSlash,
-	"java": PrependDoubleSlash,
-	"js":   PrependDoubleSlash,
-	"md":   WrapInHtmlComment,
-	"php":  PrependDoubleSlash,
-	"py":   PrependPound,
-	"rb":   PrependPound,
-	"rs":   PrependDoubleSlash,
-	"ts":   PrependDoubleSlash,
-	"vue":  WrapInHtmlComment,
-}
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
 func AddLicenses(dir string, year int) error {
@@ -51,8 +35,8 @@ func AddLicenses(dir string, year int) error {
 		if ignore != nil && ignore.MatchesPath(info.Name()) {
 			return nil
 		}
-		filetype := FileExt(path)
-		commentFunc, ok := formatFuncs[filetype]
+		filetype := comments.GetFileType(path)
+		commentFunc, ok := comments.FormatFuncs[filetype]
 		if !ok {
 			// not a file that we can add comments to --> nothing to do here
 			return nil
@@ -71,7 +55,7 @@ func AddLicenses(dir string, year int) error {
 			return fmt.Errorf("did not read the entire %d bytes of file %q but only %d", info.Size(), path, count)
 		}
 		fileContent := string(buffer)
-		fileContentNoHeader := Remove(fileContent, commentFunc, LICENSE_TOKEN)
+		fileContentNoHeader := comments.Remove(fileContent, commentFunc, LICENSE_TOKEN)
 		newHeader := commentFunc(licenseText)
 		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
 		pos, err := file.Seek(0, 0)
@@ -95,76 +79,6 @@ func AddLicenses(dir string, year int) error {
 		return nil
 	})
 	return nil
-}
-
-// signature of functions to create comments for different programming languages
-type FormatFunc func(text string) string
-
-// provides the extension of the given filename
-func FileExt(filename string) string {
-	ext := filepath.Ext(filename)
-	if len(ext) == 0 {
-		return ""
-	}
-	return ext[1:]
-}
-
-// removes the license header from the given text
-func Remove(text string, commentFunc FormatFunc, token string) string {
-	commentWithToken := commentFunc(token)
-	inComment := false
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
-			inComment = true
-		}
-		if line == "" && inComment {
-			inComment = false
-			continue
-		}
-		if !inComment {
-			result = append(result, line)
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
-// PrependPound provides a YML comment containing the given text.
-func PrependPound(text string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf("# %s", line))
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
-// PrependDoubleSlash provides a Go comment containing the given text.
-func PrependDoubleSlash(text string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf("// %s", line))
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
-func WrapInHtmlComment(text string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf("<!-- %s -->", line))
-		}
-	}
-	return strings.Join(result, "\n")
 }
 
 var copyright = &cobra.Command{
