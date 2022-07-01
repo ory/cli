@@ -38,3 +38,20 @@ func TestCopy_singleFile_destDir(t *testing.T) {
 	os.RemoveAll(srcDir.Path)
 	os.RemoveAll(dstDir.Path)
 }
+
+func TestDetermineDestPath_filePath(t *testing.T) {
+	t.Parallel()
+	root := tests.CreateTmpDir()
+	dir := root.CreateDir("dst")
+	have := headers.DetermineDestPath("origin/foo.md", dir.Path)
+	assert.Equal(t, dir.Filename("foo.md"), have)
+}
+
+func TestDetermineDestPath_dirPath(t *testing.T) {
+	t.Parallel()
+	root := tests.CreateTmpDir()
+	dir := root.CreateDir("dst")
+	file := dir.CreateFile("foo.md", "")
+	have := headers.DetermineDestPath("origin/foo.md", file)
+	assert.Equal(t, file, have)
+}

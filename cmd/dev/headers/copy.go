@@ -27,14 +27,26 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	dstStat, err := os.Lstat(dst)
-	destPath := dst
-	if err == nil && dstStat.IsDir() {
-		destPath = filepath.Join(dst, filepath.Base(src))
-	}
+	var dstPath = DetermineDestPath(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(destPath, headerText, contentBytes)
+	comments.WriteFileWithHeader(dstPath, headerText, contentBytes)
 	return nil
+}
+
+// Determines the full destination path for the cp operation of the given src to the given dst.
+// The dst value can be a full path to a file or a path to the directory to put the file in.
+func DetermineDestPath(src, dst string) string {
+	if isDir(dst) {
+		return filepath.Join(dst, filepath.Base(src))
+	} else {
+		return dst
+	}
+}
+
+// indicates whether the given file path points to a directory
+func isDir(filepath string) bool {
+	stat, err := os.Lstat(filepath)
+	return err == nil && stat.IsDir()
 }
 
 var copy = &cobra.Command{
