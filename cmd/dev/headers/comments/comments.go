@@ -15,7 +15,7 @@ type formatFunc func(text string) string
 type FileType string
 
 // all file formats that we can create comments for
-var FormatFuncs = map[FileType]formatFunc{
+var formatFuncs = map[FileType]formatFunc{
 	"cs":   PrependDoubleSlash,
 	"dart": PrependDoubleSlash,
 	"go":   PrependDoubleSlash,
@@ -33,7 +33,7 @@ var FormatFuncs = map[FileType]formatFunc{
 // indicates whether we can comment on the file with the given name
 func Supports(filename string) bool {
 	filetype := GetFileType(filename)
-	_, ok := FormatFuncs[filetype]
+	_, ok := formatFuncs[filetype]
 	return ok
 }
 
@@ -121,7 +121,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 		return "", fmt.Errorf("cannot open file %q: %w", path, err)
 	}
 	fileType := GetFileType(path)
-	formatter := FormatFuncs[fileType]
+	formatter := formatFuncs[fileType]
 	text := string(buffer)
 	return Remove(text, formatter, token), nil
 }
@@ -133,7 +133,7 @@ func WriteFileWithHeader(path, header string, body []byte) error {
 	}
 	defer file.Close()
 	filetype := GetFileType(path)
-	format, ok := FormatFuncs[filetype]
+	format, ok := formatFuncs[filetype]
 	if !ok {
 		return os.WriteFile(path, body, 0744)
 	}
