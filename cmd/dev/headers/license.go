@@ -27,6 +27,7 @@ var formatFuncs = map[string]FormatFunc{
 	"go":   PrependDoubleSlash,
 	"java": PrependDoubleSlash,
 	"js":   PrependDoubleSlash,
+	"md":   WrapInHtmlComment,
 	"php":  PrependDoubleSlash,
 	"py":   PrependPound,
 	"rb":   PrependPound,

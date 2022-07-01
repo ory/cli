@@ -6,7 +6,6 @@ package headers
 import (
 	"fmt"
 	"os"
-	"path"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +19,7 @@ const LINK_TOKEN = "Copyright ©"
 // the root path for links to the original
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
-func CopyFile(source, destPath, url string) error {
+func CopyFile(source, destPath string) error {
 	contentBytes, err := os.ReadFile(source)
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", source, err)
@@ -31,9 +30,9 @@ func CopyFile(source, destPath, url string) error {
 		// not a file that we can add comments to
 		return os.WriteFile(destPath, contentBytes, 0744)
 	}
-	headerText := fmt.Sprintf(LINK_TEMPLATE, path.Join(url, source))
+	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+source)
 	headerComment := commentFunc(headerText)
-	file, err := os.OpenFile(destPath, os.O_WRONLY, 0744)
+	file, err := os.Create(destPath)
 	if err != nil {
 		return fmt.Errorf("cannot write file %q: %w", destPath, err)
 	}
