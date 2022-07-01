@@ -1,10 +1,9 @@
-package headers_test
+package headers
 
 import (
 	"os"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +13,7 @@ func TestCopy_singleFile_fullDestPath(t *testing.T) {
 	srcDir := rootDir.CreateDir("test_copy_src")
 	dstDir := rootDir.CreateDir("test_copy_dst")
 	srcDir.CreateFile("README.md", "# the readme\ntext")
-	err := headers.CopyFile("test_copy_src/README.md", dstDir.Filename("README.md"))
+	err := CopyFile("test_copy_src/README.md", dstDir.Filename("README.md"))
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
@@ -29,7 +28,7 @@ func TestCopy_singleFile_destDir(t *testing.T) {
 	srcDir := rootDir.CreateDir("test_copy_src")
 	dstDir := rootDir.CreateDir("test_copy_dst")
 	srcDir.CreateFile("README.md", "# the readme\ntext")
-	err := headers.CopyFile("test_copy_src/README.md", dstDir.Path)
+	err := CopyFile("test_copy_src/README.md", dstDir.Path)
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
@@ -43,7 +42,7 @@ func TestDetermineDestPath_filePath(t *testing.T) {
 	t.Parallel()
 	root := tests.CreateTmpDir()
 	dir := root.CreateDir("dst")
-	have := headers.DetermineDestPath("origin/foo.md", dir.Path)
+	have := determineDestPath("origin/foo.md", dir.Path)
 	assert.Equal(t, dir.Filename("foo.md"), have)
 }
 
@@ -52,6 +51,6 @@ func TestDetermineDestPath_dirPath(t *testing.T) {
 	root := tests.CreateTmpDir()
 	dir := root.CreateDir("dst")
 	file := dir.CreateFile("foo.md", "")
-	have := headers.DetermineDestPath("origin/foo.md", file)
+	have := determineDestPath("origin/foo.md", file)
 	assert.Equal(t, file, have)
 }

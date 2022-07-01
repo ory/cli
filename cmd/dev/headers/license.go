@@ -5,7 +5,6 @@ package headers
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -39,54 +38,26 @@ func AddLicenses(dir string, year int) error {
 			// file is git-ignored
 			return nil
 		}
-		filetype := comments.GetFileType(path)
-		if comments.ContainsFileType(noLicenseHeadersFor, filetype) {
+		if !comments.Supports(path) {
+			// we don't know how to write comments for this file
 			return nil
 		}
-		commentFunc, ok := comments.FormatFuncs[filetype]
-		if !ok {
-			// not a file that we can add comments to --> nothing to do here
+		if !shouldAddLicense(path) {
+			// this tool is configured to not add licenses for this file type
 			return nil
 		}
-		file, err := os.OpenFile(path, os.O_RDWR, 0744)
+		contentNoHeader, err := comments.FileContentWithoutHeader(path, LICENSE_TOKEN)
 		if err != nil {
-			return fmt.Errorf("cannot open file %q: %w", path, err)
+			return err
 		}
-		defer file.Close()
-		buffer := make([]byte, info.Size())
-		count, err := file.Read(buffer)
-		if err != nil {
-			return fmt.Errorf("cannot read file %q: %w", path, err)
-		}
-		if int64(count) != info.Size() {
-			return fmt.Errorf("did not read the entire %d bytes of file %q but only %d", info.Size(), path, count)
-		}
-		pos, err := file.Seek(0, 0)
-		if err != nil {
-			return fmt.Errorf("cannot seek to beginning of file %q: %w", path, err)
-		}
-		if pos != 0 {
-			return fmt.Errorf("didn't end up at the beginning of file %q after seeking but at %d: %w", path, pos, err)
-		}
-		err = file.Truncate(0)
-		if err != nil {
-			return fmt.Errorf("cannot truncate file %q: %w", path, err)
-		}
-		fileContent := string(buffer)
-		fileContentNoHeader := comments.Remove(fileContent, commentFunc, LICENSE_TOKEN)
-
-		newHeader := commentFunc(licenseText)
-		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
-		count, err = file.WriteString(fileContentNewHeader)
-		if err != nil {
-			return fmt.Errorf("cannot write file %q: %w", path, err)
-		}
-		if count != len(fileContentNewHeader) {
-			return fmt.Errorf("did not write the entire %d bytes into %q but only %d, file is corrupted now", len(fileContentNewHeader), path, count)
-		}
-		return nil
+		return comments.WriteFileWithHeader(path, licenseText, []byte(contentNoHeader))
 	})
 	return nil
+}
+
+// indicates whether we should add a license header to the file with the given path
+func shouldAddLicense(path string) bool {
+	return !comments.ContainsFileType(noLicenseHeadersFor, comments.GetFileType(path))
 }
 
 var copyright = &cobra.Command{

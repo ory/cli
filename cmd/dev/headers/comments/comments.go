@@ -115,7 +115,16 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 }
 
 // provides the content of the file with the given path, without the header identified by the given token
-// func FileContentWithoutHeader(path, token string) (string, FormatFunc, error) {}
+func FileContentWithoutHeader(path, token string) (string, error) {
+	buffer, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("cannot open file %q: %w", path, err)
+	}
+	fileType := GetFileType(path)
+	formatter := FormatFuncs[fileType]
+	text := string(buffer)
+	return Remove(text, formatter, token), nil
+}
 
 func WriteFileWithHeader(path, header string, body []byte) error {
 	file, err := os.Create(path)

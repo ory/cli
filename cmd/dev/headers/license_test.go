@@ -1,9 +1,9 @@
-package headers_test
+package headers
 
 import (
+	"fmt"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +26,7 @@ func TestAddLicenses(t *testing.T) {
 	dir.CreateFile("typescript.ts", "const a = 1\nconst b = 2\n")
 	dir.CreateFile("vue.vue", "<template>\n<Header />")
 	dir.CreateFile("yaml.yml", "one: two\nalpha: beta")
-	err := headers.AddLicenses(dir.Path, 2022)
+	err := AddLicenses(dir.Path, 2022)
 	assert.NoError(t, err)
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.Content("c-sharp.cs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nint a = 1;\nint b = 2;", dir.Content("dart.dart"))
@@ -42,4 +42,16 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.Content("typescript.ts"))
 	assert.Equal(t, "<!-- Copyright © 2022 Ory Corp Inc. -->\n\n<template>\n<Header />", dir.Content("vue.vue")) // don't add license headers to YML files
 	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yml"))                                            // don't add license headers to YML files
+}
+
+func TestShouldAddLicense(t *testing.T) {
+	tests := map[string]bool{
+		"foo.go": true,
+		"foo.md": false,
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
+			assert.Equal(t, want, shouldAddLicense(give))
+		})
+	}
 }

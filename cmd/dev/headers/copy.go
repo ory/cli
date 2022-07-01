@@ -27,7 +27,7 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	var dstPath = DetermineDestPath(src, dst)
+	var dstPath = determineDestPath(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
 	comments.WriteFileWithHeader(dstPath, headerText, contentBytes)
 	return nil
@@ -35,7 +35,7 @@ func CopyFile(src, dst string) error {
 
 // Determines the full destination path for the cp operation of the given src to the given dst.
 // The dst value can be a full path to a file or a path to the directory to put the file in.
-func DetermineDestPath(src, dst string) string {
+func determineDestPath(src, dst string) string {
 	if isDir(dst) {
 		return filepath.Join(dst, filepath.Base(src))
 	} else {
