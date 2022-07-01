@@ -33,6 +33,10 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
+func CopyFiles(src, dst string) error {
+	panic("TODO")
+}
+
 // Determines the full destination path for the cp operation of the given src to the given dst.
 // The dst value can be a full path to a file or a path to the directory to put the file in.
 func determineDestPath(src, dst string) string {
