@@ -46,7 +46,7 @@ func AddLicenses(dir string, year int) error {
 		if err != nil {
 			return err
 		}
-		return comments.WriteFileWithHeader(path, licenseText, []byte(contentNoHeader))
+		return comments.WriteFileWithHeader(path, licenseText, contentNoHeader)
 	})
 	return nil
 }

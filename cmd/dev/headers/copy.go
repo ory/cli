@@ -29,7 +29,7 @@ func CopyFile(src, dst string) error {
 	}
 	var dstPath = determineDestPath(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(dstPath, headerText, contentBytes)
+	comments.WriteFileWithHeader(dstPath, headerText, string(contentBytes))
 	return nil
 }
 

@@ -126,7 +126,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	return remove(text, formatter, token), nil
 }
 
-func WriteFileWithHeader(path, header string, body []byte) error {
+func WriteFileWithHeader(path, header string, body string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("cannot write file %q: %w", path, err)
@@ -135,7 +135,7 @@ func WriteFileWithHeader(path, header string, body []byte) error {
 	filetype := GetFileType(path)
 	format, ok := formatFuncs[filetype]
 	if !ok {
-		return os.WriteFile(path, body, 0744)
+		return os.WriteFile(path, []byte(body), 0744)
 	}
 	headerComment := format(header)
 	newContent := fmt.Sprintf("%s\n\n%s", headerComment, body)
