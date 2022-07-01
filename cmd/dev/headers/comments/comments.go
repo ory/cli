@@ -9,13 +9,13 @@ import (
 )
 
 // signature of functions to create comments for different programming languages
-type FormatFunc func(text string) string
+type formatFunc func(text string) string
 
 // a file format that we know about, represented as its file extension
 type FileType string
 
 // all file formats that we can create comments for
-var FormatFuncs = map[FileType]FormatFunc{
+var FormatFuncs = map[FileType]formatFunc{
 	"cs":   PrependDoubleSlash,
 	"dart": PrependDoubleSlash,
 	"go":   PrependDoubleSlash,
@@ -85,7 +85,7 @@ func WrapInHtmlComment(text string) string {
 }
 
 // removes the comment in the given format containing the given token from the given text
-func Remove(text string, format FormatFunc, token string) string {
+func Remove(text string, format formatFunc, token string) string {
 	commentWithToken := format(token)
 	inComment := false
 	result := []string{}
