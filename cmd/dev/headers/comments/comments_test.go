@@ -8,6 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCanComment(t *testing.T) {
+	assert.True(t, comments.Supports("foo.ts"))
+	assert.True(t, comments.Supports("foo.md"))
+	assert.False(t, comments.Supports("foo.xx"))
+}
+
 func TestGetFileType(t *testing.T) {
 	t.Parallel()
 	tests := map[string]comments.FileType{

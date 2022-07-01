@@ -3,6 +3,7 @@ package comments
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -27,6 +28,13 @@ var FormatFuncs = map[FileType]FormatFunc{
 	"rs":   PrependDoubleSlash,
 	"ts":   PrependDoubleSlash,
 	"vue":  WrapInHtmlComment,
+}
+
+// indicates whether we can comment on the file with the given name
+func Supports(filename string) bool {
+	filetype := GetFileType(filename)
+	_, ok := FormatFuncs[filetype]
+	return ok
 }
 
 // provides the extension of the given filename
@@ -109,4 +117,25 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 // provides the content of the file with the given path, without the header identified by the given token
 // func FileContentWithoutHeader(path, token string) (string, FormatFunc, error) {}
 
-// func WriteFileWithHeader(path, header string, format FormatFunc, body string) error {}
+func WriteFileWithHeader(path, header string, body []byte) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("cannot write file %q: %w", path, err)
+	}
+	defer file.Close()
+	filetype := GetFileType(path)
+	format, ok := FormatFuncs[filetype]
+	if !ok {
+		return os.WriteFile(path, body, 0744)
+	}
+	headerComment := format(header)
+	newContent := fmt.Sprintf("%s\n\n%s", headerComment, body)
+	count, err := file.WriteString(newContent)
+	if err != nil {
+		return fmt.Errorf("cannot write into file %q: %w", path, err)
+	}
+	if count != len(newContent) {
+		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), path, err)
+	}
+	return nil
+}

@@ -27,35 +27,13 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	filetype := comments.GetFileType(src)
-	commentFunc, ok := comments.FormatFuncs[filetype]
-	if !ok {
-		// not a file that we can add comments to
-		return os.WriteFile(dst, contentBytes, 0744)
-	}
-	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
-	headerComment := commentFunc(headerText)
 	dstStat, err := os.Lstat(dst)
 	destPath := dst
-	if err == nil {
-		if dstStat.IsDir() {
-			srcBase := filepath.Base(src)
-			destPath = filepath.Join(dst, srcBase)
-		}
+	if err == nil && dstStat.IsDir() {
+		destPath = filepath.Join(dst, filepath.Base(src))
 	}
-	file, err := os.Create(destPath)
-	if err != nil {
-		return fmt.Errorf("cannot write file %q: %w", destPath, err)
-	}
-	defer file.Close()
-	newContent := fmt.Sprintf("%s\n\n%s", headerComment, contentBytes)
-	count, err := file.WriteString(newContent)
-	if err != nil {
-		return fmt.Errorf("cannot write into file %q: %w", destPath, err)
-	}
-	if count != len(newContent) {
-		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), destPath, err)
-	}
+	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
+	comments.WriteFileWithHeader(destPath, headerText, contentBytes)
 	return nil
 }
 
