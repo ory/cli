@@ -41,7 +41,7 @@ func AddLicenses(dir string, year int) error {
 	ignore, _ := gitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			return fmt.Errorf("cannot read directory %s: %w", path, err)
+			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
 		if info.IsDir() {
 			// we'll traverse subdirectories through filepath.Walk automatically
@@ -58,16 +58,16 @@ func AddLicenses(dir string, year int) error {
 		}
 		file, err := os.OpenFile(path, os.O_RDWR, 0744)
 		if err != nil {
-			return fmt.Errorf("cannot open file %s: %w", path, err)
+			return fmt.Errorf("cannot open file %q: %w", path, err)
 		}
 		defer file.Close()
 		buffer := make([]byte, info.Size())
 		count, err := file.Read(buffer)
 		if err != nil {
-			return fmt.Errorf("cannot read file %s: %w", path, err)
+			return fmt.Errorf("cannot read file %q: %w", path, err)
 		}
 		if int64(count) != info.Size() {
-			return fmt.Errorf("did not read the entire %d bytes of file %s but only %d", info.Size(), path, count)
+			return fmt.Errorf("did not read the entire %d bytes of file %q but only %d", info.Size(), path, count)
 		}
 		fileContent := string(buffer)
 		fileContentNoHeader := Remove(fileContent, commentFunc, LICENSE_TOKEN)
@@ -75,21 +75,21 @@ func AddLicenses(dir string, year int) error {
 		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
 		pos, err := file.Seek(0, 0)
 		if err != nil {
-			return fmt.Errorf("cannot seek to beginning of file %s: %w", path, err)
+			return fmt.Errorf("cannot seek to beginning of file %q: %w", path, err)
 		}
 		if pos != 0 {
-			return fmt.Errorf("didn't end up at the beginning of file %s after seeking but at %d: %w", path, pos, err)
+			return fmt.Errorf("didn't end up at the beginning of file %q after seeking but at %d: %w", path, pos, err)
 		}
 		err = file.Truncate(0)
 		if err != nil {
-			return fmt.Errorf("cannot truncate file %s: %w", path, err)
+			return fmt.Errorf("cannot truncate file %q: %w", path, err)
 		}
 		count, err = file.WriteString(fileContentNewHeader)
 		if err != nil {
-			return fmt.Errorf("cannot write file %s: %w", path, err)
+			return fmt.Errorf("cannot write file %q: %w", path, err)
 		}
 		if count != len(fileContentNewHeader) {
-			return fmt.Errorf("did not write the entire %d bytes into %s but only %d, file is corrupted now", len(fileContentNewHeader), path, count)
+			return fmt.Errorf("did not write the entire %d bytes into %q but only %d, file is corrupted now", len(fileContentNewHeader), path, count)
 		}
 		return nil
 	})

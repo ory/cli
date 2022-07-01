@@ -2,7 +2,6 @@ package headers_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -12,6 +11,7 @@ import (
 )
 
 func TestFileExt(t *testing.T) {
+	t.Parallel()
 	tests := map[string]string{
 		"one.yml":  "yml",
 		"one.yaml": "yaml",
@@ -28,6 +28,7 @@ func TestFileExt(t *testing.T) {
 }
 
 func TestPrependPound(t *testing.T) {
+	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "# Hello",            // single line text
 		"Hello\n":        "# Hello\n",          // single line text
@@ -44,6 +45,7 @@ func TestPrependPound(t *testing.T) {
 }
 
 func TestPrependDoubleSlash(t *testing.T) {
+	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "// Hello",             // single line text
 		"Hello\n":        "// Hello\n",           // single line text
@@ -60,6 +62,7 @@ func TestPrependDoubleSlash(t *testing.T) {
 }
 
 func TestWrapInHtmlComment(t *testing.T) {
+	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "<!-- Hello -->",                   // single line text
 		"Hello\n":        "<!-- Hello -->\n",                 // single line text
@@ -84,6 +87,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestAddLicenses(t *testing.T) {
+	t.Parallel()
 	dir := createTmpDir()
 	dir.createFile(".gitignore", "legacy.go")
 	dir.createFile("c-sharp.cs", "using System;\n\nnamespace Foo.Bar {\n")
@@ -124,18 +128,11 @@ type testDir struct {
 }
 
 func createTmpDir() testDir {
-	path, err := ioutil.TempDir("", "ory-license")
+	path, err := os.MkdirTemp("", "ory-license")
 	if err != nil {
 		panic(err)
 	}
 	return testDir{path}
-}
-
-func (t testDir) createFile(name, content string) {
-	err := os.WriteFile(filepath.Join(t.path, name), []byte(content), 0744)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (t testDir) content(path string) string {
@@ -144,4 +141,23 @@ func (t testDir) content(path string) string {
 		panic(err)
 	}
 	return string(content)
+}
+
+func (t testDir) createDir(name string) testDir {
+	path := filepath.Join(t.path, name)
+	os.Mkdir(path, 0744)
+	return testDir{path}
+}
+
+func (t testDir) createFile(name, content string) string {
+	filepath := filepath.Join(t.path, name)
+	err := os.WriteFile(filepath, []byte(content), 0744)
+	if err != nil {
+		panic(err)
+	}
+	return filepath
+}
+
+func (t testDir) filename(base string) string {
+	return filepath.Join(t.path, base)
 }
