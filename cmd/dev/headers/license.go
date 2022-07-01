@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/ory/cli/cmd/dev/headers/comments"
-	gitIgnore "github.com/sabhiram/go-gitignore"
+	goGitIgnore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
 )
 
@@ -25,25 +25,21 @@ var noLicenseHeadersFor = []comments.FileType{"md"}
 // addLicenses adds or updates the Ory license header in all files within the given directory.
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
-	ignore, _ := gitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
+	gitIgnore, _ := goGitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
 		if info.IsDir() {
-			// we'll traverse subdirectories through filepath.Walk automatically
 			return nil
 		}
-		if ignore != nil && ignore.MatchesPath(info.Name()) {
-			// file is git-ignored
+		if gitIgnore != nil && gitIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
 		if !comments.Supports(path) {
-			// we don't know how to write comments for this file
 			return nil
 		}
 		if !shouldAddLicense(path) {
-			// this tool is configured to not add licenses for this file type
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, LICENSE_TOKEN)
@@ -55,7 +51,7 @@ func AddLicenses(dir string, year int) error {
 	return nil
 }
 
-// indicates whether we should add a license header to the file with the given path
+// indicates whether this tool is configured to add a license header to the file with the given path
 func shouldAddLicense(path string) bool {
 	return !comments.ContainsFileType(noLicenseHeadersFor, comments.GetFileType(path))
 }
