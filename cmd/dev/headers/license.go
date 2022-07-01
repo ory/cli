@@ -57,8 +57,8 @@ func shouldAddLicense(path string) bool {
 }
 
 var copyright = &cobra.Command{
-	Use:   "copyright",
-	Short: "Adds the copyright header to all known files in the current directory",
+	Use:   "license",
+	Short: "Adds the license header to all known files in the current directory",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
