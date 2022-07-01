@@ -144,8 +144,12 @@ func (t testDir) content(path string) string {
 }
 
 func (t testDir) createDir(name string) testDir {
+	t.removeDir(name)
 	path := filepath.Join(t.path, name)
-	os.Mkdir(path, 0744)
+	err := os.Mkdir(path, 0744)
+	if err != nil {
+		panic(err)
+	}
 	return testDir{path}
 }
 
@@ -160,4 +164,8 @@ func (t testDir) createFile(name, content string) string {
 
 func (t testDir) filename(base string) string {
 	return filepath.Join(t.path, base)
+}
+
+func (t testDir) removeDir(name string) {
+	os.RemoveAll(filepath.Join(t.path, name))
 }

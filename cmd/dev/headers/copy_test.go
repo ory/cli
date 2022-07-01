@@ -11,10 +11,28 @@ import (
 func TestCopy_singleFile_fullDestPath(t *testing.T) {
 	t.Parallel()
 	rootDir := testDir{path: "."}
+	rootDir.removeDir("test_copy_src")
+	rootDir.removeDir("test_copy_dst")
 	srcDir := rootDir.createDir("test_copy_src")
 	dstDir := rootDir.createDir("test_copy_dst")
 	srcDir.createFile("README.md", "# the readme\ntext")
 	err := headers.CopyFile("test_copy_src/README.md", dstDir.filename("README.md"))
+	assert.NoError(t, err)
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
+		dstDir.content("README.md"))
+	rootDir.removeDir("test_copy_src")
+	rootDir.removeDir("test_copy_dst")
+}
+
+func TestCopy_singleFile_destDir(t *testing.T) {
+	t.Parallel()
+	rootDir := testDir{path: "."}
+	srcDir := rootDir.createDir("test_copy_src")
+	dstDir := rootDir.createDir("test_copy_dst")
+	srcDir.createFile("README.md", "# the readme\ntext")
+	err := headers.CopyFile("test_copy_src/README.md", dstDir.path)
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
