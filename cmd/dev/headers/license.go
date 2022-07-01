@@ -20,6 +20,9 @@ const LICENSE_TEMPLATE = "Copyright © %d Ory Corp Inc."
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"
 
+// file types that we don't want to add license headers to
+var noLicenseHeadersFor = []comments.FileType{"md"}
+
 // addLicenses adds or updates the Ory license header in all files within the given directory.
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
@@ -33,9 +36,13 @@ func AddLicenses(dir string, year int) error {
 			return nil
 		}
 		if ignore != nil && ignore.MatchesPath(info.Name()) {
+			// file is git-ignored
 			return nil
 		}
 		filetype := comments.GetFileType(path)
+		if comments.ContainsFileType(noLicenseHeadersFor, filetype) {
+			return nil
+		}
 		commentFunc, ok := comments.FormatFuncs[filetype]
 		if !ok {
 			// not a file that we can add comments to --> nothing to do here

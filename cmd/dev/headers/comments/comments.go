@@ -95,3 +95,18 @@ func Remove(text string, format FormatFunc, token string) string {
 	}
 	return strings.Join(result, "\n")
 }
+
+// the missing "contains" function in Go, indicates whether the given list of FileTypes contains the given FileType
+func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
+	for _, ft := range fileTypes {
+		if ft == fileType {
+			return true
+		}
+	}
+	return false
+}
+
+// provides the content of the file with the given path, without the header identified by the given token
+// func FileContentWithoutHeader(path, token string) (string, FormatFunc, error) {}
+
+// func WriteFileWithHeader(path, header string, format FormatFunc, body string) error {}

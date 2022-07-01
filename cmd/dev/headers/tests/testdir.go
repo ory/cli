@@ -1,3 +1,4 @@
+// helper functions for testing file operations, panic on error
 package tests
 
 import (
@@ -7,7 +8,7 @@ import (
 
 // HELPERS
 
-// a directory used for testing, no need to clean up
+// a filesystem directory used for testing
 type Dir struct {
 	Path string
 }

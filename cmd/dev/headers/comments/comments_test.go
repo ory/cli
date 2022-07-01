@@ -83,3 +83,11 @@ func TestRemove(t *testing.T) {
 	have := comments.Remove(give, comments.PrependPound, "Copyright ©")
 	assert.Equal(t, want, have)
 }
+
+func TestContainsFileType(t *testing.T) {
+	t.Parallel()
+	fileTypes := []comments.FileType{"ts", "md", "go"}
+	assert.True(t, comments.ContainsFileType(fileTypes, "ts"))
+	assert.True(t, comments.ContainsFileType(fileTypes, "go"))
+	assert.False(t, comments.ContainsFileType(fileTypes, "rs"))
+}
