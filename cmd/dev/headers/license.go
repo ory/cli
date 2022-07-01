@@ -54,10 +54,6 @@ func AddLicenses(dir string, year int) error {
 		if int64(count) != info.Size() {
 			return fmt.Errorf("did not read the entire %d bytes of file %q but only %d", info.Size(), path, count)
 		}
-		fileContent := string(buffer)
-		fileContentNoHeader := comments.Remove(fileContent, commentFunc, LICENSE_TOKEN)
-		newHeader := commentFunc(licenseText)
-		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
 		pos, err := file.Seek(0, 0)
 		if err != nil {
 			return fmt.Errorf("cannot seek to beginning of file %q: %w", path, err)
@@ -69,6 +65,11 @@ func AddLicenses(dir string, year int) error {
 		if err != nil {
 			return fmt.Errorf("cannot truncate file %q: %w", path, err)
 		}
+		fileContent := string(buffer)
+		fileContentNoHeader := comments.Remove(fileContent, commentFunc, LICENSE_TOKEN)
+
+		newHeader := commentFunc(licenseText)
+		fileContentNewHeader := fmt.Sprintf("%s\n\n%s", newHeader, fileContentNoHeader)
 		count, err = file.WriteString(fileContentNewHeader)
 		if err != nil {
 			return fmt.Errorf("cannot write file %q: %w", path, err)

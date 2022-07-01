@@ -48,25 +48,12 @@ func CopyFile(src, dst string) error {
 		return fmt.Errorf("cannot write file %q: %w", destPath, err)
 	}
 	defer file.Close()
-	count, err := file.WriteString(headerComment)
+	newContent := fmt.Sprintf("%s\n\n%s", headerComment, contentBytes)
+	count, err := file.WriteString(newContent)
 	if err != nil {
 		return fmt.Errorf("cannot write into file %q: %w", destPath, err)
 	}
-	if count != len(headerComment) {
-		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), destPath, err)
-	}
-	count, err = file.WriteString("\n\n")
-	if err != nil {
-		return fmt.Errorf("cannot write into file %q: %w", destPath, err)
-	}
-	if count != 2 {
-		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), destPath, err)
-	}
-	count, err = file.Write(contentBytes)
-	if err != nil {
-		return fmt.Errorf("cannot write into file %q: %w", destPath, err)
-	}
-	if count != len(contentBytes) {
+	if count != len(newContent) {
 		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), destPath, err)
 	}
 	return nil

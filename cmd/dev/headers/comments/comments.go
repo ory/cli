@@ -1,3 +1,4 @@
+// helper functions for creating and removing comments from source code files in a variety of programming languages
 package comments
 
 import (
