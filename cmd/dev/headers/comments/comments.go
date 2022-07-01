@@ -16,18 +16,18 @@ type FileType string
 
 // all file formats that we can create comments for
 var formatFuncs = map[FileType]formatFunc{
-	"cs":   PrependDoubleSlash,
-	"dart": PrependDoubleSlash,
-	"go":   PrependDoubleSlash,
-	"java": PrependDoubleSlash,
-	"js":   PrependDoubleSlash,
-	"md":   WrapInHtmlComment,
-	"php":  PrependDoubleSlash,
-	"py":   PrependPound,
-	"rb":   PrependPound,
-	"rs":   PrependDoubleSlash,
-	"ts":   PrependDoubleSlash,
-	"vue":  WrapInHtmlComment,
+	"cs":   prependDoubleSlash,
+	"dart": prependDoubleSlash,
+	"go":   prependDoubleSlash,
+	"java": prependDoubleSlash,
+	"js":   prependDoubleSlash,
+	"md":   wrapInHtmlComment,
+	"php":  prependDoubleSlash,
+	"py":   prependPound,
+	"rb":   prependPound,
+	"rs":   prependDoubleSlash,
+	"ts":   prependDoubleSlash,
+	"vue":  wrapInHtmlComment,
 }
 
 // indicates whether we can comment on the file with the given name
@@ -46,8 +46,8 @@ func GetFileType(filename string) FileType {
 	return FileType(ext[1:])
 }
 
-// PrependPound provides a YML comment containing the given text.
-func PrependPound(text string) string {
+// prependPound provides a YML comment containing the given text.
+func prependPound(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
@@ -59,8 +59,8 @@ func PrependPound(text string) string {
 	return strings.Join(result, "\n")
 }
 
-// PrependDoubleSlash provides a Go comment containing the given text.
-func PrependDoubleSlash(text string) string {
+// prependDoubleSlash provides a Go comment containing the given text.
+func prependDoubleSlash(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
@@ -72,7 +72,7 @@ func PrependDoubleSlash(text string) string {
 	return strings.Join(result, "\n")
 }
 
-func WrapInHtmlComment(text string) string {
+func wrapInHtmlComment(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
@@ -85,7 +85,7 @@ func WrapInHtmlComment(text string) string {
 }
 
 // removes the comment in the given format containing the given token from the given text
-func Remove(text string, format formatFunc, token string) string {
+func remove(text string, format formatFunc, token string) string {
 	commentWithToken := format(token)
 	inComment := false
 	result := []string{}
@@ -123,7 +123,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	fileType := GetFileType(path)
 	formatter := formatFuncs[fileType]
 	text := string(buffer)
-	return Remove(text, formatter, token), nil
+	return remove(text, formatter, token), nil
 }
 
 func WriteFileWithHeader(path, header string, body []byte) error {

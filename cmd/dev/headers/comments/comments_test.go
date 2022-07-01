@@ -41,7 +41,7 @@ func TestPrependPound(t *testing.T) {
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
 			t.Parallel()
-			have := PrependPound(give)
+			have := prependPound(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -58,7 +58,7 @@ func TestPrependDoubleSlash(t *testing.T) {
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
 			t.Parallel()
-			have := PrependDoubleSlash(give)
+			have := prependDoubleSlash(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -75,7 +75,7 @@ func TestWrapInHtmlComment(t *testing.T) {
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
 			t.Parallel()
-			have := WrapInHtmlComment(give)
+			have := wrapInHtmlComment(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -85,7 +85,7 @@ func TestRemove(t *testing.T) {
 	t.Parallel()
 	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
-	have := Remove(give, PrependPound, "Copyright ©")
+	have := remove(give, prependPound, "Copyright ©")
 	assert.Equal(t, want, have)
 }
 
