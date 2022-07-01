@@ -19,6 +19,7 @@ const LINK_TOKEN = "Copyright ©"
 // the root path for links to the original
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
+// copies the source file (relative path) to the given absolute path
 func CopyFile(source, destPath string) error {
 	contentBytes, err := os.ReadFile(source)
 	if err != nil {
@@ -64,18 +65,15 @@ func CopyFile(source, destPath string) error {
 var copy = &cobra.Command{
 	Use:   "cp",
 	Short: "Behaves like cp but adds a header pointing to the original to copied files.",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Printf("HELLO %v\n", args)
-		return nil
+		return CopyFile(args[1], args[2])
 	},
 }
 
 func init() {
 	Main.AddCommand(copyright)
-	copy.Flags().StringVarP(&glob, "files", "f", "", "Commands to be run if current component is affected.")
 	copy.Flags().BoolVarP(&recursive, "recursive", "R", false, "Whether to copy files in subdirectories")
 }
 
-var glob string
 var recursive bool
