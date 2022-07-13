@@ -40,12 +40,17 @@ func (t Dir) CreateDir(name string) Dir {
 }
 
 func (t Dir) CreateFile(name, content string) string {
-	filepath := filepath.Join(t.Path, name)
-	err := os.WriteFile(filepath, []byte(content), 0744)
+	path := filepath.Join(t.Path, name)
+	dir := filepath.Dir(path)
+	err := os.MkdirAll(dir, 0744)
 	if err != nil {
 		panic(err)
 	}
-	return filepath
+	err = os.WriteFile(path, []byte(content), 0744)
+	if err != nil {
+		panic(err)
+	}
+	return path
 }
 
 func (t Dir) Filename(base string) string {
@@ -54,4 +59,8 @@ func (t Dir) Filename(base string) string {
 
 func (t Dir) RemoveDir(name string) {
 	os.RemoveAll(filepath.Join(t.Path, name))
+}
+
+func (t Dir) Cleanup() {
+	os.RemoveAll(t.Path)
 }

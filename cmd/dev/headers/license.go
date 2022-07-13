@@ -26,7 +26,7 @@ var noLicenseHeadersFor = []comments.FileType{"md"}
 func AddLicenses(dir string, year int) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	gitIgnore, _ := goGitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
-	filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
@@ -48,7 +48,6 @@ func AddLicenses(dir string, year int) error {
 		}
 		return comments.WriteFileWithHeader(path, licenseText, contentNoHeader)
 	})
-	return nil
 }
 
 // indicates whether this tool is configured to add a license header to the file with the given path

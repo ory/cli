@@ -5,6 +5,7 @@ package headers
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -34,7 +35,16 @@ func CopyFile(src, dst string) error {
 }
 
 func CopyFiles(src, dst string) error {
-	panic("TODO")
+	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("cannot read directory %q: %w", path, err)
+		}
+		if info.IsDir() {
+			return nil
+		}
+		srcDir := filepath.Dir(path)
+		return CopyFile(path, filepath.Join(dst, srcDir))
+	})
 }
 
 // Determines the full destination path for the cp operation of the given src to the given dst.
