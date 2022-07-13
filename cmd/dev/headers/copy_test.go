@@ -122,11 +122,17 @@ func setupCopyFile() workspace {
 	}
 }
 
+// directory structure for testing copy operations
 type workspace struct {
-	root    tests.Dir
-	src     tests.Dir
+	// the directory that contains the workspace
+	root tests.Dir
+	// the directory that contains the folder tree to copy
+	src tests.Dir
+	// the directory that contains the result of the built-in CopyFile(s) operation
 	dstCopy tests.Dir
-	dstCp   tests.Dir
+	// the directory that contains the result of Unix's cp operation
+	dstCp tests.Dir
+	// removes this workspace
 	cleanup func()
 }
 
