@@ -1,26 +1,15 @@
 package headers
 
 import (
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"io/fs"
 
 	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
-
-// func TestCopyFileAddsHeader(t *testing.T) {
-// 	rootDir := setupCopyFile()
-// 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
-// 	assert.NoError(t, err)
-// 	assert.Equal(
-// 		t,
-// 		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-// 		rootDir.Content("test_copy_dst/README.md"))
-// 	rootDir.Cleanup()
-// }
 
 func TestCopyFileToFolderNoSlash(t *testing.T) {
 	rootDir := setupCopyFile()

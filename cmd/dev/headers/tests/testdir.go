@@ -62,5 +62,8 @@ func (t Dir) RemoveDir(name string) {
 }
 
 func (t Dir) Cleanup() {
-	os.RemoveAll(t.Path)
+	err := os.RemoveAll(t.Path)
+	if err != nil {
+		panic(err)
+	}
 }
