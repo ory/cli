@@ -2,7 +2,6 @@ package headers
 
 import (
 	"io/fs"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
@@ -53,7 +52,57 @@ func TestCopyFileToFilepath(t *testing.T) {
 	workspace.cleanup()
 }
 
-func setupCopyFile() setupCopyResult {
+func TestCopyFilesNoSlash(t *testing.T) {
+	workspace := setupCopyFile()
+	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
+	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
+	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
+	err := CopyFiles("test_copy_src", "test_copy_dst")
+	assert.NoError(t, err)
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nOne",
+		workspace.dstCopy.Content("alpha/one.md"))
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nTwo",
+		workspace.dstCopy.Content("alpha/two.md"))
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Beta\nOne",
+		workspace.dstCopy.Content("beta/one.md"))
+	err = cpr("test_copy_src", "test_cp_dst")
+	assert.NoError(t, err)
+	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
+	workspace.cleanup()
+}
+
+func TestCopyFilesSlash(t *testing.T) {
+	workspace := setupCopyFile()
+	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
+	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
+	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
+	err := CopyFiles("test_copy_src/", "test_copy_dst/")
+	assert.NoError(t, err)
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nOne",
+		workspace.dstCopy.Content("alpha/one.md"))
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nTwo",
+		workspace.dstCopy.Content("alpha/two.md"))
+	assert.Equal(
+		t,
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Beta\nOne",
+		workspace.dstCopy.Content("beta/one.md"))
+	err = cpr("test_copy_src/", "test_cp_dst/")
+	assert.NoError(t, err)
+	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
+	workspace.cleanup()
+}
+
+func setupCopyFile() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
 	src.CreateFile("README.md", "# the readme\ntext")
@@ -64,7 +113,7 @@ func setupCopyFile() setupCopyResult {
 		dstCopy.Cleanup()
 		dstCp.Cleanup()
 	}
-	return setupCopyResult{
+	return workspace{
 		root,
 		src,
 		dstCopy,
@@ -73,7 +122,7 @@ func setupCopyFile() setupCopyResult {
 	}
 }
 
-type setupCopyResult struct {
+type workspace struct {
 	root    tests.Dir
 	src     tests.Dir
 	dstCopy tests.Dir
@@ -81,12 +130,19 @@ type setupCopyResult struct {
 	cleanup func()
 }
 
-// cp executes the unix "cp" command
+// executes the unix "cp" command
 func cp(src, dst string) error {
 	_, err := exec.Command("cp", src, dst).CombinedOutput()
 	return err
 }
 
+// executes the unix "cp" command
+func cpr(src, dst string) error {
+	_, err := exec.Command("cp", "-r", src, dst).CombinedOutput()
+	return err
+}
+
+// ensures that the two given directories contain files with the same names
 func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
 	t.Helper()
 	copyEntries := []string{}
@@ -99,31 +155,6 @@ func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
 		cpEntries = append(cpEntries, path)
 		return nil
 	})
-}
-
-func TestCopyRecursive(t *testing.T) {
-	rootDir := tests.Dir{Path: "."}
-	srcDir := rootDir.CreateDir("test_copy_src")
-	srcDir.CreateFile("alpha/one.md", "# Alpha\nOne")
-	srcDir.CreateFile("alpha/two.md", "# Alpha\nTwo")
-	srcDir.CreateFile("beta/one.md", "# Beta\nOne")
-	dstDir := rootDir.CreateDir("test_copy_dst")
-	err := CopyFiles("test_copy_src", dstDir.Path)
-	assert.NoError(t, err)
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nOne",
-		dstDir.Content("alpha/one.md"))
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nTwo",
-		dstDir.Content("alpha/two.md"))
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Beta\nOne",
-		dstDir.Content("beta/one.md"))
-	os.RemoveAll(srcDir.Path)
-	os.RemoveAll(dstDir.Path)
 }
 
 func TestDetermineDestPath_filePath(t *testing.T) {
