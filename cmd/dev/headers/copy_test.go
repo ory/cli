@@ -12,58 +12,73 @@ import (
 )
 
 func TestCopyFileToFolderNoSlash(t *testing.T) {
-	rootDir, cleanup := setupCopyFile()
+	workspace := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
 		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		rootDir.Content("test_copy_dst/README.md"))
+		workspace.root.Content("test_copy_dst/README.md"))
 	err = cp("test_copy_src/README.md", "test_cp_dst")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	cleanup()
+	workspace.cleanup()
 }
 
 func TestCopyFileToFolderSlash(t *testing.T) {
-	rootDir, cleanup := setupCopyFile()
+	workspace := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
 		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		rootDir.Content("test_copy_dst/README.md"))
+		workspace.root.Content("test_copy_dst/README.md"))
 	err = cp("test_copy_src/README.md", "test_cp_dst/")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	cleanup()
+	workspace.cleanup()
 }
 
 func TestCopyFileToFilepath(t *testing.T) {
-	rootDir, cleanup := setupCopyFile()
+	workspace := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
 		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		rootDir.Content("test_copy_dst/README.md"))
+		workspace.root.Content("test_copy_dst/README.md"))
 	err = cp("test_copy_src/README.md", "test_cp_dst/README.md")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	cleanup()
+	workspace.cleanup()
 }
 
-func setupCopyFile() (tests.Dir, func()) {
-	rootDir := tests.Dir{Path: "."}
-	srcDir := rootDir.CreateDir("test_copy_src")
-	srcDir.CreateFile("README.md", "# the readme\ntext")
-	dstCopy := rootDir.CreateDir("test_copy_dst")
-	dstCp := rootDir.CreateDir("test_cp_dst")
-	return srcDir, func() {
-		srcDir.Cleanup()
+func setupCopyFile() setupCopyResult {
+	root := tests.Dir{Path: "."}
+	src := root.CreateDir("test_copy_src")
+	src.CreateFile("README.md", "# the readme\ntext")
+	dstCopy := root.CreateDir("test_copy_dst")
+	dstCp := root.CreateDir("test_cp_dst")
+	cleanup := func() {
+		src.Cleanup()
 		dstCopy.Cleanup()
 		dstCp.Cleanup()
 	}
+	return setupCopyResult{
+		root,
+		src,
+		dstCopy,
+		dstCp,
+		cleanup,
+	}
+}
+
+type setupCopyResult struct {
+	root    tests.Dir
+	src     tests.Dir
+	dstCopy tests.Dir
+	dstCp   tests.Dir
+	cleanup func()
 }
 
 // cp executes the unix "cp" command
