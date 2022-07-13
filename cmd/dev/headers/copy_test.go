@@ -12,7 +12,7 @@ import (
 )
 
 func TestCopyFileToFolderNoSlash(t *testing.T) {
-	rootDir := setupCopyFile()
+	rootDir, cleanup := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -22,11 +22,11 @@ func TestCopyFileToFolderNoSlash(t *testing.T) {
 	err = cp("test_copy_src/README.md", "test_cp_dst")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	rootDir.Cleanup()
+	cleanup()
 }
 
 func TestCopyFileToFolderSlash(t *testing.T) {
-	rootDir := setupCopyFile()
+	rootDir, cleanup := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -36,11 +36,11 @@ func TestCopyFileToFolderSlash(t *testing.T) {
 	err = cp("test_copy_src/README.md", "test_cp_dst/")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	rootDir.Cleanup()
+	cleanup()
 }
 
 func TestCopyFileToFilepath(t *testing.T) {
-	rootDir := setupCopyFile()
+	rootDir, cleanup := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -50,16 +50,20 @@ func TestCopyFileToFilepath(t *testing.T) {
 	err = cp("test_copy_src/README.md", "test_cp_dst/README.md")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
-	rootDir.Cleanup()
+	cleanup()
 }
 
-func setupCopyFile() tests.Dir {
+func setupCopyFile() (tests.Dir, func()) {
 	rootDir := tests.Dir{Path: "."}
 	srcDir := rootDir.CreateDir("test_copy_src")
 	srcDir.CreateFile("README.md", "# the readme\ntext")
-	rootDir.CreateDir("test_copy_dst")
-	rootDir.CreateDir("test_cp_dst")
-	return rootDir
+	dstCopy := rootDir.CreateDir("test_copy_dst")
+	dstCp := rootDir.CreateDir("test_cp_dst")
+	return srcDir, func() {
+		srcDir.Cleanup()
+		dstCopy.Cleanup()
+		dstCp.Cleanup()
+	}
 }
 
 // cp executes the unix "cp" command
