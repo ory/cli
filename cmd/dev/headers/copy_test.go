@@ -136,7 +136,7 @@ func cp(src, dst string) error {
 	return err
 }
 
-// executes the unix "cp" command
+// executes the unix "cp -r" command
 func cpr(src, dst string) error {
 	_, err := exec.Command("cp", "-r", src, dst).CombinedOutput()
 	return err
