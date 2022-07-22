@@ -129,6 +129,9 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 		formatter = renderFuncs[fileType]
 	}
 	text := string(buffer)
+	if formatter == nil {
+		return text, nil
+	}
 	return remove(text, formatter, token), nil
 }
 

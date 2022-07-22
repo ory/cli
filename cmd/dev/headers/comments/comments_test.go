@@ -18,6 +18,7 @@ func TestContainsFileType(t *testing.T) {
 
 func TestFileContentWithoutHeader_knownFile(t *testing.T) {
 	err := os.WriteFile("testfile.md", []byte("<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"), 0744)
+	defer os.Remove("testfile.md")
 	assert.NoError(t, err)
 	have, err := FileContentWithoutHeader("testfile.md", "copyright")
 	want := "hello world"
@@ -25,10 +26,21 @@ func TestFileContentWithoutHeader_knownFile(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func TestFileContentWithoutHeader_unknownFile(t *testing.T) {
-	err := os.WriteFile("testfile.txt", []byte("hello world"), 0744)
+func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
+	err := os.WriteFile("testfile.md", []byte("<!-- another comment -->\n\n<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"), 0744)
+	defer os.Remove("testfile.md")
 	assert.NoError(t, err)
 	have, err := FileContentWithoutHeader("testfile.md", "copyright")
+	want := "<!-- another comment -->\n\nhello world"
+	assert.NoError(t, err)
+	assert.Equal(t, want, have)
+}
+
+func TestFileContentWithoutHeader_unknownFile(t *testing.T) {
+	err := os.WriteFile("testfile.txt", []byte("hello world"), 0744)
+	defer os.Remove("testfile.txt")
+	assert.NoError(t, err)
+	have, err := FileContentWithoutHeader("testfile.txt", "copyright")
 	want := "hello world"
 	assert.NoError(t, err)
 	assert.Equal(t, want, have)
@@ -99,10 +111,10 @@ func TestWrapInHtmlComment(t *testing.T) {
 	}
 }
 
-func TestRemovePound(t *testing.T) {
+func TestRemove_pound_beginning(t *testing.T) {
 	t.Parallel()
-	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
-	want := "name: test\nhello: world\n"
+	give := "# Copyright © 1997 Ory Corp Inc.\n\n# another comment\n\nname: test\nhello: world\n"
+	want := "# another comment\n\nname: test\nhello: world\n"
 	have := remove(give, prependPound, "Copyright ©")
 	assert.Equal(t, want, have)
 }
