@@ -46,42 +46,31 @@ func GetFileType(filename string) FileType {
 	return FileType(ext[1:])
 }
 
-// provides a YML-style comment containing the given text
-func prependPound(text string) string {
+// creates a comment in the given comment style containing the given text
+func renderComment(text, style string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
 			result = append(result, line)
 		} else {
-			result = append(result, fmt.Sprintf("# %s", line))
+			result = append(result, fmt.Sprintf(style, line))
 		}
 	}
 	return strings.Join(result, "\n")
+}
+
+// provides a YML-style comment containing the given text
+func prependPound(text string) string {
+	return renderComment(text, "# %s")
 }
 
 // provides a Go-style comment containing the given text
 func prependDoubleSlash(text string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf("// %s", line))
-		}
-	}
-	return strings.Join(result, "\n")
+	return renderComment(text, "// %s")
 }
 
 func wrapInHtmlComment(text string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf("<!-- %s -->", line))
-		}
-	}
-	return strings.Join(result, "\n")
+	return renderComment(text, "<!-- %s -->")
 }
 
 // removes the comment in the given format containing the given token from the given text
