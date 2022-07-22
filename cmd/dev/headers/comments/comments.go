@@ -105,7 +105,8 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 	return false
 }
 
-// provides the content of the file with the given path, without the header identified by the given token
+// provides the content of the file with the given path
+// stripped from the header identified by the given token
 func FileContentWithoutHeader(path, token string) (string, error) {
 	buffer, err := os.ReadFile(path)
 	if err != nil {
