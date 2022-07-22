@@ -46,7 +46,7 @@ func GetFileType(filename string) FileType {
 	return FileType(ext[1:])
 }
 
-// prependPound provides a YML comment containing the given text.
+// provides a YML-style comment containing the given text
 func prependPound(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
@@ -59,7 +59,7 @@ func prependPound(text string) string {
 	return strings.Join(result, "\n")
 }
 
-// prependDoubleSlash provides a Go comment containing the given text.
+// provides a Go-style comment containing the given text
 func prependDoubleSlash(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
