@@ -25,6 +25,15 @@ func TestFileContentWithoutHeader_knownFile(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
+func TestFileContentWithoutHeader_unknownFile(t *testing.T) {
+	err := os.WriteFile("testfile.txt", []byte("hello world"), 0744)
+	assert.NoError(t, err)
+	have, err := FileContentWithoutHeader("testfile.md", "copyright")
+	want := "hello world"
+	assert.NoError(t, err)
+	assert.Equal(t, want, have)
+}
+
 func TestGetFileType(t *testing.T) {
 	t.Parallel()
 	tests := map[string]FileType{
