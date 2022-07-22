@@ -19,11 +19,11 @@ func TestGetFileType(t *testing.T) {
 		"one.yml":  "yml",
 		"one.yaml": "yaml",
 		"one.md":   "md",
+		"one.xx":   "xx",
 		"one":      "",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
 			have := GetFileType(give)
 			assert.Equal(t, want, have)
 		})
@@ -40,7 +40,6 @@ func TestPrependPound(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
 			have := prependPound(give)
 			assert.Equal(t, want, have)
 		})
@@ -57,7 +56,6 @@ func TestPrependDoubleSlash(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
 			have := prependDoubleSlash(give)
 			assert.Equal(t, want, have)
 		})
@@ -74,7 +72,6 @@ func TestWrapInHtmlComment(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			t.Parallel()
 			have := wrapInHtmlComment(give)
 			assert.Equal(t, want, have)
 		})
