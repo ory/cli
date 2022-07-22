@@ -10,6 +10,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreateDstPath_root(t *testing.T) {
+	have := createDstPath("src/README.md", "dst", "src")
+	want := "dst/README.md"
+	assert.Equal(t, want, have)
+}
+
+func TestCreateDstPath_subfolder(t *testing.T) {
+	have := createDstPath("src/sub1/sub2/README.md", "dst", "src")
+	want := "dst/sub1/sub2/README.md"
+	assert.Equal(t, want, have)
+}
+
 func TestCopyFileToFolderNoSlash(t *testing.T) {
 	workspace := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
@@ -61,15 +73,15 @@ func TestCopyFilesNoSlash(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nOne",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->\n\n# Alpha\nOne",
 		workspace.dstCopy.Content("alpha/one.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nTwo",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->\n\n# Alpha\nTwo",
 		workspace.dstCopy.Content("alpha/two.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Beta\nOne",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->\n\n# Beta\nOne",
 		workspace.dstCopy.Content("beta/one.md"))
 	err = cpr("test_copy_src", "test_cp_dst")
 	assert.NoError(t, err)
@@ -86,15 +98,15 @@ func TestCopyFilesSlash(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nOne",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->\n\n# Alpha\nOne",
 		workspace.dstCopy.Content("alpha/one.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Alpha\nTwo",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->\n\n# Alpha\nTwo",
 		workspace.dstCopy.Content("alpha/two.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# Beta\nOne",
+		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->\n\n# Beta\nOne",
 		workspace.dstCopy.Content("beta/one.md"))
 	err = cpr("test_copy_src/", "test_cp_dst/")
 	assert.NoError(t, err)

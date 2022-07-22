@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	"github.com/ory/cli/cmd/dev/headers/comments"
 	"github.com/spf13/cobra"
@@ -39,12 +40,25 @@ func CopyFiles(src, dst string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		if info.IsDir() {
-			return nil
-		}
 		dstPath := createDstPath(path, dst, src)
+		if info.IsDir() {
+			err := os.Mkdir(dstPath, 0744)
+			if err == nil {
+				return nil
+			}
+			// ignore folder already exists error
+			pathErr := err.(*os.PathError)
+			if pathErr.Err == syscall.EEXIST {
+				return nil
+			}
+			return err
+		}
 		return CopyFile(path, dstPath)
 	})
+}
+
+func createDstPath(path, dst, src string) string {
+	return dst + path[len(src):]
 }
 
 // Determines the full destination path for the cp operation of the given src to the given dst.
