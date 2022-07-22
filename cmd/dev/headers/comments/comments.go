@@ -73,7 +73,7 @@ func wrapInHtmlComment(text string) string {
 	return renderComment(text, "<!-- %s -->")
 }
 
-// removes the comment in the given format containing the given token from the given text
+// removes the comment block in the given format containing the given token from the given text
 func remove(text string, format formatFunc, token string) string {
 	commentWithToken := format(token)
 	inComment := false
