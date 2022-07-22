@@ -95,8 +95,7 @@ func remove(text string, format formatFunc, token string) string {
 	return strings.Join(result, "\n")
 }
 
-// The missing "contains" function in Go.
-// Indicates whether the given list of FileTypes contains the given FileType.
+// indicates whether the given list of FileTypes contains the given FileType
 func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 	for _, ft := range fileTypes {
 		if ft == fileType {
