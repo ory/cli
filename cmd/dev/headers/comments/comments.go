@@ -32,8 +32,7 @@ var formatFuncs = map[FileType]formatFunc{
 
 // indicates whether it is possible to add comments to the file with the given name
 func Supports(filename string) bool {
-	filetype := GetFileType(filename)
-	_, ok := formatFuncs[filetype]
+	_, ok := formatFuncs[GetFileType(filename)]
 	return ok
 }
 
