@@ -14,8 +14,8 @@ type formatFunc func(text string) string
 // a file format that we know about, represented as its file extension
 type FileType string
 
-// all file formats that we can create comments for
-var formatFuncs = map[FileType]formatFunc{
+// all file formats that we can create comments for, and how to do it
+var renderFuncs = map[FileType]formatFunc{
 	"cs":   prependDoubleSlash,
 	"dart": prependDoubleSlash,
 	"go":   prependDoubleSlash,
@@ -30,10 +30,17 @@ var formatFuncs = map[FileType]formatFunc{
 	"vue":  wrapInHtmlComment,
 }
 
+// How to render the beginning of comments only.
+// If the file is not listed here, look also in renderFuncs.
+var renderStartFuncs = map[FileType]formatFunc{
+	"md":  prependHtmlComment,
+	"vue": prependHtmlComment,
+}
+
 // indicates whether it is possible to add comments to the file with the given name
 func Supports(filename string) bool {
 	filetype := GetFileType(filename)
-	_, ok := formatFuncs[filetype]
+	_, ok := renderFuncs[filetype]
 	return ok
 }
 
@@ -71,6 +78,10 @@ func prependDoubleSlash(text string) string {
 
 func wrapInHtmlComment(text string) string {
 	return renderComment(text, "<!-- %s -->")
+}
+
+func prependHtmlComment(text string) string {
+	return renderComment(text, "<!-- %s")
 }
 
 // removes the comment block in the given format containing the given token from the given text
@@ -113,7 +124,10 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 		return "", fmt.Errorf("cannot open file %q: %w", path, err)
 	}
 	fileType := GetFileType(path)
-	formatter := formatFuncs[fileType]
+	formatter := renderStartFuncs[fileType]
+	if formatter == nil {
+		formatter = renderFuncs[fileType]
+	}
 	text := string(buffer)
 	return remove(text, formatter, token), nil
 }
@@ -125,7 +139,7 @@ func WriteFileWithHeader(path, header string, body string) error {
 	}
 	defer file.Close()
 	filetype := GetFileType(path)
-	format, ok := formatFuncs[filetype]
+	format, ok := renderFuncs[filetype]
 	if !ok {
 		return os.WriteFile(path, []byte(body), 0744)
 	}

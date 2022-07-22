@@ -2,6 +2,7 @@ package comments
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,6 +14,15 @@ func TestContainsFileType(t *testing.T) {
 	assert.True(t, ContainsFileType(fileTypes, "ts"))
 	assert.True(t, ContainsFileType(fileTypes, "go"))
 	assert.False(t, ContainsFileType(fileTypes, "rs"))
+}
+
+func TestFileContentWithoutHeader_knownFile(t *testing.T) {
+	err := os.WriteFile("testfile.md", []byte("<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"), 0744)
+	assert.NoError(t, err)
+	have, err := FileContentWithoutHeader("testfile.md", "copyright")
+	want := "hello world"
+	assert.NoError(t, err)
+	assert.Equal(t, want, have)
 }
 
 func TestGetFileType(t *testing.T) {
@@ -80,11 +90,19 @@ func TestWrapInHtmlComment(t *testing.T) {
 	}
 }
 
-func TestRemove(t *testing.T) {
+func TestRemovePound(t *testing.T) {
 	t.Parallel()
 	give := "# Copyright © 1997 Ory Corp Inc.\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
 	have := remove(give, prependPound, "Copyright ©")
+	assert.Equal(t, want, have)
+}
+
+func TestRemoveHtmlStyle(t *testing.T) {
+	t.Parallel()
+	give := "<!-- Copyright © 1997 Ory Corp Inc. -->\n<!-- All rights reserved -->\n\nname: test\nhello: world\n"
+	want := "name: test\nhello: world\n"
+	have := remove(give, prependHtmlComment, "Copyright ©")
 	assert.Equal(t, want, have)
 }
 
