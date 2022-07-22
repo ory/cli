@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCanComment(t *testing.T) {
+func TestSupports(t *testing.T) {
 	assert.True(t, Supports("foo.ts"))
 	assert.True(t, Supports("foo.md"))
 	assert.False(t, Supports("foo.xx"))
