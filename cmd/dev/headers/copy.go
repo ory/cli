@@ -42,8 +42,8 @@ func CopyFiles(src, dst string) error {
 		if info.IsDir() {
 			return nil
 		}
-		srcDir := filepath.Dir(path)
-		return CopyFile(path, filepath.Join(dst, srcDir))
+		dstPath := createDstPath(path, dst, src)
+		return CopyFile(path, dstPath)
 	})
 }
 
