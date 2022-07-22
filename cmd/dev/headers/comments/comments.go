@@ -82,7 +82,9 @@ func remove(text string, format formatFunc, token string) string {
 		if strings.HasPrefix(line, commentWithToken) {
 			inComment = true
 		}
-		if line == "" && inComment {
+		if inComment && line == "" {
+			// the type of comment blocks we remove here is separated by an empty line
+			// --> empty line marks the end of our comment block
 			inComment = false
 			continue
 		}
