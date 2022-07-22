@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// signature of functions to create comments for different programming languages
+// signature for functions that create comments for different programming languages
 type formatFunc func(text string) string
 
 // a file format that we know about, represented as its file extension
