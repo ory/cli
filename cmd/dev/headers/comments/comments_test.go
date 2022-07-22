@@ -7,10 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSupports(t *testing.T) {
-	assert.True(t, Supports("foo.ts"))
-	assert.True(t, Supports("foo.md"))
-	assert.False(t, Supports("foo.xx"))
+func TestContainsFileType(t *testing.T) {
+	t.Parallel()
+	fileTypes := []FileType{"ts", "md", "go"}
+	assert.True(t, ContainsFileType(fileTypes, "ts"))
+	assert.True(t, ContainsFileType(fileTypes, "go"))
+	assert.False(t, ContainsFileType(fileTypes, "rs"))
 }
 
 func TestGetFileType(t *testing.T) {
@@ -30,22 +32,6 @@ func TestGetFileType(t *testing.T) {
 	}
 }
 
-func TestPrependPound(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":          "# Hello",            // single line text
-		"Hello\n":        "# Hello\n",          // single line text
-		"Hello\nWorld":   "# Hello\n# World",   // multi-line text
-		"Hello\nWorld\n": "# Hello\n# World\n", // multi-line text
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := prependPound(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
 func TestPrependDoubleSlash(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
@@ -57,6 +43,22 @@ func TestPrependDoubleSlash(t *testing.T) {
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
 			have := prependDoubleSlash(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
+func TestPrependPound(t *testing.T) {
+	t.Parallel()
+	tests := map[string]string{
+		"Hello":          "# Hello",            // single line text
+		"Hello\n":        "# Hello\n",          // single line text
+		"Hello\nWorld":   "# Hello\n# World",   // multi-line text
+		"Hello\nWorld\n": "# Hello\n# World\n", // multi-line text
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			have := prependPound(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -86,10 +88,8 @@ func TestRemove(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func TestContainsFileType(t *testing.T) {
-	t.Parallel()
-	fileTypes := []FileType{"ts", "md", "go"}
-	assert.True(t, ContainsFileType(fileTypes, "ts"))
-	assert.True(t, ContainsFileType(fileTypes, "go"))
-	assert.False(t, ContainsFileType(fileTypes, "rs"))
+func TestSupports(t *testing.T) {
+	assert.True(t, Supports("foo.ts"))
+	assert.True(t, Supports("foo.md"))
+	assert.False(t, Supports("foo.xx"))
 }
