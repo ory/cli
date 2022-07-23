@@ -8,12 +8,6 @@ import (
 	"strings"
 )
 
-// signature for functions that create comments for different programming languages
-type formatFunc func(text string) string
-
-// a file format that we know about, represented as its file extension
-type FileType string
-
 // all file formats that we can create comments for, and how to do it
 var renderFuncs = map[FileType]formatFunc{
 	"cs":   prependDoubleSlash,
@@ -37,74 +31,11 @@ var renderStartFuncs = map[FileType]formatFunc{
 	"vue": prependHtmlComment,
 }
 
-// indicates whether it is possible to add comments to the file with the given name
-func Supports(filename string) bool {
-	filetype := GetFileType(filename)
-	_, ok := renderFuncs[filetype]
-	return ok
-}
+// signature for functions that create comments for different programming languages
+type formatFunc func(text string) string
 
-// provides the extension of the given filename
-func GetFileType(filename string) FileType {
-	ext := filepath.Ext(filename)
-	if len(ext) == 0 {
-		return ""
-	}
-	return FileType(ext[1:])
-}
-
-// creates a comment in the given comment style containing the given text
-func renderComment(text, style string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf(style, line))
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
-// provides a YML-style comment containing the given text
-func prependPound(text string) string {
-	return renderComment(text, "# %s")
-}
-
-// provides a Go-style comment containing the given text
-func prependDoubleSlash(text string) string {
-	return renderComment(text, "// %s")
-}
-
-func wrapInHtmlComment(text string) string {
-	return renderComment(text, "<!-- %s -->")
-}
-
-func prependHtmlComment(text string) string {
-	return renderComment(text, "<!-- %s")
-}
-
-// removes the comment block in the given format containing the given token from the given text
-func remove(text string, format formatFunc, token string) string {
-	commentWithToken := format(token)
-	inComment := false
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
-			inComment = true
-		}
-		if inComment && line == "" {
-			// the type of comment blocks we remove here is separated by an empty line
-			// --> empty line marks the end of our comment block
-			inComment = false
-			continue
-		}
-		if !inComment {
-			result = append(result, line)
-		}
-	}
-	return strings.Join(result, "\n")
-}
+// a file format that we know about, represented as its file extension
+type FileType string
 
 // indicates whether the given list of FileTypes contains the given FileType
 func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
@@ -133,6 +64,75 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 		return text, nil
 	}
 	return remove(text, formatter, token), nil
+}
+
+// provides the extension of the given filename
+func GetFileType(filename string) FileType {
+	ext := filepath.Ext(filename)
+	if len(ext) == 0 {
+		return ""
+	}
+	return FileType(ext[1:])
+}
+
+// provides a YML-style comment containing the given text
+func prependPound(text string) string {
+	return renderComment(text, "# %s")
+}
+
+// provides a Go-style comment containing the given text
+func prependDoubleSlash(text string) string {
+	return renderComment(text, "// %s")
+}
+
+func wrapInHtmlComment(text string) string {
+	return renderComment(text, "<!-- %s -->")
+}
+
+func prependHtmlComment(text string) string {
+	return renderComment(text, "<!-- %s")
+}
+
+// creates a comment in the given comment style containing the given text
+func renderComment(text, style string) string {
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if line == "" {
+			result = append(result, line)
+		} else {
+			result = append(result, fmt.Sprintf(style, line))
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
+// removes the comment block in the given format containing the given token from the given text
+func remove(text string, format formatFunc, token string) string {
+	commentWithToken := format(token)
+	inComment := false
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, commentWithToken) {
+			inComment = true
+		}
+		if inComment && line == "" {
+			// the type of comment blocks we remove here is separated by an empty line
+			// --> empty line marks the end of our comment block
+			inComment = false
+			continue
+		}
+		if !inComment {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
+// indicates whether it is possible to add comments to the file with the given name
+func Supports(filename string) bool {
+	filetype := GetFileType(filename)
+	_, ok := renderFuncs[filetype]
+	return ok
 }
 
 func WriteFileWithHeader(path, header string, body string) error {
