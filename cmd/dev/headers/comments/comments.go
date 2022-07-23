@@ -8,34 +8,53 @@ import (
 	"strings"
 )
 
+// a comment format known to this app
+type Format struct {
+	// converts the given text into a comment in this format
+	render formatFunc
+	// converts the given text into the beginning of a comment
+	renderStart formatFunc
+}
+
+// comment format that starts with a doubleslash
+var doubleSlashComments = Format{
+	render:      prependDoubleSlash,
+	renderStart: prependDoubleSlash,
+}
+
+// comment format that starts with pound symbols
+var poundComments = Format{
+	render:      prependPound,
+	renderStart: prependPound,
+}
+
+// HTML comment format
+var htmlComments = Format{
+	render:      wrapInHtmlComment,
+	renderStart: prependHtmlComment,
+}
+
 // all file formats that we can create comments for, and how to do it
-var renderFuncs = map[FileType]formatFunc{
-	"cs":   prependDoubleSlash,
-	"dart": prependDoubleSlash,
-	"go":   prependDoubleSlash,
-	"java": prependDoubleSlash,
-	"js":   prependDoubleSlash,
-	"md":   wrapInHtmlComment,
-	"php":  prependDoubleSlash,
-	"py":   prependPound,
-	"rb":   prependPound,
-	"rs":   prependDoubleSlash,
-	"ts":   prependDoubleSlash,
-	"vue":  wrapInHtmlComment,
+var commentFormats = map[FileType]Format{
+	"cs":   doubleSlashComments,
+	"dart": doubleSlashComments,
+	"go":   doubleSlashComments,
+	"java": doubleSlashComments,
+	"js":   doubleSlashComments,
+	"md":   htmlComments,
+	"php":  doubleSlashComments,
+	"py":   poundComments,
+	"rb":   poundComments,
+	"rs":   doubleSlashComments,
+	"ts":   doubleSlashComments,
+	"vue":  htmlComments,
 }
-
-// How to render the beginning of comments only.
-// If the file is not listed here, look also in renderFuncs.
-var renderStartFuncs = map[FileType]formatFunc{
-	"md":  prependHtmlComment,
-	"vue": prependHtmlComment,
-}
-
-// signature for functions that create comments for different programming languages
-type formatFunc func(text string) string
 
 // a file format that we know about, represented as its file extension
 type FileType string
+
+// signature for functions that create comments for different programming languages
+type formatFunc func(text string) string
 
 // indicates whether the given list of FileTypes contains the given FileType
 func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
@@ -55,15 +74,12 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 		return "", fmt.Errorf("cannot open file %q: %w", path, err)
 	}
 	fileType := GetFileType(path)
-	formatter := renderStartFuncs[fileType]
-	if formatter == nil {
-		formatter = renderFuncs[fileType]
-	}
+	format, found := commentFormats[fileType]
 	text := string(buffer)
-	if formatter == nil {
+	if !found {
 		return text, nil
 	}
-	return remove(text, formatter, token), nil
+	return remove(text, format.renderStart, token), nil
 }
 
 // provides the extension of the given filename
@@ -77,24 +93,24 @@ func GetFileType(filename string) FileType {
 
 // provides a YML-style comment containing the given text
 func prependPound(text string) string {
-	return renderComment(text, "# %s")
+	return makeComment(text, "# %s")
 }
 
 // provides a Go-style comment containing the given text
 func prependDoubleSlash(text string) string {
-	return renderComment(text, "// %s")
+	return makeComment(text, "// %s")
 }
 
 func wrapInHtmlComment(text string) string {
-	return renderComment(text, "<!-- %s -->")
+	return makeComment(text, "<!-- %s -->")
 }
 
 func prependHtmlComment(text string) string {
-	return renderComment(text, "<!-- %s")
+	return makeComment(text, "<!-- %s")
 }
 
 // creates a comment in the given comment style containing the given text
-func renderComment(text, style string) string {
+func makeComment(text, style string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
 		if line == "" {
@@ -131,7 +147,7 @@ func remove(text string, format formatFunc, token string) string {
 // indicates whether it is possible to add comments to the file with the given name
 func Supports(filename string) bool {
 	filetype := GetFileType(filename)
-	_, ok := renderFuncs[filetype]
+	_, ok := commentFormats[filetype]
 	return ok
 }
 
@@ -142,11 +158,11 @@ func WriteFileWithHeader(path, header string, body string) error {
 	}
 	defer file.Close()
 	filetype := GetFileType(path)
-	format, ok := renderFuncs[filetype]
+	format, ok := commentFormats[filetype]
 	if !ok {
 		return os.WriteFile(path, []byte(body), 0744)
 	}
-	headerComment := format(header)
+	headerComment := format.render(header)
 	newContent := fmt.Sprintf("%s\n\n%s", headerComment, body)
 	count, err := file.WriteString(newContent)
 	if err != nil {

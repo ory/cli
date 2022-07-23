@@ -63,7 +63,7 @@ func TestGetFileType(t *testing.T) {
 	}
 }
 
-func TestPrependDoubleSlash(t *testing.T) {
+func TestDoubleSlashFormat(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "// Hello",             // single line text
@@ -73,13 +73,13 @@ func TestPrependDoubleSlash(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := prependDoubleSlash(give)
+			have := doubleSlashComments.render(give)
 			assert.Equal(t, want, have)
 		})
 	}
 }
 
-func TestPrependPound(t *testing.T) {
+func TestPoundFormat(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "# Hello",            // single line text
@@ -89,13 +89,13 @@ func TestPrependPound(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := prependPound(give)
+			have := poundComments.render(give)
 			assert.Equal(t, want, have)
 		})
 	}
 }
 
-func TestWrapInHtmlComment(t *testing.T) {
+func TestHtmlFormat_render(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "<!-- Hello -->",                   // single line text
@@ -105,7 +105,23 @@ func TestWrapInHtmlComment(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := wrapInHtmlComment(give)
+			have := htmlComments.render(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
+func TestHtmlFormat_renderStart(t *testing.T) {
+	t.Parallel()
+	tests := map[string]string{
+		"Hello":          "<!-- Hello",               // single line text
+		"Hello\n":        "<!-- Hello\n",             // single line text
+		"Hello\nWorld":   "<!-- Hello\n<!-- World",   // multi-line text
+		"Hello\nWorld\n": "<!-- Hello\n<!-- World\n", // multi-line text
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			have := htmlComments.renderStart(give)
 			assert.Equal(t, want, have)
 		})
 	}
