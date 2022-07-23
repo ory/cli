@@ -1,10 +1,7 @@
-// helper functions for creating and removing comments from source code files in a variety of programming languages
 package comments
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -50,46 +47,8 @@ var commentFormats = map[FileType]Format{
 	"vue":  htmlComments,
 }
 
-// a file format that we know about, represented as its file extension
-type FileType string
-
 // signature for functions that create comments for different programming languages
 type formatFunc func(text string) string
-
-// indicates whether the given list of FileTypes contains the given FileType
-func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
-	for _, ft := range fileTypes {
-		if ft == fileType {
-			return true
-		}
-	}
-	return false
-}
-
-// provides the content of the file with the given path
-// stripped from the header identified by the given token
-func FileContentWithoutHeader(path, token string) (string, error) {
-	buffer, err := os.ReadFile(path)
-	if err != nil {
-		return "", fmt.Errorf("cannot open file %q: %w", path, err)
-	}
-	fileType := GetFileType(path)
-	format, found := commentFormats[fileType]
-	text := string(buffer)
-	if !found {
-		return text, nil
-	}
-	return remove(text, format.renderStart, token), nil
-}
-
-// provides the extension of the given filename
-func GetFileType(filename string) FileType {
-	ext := filepath.Ext(filename)
-	if len(ext) == 0 {
-		return ""
-	}
-	return FileType(ext[1:])
-}
 
 // provides a YML-style comment containing the given text
 func prependPound(text string) string {
@@ -142,34 +101,4 @@ func remove(text string, format formatFunc, token string) string {
 		}
 	}
 	return strings.Join(result, "\n")
-}
-
-// indicates whether it is possible to add comments to the file with the given name
-func Supports(filename string) bool {
-	filetype := GetFileType(filename)
-	_, ok := commentFormats[filetype]
-	return ok
-}
-
-func WriteFileWithHeader(path, header string, body string) error {
-	file, err := os.Create(path)
-	if err != nil {
-		return fmt.Errorf("cannot write file %q: %w", path, err)
-	}
-	defer file.Close()
-	filetype := GetFileType(path)
-	format, ok := commentFormats[filetype]
-	if !ok {
-		return os.WriteFile(path, []byte(body), 0744)
-	}
-	headerComment := format.render(header)
-	newContent := fmt.Sprintf("%s\n\n%s", headerComment, body)
-	count, err := file.WriteString(newContent)
-	if err != nil {
-		return fmt.Errorf("cannot write into file %q: %w", path, err)
-	}
-	if count != len(newContent) {
-		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), path, err)
-	}
-	return nil
 }
