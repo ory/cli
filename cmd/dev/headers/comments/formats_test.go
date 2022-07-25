@@ -24,7 +24,25 @@ func TestDoubleSlashComments_render(t *testing.T) {
 	}
 }
 
-func TestPoundComments_renderBlock(t *testing.T) {
+func TestDoubleSlashComments_remove(t *testing.T) {
+	t.Parallel()
+	give := tests.Trim(`
+// Copyright © 1997 Ory Corp Inc.
+
+// another comment
+
+name: test
+hello: world`)
+	want := tests.Trim(`
+// another comment
+
+name: test
+hello: world`)
+	have := doubleSlashComments.remove(give, "Copyright ©")
+	assert.Equal(t, want, have)
+}
+
+func TestPoundComments_render(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "# Hello",
