@@ -6,7 +6,7 @@ import (
 )
 
 // provides the content of the file with the given path
-// stripped from the header identified by the given token
+// without the comment block identified by the given token
 func FileContentWithoutHeader(path, token string) (string, error) {
 	buffer, err := os.ReadFile(path)
 	if err != nil {
@@ -14,8 +14,8 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	}
 	text := string(buffer)
 	fileType := GetFileType(path)
-	format, found := commentFormats[fileType]
-	if !found {
+	format, knowsFormat := commentFormats[fileType]
+	if !knowsFormat {
 		return text, nil
 	}
 	return remove(text, format, token), nil
