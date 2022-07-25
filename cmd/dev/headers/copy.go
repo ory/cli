@@ -81,7 +81,11 @@ var copy = &cobra.Command{
 	Short: "Behaves like cp but adds a header pointing to the original to copied files.",
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return CopyFile(args[1], args[2])
+		if recursive {
+			return CopyFiles(args[1], args[2])
+		} else {
+			return CopyFile(args[1], args[2])
+		}
 	},
 }
 
