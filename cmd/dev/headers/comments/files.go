@@ -33,12 +33,12 @@ func WriteFileWithHeader(path, header, body string) error {
 		return os.WriteFile(path, []byte(body), 0744)
 	}
 	headerComment := format.render(header)
-	newContent := fmt.Sprintf("%s\n\n%s", headerComment, body)
-	count, err := file.WriteString(newContent)
+	content := fmt.Sprintf("%s\n\n%s", headerComment, body)
+	count, err := file.WriteString(content)
 	if err != nil {
 		return fmt.Errorf("cannot write into file %q: %w", path, err)
 	}
-	if count != len(newContent) {
+	if count != len(content) {
 		return fmt.Errorf("did not write the full %d bytes of header into %q: %w", len(headerComment), path, err)
 	}
 	return nil
