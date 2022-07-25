@@ -23,7 +23,8 @@ const LINK_TOKEN = "Copyright ©"
 // the root path for links to the original
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
-// copies the source file (relative path) to the given absolute path
+// Copies the given source file (path must be relative to CWD) to the given absolute path.
+// Behaves similar to the unix `cp` command.
 func CopyFile(src, dst string) error {
 	body, err := os.ReadFile(src)
 	if err != nil {
@@ -35,6 +36,8 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
+// Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
+// Behaves similar to the unix `cp` command.
 func CopyFiles(src, dst string) error {
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
