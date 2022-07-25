@@ -22,7 +22,7 @@ func TestGetFileType(t *testing.T) {
 		"one.yml":  "yml",
 		"one.yaml": "yml",
 		"one.md":   "md",
-		"one.xx":   "xx",
+		"one.xxx":  "xxx",
 		"one":      "",
 	}
 	for give, want := range tests {
