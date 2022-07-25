@@ -12,9 +12,9 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("cannot open file %q: %w", path, err)
 	}
+	text := string(buffer)
 	fileType := GetFileType(path)
 	format, found := commentFormats[fileType]
-	text := string(buffer)
 	if !found {
 		return text, nil
 	}
