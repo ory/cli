@@ -9,8 +9,13 @@ import (
 )
 
 func TestFileContentWithoutHeader_knownFile(t *testing.T) {
-	give := "<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"
-	want := "hello world"
+	give := `
+<!-- copyright Ory -->
+<!-- all rights reserved -->
+
+hello world`
+	want := `
+hello world`
 	createTestFile(t, "testfile.md", give)
 	defer os.Remove("testfile.md")
 	have, err := comments.FileContentWithoutHeader("testfile.md", "copyright")
@@ -19,8 +24,17 @@ func TestFileContentWithoutHeader_knownFile(t *testing.T) {
 }
 
 func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
-	give := "<!-- another comment -->\n\n<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"
-	want := "<!-- another comment -->\n\nhello world"
+	give := `
+<!-- another comment -->
+
+<!-- copyright Ory -->
+<!-- all rights reserved -->
+
+hello world`
+	want := `
+<!-- another comment -->
+
+hello world`
 	createTestFile(t, "testfile.md", give)
 	defer os.Remove("testfile.md")
 	have, err := comments.FileContentWithoutHeader("testfile.md", "copyright")
