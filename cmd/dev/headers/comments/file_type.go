@@ -15,13 +15,13 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 	return false
 }
 
-// provides the extension of the given filename
-func GetFileType(filename string) FileType {
-	ext := filepath.Ext(filename)
-	if len(ext) == 0 {
-		return ""
+// provides the extension of the given filepath
+func GetFileType(filePath string) FileType {
+	ext := filepath.Ext(filePath)
+	if len(ext) > 0 {
+		ext = ext[1:]
 	}
-	return FileType(ext[1:])
+	return FileType(ext)
 }
 
 // indicates whether it is possible to add comments to the file with the given name
