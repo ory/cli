@@ -30,7 +30,7 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	var dstPath = determineDestPath(src, dst)
+	dstPath := destPathCp(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
 	comments.WriteFileWithHeader(dstPath, headerText, string(body))
 	return nil
@@ -43,7 +43,7 @@ func CopyFiles(src, dst string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		dstPath := createDstPath(path, dst, src)
+		dstPath := dstPathCpr(path, src, dst)
 		if info.IsDir() {
 			err := os.Mkdir(dstPath, 0744)
 			if err == nil {
@@ -60,24 +60,19 @@ func CopyFiles(src, dst string) error {
 	})
 }
 
-func createDstPath(path, dst, src string) string {
+func dstPathCpr(path, src, dst string) string {
 	return dst + path[len(src):]
 }
 
-// Determines the full destination path for the cp operation of the given src to the given dst.
-// The dst value can be a full path to a file or a path to the directory to put the file in.
-func determineDestPath(src, dst string) string {
-	if isDir(dst) {
+// Provides the full destination path for the cp operation of the given src file to the given dst destination.
+// The dst value can be a path to a file or directory.
+func destPathCp(src, dst string) string {
+	dstStat, err := os.Lstat(dst)
+	if err == nil && dstStat.IsDir() {
 		return filepath.Join(dst, filepath.Base(src))
 	} else {
 		return dst
 	}
-}
-
-// indicates whether the given file path points to a directory
-func isDir(filepath string) bool {
-	stat, err := os.Lstat(filepath)
-	return err == nil && stat.IsDir()
 }
 
 var copy = &cobra.Command{
@@ -94,4 +89,5 @@ func init() {
 	copy.Flags().BoolVarP(&recursive, "recursive", "R", false, "Whether to copy files in subdirectories")
 }
 
+// contains the value of the "-R" CLI flag
 var recursive bool

@@ -10,18 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateDstPath_root(t *testing.T) {
-	have := createDstPath("src/README.md", "dst", "src")
-	want := "dst/README.md"
-	assert.Equal(t, want, have)
-}
-
-func TestCreateDstPath_subfolder(t *testing.T) {
-	have := createDstPath("src/sub1/sub2/README.md", "dst", "src")
-	want := "dst/sub1/sub2/README.md"
-	assert.Equal(t, want, have)
-}
-
 func TestCopyFileToFolderNoSlash(t *testing.T) {
 	workspace := setupCopyFile()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
@@ -114,6 +102,37 @@ func TestCopyFilesSlash(t *testing.T) {
 	workspace.cleanup()
 }
 
+func TestDstPathCpFilePath(t *testing.T) {
+	t.Parallel()
+	root := tests.CreateTmpDir()
+	dst := root.CreateDir("dst")
+	give := dst.Path
+	want := dst.Filename("foo.md")
+	have := destPathCp("origin/foo.md", give)
+	assert.Equal(t, want, have)
+}
+
+func TestDstPathCpDirPath(t *testing.T) {
+	t.Parallel()
+	root := tests.CreateTmpDir()
+	dir := root.CreateDir("dst")
+	file := dir.CreateFile("foo.md", "")
+	have := destPathCp("origin/foo.md", file)
+	assert.Equal(t, file, have)
+}
+
+func TestDstPathCprRoot(t *testing.T) {
+	have := dstPathCpr("src/README.md", "src", "dst")
+	want := "dst/README.md"
+	assert.Equal(t, want, have)
+}
+
+func TestDstPathCprSubfolder(t *testing.T) {
+	have := dstPathCpr("src/sub1/sub2/README.md", "src", "dst")
+	want := "dst/sub1/sub2/README.md"
+	assert.Equal(t, want, have)
+}
+
 func setupCopyFile() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
@@ -173,21 +192,4 @@ func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
 		cpEntries = append(cpEntries, path)
 		return nil
 	})
-}
-
-func TestDetermineDestPath_filePath(t *testing.T) {
-	t.Parallel()
-	root := tests.CreateTmpDir()
-	dir := root.CreateDir("dst")
-	have := determineDestPath("origin/foo.md", dir.Path)
-	assert.Equal(t, dir.Filename("foo.md"), have)
-}
-
-func TestDetermineDestPath_dirPath(t *testing.T) {
-	t.Parallel()
-	root := tests.CreateTmpDir()
-	dir := root.CreateDir("dst")
-	file := dir.CreateFile("foo.md", "")
-	have := determineDestPath("origin/foo.md", file)
-	assert.Equal(t, file, have)
 }
