@@ -108,8 +108,19 @@ func TestHtmlCommentsRenderLineStart(t *testing.T) {
 
 func TestHtmlCommentsRemove(t *testing.T) {
 	t.Parallel()
-	give := "<!-- Copyright © 1997 Ory Corp Inc. -->\n<!-- All rights reserved -->\n\nname: test\nhello: world\n"
-	want := "name: test\nhello: world\n"
+	give := tests.Trim(`
+<!-- another comment -->
+
+<!-- Copyright © 1997 Ory Corp Inc. -->
+<!-- All rights reserved -->
+
+name: test
+hello: world`)
+	want := tests.Trim(`
+<!-- another comment -->
+
+name: test
+hello: world`)
 	have := htmlComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }
