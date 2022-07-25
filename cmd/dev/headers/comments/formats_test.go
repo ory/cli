@@ -17,7 +17,7 @@ func TestDoubleSlashFormat(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := doubleSlashComments.render(give)
+			have := doubleSlashComments.renderBlock(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -33,7 +33,7 @@ func TestPoundFormat(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := poundComments.render(give)
+			have := poundComments.renderBlock(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -49,7 +49,7 @@ func TestHtmlFormat_render(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := htmlComments.render(give)
+			have := htmlComments.renderBlock(give)
 			assert.Equal(t, want, have)
 		})
 	}
@@ -58,14 +58,12 @@ func TestHtmlFormat_render(t *testing.T) {
 func TestHtmlFormat_renderStart(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
-		"Hello":          "<!-- Hello",               // single line text
-		"Hello\n":        "<!-- Hello\n",             // single line text
-		"Hello\nWorld":   "<!-- Hello\n<!-- World",   // multi-line text
-		"Hello\nWorld\n": "<!-- Hello\n<!-- World\n", // multi-line text
+		"Hello":   "<!-- Hello",   // single line text
+		"Hello\n": "<!-- Hello\n", // single line text
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := htmlComments.renderStart(give)
+			have := htmlComments.renderLineStart(give)
 			assert.Equal(t, want, have)
 		})
 	}

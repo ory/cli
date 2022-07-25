@@ -32,7 +32,7 @@ func WriteFileWithHeader(path, header, body string) error {
 	if !knowsFormat {
 		return os.WriteFile(path, []byte(body), 0744)
 	}
-	headerComment := format.render(header)
+	headerComment := format.renderBlock(header)
 	content := fmt.Sprintf("%s\n\n%s", headerComment, body)
 	count, err := file.WriteString(content)
 	if err != nil {

@@ -8,27 +8,50 @@ import (
 // a comment format known to this app
 type Format struct {
 	// converts the given text into a comment in this format
-	render formatFunc
+	startToken string
 	// converts the given beginning of a text line into the beginning of a comment line
-	renderStart formatFunc
+	endToken string
+}
+
+// renders the given text line into a comment line of this format
+func (f Format) renderLine(text string) string {
+	return fmt.Sprintf("%s%s%s", f.startToken, text, f.endToken)
+}
+
+// renders the given text line part into the beginning of a comment line of this format
+func (f Format) renderLineStart(text string) string {
+	return fmt.Sprintf("%s%s", f.startToken, text)
+}
+
+// renders the given text block (consisting of many text lines) into a comment block
+func (f Format) renderBlock(text string) string {
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if line == "" {
+			result = append(result, line)
+		} else {
+			result = append(result, f.renderLine(line))
+		}
+	}
+	return strings.Join(result, "\n")
 }
 
 // comment format that starts with a doubleslash
 var doubleSlashComments = Format{
-	render:      prependDoubleSlash,
-	renderStart: prependDoubleSlash,
+	startToken: "// ",
+	endToken:   "",
 }
 
 // comment format that starts with pound symbols
 var poundComments = Format{
-	render:      prependPound,
-	renderStart: prependPound,
+	startToken: "# ",
+	endToken:   "",
 }
 
 // HTML comment format
 var htmlComments = Format{
-	render:      wrapInHtmlComment,
-	renderStart: prependHtmlComment,
+	startToken: "<!-- ",
+	endToken:   " -->",
 }
 
 // all file formats that we can create comments for, and how to do it
@@ -51,40 +74,9 @@ var commentFormats = map[FileType]Format{
 // signature for functions that create comments for different programming languages
 type formatFunc func(text string) string
 
-// provides a YML-style comment containing the given text
-func prependPound(text string) string {
-	return makeComment(text, "# %s")
-}
-
-// provides a Go-style comment containing the given text
-func prependDoubleSlash(text string) string {
-	return makeComment(text, "// %s")
-}
-
-func wrapInHtmlComment(text string) string {
-	return makeComment(text, "<!-- %s -->")
-}
-
-func prependHtmlComment(text string) string {
-	return makeComment(text, "<!-- %s")
-}
-
-// creates a comment in the given comment style containing the given text
-func makeComment(text, style string) string {
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, fmt.Sprintf(style, line))
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
 // removes the comment block in the given format containing the given token from the given text
 func remove(text string, format Format, token string) string {
-	commentWithToken := format.renderStart(token)
+	commentWithToken := format.renderLineStart(token)
 	inComment := false
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
