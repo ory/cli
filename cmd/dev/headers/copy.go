@@ -60,6 +60,7 @@ func CopyFiles(src, dst string) error {
 	})
 }
 
+// provides the full path to the destination for "cp -r" operations
 func dstPathCpr(path, src, dst string) string {
 	return dst + path[len(src):]
 }
@@ -86,8 +87,8 @@ var copy = &cobra.Command{
 
 func init() {
 	Main.AddCommand(copy)
-	copy.Flags().BoolVarP(&recursive, "recursive", "R", false, "Whether to copy files in subdirectories")
+	copy.Flags().BoolVarP(&recursive, "recursive", "r", false, "Whether to copy files in subdirectories")
 }
 
-// contains the value of the "-R" CLI flag
+// contains the value of the "-r" CLI flag
 var recursive bool
