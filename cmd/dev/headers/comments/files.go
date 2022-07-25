@@ -21,7 +21,9 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	return remove(text, format, token), nil
 }
 
-func WriteFileWithHeader(path, header string, body string) error {
+// WriteFileWithHeader creates a file at the given path containing the given file content (header comment + body).
+// the header comment is supposed to contain only text. This method will transform it into a comment.
+func WriteFileWithHeader(path, header, body string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("cannot write file %q: %w", path, err)
