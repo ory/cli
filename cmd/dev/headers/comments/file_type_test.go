@@ -34,7 +34,7 @@ func TestGetFileType(t *testing.T) {
 }
 
 func TestSupports(t *testing.T) {
-	assert.True(t, comments.Supports("foo.ts"))
-	assert.True(t, comments.Supports("foo.md"))
-	assert.False(t, comments.Supports("foo.xx"))
+	assert.True(t, comments.SupportsFile("foo.ts"))
+	assert.True(t, comments.SupportsFile("foo.md"))
+	assert.False(t, comments.SupportsFile("foo.xx"))
 }

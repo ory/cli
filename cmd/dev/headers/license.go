@@ -36,7 +36,7 @@ func AddLicenses(dir string, year int) error {
 		if gitIgnore != nil && gitIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
-		if !comments.Supports(path) {
+		if !comments.SupportsFile(path) {
 			return nil
 		}
 		if !shouldAddLicense(path) {

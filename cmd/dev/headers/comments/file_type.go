@@ -25,7 +25,7 @@ func GetFileType(filename string) FileType {
 }
 
 // indicates whether it is possible to add comments to the file with the given name
-func Supports(filename string) bool {
+func SupportsFile(filename string) bool {
 	filetype := GetFileType(filename)
 	_, ok := commentFormats[filetype]
 	return ok
