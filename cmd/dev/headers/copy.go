@@ -25,13 +25,13 @@ const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
 // copies the source file (relative path) to the given absolute path
 func CopyFile(src, dst string) error {
-	buffer, err := os.ReadFile(src)
+	body, err := os.ReadFile(src)
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
 	var dstPath = determineDestPath(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(dstPath, headerText, string(buffer))
+	comments.WriteFileWithHeader(dstPath, headerText, string(body))
 	return nil
 }
 
