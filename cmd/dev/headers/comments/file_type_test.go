@@ -37,5 +37,5 @@ func TestSupports(t *testing.T) {
 	t.Parallel()
 	assert.True(t, comments.SupportsFile("foo.ts"))
 	assert.True(t, comments.SupportsFile("foo.md"))
-	assert.False(t, comments.SupportsFile("foo.xx"))
+	assert.False(t, comments.SupportsFile("foo.xxx"))
 }
