@@ -10,10 +10,10 @@ import (
 func TestDoubleSlashFormat(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
-		"Hello":          "// Hello",             // single line text
-		"Hello\n":        "// Hello\n",           // single line text
-		"Hello\nWorld":   "// Hello\n// World",   // multi-line text
-		"Hello\nWorld\n": "// Hello\n// World\n", // multi-line text
+		"Hello":          "// Hello",
+		"Hello\n":        "// Hello\n",
+		"Hello\nWorld":   "// Hello\n// World",
+		"Hello\nWorld\n": "// Hello\n// World\n",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
@@ -26,10 +26,10 @@ func TestDoubleSlashFormat(t *testing.T) {
 func TestPoundFormat(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
-		"Hello":          "# Hello",            // single line text
-		"Hello\n":        "# Hello\n",          // single line text
-		"Hello\nWorld":   "# Hello\n# World",   // multi-line text
-		"Hello\nWorld\n": "# Hello\n# World\n", // multi-line text
+		"Hello":          "# Hello",
+		"Hello\n":        "# Hello\n",
+		"Hello\nWorld":   "# Hello\n# World",
+		"Hello\nWorld\n": "# Hello\n# World\n",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
@@ -42,10 +42,10 @@ func TestPoundFormat(t *testing.T) {
 func TestHtmlFormat_render(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
-		"Hello":          "<!-- Hello -->",                   // single line text
-		"Hello\n":        "<!-- Hello -->\n",                 // single line text
-		"Hello\nWorld":   "<!-- Hello -->\n<!-- World -->",   // multi-line text
-		"Hello\nWorld\n": "<!-- Hello -->\n<!-- World -->\n", // multi-line text
+		"Hello":          "<!-- Hello -->",
+		"Hello\n":        "<!-- Hello -->\n",
+		"Hello\nWorld":   "<!-- Hello -->\n<!-- World -->",
+		"Hello\nWorld\n": "<!-- Hello -->\n<!-- World -->\n",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
@@ -58,8 +58,8 @@ func TestHtmlFormat_render(t *testing.T) {
 func TestHtmlFormat_renderStart(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
-		"Hello":   "<!-- Hello",   // single line text
-		"Hello\n": "<!-- Hello\n", // single line text
+		"Hello":   "<!-- Hello",
+		"Hello\n": "<!-- Hello\n",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
