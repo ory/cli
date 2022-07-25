@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -39,7 +40,7 @@ func TestPoundFormat(t *testing.T) {
 	}
 }
 
-func TestHtmlFormat_render(t *testing.T) {
+func TestHtmlFormat_renderBlock(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "<!-- Hello -->",
@@ -55,7 +56,7 @@ func TestHtmlFormat_render(t *testing.T) {
 	}
 }
 
-func TestHtmlFormat_renderStart(t *testing.T) {
+func TestHtmlFormat_renderLineStart(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":   "<!-- Hello",
@@ -69,11 +70,21 @@ func TestHtmlFormat_renderStart(t *testing.T) {
 	}
 }
 
-func TestRemove_pound_beginning(t *testing.T) {
+func TestRemove_pound(t *testing.T) {
 	t.Parallel()
-	give := "# Copyright © 1997 Ory Corp Inc.\n\n# another comment\n\nname: test\nhello: world\n"
-	want := "# another comment\n\nname: test\nhello: world\n"
-	have := remove(give, poundComments, "Copyright ©")
+	give := tests.Trim(`
+# Copyright © 1997 Ory Corp Inc.
+
+# another comment
+
+name: test
+hello: world`)
+	want := tests.Trim(`
+# another comment
+
+name: test
+hello: world`)
+	have := poundComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }
 
@@ -81,6 +92,6 @@ func TestRemoveHtmlStyle(t *testing.T) {
 	t.Parallel()
 	give := "<!-- Copyright © 1997 Ory Corp Inc. -->\n<!-- All rights reserved -->\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
-	have := remove(give, htmlComments, "Copyright ©")
+	have := htmlComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }

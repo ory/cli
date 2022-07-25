@@ -17,7 +17,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	if !knowsFormat {
 		return text, nil
 	}
-	return remove(text, format, token), nil
+	return format.remove(text, token), nil
 }
 
 // WriteFileWithHeader creates a file at the given path containing the given file content (header + body).

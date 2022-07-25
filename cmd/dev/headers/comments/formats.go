@@ -10,6 +10,28 @@ type Format struct {
 	endToken string
 }
 
+// removes the comment block in the given format containing the given token from the given text
+func (f Format) remove(text string, token string) string {
+	commentWithToken := f.renderLineStart(token)
+	inComment := false
+	result := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, commentWithToken) {
+			inComment = true
+		}
+		if inComment && line == "" {
+			// the type of comment blocks we remove here is separated by an empty line
+			// --> empty line marks the end of our comment block
+			inComment = false
+			continue
+		}
+		if !inComment {
+			result = append(result, line)
+		}
+	}
+	return strings.Join(result, "\n")
+}
+
 // renders the given text block (consisting of many text lines) into a comment block
 func (f Format) renderBlock(text string) string {
 	result := []string{}
@@ -65,26 +87,4 @@ var commentFormats = map[FileType]Format{
 	"ts":   doubleSlashComments,
 	"vue":  htmlComments,
 	"yml":  poundComments,
-}
-
-// removes the comment block in the given format containing the given token from the given text
-func remove(text string, format Format, token string) string {
-	commentWithToken := format.renderLineStart(token)
-	inComment := false
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
-			inComment = true
-		}
-		if inComment && line == "" {
-			// the type of comment blocks we remove here is separated by an empty line
-			// --> empty line marks the end of our comment block
-			inComment = false
-			continue
-		}
-		if !inComment {
-			result = append(result, line)
-		}
-	}
-	return strings.Join(result, "\n")
 }
