@@ -1,9 +1,6 @@
 package comments
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
 // a comment format known to this app
 type Format struct {
@@ -28,12 +25,12 @@ func (f Format) renderBlock(text string) string {
 
 // renders the given text line into a comment line of this format
 func (f Format) renderLine(text string) string {
-	return fmt.Sprintf("%s%s%s", f.startToken, text, f.endToken)
+	return f.startToken + text + f.endToken
 }
 
 // renders the given text line part into the beginning of a comment line of this format
 func (f Format) renderLineStart(text string) string {
-	return fmt.Sprintf("%s%s", f.startToken, text)
+	return f.startToken + text
 }
 
 // comment format that starts with a doubleslash
@@ -70,9 +67,6 @@ var commentFormats = map[FileType]Format{
 	"vue":  htmlComments,
 	"yml":  poundComments,
 }
-
-// signature for functions that create comments for different programming languages
-type formatFunc func(text string) string
 
 // removes the comment block in the given format containing the given token from the given text
 func remove(text string, format Format, token string) string {
