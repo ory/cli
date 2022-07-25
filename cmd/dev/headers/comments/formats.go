@@ -45,6 +45,7 @@ var commentFormats = map[FileType]Format{
 	"rs":   doubleSlashComments,
 	"ts":   doubleSlashComments,
 	"vue":  htmlComments,
+	"yml":  poundComments,
 }
 
 // signature for functions that create comments for different programming languages

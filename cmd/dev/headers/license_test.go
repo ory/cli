@@ -41,7 +41,7 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nlet a = 1;\nlet mut b = 2;\n", dir.Content("rust.rs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.Content("typescript.ts"))
 	assert.Equal(t, "<!-- Copyright © 2022 Ory Corp Inc. -->\n\n<template>\n<Header />", dir.Content("vue.vue")) // don't add license headers to YML files
-	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yml"))                                            // don't add license headers to YML files
+	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta", dir.Content("yaml.yml"))        // don't add license headers to YML files
 }
 
 func TestShouldAddLicense(t *testing.T) {

@@ -20,7 +20,7 @@ func TestGetFileType(t *testing.T) {
 	t.Parallel()
 	tests := map[string]comments.FileType{
 		"one.yml":  "yml",
-		"one.yaml": "yaml",
+		"one.yaml": "yml",
 		"one.md":   "md",
 		"one.xx":   "xx",
 		"one":      "",

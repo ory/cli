@@ -21,6 +21,9 @@ func GetFileType(filePath string) FileType {
 	if len(ext) > 0 {
 		ext = ext[1:]
 	}
+	if ext == "yaml" {
+		ext = "yml"
+	}
 	return FileType(ext)
 }
 
