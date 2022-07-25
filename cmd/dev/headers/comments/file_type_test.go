@@ -19,11 +19,11 @@ func TestContainsFileType(t *testing.T) {
 func TestGetFileType(t *testing.T) {
 	t.Parallel()
 	tests := map[string]comments.FileType{
-		"one.yml":  "yml",
-		"one.yaml": "yml",
-		"one.md":   "md",
-		"one.xxx":  "xxx",
-		"one":      "",
+		"foo.yml":  "yml",
+		"foo.yaml": "yml",
+		"foo.md":   "md",
+		"foo.xxx":  "xxx",
+		"foo":      "",
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
