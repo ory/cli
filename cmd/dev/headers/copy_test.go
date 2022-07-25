@@ -11,7 +11,7 @@ import (
 )
 
 func TestCopyFileToFolderNoSlash(t *testing.T) {
-	workspace := setupCopyFile()
+	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -25,7 +25,7 @@ func TestCopyFileToFolderNoSlash(t *testing.T) {
 }
 
 func TestCopyFileToFolderSlash(t *testing.T) {
-	workspace := setupCopyFile()
+	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -39,7 +39,7 @@ func TestCopyFileToFolderSlash(t *testing.T) {
 }
 
 func TestCopyFileToFilepath(t *testing.T) {
-	workspace := setupCopyFile()
+	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
 	assert.NoError(t, err)
 	assert.Equal(
@@ -53,7 +53,7 @@ func TestCopyFileToFilepath(t *testing.T) {
 }
 
 func TestCopyFilesNoSlash(t *testing.T) {
-	workspace := setupCopyFile()
+	workspace := setupCopyFileTest()
 	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
 	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
@@ -78,7 +78,7 @@ func TestCopyFilesNoSlash(t *testing.T) {
 }
 
 func TestCopyFilesSlash(t *testing.T) {
-	workspace := setupCopyFile()
+	workspace := setupCopyFileTest()
 	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
 	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
@@ -133,7 +133,7 @@ func TestDstPathCprSubfolder(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func setupCopyFile() workspace {
+func setupCopyFileTest() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
 	src.CreateFile("README.md", "# the readme\ntext")
