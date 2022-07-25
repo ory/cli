@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDoubleSlashFormat(t *testing.T) {
+func TestDoubleSlashComments_render(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "// Hello",
@@ -24,7 +24,7 @@ func TestDoubleSlashFormat(t *testing.T) {
 	}
 }
 
-func TestPoundFormat(t *testing.T) {
+func TestPoundComments_renderBlock(t *testing.T) {
 	t.Parallel()
 	tests := map[string]string{
 		"Hello":          "# Hello",
@@ -40,37 +40,7 @@ func TestPoundFormat(t *testing.T) {
 	}
 }
 
-func TestHtmlFormat_renderBlock(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":          "<!-- Hello -->",
-		"Hello\n":        "<!-- Hello -->\n",
-		"Hello\nWorld":   "<!-- Hello -->\n<!-- World -->",
-		"Hello\nWorld\n": "<!-- Hello -->\n<!-- World -->\n",
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := htmlComments.renderBlock(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestHtmlFormat_renderLineStart(t *testing.T) {
-	t.Parallel()
-	tests := map[string]string{
-		"Hello":   "<!-- Hello",
-		"Hello\n": "<!-- Hello\n",
-	}
-	for give, want := range tests {
-		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
-			have := htmlComments.renderLineStart(give)
-			assert.Equal(t, want, have)
-		})
-	}
-}
-
-func TestRemove_pound(t *testing.T) {
+func TestPoundComments_remove(t *testing.T) {
 	t.Parallel()
 	give := tests.Trim(`
 # Copyright © 1997 Ory Corp Inc.
@@ -88,7 +58,37 @@ hello: world`)
 	assert.Equal(t, want, have)
 }
 
-func TestRemoveHtmlStyle(t *testing.T) {
+func TestHtmlComments_renderBlock(t *testing.T) {
+	t.Parallel()
+	tests := map[string]string{
+		"Hello":          "<!-- Hello -->",
+		"Hello\n":        "<!-- Hello -->\n",
+		"Hello\nWorld":   "<!-- Hello -->\n<!-- World -->",
+		"Hello\nWorld\n": "<!-- Hello -->\n<!-- World -->\n",
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			have := htmlComments.renderBlock(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
+func TestHtmlComments_renderLineStart(t *testing.T) {
+	t.Parallel()
+	tests := map[string]string{
+		"Hello":   "<!-- Hello",
+		"Hello\n": "<!-- Hello\n",
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			have := htmlComments.renderLineStart(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
+
+func TestHtmlComments_remove(t *testing.T) {
 	t.Parallel()
 	give := "<!-- Copyright © 1997 Ory Corp Inc. -->\n<!-- All rights reserved -->\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
