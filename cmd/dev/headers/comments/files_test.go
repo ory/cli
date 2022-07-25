@@ -9,9 +9,9 @@ import (
 )
 
 func TestFileContentWithoutHeader_knownFile(t *testing.T) {
-	err := os.WriteFile("testfile.md", []byte("<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"), 0744)
+	give := "<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"
+	createTestFile(t, "testfile.md", give)
 	defer os.Remove("testfile.md")
-	assert.NoError(t, err)
 	have, err := comments.FileContentWithoutHeader("testfile.md", "copyright")
 	want := "hello world"
 	assert.NoError(t, err)
@@ -19,9 +19,9 @@ func TestFileContentWithoutHeader_knownFile(t *testing.T) {
 }
 
 func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
-	err := os.WriteFile("testfile.md", []byte("<!-- another comment -->\n\n<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"), 0744)
+	give := "<!-- another comment -->\n\n<!-- copyright Ory -->\n<!-- all rights reserved -->\n\nhello world"
+	createTestFile(t, "testfile.md", give)
 	defer os.Remove("testfile.md")
-	assert.NoError(t, err)
 	have, err := comments.FileContentWithoutHeader("testfile.md", "copyright")
 	want := "<!-- another comment -->\n\nhello world"
 	assert.NoError(t, err)
@@ -29,11 +29,17 @@ func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
 }
 
 func TestFileContentWithoutHeader_unknownFile(t *testing.T) {
-	err := os.WriteFile("testfile.txt", []byte("hello world"), 0744)
+	give := "hello world"
+	createTestFile(t, "testfile.txt", give)
 	defer os.Remove("testfile.txt")
-	assert.NoError(t, err)
 	have, err := comments.FileContentWithoutHeader("testfile.txt", "copyright")
 	want := "hello world"
 	assert.NoError(t, err)
 	assert.Equal(t, want, have)
+}
+
+func createTestFile(t *testing.T, name, content string) {
+	t.Helper()
+	err := os.WriteFile(name, []byte(content), 0744)
+	assert.NoError(t, err)
 }
