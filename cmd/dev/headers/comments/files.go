@@ -28,9 +28,8 @@ func WriteFileWithHeader(path, header, body string) error {
 		return fmt.Errorf("cannot write file %q: %w", path, err)
 	}
 	defer file.Close()
-	filetype := GetFileType(path)
-	format, ok := commentFormats[filetype]
-	if !ok {
+	format, knowsFormat := commentFormats[GetFileType(path)]
+	if !knowsFormat {
 		return os.WriteFile(path, []byte(body), 0744)
 	}
 	headerComment := format.render(header)
