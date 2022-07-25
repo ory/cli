@@ -9,7 +9,7 @@ import (
 type Format struct {
 	// converts the given text into a comment in this format
 	render formatFunc
-	// converts the given text into the beginning of a comment
+	// converts the given beginning of a text line into the beginning of a comment line
 	renderStart formatFunc
 }
 
