@@ -13,16 +13,6 @@ type Format struct {
 	endToken string
 }
 
-// renders the given text line into a comment line of this format
-func (f Format) renderLine(text string) string {
-	return fmt.Sprintf("%s%s%s", f.startToken, text, f.endToken)
-}
-
-// renders the given text line part into the beginning of a comment line of this format
-func (f Format) renderLineStart(text string) string {
-	return fmt.Sprintf("%s%s", f.startToken, text)
-}
-
 // renders the given text block (consisting of many text lines) into a comment block
 func (f Format) renderBlock(text string) string {
 	result := []string{}
@@ -34,6 +24,16 @@ func (f Format) renderBlock(text string) string {
 		}
 	}
 	return strings.Join(result, "\n")
+}
+
+// renders the given text line into a comment line of this format
+func (f Format) renderLine(text string) string {
+	return fmt.Sprintf("%s%s%s", f.startToken, text, f.endToken)
+}
+
+// renders the given text line part into the beginning of a comment line of this format
+func (f Format) renderLineStart(text string) string {
+	return fmt.Sprintf("%s%s", f.startToken, text)
 }
 
 // comment format that starts with a doubleslash
