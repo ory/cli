@@ -30,10 +30,15 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)
 	}
-	dstPath := destPathCp(src, dst)
+	dstPath := copyFilesDstPath(src, dst)
 	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
 	comments.WriteFileWithHeader(dstPath, headerText, string(body))
 	return nil
+}
+
+// provides the full path to the destination for "cp -r" operations
+func copyFileDstPath(path, src, dst string) string {
+	return dst + path[len(src):]
 }
 
 // Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
@@ -43,7 +48,7 @@ func CopyFiles(src, dst string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		dstPath := dstPathCpr(path, src, dst)
+		dstPath := copyFileDstPath(path, src, dst)
 		if info.IsDir() {
 			err := os.Mkdir(dstPath, 0744)
 			if err == nil {
@@ -60,14 +65,9 @@ func CopyFiles(src, dst string) error {
 	})
 }
 
-// provides the full path to the destination for "cp -r" operations
-func dstPathCpr(path, src, dst string) string {
-	return dst + path[len(src):]
-}
-
 // Provides the full destination path for the cp operation of the given src file to the given dst destination.
 // The dst value can be a path to a file or directory.
-func destPathCp(src, dst string) string {
+func copyFilesDstPath(src, dst string) string {
 	dstStat, err := os.Lstat(dst)
 	if err == nil && dstStat.IsDir() {
 		return filepath.Join(dst, filepath.Base(src))

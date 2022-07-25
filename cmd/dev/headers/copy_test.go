@@ -108,7 +108,7 @@ func TestDstPathCpFilePath(t *testing.T) {
 	dst := root.CreateDir("dst")
 	give := dst.Path
 	want := dst.Filename("foo.md")
-	have := destPathCp("origin/foo.md", give)
+	have := copyFilesDstPath("origin/foo.md", give)
 	assert.Equal(t, want, have)
 }
 
@@ -117,18 +117,18 @@ func TestDstPathCpDirPath(t *testing.T) {
 	root := tests.CreateTmpDir()
 	dir := root.CreateDir("dst")
 	file := dir.CreateFile("foo.md", "")
-	have := destPathCp("origin/foo.md", file)
+	have := copyFilesDstPath("origin/foo.md", file)
 	assert.Equal(t, file, have)
 }
 
 func TestDstPathCprRoot(t *testing.T) {
-	have := dstPathCpr("src/README.md", "src", "dst")
+	have := copyFileDstPath("src/README.md", "src", "dst")
 	want := "dst/README.md"
 	assert.Equal(t, want, have)
 }
 
 func TestDstPathCprSubfolder(t *testing.T) {
-	have := dstPathCpr("src/sub1/sub2/README.md", "src", "dst")
+	have := copyFileDstPath("src/sub1/sub2/README.md", "src", "dst")
 	want := "dst/sub1/sub2/README.md"
 	assert.Equal(t, want, have)
 }
