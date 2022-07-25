@@ -14,11 +14,10 @@ type Format struct {
 func (f Format) renderBlock(text string) string {
 	result := []string{}
 	for _, line := range strings.Split(text, "\n") {
-		if line == "" {
-			result = append(result, line)
-		} else {
-			result = append(result, f.renderLine(line))
+		if line != "" {
+			line = f.renderLine(line)
 		}
+		result = append(result, line)
 	}
 	return strings.Join(result, "\n")
 }
