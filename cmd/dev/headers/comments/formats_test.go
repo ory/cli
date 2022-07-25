@@ -75,7 +75,7 @@ func TestRemove_pound_beginning(t *testing.T) {
 	t.Parallel()
 	give := "# Copyright © 1997 Ory Corp Inc.\n\n# another comment\n\nname: test\nhello: world\n"
 	want := "# another comment\n\nname: test\nhello: world\n"
-	have := remove(give, prependPound, "Copyright ©")
+	have := remove(give, poundComments, "Copyright ©")
 	assert.Equal(t, want, have)
 }
 
@@ -83,6 +83,6 @@ func TestRemoveHtmlStyle(t *testing.T) {
 	t.Parallel()
 	give := "<!-- Copyright © 1997 Ory Corp Inc. -->\n<!-- All rights reserved -->\n\nname: test\nhello: world\n"
 	want := "name: test\nhello: world\n"
-	have := remove(give, prependHtmlComment, "Copyright ©")
+	have := remove(give, htmlComments, "Copyright ©")
 	assert.Equal(t, want, have)
 }

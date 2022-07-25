@@ -18,7 +18,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	if !found {
 		return text, nil
 	}
-	return remove(text, format.renderStart, token), nil
+	return remove(text, format, token), nil
 }
 
 func WriteFileWithHeader(path, header string, body string) error {
