@@ -5,8 +5,8 @@ import (
 	"os"
 )
 
-// provides the content of the file with the given path
-// without the comment block identified by the given token
+// FileContentWithoutHeader provides the content of the file with the given path,
+// without the comment block identified by the given token.
 func FileContentWithoutHeader(path, token string) (string, error) {
 	buffer, err := os.ReadFile(path)
 	if err != nil {
