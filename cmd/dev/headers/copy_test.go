@@ -1,6 +1,7 @@
 package headers
 
 import (
+	"fmt"
 	"io/fs"
 	"os/exec"
 	"path/filepath"
@@ -139,12 +140,14 @@ func (ws workspace) cleanup() {
 }
 
 func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
+	t.Helper()
 	have := ws.root.Content(filepath)
 	assert.Equal(t, tests.Trim(want), have)
 }
 
 // verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
 func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
+	t.Helper()
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", src, dstCp).CombinedOutput()
@@ -154,34 +157,36 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string
 	err = CopyFile(src, dstCopy)
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
-	verifyEqualFolderStructure(t, dstCp, dstCopy)
+	ws.verifyEqualDstStructure(t)
 }
 
 // verifies that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
+	t.Helper()
 	// run "cp -r"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, err := exec.Command("cp", "-r", src, dstCp).CombinedOutput()
+	output, err := exec.Command("cp", "-r", src, dstCp).CombinedOutput()
+	fmt.Println(output)
 	assert.NoError(t, err)
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err = CopyFiles(src, dstCopy)
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
-	verifyEqualFolderStructure(t, dstCp, dstCopy)
+	ws.verifyEqualDstStructure(t)
 }
 
 // ensures that the two given directories contain files with the same names
-func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
+func (ws workspace) verifyEqualDstStructure(t *testing.T) {
 	t.Helper()
 	copyEntries := []string{}
-	filepath.WalkDir(cpDir, func(path string, entry fs.DirEntry, err error) error {
-		copyEntries = append(copyEntries, path)
+	filepath.WalkDir(ws.dstCopy.Path, func(path string, entry fs.DirEntry, err error) error {
+		copyEntries = append(copyEntries, strings.Replace(path, ws.dstCopy.Path, "dst", 1))
 		return nil
 	})
 	cpEntries := []string{}
-	filepath.WalkDir(cpDir, func(path string, entry fs.DirEntry, err error) error {
-		cpEntries = append(cpEntries, path)
+	filepath.WalkDir(ws.dstCp.Path, func(path string, entry fs.DirEntry, err error) error {
+		cpEntries = append(cpEntries, strings.Replace(path, ws.dstCp.Path, "dst", 1))
 		return nil
 	})
 	assert.Equal(t, cpEntries, copyEntries)
