@@ -14,10 +14,13 @@ func TestCopyFileToFolderNoSlash(t *testing.T) {
 	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
 	assert.NoError(t, err)
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		workspace.root.Content("test_copy_dst/README.md"))
+	want := tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+
+# the readme
+text`)
+	have := workspace.root.Content("test_copy_dst/README.md")
+	assert.Equal(t, want, have)
 	err = cp("test_copy_src/README.md", "test_cp_dst")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
@@ -28,10 +31,13 @@ func TestCopyFileToFolderSlash(t *testing.T) {
 	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
 	assert.NoError(t, err)
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		workspace.root.Content("test_copy_dst/README.md"))
+	want := tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+
+# the readme
+text`)
+	have := workspace.root.Content("test_copy_dst/README.md")
+	assert.Equal(t, want, have)
 	err = cp("test_copy_src/README.md", "test_cp_dst/")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
@@ -42,10 +48,13 @@ func TestCopyFileToFilepath(t *testing.T) {
 	workspace := setupCopyFileTest()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
 	assert.NoError(t, err)
-	assert.Equal(
-		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->\n\n# the readme\ntext",
-		workspace.root.Content("test_copy_dst/README.md"))
+	want := tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+
+# the readme
+text`)
+	have := workspace.root.Content("test_copy_dst/README.md")
+	assert.Equal(t, want, have)
 	err = cp("test_copy_src/README.md", "test_cp_dst/README.md")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
@@ -61,15 +70,27 @@ func TestCopyFilesNoSlash(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->\n\n# Alpha\nOne",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->
+
+# Alpha
+One`),
 		workspace.dstCopy.Content("alpha/one.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->\n\n# Alpha\nTwo",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->
+
+# Alpha
+Two`),
 		workspace.dstCopy.Content("alpha/two.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->\n\n# Beta\nOne",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->
+
+# Beta
+One`),
 		workspace.dstCopy.Content("beta/one.md"))
 	err = cpr("test_copy_src", "test_cp_dst")
 	assert.NoError(t, err)
@@ -86,15 +107,27 @@ func TestCopyFilesSlash(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->\n\n# Alpha\nOne",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->
+
+# Alpha
+One`),
 		workspace.dstCopy.Content("alpha/one.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->\n\n# Alpha\nTwo",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->
+
+# Alpha
+Two`),
 		workspace.dstCopy.Content("alpha/two.md"))
 	assert.Equal(
 		t,
-		"<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->\n\n# Beta\nOne",
+		tests.Trim(`
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->
+
+# Beta
+One`),
 		workspace.dstCopy.Content("beta/one.md"))
 	err = cpr("test_copy_src/", "test_cp_dst/")
 	assert.NoError(t, err)
@@ -102,7 +135,7 @@ func TestCopyFilesSlash(t *testing.T) {
 	workspace.cleanup()
 }
 
-func TestDstPathCpFilePath(t *testing.T) {
+func TestDstPathCpDirPath(t *testing.T) {
 	t.Parallel()
 	root := tests.CreateTmpDir()
 	dst := root.CreateDir("dst")
@@ -112,22 +145,25 @@ func TestDstPathCpFilePath(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func TestDstPathCpDirPath(t *testing.T) {
+func TestDstPathCpFilePath(t *testing.T) {
 	t.Parallel()
 	root := tests.CreateTmpDir()
-	dir := root.CreateDir("dst")
-	file := dir.CreateFile("foo.md", "")
-	have := copyFilesDstPath("origin/foo.md", file)
-	assert.Equal(t, file, have)
+	dst := root.CreateDir("dst")
+	give := dst.CreateFile("foo.md", "")
+	want := dst.Filename("foo.md")
+	have := copyFilesDstPath("origin/foo.md", give)
+	assert.Equal(t, want, have)
 }
 
 func TestDstPathCprRoot(t *testing.T) {
+	t.Parallel()
 	have := copyFileDstPath("src/README.md", "src", "dst")
 	want := "dst/README.md"
 	assert.Equal(t, want, have)
 }
 
 func TestDstPathCprSubfolder(t *testing.T) {
+	t.Parallel()
 	have := copyFileDstPath("src/sub1/sub2/README.md", "src", "dst")
 	want := "dst/sub1/sub2/README.md"
 	assert.Equal(t, want, have)
@@ -192,4 +228,5 @@ func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
 		cpEntries = append(cpEntries, path)
 		return nil
 	})
+	assert.Equal(t, cpEntries, copyEntries)
 }
