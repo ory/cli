@@ -108,18 +108,6 @@ One`)
 	workspace.cleanup()
 }
 
-func createWorkspace() workspace {
-	root := tests.Dir{Path: "."}
-	src := root.CreateDir("test_copy_src")
-	src.CreateFile("README.md", "# the readme\ntext")
-	src.CreateFile("alpha/one.md", "# Alpha\nOne")
-	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
-	src.CreateFile("beta/one.md", "# Beta\nOne")
-	dstCopy := root.CreateDir("test_copy_dst")
-	dstCp := root.CreateDir("test_cp_dst")
-	return workspace{root, src, dstCopy, dstCp}
-}
-
 // directory structure for testing copy operations
 type workspace struct {
 	// the directory that contains the workspace
@@ -130,6 +118,18 @@ type workspace struct {
 	dstCopy tests.Dir
 	// the directory that contains the result of Unix's cp operation
 	dstCp tests.Dir
+}
+
+func createWorkspace() workspace {
+	root := tests.Dir{Path: "."}
+	src := root.CreateDir("test_copy_src")
+	src.CreateFile("README.md", "# the readme\ntext")
+	src.CreateFile("alpha/one.md", "# Alpha\nOne")
+	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
+	src.CreateFile("beta/one.md", "# Beta\nOne")
+	dstCopy := root.CreateDir("test_copy_dst")
+	dstCp := root.CreateDir("test_cp_dst")
+	return workspace{root, src, dstCopy, dstCp}
 }
 
 func (ws workspace) cleanup() {
@@ -147,7 +147,7 @@ func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
 func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	err := cp(src, dstCp)
+	_, err := exec.Command("cp", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
@@ -157,11 +157,11 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string
 	verifyEqualFolderStructure(t, dstCp, dstCopy)
 }
 
-// verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
+// verifies that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	// run "cp -r"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	err := cpr(src, dstCp)
+	_, err := exec.Command("cp", "-r", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
@@ -169,18 +169,6 @@ func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate strin
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
 	verifyEqualFolderStructure(t, dstCp, dstCopy)
-}
-
-// executes the unix "cp" command
-func cp(src, dst string) error {
-	_, err := exec.Command("cp", src, dst).CombinedOutput()
-	return err
-}
-
-// executes the unix "cp -r" command
-func cpr(src, dst string) error {
-	_, err := exec.Command("cp", "-r", src, dst).CombinedOutput()
-	return err
 }
 
 // ensures that the two given directories contain files with the same names
