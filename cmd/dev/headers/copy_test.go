@@ -36,7 +36,7 @@ text`)
 	workspace.cleanup()
 }
 
-func TestCopyFileToFilepath(t *testing.T) {
+func Test_CopyFile_ToFilepath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/README.md")
 	workspace.verifyContent(t,
@@ -48,13 +48,9 @@ text`)
 	workspace.cleanup()
 }
 
-func TestCopyFilesNoSlash(t *testing.T) {
+func Test_CopyFiles_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
-	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
-	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
-	err := CopyFiles("test_copy_src", "test_copy_dst")
-	assert.NoError(t, err)
+	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "test_copy_dst")
 	assert.Equal(
 		t,
 		tests.Trim(`
@@ -79,13 +75,13 @@ Two`),
 # Beta
 One`),
 		workspace.dstCopy.Content("beta/one.md"))
-	err = cpr("test_copy_src", "test_cp_dst")
+	err := cpr("test_copy_src", "test_cp_dst")
 	assert.NoError(t, err)
 	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
 	workspace.cleanup()
 }
 
-func TestCopyFilesSlash(t *testing.T) {
+func Test_CopyFiles_Slash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
@@ -122,7 +118,7 @@ One`),
 	workspace.cleanup()
 }
 
-func TestDstPathCpDirPath(t *testing.T) {
+func Test_DstPathCp_DirPath(t *testing.T) {
 	t.Parallel()
 	root := tests.CreateTmpDir()
 	dst := root.CreateDir("dst")
@@ -132,7 +128,7 @@ func TestDstPathCpDirPath(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func TestDstPathCpFilePath(t *testing.T) {
+func Test_DstPathCp_FilePath(t *testing.T) {
 	t.Parallel()
 	root := tests.CreateTmpDir()
 	dst := root.CreateDir("dst")
@@ -142,14 +138,14 @@ func TestDstPathCpFilePath(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func TestDstPathCprRoot(t *testing.T) {
+func Test_DstPathCpr_Root(t *testing.T) {
 	t.Parallel()
 	have := copyFileDstPath("src/README.md", "src", "dst")
 	want := "dst/README.md"
 	assert.Equal(t, want, have)
 }
 
-func TestDstPathCprSubfolder(t *testing.T) {
+func Test_DstPathCpr_Subfolder(t *testing.T) {
 	t.Parallel()
 	have := copyFileDstPath("src/sub1/sub2/README.md", "src", "dst")
 	want := "dst/sub1/sub2/README.md"
@@ -160,6 +156,9 @@ func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
 	src.CreateFile("README.md", "# the readme\ntext")
+	src.CreateFile("alpha/one.md", "# Alpha\nOne")
+	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
+	src.CreateFile("beta/one.md", "# Beta\nOne")
 	dstCopy := root.CreateDir("test_copy_dst")
 	dstCp := root.CreateDir("test_cp_dst")
 	cleanup := func() {
@@ -190,8 +189,7 @@ func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
 }
 
 // verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
-func (ws workspace) verifySameBehaviorAsCp(t *testing.T, srcTemplate, dstTemplate string) {
-	src := strings.Replace(srcTemplate, "{{srcDir}}", ws.src.Path, 1)
+func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	err := cp(src, dstCp)
@@ -199,6 +197,20 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, srcTemplate, dstTemplat
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err = CopyFile(src, dstCopy)
+	assert.NoError(t, err)
+	// verify that both created the same files and folders
+	verifyEqualFolderStructure(t, dstCp, dstCopy)
+}
+
+// verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
+func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
+	// run "cp -r"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	err := cpr(src, dstCp)
+	assert.NoError(t, err)
+	// run "CopyFile"
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	err = CopyFiles(src, dstCopy)
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
 	verifyEqualFolderStructure(t, dstCp, dstCopy)
