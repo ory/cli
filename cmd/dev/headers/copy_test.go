@@ -51,33 +51,30 @@ text`)
 func Test_CopyFiles_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "test_copy_dst")
-	assert.Equal(
-		t,
-		tests.Trim(`
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+
+# the readme
+text`)
+	workspace.verifyContent(t,
+		"test_copy_dst/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->
 
 # Alpha
-One`),
-		workspace.dstCopy.Content("alpha/one.md"))
-	assert.Equal(
-		t,
-		tests.Trim(`
+One`)
+	workspace.verifyContent(t,
+		"test_copy_dst/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->
 
 # Alpha
-Two`),
-		workspace.dstCopy.Content("alpha/two.md"))
-	assert.Equal(
-		t,
-		tests.Trim(`
+Two`)
+	workspace.verifyContent(t,
+		"test_copy_dst/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->
 
 # Beta
-One`),
-		workspace.dstCopy.Content("beta/one.md"))
-	err := cpr("test_copy_src", "test_cp_dst")
-	assert.NoError(t, err)
-	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
+One`)
 	workspace.cleanup()
 }
 
