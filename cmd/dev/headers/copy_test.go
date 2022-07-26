@@ -11,23 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_CopyFile_ToFolder_NoSlash(t *testing.T) {
+func Test_CopyFile_ToFolder(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
 	workspace.verifyContent(
 		t,
-		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
-
-# the readme
-text`)
-	workspace.cleanup()
-}
-
-func Test_CopyFile_ToFolder_Slash(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/")
-	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
