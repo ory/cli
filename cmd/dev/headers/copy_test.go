@@ -28,8 +28,7 @@ func Test_CopyFile_ToFolder_Slash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/")
 	workspace.verifyContent(t,
-		"test_copy_dst/README.md",
-		`
+		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
 
 # the readme
@@ -39,18 +38,13 @@ text`)
 
 func TestCopyFileToFilepath(t *testing.T) {
 	workspace := createWorkspace()
-	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
-	assert.NoError(t, err)
-	want := tests.Trim(`
+	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/README.md")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
 
 # the readme
 text`)
-	have := workspace.root.Content("test_copy_dst/README.md")
-	assert.Equal(t, want, have)
-	err = cp("test_copy_src/README.md", "test_cp_dst/README.md")
-	assert.NoError(t, err)
-	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
 	workspace.cleanup()
 }
 
