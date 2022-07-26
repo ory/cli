@@ -4,48 +4,41 @@ import (
 	"io/fs"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCopyFileToFolderNoSlash(t *testing.T) {
-	workspace := setupCopyFileTest()
-	err := CopyFile("test_copy_src/README.md", "test_copy_dst")
-	assert.NoError(t, err)
-	want := tests.Trim(`
+func Test_CopyFile_ToFolder_NoSlash(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}")
+	workspace.verifyContent(
+		t,
+		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
 
 # the readme
 text`)
-	have := workspace.root.Content("test_copy_dst/README.md")
-	assert.Equal(t, want, have)
-	err = cp("test_copy_src/README.md", "test_cp_dst")
-	assert.NoError(t, err)
-	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
 	workspace.cleanup()
 }
 
-func TestCopyFileToFolderSlash(t *testing.T) {
-	workspace := setupCopyFileTest()
-	err := CopyFile("test_copy_src/README.md", "test_copy_dst/")
-	assert.NoError(t, err)
-	want := tests.Trim(`
+func Test_CopyFile_ToFolder_Slash(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md",
+		`
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
 
 # the readme
 text`)
-	have := workspace.root.Content("test_copy_dst/README.md")
-	assert.Equal(t, want, have)
-	err = cp("test_copy_src/README.md", "test_cp_dst/")
-	assert.NoError(t, err)
-	verifyEqualFolderStructure(t, "test_copy_dst", "test_cp_dst")
 	workspace.cleanup()
 }
 
 func TestCopyFileToFilepath(t *testing.T) {
-	workspace := setupCopyFileTest()
+	workspace := createWorkspace()
 	err := CopyFile("test_copy_src/README.md", "test_copy_dst/README.md")
 	assert.NoError(t, err)
 	want := tests.Trim(`
@@ -62,7 +55,7 @@ text`)
 }
 
 func TestCopyFilesNoSlash(t *testing.T) {
-	workspace := setupCopyFileTest()
+	workspace := createWorkspace()
 	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
 	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
@@ -99,7 +92,7 @@ One`),
 }
 
 func TestCopyFilesSlash(t *testing.T) {
-	workspace := setupCopyFileTest()
+	workspace := createWorkspace()
 	workspace.src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	workspace.src.CreateFile("alpha/two.md", "# Alpha\nTwo")
 	workspace.src.CreateFile("beta/one.md", "# Beta\nOne")
@@ -169,7 +162,7 @@ func TestDstPathCprSubfolder(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func setupCopyFileTest() workspace {
+func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
 	src.CreateFile("README.md", "# the readme\ntext")
@@ -180,13 +173,7 @@ func setupCopyFileTest() workspace {
 		dstCopy.Cleanup()
 		dstCp.Cleanup()
 	}
-	return workspace{
-		root,
-		src,
-		dstCopy,
-		dstCp,
-		cleanup,
-	}
+	return workspace{root, src, dstCopy, dstCp, cleanup}
 }
 
 // directory structure for testing copy operations
@@ -201,6 +188,26 @@ type workspace struct {
 	dstCp tests.Dir
 	// removes this workspace
 	cleanup func()
+}
+
+func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
+	have := ws.root.Content(filepath)
+	assert.Equal(t, tests.Trim(want), have)
+}
+
+// verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
+func (ws workspace) verifySameBehaviorAsCp(t *testing.T, srcTemplate, dstTemplate string) {
+	src := strings.Replace(srcTemplate, "{{srcDir}}", ws.src.Path, 1)
+	// run "cp"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	err := cp(src, dstCp)
+	assert.NoError(t, err)
+	// run "CopyFile"
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	err = CopyFile(src, dstCopy)
+	assert.NoError(t, err)
+	// verify that both created the same files and folders
+	verifyEqualFolderStructure(t, dstCp, dstCopy)
 }
 
 // executes the unix "cp" command
