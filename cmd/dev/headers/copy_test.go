@@ -51,7 +51,7 @@ text`)
 
 func Test_CopyFiles_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "test_copy_dst")
+	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "{{dstDir}}")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
