@@ -117,12 +117,7 @@ func createWorkspace() workspace {
 	src.CreateFile("beta/one.md", "# Beta\nOne")
 	dstCopy := root.CreateDir("test_copy_dst")
 	dstCp := root.CreateDir("test_cp_dst")
-	cleanup := func() {
-		src.Cleanup()
-		dstCopy.Cleanup()
-		dstCp.Cleanup()
-	}
-	return workspace{root, src, dstCopy, dstCp, cleanup}
+	return workspace{root, src, dstCopy, dstCp}
 }
 
 // directory structure for testing copy operations
@@ -135,8 +130,12 @@ type workspace struct {
 	dstCopy tests.Dir
 	// the directory that contains the result of Unix's cp operation
 	dstCp tests.Dir
-	// removes this workspace
-	cleanup func()
+}
+
+func (ws workspace) cleanup() {
+	ws.src.Cleanup()
+	ws.dstCopy.Cleanup()
+	ws.dstCp.Cleanup()
 }
 
 func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
