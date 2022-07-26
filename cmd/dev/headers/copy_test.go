@@ -53,25 +53,25 @@ func Test_CopyFiles_DstExists_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+		"test_copy_dst/test_src/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
 	workspace.verifyContent(t,
-		"test_copy_dst/alpha/one.md", `
+		"test_copy_dst/test_src/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
 	workspace.verifyContent(t,
-		"test_copy_dst/alpha/two.md", `
+		"test_copy_dst/test_src/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
 	workspace.verifyContent(t,
-		"test_copy_dst/beta/one.md", `
+		"test_copy_dst/test_src/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta

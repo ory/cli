@@ -43,11 +43,20 @@ func CopyFile(src, dst string) error {
 // Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
 // Behaves similar to the unix `cp` command.
 func CopyFiles(src, dst string) error {
+	extraPath := ""
+	hasDst, err := folderExists(dst)
+	if err != nil {
+		return fmt.Errorf("cannot determine if folder %q exists: %w", dst, err)
+	}
+	if hasDst {
+		os.Mkdir(filepath.Join(dst, src), 0744)
+		extraPath = src
+	}
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		dstPath := dst + path[len(src):]
+		dstPath := filepath.Join(dst, extraPath, path[len(src):])
 		if info.IsDir() {
 			err := os.Mkdir(dstPath, 0744)
 			if err == nil {
@@ -62,6 +71,19 @@ func CopyFiles(src, dst string) error {
 		}
 		return CopyFile(path, dstPath)
 	})
+}
+
+// indicates whether the folder with the given path exists
+func folderExists(path string) (bool, error) {
+	dstStat, err := os.Lstat(path)
+	if err != nil {
+		pathErr := err.(*os.PathError)
+		if pathErr.Err == syscall.ENOENT {
+			return false, nil
+		}
+		return false, err
+	}
+	return dstStat.IsDir(), nil
 }
 
 var copy = &cobra.Command{
