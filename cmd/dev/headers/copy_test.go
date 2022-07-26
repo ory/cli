@@ -49,7 +49,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFiles_NoSlash(t *testing.T) {
+func Test_CopyFiles_DstExists_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 	workspace.verifyContent(t,
@@ -76,7 +76,38 @@ Two`)
 
 # Beta
 One`)
-	workspace.cleanup()
+	// workspace.cleanup()
+}
+func Test_CopyFiles_DstMissing_NoSlash(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.dstCp.Cleanup()
+	workspace.dstCopy.Cleanup()
+	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.verifyContent(t,
+		"test_copy_dst/alpha/one.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
+
+# Alpha
+One`)
+	workspace.verifyContent(t,
+		"test_copy_dst/alpha/two.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
+
+# Alpha
+Two`)
+	workspace.verifyContent(t,
+		"test_copy_dst/beta/one.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
+
+# Beta
+One`)
+	// workspace.cleanup()
 }
 
 func Test_CopyFiles_Slash(t *testing.T) {
@@ -130,7 +161,7 @@ func createWorkspace() workspace {
 	src.CreateFile("beta/one.md", "# Beta\nOne")
 	dstCopy := root.CreateDir("test_copy_dst")
 	dstCp := root.CreateDir("test_cp_dst")
-	return workspace{root, src, dstCopy, dstCp}
+	return workspace{root: root, src: src, dstCopy: dstCopy, dstCp: dstCp}
 }
 
 func (ws workspace) cleanup() {
@@ -165,8 +196,9 @@ func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate strin
 	t.Helper()
 	// run "cp -r"
 	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	output, err := exec.Command("cp", "-r", src, dst).CombinedOutput()
-	fmt.Println(output)
+	fmt.Println(dst)
+	output, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
+	fmt.Println(string(output))
 	assert.NoError(t, err)
 	// run "CopyFile"
 	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
