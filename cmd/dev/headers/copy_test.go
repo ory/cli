@@ -225,6 +225,7 @@ func verifyEqualFolderStructure(t *testing.T, copyDir string, cpDir string) {
 	})
 	cpEntries := []string{}
 	filepath.WalkDir(cpDir, func(path string, entry fs.DirEntry, err error) error {
+		cpEntries = append(cpEntries, path)
 		return nil
 	})
 	assert.Equal(t, cpEntries, copyEntries)
