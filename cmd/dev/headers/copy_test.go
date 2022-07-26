@@ -1,7 +1,6 @@
 package headers
 
 import (
-	"fmt"
 	"io/fs"
 	"os/exec"
 	"path/filepath"
@@ -196,9 +195,7 @@ func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate strin
 	t.Helper()
 	// run "cp -r"
 	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	fmt.Println(dst)
-	output, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
-	fmt.Println(string(output))
+	_, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
 	assert.NoError(t, err)
 	// run "CopyFile"
 	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
