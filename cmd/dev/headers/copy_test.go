@@ -108,26 +108,6 @@ One`)
 	workspace.cleanup()
 }
 
-func Test_DstPathCp_DirPath(t *testing.T) {
-	t.Parallel()
-	root := tests.CreateTmpDir()
-	dst := root.CreateDir("dst")
-	give := dst.Path
-	want := dst.Filename("foo.md")
-	have := copyFilesDstPath("origin/foo.md", give)
-	assert.Equal(t, want, have)
-}
-
-func Test_DstPathCp_FilePath(t *testing.T) {
-	t.Parallel()
-	root := tests.CreateTmpDir()
-	dst := root.CreateDir("dst")
-	give := dst.CreateFile("foo.md", "")
-	want := dst.Filename("foo.md")
-	have := copyFilesDstPath("origin/foo.md", give)
-	assert.Equal(t, want, have)
-}
-
 func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")
