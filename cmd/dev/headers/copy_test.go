@@ -14,11 +14,11 @@ import (
 
 func Test_CopyFile_ToFolder_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}")
+	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
 	workspace.verifyContent(
 		t,
 		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
@@ -27,10 +27,10 @@ text`)
 
 func Test_CopyFile_ToFolder_Slash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/")
+	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
@@ -39,10 +39,10 @@ text`)
 
 func Test_CopyFile_ToFilepath(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_copy_src/README.md", "{{dstDir}}/README.md")
+	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
@@ -51,28 +51,28 @@ text`)
 
 func Test_CopyFiles_NoSlash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "{{dstDir}}")
+	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
 	workspace.verifyContent(t,
 		"test_copy_dst/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
 	workspace.verifyContent(t,
 		"test_copy_dst/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
 	workspace.verifyContent(t,
 		"test_copy_dst/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
 One`)
@@ -81,28 +81,28 @@ One`)
 
 func Test_CopyFiles_Slash(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_copy_src", "test_copy_dst/")
+	workspace.verifySameBehaviorAsCpr(t, "test_src", "test_copy_dst/")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
 	workspace.verifyContent(t,
 		"test_copy_dst/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
 	workspace.verifyContent(t,
 		"test_copy_dst/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/alpha/two.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
 	workspace.verifyContent(t,
 		"test_copy_dst/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_copy_src/beta/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
 One`)
@@ -123,7 +123,7 @@ type workspace struct {
 
 func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
-	src := root.CreateDir("test_copy_src")
+	src := root.CreateDir("test_src")
 	src.CreateFile("README.md", "# the readme\ntext")
 	src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
@@ -164,13 +164,13 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string
 func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
 	// run "cp -r"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	output, err := exec.Command("cp", "-r", src, dstCp).CombinedOutput()
+	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	output, err := exec.Command("cp", "-r", src, dst).CombinedOutput()
 	fmt.Println(output)
 	assert.NoError(t, err)
 	// run "CopyFile"
-	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	err = CopyFiles(src, dstCopy)
+	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	err = CopyFiles(src, dst)
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
