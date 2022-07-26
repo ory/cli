@@ -128,20 +128,6 @@ func Test_DstPathCp_FilePath(t *testing.T) {
 	assert.Equal(t, want, have)
 }
 
-func Test_DstPathCpr_Root(t *testing.T) {
-	t.Parallel()
-	have := copyFileDstPath("src/README.md", "src", "dst")
-	want := "dst/README.md"
-	assert.Equal(t, want, have)
-}
-
-func Test_DstPathCpr_Subfolder(t *testing.T) {
-	t.Parallel()
-	have := copyFileDstPath("src/sub1/sub2/README.md", "src", "dst")
-	want := "dst/sub1/sub2/README.md"
-	assert.Equal(t, want, have)
-}
-
 func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_copy_src")

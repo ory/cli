@@ -36,11 +36,6 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
-// provides the full path to the destination for "cp -r" operations
-func copyFileDstPath(path, src, dst string) string {
-	return dst + path[len(src):]
-}
-
 // Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
 // Behaves similar to the unix `cp` command.
 func CopyFiles(src, dst string) error {
@@ -48,7 +43,7 @@ func CopyFiles(src, dst string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		dstPath := copyFileDstPath(path, src, dst)
+		dstPath := dst + path[len(src):]
 		if info.IsDir() {
 			err := os.Mkdir(dstPath, 0744)
 			if err == nil {
