@@ -17,9 +17,6 @@ import (
 // template for the header
 const LINK_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s."
 
-// the token that identifies comment blocks containing the license
-const LINK_TOKEN = "Copyright ©"
-
 // the root path for links to the original
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
