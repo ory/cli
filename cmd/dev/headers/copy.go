@@ -15,9 +15,10 @@ import (
 )
 
 // template for the header
-const LINK_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s."
+const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s."
 
 // the root path for links to the original
+// NOTE: might have to convert to a CLI switch
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
 // Copies the given source file (path must be relative to CWD) to the given absolute path.
@@ -32,7 +33,7 @@ func CopyFile(src, dst string) error {
 	if err == nil && dstStat.IsDir() {
 		dstPath = filepath.Join(dst, filepath.Base(src))
 	}
-	headerText := fmt.Sprintf(LINK_TEMPLATE, ROOT_PATH+src)
+	headerText := fmt.Sprintf(COPY_HEADER_TEMPLATE, ROOT_PATH+src)
 	comments.WriteFileWithHeader(dstPath, headerText, string(body))
 	return nil
 }
