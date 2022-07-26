@@ -48,7 +48,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFiles_SrcNoSlash_DstExists(t *testing.T) {
+func Test_CopyFiles_DstExists(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 	workspace.verifyContent(t,
@@ -78,73 +78,11 @@ One`)
 	workspace.cleanup()
 }
 
-func Test_CopyFiles_SrcWithSlash_DstExists(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src/", "{{dstDir}}")
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
-
-# the readme
-text`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
-
-# Alpha
-One`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
-
-# Alpha
-Two`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
-
-# Beta
-One`)
-	workspace.cleanup()
-}
-
-func Test_CopyFiles_SrcNoSlash_DstMissing(t *testing.T) {
+func Test_CopyFiles_DstMissing(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.dstCp.Cleanup()
 	workspace.dstCopy.Cleanup()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
-
-# the readme
-text`)
-	workspace.verifyContent(t,
-		"test_copy_dst/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
-
-# Alpha
-One`)
-	workspace.verifyContent(t,
-		"test_copy_dst/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
-
-# Alpha
-Two`)
-	workspace.verifyContent(t,
-		"test_copy_dst/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
-
-# Beta
-One`)
-	workspace.cleanup()
-}
-
-func Test_CopyFiles_SrcWithSlash_DstMissing(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.dstCp.Cleanup()
-	workspace.dstCopy.Cleanup()
-	workspace.verifySameBehaviorAsCpr(t, "test_src/", "{{dstDir}}")
 	workspace.verifyContent(t,
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
