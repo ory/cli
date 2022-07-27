@@ -119,6 +119,11 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				PathPrefix:     "",
 			}, nil
 		},
+		proxy.WithReqMiddleware(func(req *http.Request, config *proxy.HostConfig, body []byte) ([]byte, error) {
+			req.Header.Set("X-Base-URL-Rewrite", conf.publicURL.String())
+			req.Header.Set("X-Session-Token", "TBD")
+			return body, nil
+		}),
 		proxy.WithRespMiddleware(func(resp *http.Response, config *proxy.HostConfig, body []byte) ([]byte, error) {
 			l, err := resp.Location()
 			if err == nil {
