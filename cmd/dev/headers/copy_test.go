@@ -121,6 +121,20 @@ func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
 	workspace.cleanup()
 }
 
+func Test_CopyFiles_fromFile_toFile(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.dstCopy.CreateFile("README.md", "old content")
+	workspace.dstCp.CreateFile("README.md", "old content")
+	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.cleanup()
+}
+
 // directory structure for testing copy operations
 type workspace struct {
 	// the directory that contains the workspace
