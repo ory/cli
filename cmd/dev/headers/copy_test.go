@@ -258,7 +258,7 @@ func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate stri
 	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
 	assert.NoError(t, err)
-	// run "CopyFile"
+	// run "CopyFiles"
 	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err = CopyFiles(src, dst)
 	assert.NoError(t, err)
@@ -270,13 +270,17 @@ func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate stri
 // both return an error
 func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
+	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFile(src, dstCopy)
+	// ensure both return errors
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
 	}
+	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
 }
 
@@ -284,13 +288,17 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 // both return an error
 func (ws *workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	// run "cp -r"
 	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
+	// run "CopyFiles"
 	dstCopyFiles := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyFilesErr := CopyFiles(src, dstCopyFiles)
+	// ensure both return errors
 	if (copyFilesErr == nil) || (cprErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cprErr, copyFilesErr)
 	}
+	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
 }
 
