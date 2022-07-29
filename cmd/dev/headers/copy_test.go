@@ -20,13 +20,13 @@ func Test_CopyFile_fromFile_toNonExistingPath_noSlash(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFile_fromFile_toNonExistingPath_withSlash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifyCpAndCopyErr(t, "test_src/README.md", "{{dstDir}}/new/")
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFile_fromFile_toExistingFile(t *testing.T) {
@@ -40,7 +40,7 @@ func Test_CopyFile_fromFile_toExistingFile(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFile_fromFile_toExistingFolder(t *testing.T) {
@@ -53,13 +53,13 @@ func Test_CopyFile_fromFile_toExistingFolder(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFile_fromFolder(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifyCpAndCopyErr(t, "test_src", "{{dstDir}}")
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFolder_toFolder(t *testing.T) {
@@ -89,7 +89,7 @@ Two`)
 
 # Beta
 One`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFolder_toNonExistingPath(t *testing.T) {
@@ -119,13 +119,13 @@ Two`)
 
 # Beta
 One`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifyCprAndCopyFilesErr(t, "test_src", "main.go")
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFile_toFile(t *testing.T) {
@@ -139,7 +139,7 @@ func Test_CopyFiles_fromFile_toFile(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFile_toNonExistingPath(t *testing.T) {
@@ -151,7 +151,7 @@ func Test_CopyFiles_fromFile_toNonExistingPath(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFile_toExistingFile(t *testing.T) {
@@ -165,7 +165,7 @@ func Test_CopyFiles_fromFile_toExistingFile(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 func Test_CopyFiles_fromFile_toExistingFolder(t *testing.T) {
@@ -178,7 +178,7 @@ func Test_CopyFiles_fromFile_toExistingFolder(t *testing.T) {
 
 # readme header
 readme text`)
-	workspace.cleanup()
+	workspace.done(t)
 }
 
 // directory structure for testing copy operations
@@ -191,6 +191,8 @@ type workspace struct {
 	dstCopy tests.Dir
 	// the directory that contains the result of Unix's cp operation
 	dstCp tests.Dir
+	// list of file paths whose content was verified
+	verified []string
 }
 
 func createWorkspace() workspace {
@@ -202,7 +204,7 @@ func createWorkspace() workspace {
 	src.CreateFile("beta/one.md", "# Beta\nOne")
 	dstCopy := root.CreateDir("test_copy_dst")
 	dstCp := root.CreateDir("test_cp_dst")
-	return workspace{root: root, src: src, dstCopy: dstCopy, dstCp: dstCp}
+	return workspace{root: root, src: src, dstCopy: dstCopy, dstCp: dstCp, verified: []string{}}
 }
 
 // removes this test workspace from the filesystem
@@ -212,12 +214,25 @@ func (ws workspace) cleanup() {
 	ws.dstCp.Cleanup()
 }
 
+func (ws workspace) done(t *testing.T) {
+	ws.verifyAllFilesCompared(t)
+	ws.cleanup()
+}
+
+// ensures that all files in the workspace have been verified with ws.verifyContent
+func (ws workspace) verifyAllFilesCompared(t *testing.T) {
+	allFiles, err := ws.copyFiles("")
+	assert.NoError(t, err)
+	assert.Equal(t, allFiles, ws.verified)
+}
+
 // ensures that the file with the given path in the test workspace
 // contains the given content
-func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
+func (ws *workspace) verifyContent(t *testing.T, filepath, want string) {
 	t.Helper()
 	have := ws.root.Content(filepath)
 	assert.Equal(t, tests.Trim(want), have)
+	ws.verified = append(ws.verified, filepath[len(ws.dstCopy.Path):])
 }
 
 // ensures that the "CopyFile" function copies files
@@ -281,15 +296,35 @@ func (ws workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate stri
 // ensures that the two given directories contain files with the same names
 func (ws workspace) verifyEqualDstStructure(t *testing.T) {
 	t.Helper()
-	copyEntries := []string{}
-	filepath.WalkDir(ws.dstCopy.Path, func(path string, entry fs.DirEntry, err error) error {
-		copyEntries = append(copyEntries, strings.Replace(path, ws.dstCopy.Path, "dst", 1))
-		return nil
-	})
-	cpEntries := []string{}
-	filepath.WalkDir(ws.dstCp.Path, func(path string, entry fs.DirEntry, err error) error {
-		cpEntries = append(cpEntries, strings.Replace(path, ws.dstCp.Path, "dst", 1))
-		return nil
-	})
+	copyEntries, err := ws.copyFiles("dst")
+	assert.NoError(t, err)
+	cpEntries, err := ws.cpFiles("dst")
+	assert.NoError(t, err)
 	assert.Equal(t, cpEntries, copyEntries)
+}
+
+// provides the relative paths of all files that were copied via `Copy` or `CopyFiles`
+func (ws workspace) copyFiles(replacement string) ([]string, error) {
+	return ws.files(ws.dstCopy.Path, replacement)
+}
+
+// provides the relative paths of all files that were copied via `cp` or `cp -r`
+func (ws workspace) cpFiles(replacement string) ([]string, error) {
+	return ws.files(ws.dstCp.Path, replacement)
+}
+
+// provides the relative paths of all files in the given folder
+func (ws workspace) files(dir, replacement string) ([]string, error) {
+	result := []string{}
+	err := filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		result = append(result, strings.Replace(path, dir, replacement, 1))
+		return nil
+	})
+	return result, err
 }
