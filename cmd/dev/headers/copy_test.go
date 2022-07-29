@@ -208,7 +208,7 @@ func createWorkspace() workspace {
 }
 
 // removes this test workspace from the filesystem
-func (ws *workspace) cleanup() {
+func (ws *workspace) delete() {
 	ws.src.Cleanup()
 	ws.dstCopy.Cleanup()
 	ws.dstCp.Cleanup()
@@ -216,7 +216,7 @@ func (ws *workspace) cleanup() {
 
 func (ws *workspace) done(t *testing.T) {
 	ws.verifyAllFilesCompared(t)
-	ws.cleanup()
+	ws.delete()
 }
 
 // ensures that all files in the workspace have been verified with ws.verifyContent
