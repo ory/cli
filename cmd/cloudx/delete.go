@@ -1,8 +1,6 @@
 package cloudx
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -13,7 +11,7 @@ import (
 func NewDeleteCmd(parent *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
-		Short: fmt.Sprintf("Delete resources"),
+		Short: "Delete resources",
 	}
 
 	cmd.AddCommand(identity.NewDeleteIdentityCmd(parent))
