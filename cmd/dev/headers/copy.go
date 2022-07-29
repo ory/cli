@@ -39,7 +39,7 @@ func CopyFile(src, dst string) error {
 }
 
 // Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
-// Behaves similar to the unix `cp` command.
+// Behaves similar to the unix `cp -r` command.
 func CopyFiles(src, dst string) error {
 	extraPath := ""
 	hasDst, err := folderExists(dst)
