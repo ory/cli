@@ -26,19 +26,19 @@ file content`, "\n")
 
 func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
 	give := strings.Trim(`
-<!-- another comment block -->
+// another comment block
 
-<!-- copyright Ory -->
-<!-- all rights reserved -->
+// copyright Ory
+// all rights reserved
 
 file content`, "\n")
 	want := strings.Trim(`
-<!-- another comment block -->
+// another comment block
 
 file content`, "\n")
-	createTestFile(t, "testfile.md", give)
-	defer os.Remove("testfile.md")
-	have, err := comments.FileContentWithoutHeader("testfile.md", "copyright")
+	createTestFile(t, "testfile.go", give)
+	defer os.Remove("testfile.go")
+	have, err := comments.FileContentWithoutHeader("testfile.go", "copyright")
 	assert.NoError(t, err)
 	assert.Equal(t, want, have)
 }
