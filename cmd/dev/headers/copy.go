@@ -21,8 +21,9 @@ const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the origi
 // NOTE: might have to convert to a CLI switch
 const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 
-// Copies the given source file (path must be relative to CWD) to the given absolute path.
-// Behaves similar to the unix `cp` command.
+// Header-aware equivalent of the Unix `cp` command.
+// Copies the given source file (path must be relative to CWD) to the given absolute path
+// and prepends the COPY_HEADER_TEMPLATE to the content.
 func CopyFile(src, dst string) error {
 	body, err := os.ReadFile(src)
 	if err != nil {
@@ -38,8 +39,9 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
-// Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path.
-// Behaves similar to the unix `cp -r` command.
+// Header-aware equivalent of the Unix `cp -r` command.
+// Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path
+// and prepends the COPY_HEADER_TEMPLATE to the content.
 func CopyFiles(src, dst string) error {
 	srcStat, err := os.Lstat(src)
 	if err != nil {
