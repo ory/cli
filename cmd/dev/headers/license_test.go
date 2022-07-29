@@ -51,6 +51,7 @@ func TestShouldAddLicense(t *testing.T) {
 		"x.go":   true,
 		"x.java": true,
 		"x.js":   true,
+		"x.md":   false,
 		"x.php":  true,
 		"x.py":   true,
 		"x.rb":   true,
