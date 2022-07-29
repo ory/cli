@@ -23,7 +23,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFile_toExistingFilepath(t *testing.T) {
+func Test_CopyFile_toExistingFile(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.dstCopy.CreateFile("README.md", "existing content")
 	workspace.dstCp.CreateFile("README.md", "existing content")
@@ -37,7 +37,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFile_toFolder(t *testing.T) {
+func Test_CopyFile_toExistingFolder(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
 	workspace.verifyContent(
@@ -47,6 +47,12 @@ func Test_CopyFile_toFolder(t *testing.T) {
 
 # the readme
 text`)
+	workspace.cleanup()
+}
+
+func Test_CopyFile_fromFolder(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifyCpAndCopyErr(t, "test_src", "{{dstDir}}")
 	workspace.cleanup()
 }
 
@@ -80,31 +86,29 @@ One`)
 	workspace.cleanup()
 }
 
-func Test_CopyFiles_DstMissing(t *testing.T) {
+func Test_CopyFiles_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.dstCp.Cleanup()
-	workspace.dstCopy.Cleanup()
-	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
+	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/zonk")
 	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+		"test_copy_dst/zonk/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
 	workspace.verifyContent(t,
-		"test_copy_dst/alpha/one.md", `
+		"test_copy_dst/zonk/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
 	workspace.verifyContent(t,
-		"test_copy_dst/alpha/two.md", `
+		"test_copy_dst/zonk/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
 	workspace.verifyContent(t,
-		"test_copy_dst/beta/one.md", `
+		"test_copy_dst/zonk/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
@@ -159,8 +163,19 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err = CopyFile(src, dstCopy)
 	assert.NoError(t, err)
-	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
+}
+
+// verifies that the "CopyFile" function and Unix "cp" tool both return an error
+func (ws workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
+	t.Helper()
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	copyErr := CopyFile(src, dstCopy)
+	if (copyErr == nil) || (cpErr == nil) {
+		t.Fatalf("Inconsistent errors! cp: %v, copy: %v\n", cpErr, copyErr)
+	}
 }
 
 // verifies that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
