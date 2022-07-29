@@ -96,7 +96,7 @@ func ConfigAwareCmd(configDir string) *cmdx.CommandExecuter {
 }
 
 func ConfigPasswordAwareCmd(configDir, password string) *cmdx.CommandExecuter {
-	ctx := client.ContextWithClient(context.WithValue(context.Background(), client.PasswordReader, func() ([]byte, error) {
+	ctx := client.ContextWithClient(context.WithValue(context.Background(), client.PasswordReader{}, func() ([]byte, error) {
 		return []byte(password), nil
 	}))
 	return &cmdx.CommandExecuter{
@@ -134,7 +134,7 @@ func RegisterAccount(t require.TestingT, configDir string) (email, password stri
 		New: func() *cobra.Command {
 			return cloudx.NewRootCommand(new(cobra.Command), "", "")
 		},
-		Ctx: context.WithValue(context.Background(), client.PasswordReader, func() ([]byte, error) {
+		Ctx: context.WithValue(context.Background(), client.PasswordReader{}, func() ([]byte, error) {
 			return []byte(password), nil
 		}),
 		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},

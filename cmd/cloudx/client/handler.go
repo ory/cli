@@ -116,7 +116,7 @@ type CommandHelper struct {
 	PwReader         passwordReader
 }
 
-const PasswordReader = "password_reader"
+type PasswordReader struct{}
 
 // NewCommandHelper creates a new CommandHelper instance which handles cobra CLI commands.
 func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
@@ -138,7 +138,7 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	pwReader := func() ([]byte, error) {
 		return term.ReadPassword(int(syscall.Stdin))
 	}
-	if p, ok := cmd.Context().Value(PasswordReader).(passwordReader); ok {
+	if p, ok := cmd.Context().Value(PasswordReader{}).(passwordReader); ok {
 		pwReader = p
 	}
 
