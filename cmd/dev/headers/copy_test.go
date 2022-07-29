@@ -18,8 +18,8 @@ func Test_CopyFile_fromFile_toNonExistingPath(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -32,8 +32,8 @@ func Test_CopyFile_fromFile_toExistingFile(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -45,8 +45,8 @@ func Test_CopyFile_fromFile_toExistingFolder(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -63,8 +63,8 @@ func Test_CopyFiles_fromFolder_toFolder(t *testing.T) {
 		"test_copy_dst/test_src/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.verifyContent(t,
 		"test_copy_dst/test_src/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
@@ -92,8 +92,8 @@ func Test_CopyFiles_fromFolder_toNonExistingPath(t *testing.T) {
 		"test_copy_dst/new/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.verifyContent(t,
 		"test_copy_dst/new/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
@@ -130,8 +130,8 @@ func Test_CopyFiles_fromFile_toFile(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -142,8 +142,8 @@ func Test_CopyFiles_fromFile_toNonExistingPath(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -156,8 +156,8 @@ func Test_CopyFiles_fromFile_toExistingFile(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -169,8 +169,8 @@ func Test_CopyFiles_fromFile_toExistingFolder(t *testing.T) {
 		"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
-# the readme
-text`)
+# readme header
+readme text`)
 	workspace.cleanup()
 }
 
@@ -189,7 +189,7 @@ type workspace struct {
 func createWorkspace() workspace {
 	root := tests.Dir{Path: "."}
 	src := root.CreateDir("test_src")
-	src.CreateFile("README.md", "# the readme\ntext")
+	src.CreateFile("README.md", "# readme header\nreadme text")
 	src.CreateFile("alpha/one.md", "# Alpha\nOne")
 	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
 	src.CreateFile("beta/one.md", "# Beta\nOne")
