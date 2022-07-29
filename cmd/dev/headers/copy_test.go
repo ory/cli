@@ -135,6 +135,45 @@ text`)
 	workspace.cleanup()
 }
 
+func Test_CopyFiles_fromFile_toNonExistingPath(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.cleanup()
+}
+
+func Test_CopyFiles_fromFile_toExistingFile(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.dstCopy.CreateFile("README.md", "existing content")
+	workspace.dstCp.CreateFile("README.md", "existing content")
+	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+	workspace.verifyContent(t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.cleanup()
+}
+
+func Test_CopyFiles_fromFile_toExistingFolder(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}")
+	workspace.verifyContent(
+		t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.cleanup()
+}
+
 // directory structure for testing copy operations
 type workspace struct {
 	// the directory that contains the workspace
