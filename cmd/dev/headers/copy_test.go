@@ -85,12 +85,6 @@ Two`)
 One`)
 	workspace.cleanup()
 }
-func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifyCpAndCopyErr(t, "test_src", "main.go")
-	workspace.cleanup()
-}
-
 func Test_CopyFiles_fromFolder_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
@@ -118,6 +112,12 @@ Two`)
 
 # Beta
 One`)
+	workspace.cleanup()
+}
+
+func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifyCpAndCopyErr(t, "test_src", "main.go")
 	workspace.cleanup()
 }
 
