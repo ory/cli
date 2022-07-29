@@ -11,20 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_CopyFile_ToFolder(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
-	workspace.verifyContent(
-		t,
-		"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
-
-# the readme
-text`)
-	workspace.cleanup()
-}
-
-func Test_CopyFile_ToNonExistingFilepath(t *testing.T) {
+func Test_CopyFile_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 	workspace.verifyContent(t,
@@ -36,7 +23,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFile_ToExistingFilepath(t *testing.T) {
+func Test_CopyFile_toExistingFilepath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.dstCopy.CreateFile("README.md", "existing content")
 	workspace.dstCp.CreateFile("README.md", "existing content")
@@ -50,7 +37,20 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFiles_DstExists(t *testing.T) {
+func Test_CopyFile_toFolder(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
+	workspace.verifyContent(
+		t,
+		"test_copy_dst/README.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+
+# the readme
+text`)
+	workspace.cleanup()
+}
+
+func Test_CopyFiles_toExistingFolder(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 	workspace.verifyContent(t,
