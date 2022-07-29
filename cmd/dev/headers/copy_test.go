@@ -255,6 +255,7 @@ func (ws workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
 	}
+	ws.verifyEqualDstStructure(t)
 }
 
 // ensures that the "CopyFile" function and Unix "cp" tool
@@ -268,6 +269,7 @@ func (ws workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate stri
 	if (copyFilesErr == nil) || (cprErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cprErr, copyFilesErr)
 	}
+	ws.verifyEqualDstStructure(t)
 }
 
 // ensures that the two given directories contain files with the same names
