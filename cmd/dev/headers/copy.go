@@ -27,7 +27,7 @@ const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 // and prepends the COPY_HEADER_TEMPLATE to the content.
 func CopyFile(src, dst string) error {
 	if strings.HasSuffix(dst, "/") {
-		return fmt.Errorf("Cannot create file %q", dst)
+		return fmt.Errorf("cannot create file %q", dst)
 	}
 	body, err := os.ReadFile(src)
 	if err != nil {
