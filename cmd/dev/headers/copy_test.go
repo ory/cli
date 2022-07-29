@@ -11,174 +11,178 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_CopyFile_fromFile_toNonExistingPath_noSlash(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+func TestCopyFile(t *testing.T) {
+	t.Run("file --> non-existing path ending without slash", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFile_fromFile_toNonExistingPath_withSlash(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifyCpAndCopyErr(t, "test_src/README.md", "{{dstDir}}/new/")
-	workspace.done(t)
-}
+	t.Run("file --> non-existing path ending with slash", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifyCpAndCopyErr(t, "test_src/README.md", "{{dstDir}}/new/")
+		workspace.done(t)
+	})
 
-func Test_CopyFile_fromFile_toExistingFile(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.dstCopy.CreateFile("README.md", "existing content")
-	workspace.dstCp.CreateFile("README.md", "existing content")
-	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> existing file", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.dstCopy.CreateFile("README.md", "existing content")
+		workspace.dstCp.CreateFile("README.md", "existing content")
+		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFile_fromFile_toExistingFolder(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
-	workspace.verifyContent(
-		t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> existing folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
+		workspace.verifyContent(
+			t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
+		workspace.done(t)
+	})
+
+	t.Run("folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifyCpAndCopyErr(t, "test_src", "{{dstDir}}")
+		workspace.done(t)
+	})
 }
 
-func Test_CopyFile_fromFolder(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifyCpAndCopyErr(t, "test_src", "{{dstDir}}")
-	workspace.done(t)
-}
-
-func Test_CopyFiles_fromFolder_toFolder(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/README.md", `
+func TestCopyFiles(t *testing.T) {
+	t.Run("folder --> folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/alpha/one.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/alpha/two.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
-	workspace.verifyContent(t,
-		"test_copy_dst/test_src/beta/one.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
 One`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFolder_toNonExistingPath(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
-	workspace.verifyContent(t,
-		"test_copy_dst/new/README.md", `
+	t.Run("folder --> non-existing path", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
+		workspace.verifyContent(t,
+			"test_copy_dst/new/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.verifyContent(t,
-		"test_copy_dst/new/alpha/one.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/new/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
-	workspace.verifyContent(t,
-		"test_copy_dst/new/alpha/two.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/new/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
-	workspace.verifyContent(t,
-		"test_copy_dst/new/beta/one.md", `
+		workspace.verifyContent(t,
+			"test_copy_dst/new/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
 One`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifyCprAndCopyFilesErr(t, "test_src", "main.go")
-	workspace.done(t)
-}
+	t.Run("folder --> file", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifyCprAndCopyFilesErr(t, "test_src", "main.go")
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFile_toFile(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.dstCopy.CreateFile("README.md", "old content")
-	workspace.dstCp.CreateFile("README.md", "old content")
-	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> file", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.dstCopy.CreateFile("README.md", "old content")
+		workspace.dstCp.CreateFile("README.md", "old content")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFile_toNonExistingPath(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> non-existing path", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFile_toExistingFile(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.dstCopy.CreateFile("README.md", "existing content")
-	workspace.dstCp.CreateFile("README.md", "existing content")
-	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
-	workspace.verifyContent(t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> existing file", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.dstCopy.CreateFile("README.md", "existing content")
+		workspace.dstCp.CreateFile("README.md", "existing content")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
-}
+		workspace.done(t)
+	})
 
-func Test_CopyFiles_fromFile_toExistingFolder(t *testing.T) {
-	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}")
-	workspace.verifyContent(
-		t,
-		"test_copy_dst/README.md", `
+	t.Run("file --> existing folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}")
+		workspace.verifyContent(
+			t,
+			"test_copy_dst/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # readme header
 readme text`)
-	workspace.done(t)
+		workspace.done(t)
+	})
 }
 
 // directory structure for testing copy operations
