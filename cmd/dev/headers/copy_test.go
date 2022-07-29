@@ -85,6 +85,7 @@ Two`)
 One`)
 	workspace.cleanup()
 }
+
 func Test_CopyFiles_fromFolder_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
