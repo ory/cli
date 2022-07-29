@@ -88,22 +88,6 @@ func getChangedComponents(graph *ComponentGraph) []*Component {
 	return changedComponents
 }
 
-func getChangedComponentIDs(graph *ComponentGraph) []string {
-	var changedComponentIds []string
-	for _, changedComponent := range getChangedComponents(graph) {
-		changedComponentIds = append(changedComponentIds, changedComponent.ID)
-	}
-	return changedComponentIds
-}
-
-func getAffectedComponentIDs(graph *ComponentGraph) []string {
-	var affectedComponentIds []string
-	for _, affectedComponent := range getAffectedComponents(graph) {
-		affectedComponentIds = append(affectedComponentIds, affectedComponent.ID)
-	}
-	return affectedComponentIds
-}
-
 func getAffectedComponents(graph *ComponentGraph) []*Component {
 	changedComponents := getChangedComponents(graph)
 

@@ -21,10 +21,6 @@ func isPR() bool {
 	return len(pr) > 0
 }
 
-func isMaster() bool {
-	return branch == "master"
-}
-
 func init() {
 	Main.PersistentFlags().StringVarP(&rootDirectory, "root", "r", ".", "Root directory to be used to traverse and search for dependency configurations.")
 	Main.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
