@@ -214,6 +214,7 @@ func (ws *workspace) delete() {
 	ws.dstCp.Delete()
 }
 
+// cleanup of this workspace at the end of a test
 func (ws *workspace) done(t *testing.T) {
 	ws.verifyAllFilesCompared(t)
 	ws.delete()
