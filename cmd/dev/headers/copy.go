@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/ory/cli/cmd/dev/headers/comments"
@@ -25,6 +26,9 @@ const ROOT_PATH = "https://github.com/ory/meta/blob/master/"
 // Copies the given source file (path must be relative to CWD) to the given absolute path
 // and prepends the COPY_HEADER_TEMPLATE to the content.
 func CopyFile(src, dst string) error {
+	if strings.HasSuffix(dst, "/") {
+		return fmt.Errorf("Cannot create file %q", dst)
+	}
 	body, err := os.ReadFile(src)
 	if err != nil {
 		return fmt.Errorf("cannot read file %q: %w", src, err)

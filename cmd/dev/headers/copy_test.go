@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_CopyFile_fromFile_toNonExistingPath(t *testing.T) {
+func Test_CopyFile_fromFile_toNonExistingPath_noSlash(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 	workspace.verifyContent(t,
@@ -20,6 +20,12 @@ func Test_CopyFile_fromFile_toNonExistingPath(t *testing.T) {
 
 # readme header
 readme text`)
+	workspace.cleanup()
+}
+
+func Test_CopyFile_fromFile_toNonExistingPath_withSlash(t *testing.T) {
+	workspace := createWorkspace()
+	workspace.verifyCpAndCopyErr(t, "test_src/README.md", "{{dstDir}}/new/")
 	workspace.cleanup()
 }
 
