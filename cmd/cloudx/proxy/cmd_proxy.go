@@ -7,11 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ory/x/corsx"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
+	"github.com/ory/x/corsx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringsx"
 )
@@ -275,7 +274,7 @@ func printDeprecations(cmd *cobra.Command, target string) {
 		for k, v := range found {
 			values = append(values, fmt.Sprintf("%s=%s", k, v))
 		}
-		sort.Sort(sort.StringSlice(values))
+		sort.Strings(values)
 
 		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
 	}
