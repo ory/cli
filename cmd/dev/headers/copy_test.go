@@ -88,27 +88,27 @@ One`)
 
 func Test_CopyFiles_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/zonk")
+	workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
 	workspace.verifyContent(t,
-		"test_copy_dst/zonk/README.md", `
+		"test_copy_dst/new/README.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
 
 # the readme
 text`)
 	workspace.verifyContent(t,
-		"test_copy_dst/zonk/alpha/one.md", `
+		"test_copy_dst/new/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
 
 # Alpha
 One`)
 	workspace.verifyContent(t,
-		"test_copy_dst/zonk/alpha/two.md", `
+		"test_copy_dst/new/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
 
 # Alpha
 Two`)
 	workspace.verifyContent(t,
-		"test_copy_dst/zonk/beta/one.md", `
+		"test_copy_dst/new/beta/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
 
 # Beta
