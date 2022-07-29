@@ -11,17 +11,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ory/cli/spec"
-	"github.com/ory/jsonschema/v3/httploader"
-	"github.com/ory/x/httpx"
-
-	"github.com/ory/x/jsonschemax"
-
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/cli/spec"
 	"github.com/ory/jsonschema/v3"
-	_ "github.com/ory/jsonschema/v3/httploader"
+	"github.com/ory/jsonschema/v3/httploader"
+	"github.com/ory/x/httpx"
+	"github.com/ory/x/jsonschemax"
 )
 
 var RenderVersion = &cobra.Command{

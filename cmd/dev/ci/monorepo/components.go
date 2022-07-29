@@ -20,7 +20,7 @@ var components = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var graph ComponentGraph
-		graph.getComponentGraph(rootDirectory)
+		_, _ = graph.getComponentGraph(rootDirectory)
 
 		switch componentMode {
 		case "affected":

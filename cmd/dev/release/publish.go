@@ -17,7 +17,7 @@ import (
 	"github.com/ory/cli/cmd/pkg"
 )
 
-var isTestRelease = regexp.MustCompile("^(([a-zA-Z0-9\\.\\-]+\\.)|)pre\\.[0-9]+$")
+var isTestRelease = regexp.MustCompile(`^(([a-zA-Z0-9\.\-]+\.)|)pre\.[0-9]+$`)
 
 var publish = &cobra.Command{
 	Use:   "publish [version]",
