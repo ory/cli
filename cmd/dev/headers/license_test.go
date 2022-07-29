@@ -46,8 +46,18 @@ func TestAddLicenses(t *testing.T) {
 
 func TestShouldAddLicense(t *testing.T) {
 	tests := map[string]bool{
-		"x.go": true,
-		"x.md": false,
+		"x.cs":   true,
+		"x.dart": true,
+		"x.go":   true,
+		"x.java": true,
+		"x.js":   true,
+		"x.php":  true,
+		"x.py":   true,
+		"x.rb":   true,
+		"x.rs":   true,
+		"x.ts":   true,
+		"x.vue":  true,
+		"x.yml":  true,
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
