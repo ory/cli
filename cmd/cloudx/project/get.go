@@ -1,20 +1,17 @@
 package project
 
 import (
-	"fmt"
+	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-
 	"github.com/ory/x/cmdx"
-
-	"github.com/spf13/cobra"
 )
 
 func NewGetProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project <id>",
 		Args:  cobra.ExactArgs(1),
-		Short: fmt.Sprintf("Get an Ory Cloud project"),
+		Short: "Get an Ory Cloud project",
 		Example: `$ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 
 ID		ecaaa3cb-0730-4ee8-a6df-9553cdfeef89

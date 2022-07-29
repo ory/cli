@@ -15,7 +15,6 @@ import (
 	"github.com/ory/cli/cmd/cloudx"
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
-
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/pointerx"
 )
