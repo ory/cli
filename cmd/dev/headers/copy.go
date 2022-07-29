@@ -46,7 +46,7 @@ func CopyFiles(src, dst string) error {
 	if err != nil {
 		return fmt.Errorf("cannot determine if folder %q exists: %w", dst, err)
 	}
-	if hasDst {
+	if !hasDst {
 		os.Mkdir(filepath.Join(dst, src), 0744)
 		extraPath = src
 	}
