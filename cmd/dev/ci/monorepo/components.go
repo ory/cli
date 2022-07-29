@@ -155,10 +155,6 @@ func (component *Component) isAffected(graph *ComponentGraph) bool {
 	return false
 }
 
-func (component *Component) isInvolved(graph *ComponentGraph) bool {
-	return component.isChanged(graph) || component.isAffected(graph)
-}
-
 func getCurrentComponent() (*Component, error) {
 	pwd, err := os.Getwd()
 	if err != nil {
