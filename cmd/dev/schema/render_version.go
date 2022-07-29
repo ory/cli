@@ -28,7 +28,7 @@ var RenderVersion = &cobra.Command{
 	Run:   addVersionToSchema,
 }
 
-var preReleaseVersion = regexp.MustCompile(".*[-.]pre\\.")
+var preReleaseVersion = regexp.MustCompile(`.*[-.]pre\.`)
 
 func addVersionToSchema(cmd *cobra.Command, args []string) {
 	const destFile = ".schema/version.schema.json"
