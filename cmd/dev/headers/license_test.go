@@ -46,8 +46,8 @@ func TestAddLicenses(t *testing.T) {
 
 func TestShouldAddLicense(t *testing.T) {
 	tests := map[string]bool{
-		"foo.go": true,
-		"foo.md": false,
+		"x.go": true,
+		"x.md": false,
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
