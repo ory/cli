@@ -61,7 +61,7 @@ func (t Dir) RemoveDir(name string) {
 	os.RemoveAll(filepath.Join(t.Path, name))
 }
 
-func (t Dir) Cleanup() {
+func (t Dir) Delete() {
 	err := os.RemoveAll(t.Path)
 	if err != nil {
 		panic(err)

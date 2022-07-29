@@ -209,9 +209,9 @@ func createWorkspace() workspace {
 
 // removes this test workspace from the filesystem
 func (ws *workspace) delete() {
-	ws.src.Cleanup()
-	ws.dstCopy.Cleanup()
-	ws.dstCp.Cleanup()
+	ws.src.Delete()
+	ws.dstCopy.Delete()
+	ws.dstCp.Delete()
 }
 
 func (ws *workspace) done(t *testing.T) {
