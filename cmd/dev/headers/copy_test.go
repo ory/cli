@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_CopyFile_toNonExistingPath(t *testing.T) {
+func Test_CopyFile_fromFile_toNonExistingPath(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 	workspace.verifyContent(t,
@@ -23,7 +23,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFile_toExistingFile(t *testing.T) {
+func Test_CopyFile_fromFile_toExistingFile(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.dstCopy.CreateFile("README.md", "existing content")
 	workspace.dstCp.CreateFile("README.md", "existing content")
@@ -37,7 +37,7 @@ text`)
 	workspace.cleanup()
 }
 
-func Test_CopyFile_toExistingFolder(t *testing.T) {
+func Test_CopyFile_fromFile_toExistingFolder(t *testing.T) {
 	workspace := createWorkspace()
 	workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
 	workspace.verifyContent(
