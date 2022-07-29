@@ -216,12 +216,12 @@ func (ws *workspace) delete() {
 
 // cleanup of this workspace at the end of a test
 func (ws *workspace) done(t *testing.T) {
-	ws.verifyAllFilesCompared(t)
+	ws.verifyAllFilesChecked(t)
 	ws.delete()
 }
 
 // ensures that all files in the workspace have been verified with ws.verifyContent
-func (ws *workspace) verifyAllFilesCompared(t *testing.T) {
+func (ws *workspace) verifyAllFilesChecked(t *testing.T) {
 	allFiles, err := ws.copyFiles("")
 	assert.NoError(t, err)
 	assert.Equal(t, allFiles, ws.verified)
