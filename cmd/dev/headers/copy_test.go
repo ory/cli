@@ -118,7 +118,7 @@ One`)
 
 func Test_CopyFiles_fromFolder_toFile(t *testing.T) {
 	workspace := createWorkspace()
-	workspace.verifyCpAndCopyErr(t, "test_src", "main.go")
+	workspace.verifyCprAndCopyFilesErr(t, "test_src", "main.go")
 	workspace.cleanup()
 }
 
@@ -199,19 +199,23 @@ func createWorkspace() workspace {
 	return workspace{root: root, src: src, dstCopy: dstCopy, dstCp: dstCp}
 }
 
+// removes this test workspace from the filesystem
 func (ws workspace) cleanup() {
 	ws.src.Cleanup()
 	ws.dstCopy.Cleanup()
 	ws.dstCp.Cleanup()
 }
 
+// ensures that the file with the given path in the test workspace
+// contains the given content
 func (ws workspace) verifyContent(t *testing.T, filepath, want string) {
 	t.Helper()
 	have := ws.root.Content(filepath)
 	assert.Equal(t, tests.Trim(want), have)
 }
 
-// verifies that the "CopyFile" function copies files the exact same way as the built-in "cp" command in Unix.
+// ensures that the "CopyFile" function copies files
+// the exact same way as the built-in "cp" command in Unix
 func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
 	t.Helper()
 	// run "cp"
@@ -225,19 +229,7 @@ func (ws workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string
 	ws.verifyEqualDstStructure(t)
 }
 
-// verifies that the "CopyFile" function and Unix "cp" tool both return an error
-func (ws workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
-	t.Helper()
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
-	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	copyErr := CopyFile(src, dstCopy)
-	if (copyErr == nil) || (cpErr == nil) {
-		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
-	}
-}
-
-// verifies that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
+// ensures that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
 	// run "cp -r"
@@ -250,6 +242,32 @@ func (ws workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate strin
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
+}
+
+// ensures that the "CopyFile" function and Unix "cp" tool
+// both return an error
+func (ws workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
+	t.Helper()
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	copyErr := CopyFile(src, dstCopy)
+	if (copyErr == nil) || (cpErr == nil) {
+		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
+	}
+}
+
+// ensures that the "CopyFile" function and Unix "cp" tool
+// both return an error
+func (ws workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate string) {
+	t.Helper()
+	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
+	dstCopyFiles := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	copyFilesErr := CopyFiles(src, dstCopyFiles)
+	if (copyFilesErr == nil) || (cprErr == nil) {
+		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cprErr, copyFilesErr)
+	}
 }
 
 // ensures that the two given directories contain files with the same names
