@@ -222,7 +222,7 @@ func (ws *workspace) done(t *testing.T) {
 
 // ensures that all files in the workspace have been verified with ws.verifyContent
 func (ws *workspace) verifyAllFilesChecked(t *testing.T) {
-	allFiles, err := ws.copyFiles("")
+	allFiles, err := ws.copiedFiles("")
 	assert.NoError(t, err)
 	assert.Equal(t, allFiles, ws.verified)
 }
@@ -297,20 +297,20 @@ func (ws *workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate str
 // ensures that the two given directories contain files with the same names
 func (ws *workspace) verifyEqualDstStructure(t *testing.T) {
 	t.Helper()
-	copyEntries, err := ws.copyFiles("dst")
+	copyEntries, err := ws.copiedFiles("dst")
 	assert.NoError(t, err)
-	cpEntries, err := ws.cpFiles("dst")
+	cpEntries, err := ws.cpedFiles("dst")
 	assert.NoError(t, err)
 	assert.Equal(t, cpEntries, copyEntries)
 }
 
 // provides the relative paths of all files that were copied via `Copy` or `CopyFiles`
-func (ws *workspace) copyFiles(replacement string) ([]string, error) {
+func (ws *workspace) copiedFiles(replacement string) ([]string, error) {
 	return ws.files(ws.dstCopy.Path, replacement)
 }
 
 // provides the relative paths of all files that were copied via `cp` or `cp -r`
-func (ws *workspace) cpFiles(replacement string) ([]string, error) {
+func (ws *workspace) cpedFiles(replacement string) ([]string, error) {
 	return ws.files(ws.dstCp.Path, replacement)
 }
 
