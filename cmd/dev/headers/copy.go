@@ -50,11 +50,11 @@ func CopyFiles(src, dst string) error {
 	if !srcStat.IsDir() {
 		return CopyFile(src, dst)
 	}
-	extraPath := ""
 	hasDst, err := folderExists(dst)
 	if err != nil {
 		return fmt.Errorf("cannot determine if folder %q exists: %w", dst, err)
 	}
+	extraPath := ""
 	if hasDst {
 		os.Mkdir(filepath.Join(dst, src), 0744)
 		extraPath = src

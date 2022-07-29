@@ -232,7 +232,7 @@ func (ws workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFile(src, dstCopy)
 	if (copyErr == nil) || (cpErr == nil) {
-		t.Fatalf("Inconsistent errors! cp: %v, copy: %v\n", cpErr, copyErr)
+		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
 	}
 }
 
