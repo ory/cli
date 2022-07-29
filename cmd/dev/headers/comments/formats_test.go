@@ -2,9 +2,9 @@ package comments
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,18 +26,18 @@ func TestDoubleSlashCommentsRender(t *testing.T) {
 
 func TestDoubleSlashCommentsRemove(t *testing.T) {
 	t.Parallel()
-	give := tests.Trim(`
+	give := strings.Trim(`
 // Copyright © 1997 Ory Corp Inc.
 
 // another comment
 
 name: test
-hello: world`)
-	want := tests.Trim(`
+hello: world`, "\n")
+	want := strings.Trim(`
 // another comment
 
 name: test
-hello: world`)
+hello: world`, "\n")
 	have := doubleSlashComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }
@@ -60,18 +60,18 @@ func TestPoundCommentsRender(t *testing.T) {
 
 func TestPoundCommentsRemove(t *testing.T) {
 	t.Parallel()
-	give := tests.Trim(`
+	give := strings.Trim(`
 # Copyright © 1997 Ory Corp Inc.
 
 # another comment
 
 name: test
-hello: world`)
-	want := tests.Trim(`
+hello: world`, "\n")
+	want := strings.Trim(`
 # another comment
 
 name: test
-hello: world`)
+hello: world`, "\n")
 	have := poundComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }
@@ -108,19 +108,19 @@ func TestHtmlCommentsRenderLineStart(t *testing.T) {
 
 func TestHtmlCommentsRemove(t *testing.T) {
 	t.Parallel()
-	give := tests.Trim(`
+	give := strings.Trim(`
 <!-- another comment -->
 
 <!-- Copyright © 1997 Ory Corp Inc. -->
 <!-- All rights reserved -->
 
 name: test
-hello: world`)
-	want := tests.Trim(`
+hello: world`, "\n")
+	want := strings.Trim(`
 <!-- another comment -->
 
 name: test
-hello: world`)
+hello: world`, "\n")
 	have := htmlComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }

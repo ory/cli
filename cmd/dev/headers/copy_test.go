@@ -2,12 +2,12 @@ package headers
 
 import (
 	"io/fs"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -184,19 +184,19 @@ readme text`)
 // directory structure for testing copy operations
 type workspace struct {
 	// the directory that contains the workspace
-	root tests.Dir
+	root Dir
 	// the directory that contains the folder tree to copy
-	src tests.Dir
+	src Dir
 	// the directory that contains the result of the built-in CopyFile(s) operation
-	dstCopy tests.Dir
+	dstCopy Dir
 	// the directory that contains the result of Unix's cp operation
-	dstCp tests.Dir
+	dstCp Dir
 	// list of file paths whose content was verified
 	verified []string
 }
 
 func createWorkspace() workspace {
-	root := tests.Dir{Path: "."}
+	root := Dir{Path: "."}
 	src := root.CreateDir("test_src")
 	src.CreateFile("README.md", "# readme header\nreadme text")
 	src.CreateFile("alpha/one.md", "# Alpha\nOne")
@@ -232,7 +232,7 @@ func (ws *workspace) verifyAllFilesChecked(t *testing.T) {
 func (ws *workspace) verifyContent(t *testing.T, filepath, want string) {
 	t.Helper()
 	have := ws.root.Content(filepath)
-	assert.Equal(t, tests.Trim(want), have)
+	assert.Equal(t, strings.Trim(want, "\n"), have)
 	ws.verified = append(ws.verified, filepath[len(ws.dstCopy.Path):])
 }
 
@@ -336,4 +336,64 @@ func (ws *workspace) files(dir, replacement string) ([]string, error) {
 		return nil
 	})
 	return result, err
+}
+
+// a filesystem directory used for testing
+type Dir struct {
+	Path string
+}
+
+func CreateTmpDir() Dir {
+	path, err := os.MkdirTemp("", "ory-license")
+	if err != nil {
+		panic(err)
+	}
+	return Dir{path}
+}
+
+func (t Dir) Content(path string) string {
+	content, err := os.ReadFile(filepath.Join(t.Path, path))
+	if err != nil {
+		panic(err)
+	}
+	return string(content)
+}
+
+func (t Dir) CreateDir(name string) Dir {
+	t.RemoveDir(name)
+	path := filepath.Join(t.Path, name)
+	err := os.Mkdir(path, 0744)
+	if err != nil {
+		panic(err)
+	}
+	return Dir{path}
+}
+
+func (t Dir) CreateFile(name, content string) string {
+	path := filepath.Join(t.Path, name)
+	dir := filepath.Dir(path)
+	err := os.MkdirAll(dir, 0744)
+	if err != nil {
+		panic(err)
+	}
+	err = os.WriteFile(path, []byte(content), 0744)
+	if err != nil {
+		panic(err)
+	}
+	return path
+}
+
+func (t Dir) Filename(base string) string {
+	return filepath.Join(t.Path, base)
+}
+
+func (t Dir) RemoveDir(name string) {
+	os.RemoveAll(filepath.Join(t.Path, name))
+}
+
+func (t Dir) Delete() {
+	err := os.RemoveAll(t.Path)
+	if err != nil {
+		panic(err)
+	}
 }

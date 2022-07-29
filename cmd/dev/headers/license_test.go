@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers/tests"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddLicenses(t *testing.T) {
 	t.Parallel()
-	dir := tests.CreateTmpDir()
+	dir := CreateTmpDir()
 	dir.CreateFile(".gitignore", "git-ignored.go")
 	dir.CreateFile("c-sharp.cs", "using System;\n\nnamespace Foo.Bar {\n")
 	dir.CreateFile("dart.dart", "int a = 1;\nint b = 2;")
