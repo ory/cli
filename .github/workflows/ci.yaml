@@ -23,7 +23,6 @@ jobs:
       - run: |
           make test
 
-
   docs:
     name: Generate docs
     runs-on: ubuntu-latest
