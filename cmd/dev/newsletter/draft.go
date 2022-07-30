@@ -8,17 +8,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ory/cli/view"
+	"github.com/spf13/cobra"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/spf13/cobra"
-
+	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/cli/view"
 	"github.com/ory/gochimp3"
 	_ "github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
 var draft = &cobra.Command{
