@@ -12,10 +12,9 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/cobra"
 
-	"github.com/ory/x/flagx"
-
 	"github.com/ory/cli/cmd/dev/newsletter"
 	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/x/flagx"
 )
 
 var gitCommitMessageBaseRegex = regexp.MustCompile("(?im)^" + pkg.GitCommitMessagePreviousVersion + "\\sv([0-9a-zA-Z\\-\\._]+)$")

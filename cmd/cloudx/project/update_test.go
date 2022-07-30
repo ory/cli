@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/ory/x/assertx"
-
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
+	"github.com/ory/x/assertx"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/snapshotx"
 )

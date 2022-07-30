@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 
 	"github.com/spf13/cobra"
+	"github.com/tidwall/sjson"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
-
-	"github.com/tidwall/sjson"
 )
 
 func prefixConfig(prefix string, s []string) []string {

@@ -13,20 +13,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-
-	"github.com/hashicorp/go-retryablehttp"
-
-	"github.com/gomarkdown/markdown/ast"
-
 	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-
-	"github.com/ory/gochimp3"
-	"github.com/ory/x/httpx"
+	"github.com/hashicorp/go-retryablehttp"
+	"github.com/pkg/errors"
 
 	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/gochimp3"
+	"github.com/ory/x/httpx"
 )
 
 var defaultRenderer = html.NewRenderer(html.RendererOptions{

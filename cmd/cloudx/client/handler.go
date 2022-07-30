@@ -17,11 +17,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/imdario/mergo"
-
-	"github.com/ory/x/jsonx"
-
 	"github.com/gofrs/uuid/v3"
+	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -29,9 +26,9 @@ import (
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
-
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
+	"github.com/ory/x/jsonx"
 	"github.com/ory/x/stringsx"
 )
 
