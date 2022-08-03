@@ -16,7 +16,7 @@ import (
 )
 
 // template for the header
-const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s"
+const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT!\nPlease edit the original at %s"
 
 // the root path for links to the original
 // NOTE: might have to convert to a CLI switch
