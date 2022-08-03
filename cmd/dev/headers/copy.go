@@ -16,7 +16,7 @@ import (
 )
 
 // template for the header
-const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s."
+const COPY_HEADER_TEMPLATE = "AUTO-GENERATED, DO NOT EDIT! Please edit the original at %s"
 
 // the root path for links to the original
 // NOTE: might have to convert to a CLI switch
@@ -60,7 +60,7 @@ func CopyFiles(src, dst string) error {
 	}
 	extraPath := ""
 	if hasDst {
-		os.Mkdir(filepath.Join(dst, src), 0744)
+		os.MkdirAll(filepath.Join(dst, src), 0744)
 		extraPath = src
 	}
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
@@ -69,7 +69,7 @@ func CopyFiles(src, dst string) error {
 		}
 		dstPath := filepath.Join(dst, extraPath, path[len(src):])
 		if info.IsDir() {
-			err := os.Mkdir(dstPath, 0744)
+			err := os.MkdirAll(dstPath, 0744)
 			if err == nil {
 				return nil
 			}
@@ -103,9 +103,9 @@ var copy = &cobra.Command{
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if recursive {
-			return CopyFiles(args[1], args[2])
+			return CopyFiles(args[0], args[1])
 		} else {
-			return CopyFile(args[1], args[2])
+			return CopyFile(args[0], args[1])
 		}
 	},
 }
