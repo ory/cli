@@ -17,7 +17,7 @@ func TestCopyFile(t *testing.T) {
 		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 		workspace.verifyContent(t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -37,7 +37,7 @@ readme text`)
 		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
 		workspace.verifyContent(t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -50,7 +50,7 @@ readme text`)
 		workspace.verifyContent(
 			t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -70,25 +70,49 @@ func TestCopyFiles(t *testing.T) {
 		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 		workspace.verifyContent(t,
 			"test_copy_dst/test_src/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
 		workspace.verifyContent(t,
 			"test_copy_dst/test_src/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
 
 # Alpha
 One`)
 		workspace.verifyContent(t,
 			"test_copy_dst/test_src/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
 
 # Alpha
 Two`)
 		workspace.verifyContent(t,
 			"test_copy_dst/test_src/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
+
+# Beta
+One`)
+		workspace.done(t)
+	})
+
+	t.Run("subfolder --> folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpr(t, "test_src/alpha", "{{dstDir}}")
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/alpha/one.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
+
+# Alpha
+One`)
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/alpha/two.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
+
+# Alpha
+Two`)
+		workspace.verifyContent(t,
+			"test_copy_dst/test_src/beta/one.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
 
 # Beta
 One`)
@@ -100,25 +124,25 @@ One`)
 		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
 		workspace.verifyContent(t,
 			"test_copy_dst/new/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
 		workspace.verifyContent(t,
 			"test_copy_dst/new/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
 
 # Alpha
 One`)
 		workspace.verifyContent(t,
 			"test_copy_dst/new/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
 
 # Alpha
 Two`)
 		workspace.verifyContent(t,
 			"test_copy_dst/new/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
 
 # Beta
 One`)
@@ -138,7 +162,7 @@ One`)
 		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
 		workspace.verifyContent(t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -150,7 +174,7 @@ readme text`)
 		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
 		workspace.verifyContent(t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -164,7 +188,7 @@ readme text`)
 		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
 		workspace.verifyContent(t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
@@ -177,7 +201,7 @@ readme text`)
 		workspace.verifyContent(
 			t,
 			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md. -->
+<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
 
 # readme header
 readme text`)
