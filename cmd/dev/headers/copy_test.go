@@ -99,23 +99,17 @@ One`)
 		workspace := createWorkspace()
 		workspace.verifySameBehaviorAsCpr(t, "test_src/alpha", "{{dstDir}}")
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/alpha/one.md", `
+			"test_copy_dst/alpha/one.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
 
 # Alpha
 One`)
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/alpha/two.md", `
+			"test_copy_dst/alpha/two.md", `
 <!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
 
 # Alpha
 Two`)
-		workspace.verifyContent(t,
-			"test_copy_dst/test_src/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
-
-# Beta
-One`)
 		workspace.done(t)
 	})
 

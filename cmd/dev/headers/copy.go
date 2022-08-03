@@ -60,8 +60,9 @@ func CopyFiles(src, dst string) error {
 	}
 	extraPath := ""
 	if hasDst {
-		os.MkdirAll(filepath.Join(dst, src), 0744)
-		extraPath = src
+		srcLast := filepath.Base(src)
+		os.MkdirAll(filepath.Join(dst, srcLast), 0744)
+		extraPath = srcLast
 	}
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
