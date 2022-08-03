@@ -14,46 +14,49 @@ import (
 func TestCopyFile(t *testing.T) {
 	t.Run("file --> non-existing path ending without slash", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifySameBehaviorAsCp(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
 		workspace.verifyContent(t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
 	t.Run("file --> non-existing path ending with slash", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.verifyCpAndCopyErr(t, "test_src/README.md", "{{dstDir}}/new/")
+		workspace.verifyCpAndCopyErr(t, "test_src/SECURITY.md", "{{dstDir}}/new/")
 		workspace.done(t)
 	})
 
 	t.Run("file --> existing file", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.dstCopy.CreateFile("README.md", "existing content")
-		workspace.dstCp.CreateFile("README.md", "existing content")
-		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.dstCopy.CreateFile("SECURITY.md", "existing content")
+		workspace.dstCp.CreateFile("SECURITY.md", "existing content")
+		workspace.verifySameBehaviorAsCp(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
 		workspace.verifyContent(t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
 	t.Run("file --> existing folder", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.verifySameBehaviorAsCp(t, "test_src/README.md", "{{dstDir}}")
+		workspace.verifySameBehaviorAsCp(t, "test_src/SECURITY.md", "{{dstDir}}")
 		workspace.verifyContent(
 			t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
@@ -69,29 +72,33 @@ func TestCopyFiles(t *testing.T) {
 		workspace := createWorkspace()
 		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}")
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/test_src/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
+			"test_copy_dst/test_src/alpha/one.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.yml
 
-# Alpha
-One`)
+name: alpha
+number: one`)
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
+			"test_copy_dst/test_src/alpha/two.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.yml
 
-# Alpha
-Two`)
+name: alpha
+number: two`)
 		workspace.verifyContent(t,
-			"test_copy_dst/test_src/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
+			"test_copy_dst/test_src/beta/one.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.yml
 
-# Beta
-One`)
+name: beta
+number: one`)
 		workspace.done(t)
 	})
 
@@ -99,17 +106,19 @@ One`)
 		workspace := createWorkspace()
 		workspace.verifySameBehaviorAsCpr(t, "test_src/alpha", "{{dstDir}}")
 		workspace.verifyContent(t,
-			"test_copy_dst/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
+			"test_copy_dst/alpha/one.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.yml
 
-# Alpha
-One`)
+name: alpha
+number: one`)
 		workspace.verifyContent(t,
-			"test_copy_dst/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
+			"test_copy_dst/alpha/two.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.yml
 
-# Alpha
-Two`)
+name: alpha
+number: two`)
 		workspace.done(t)
 	})
 
@@ -117,29 +126,33 @@ Two`)
 		workspace := createWorkspace()
 		workspace.verifySameBehaviorAsCpr(t, "test_src", "{{dstDir}}/new")
 		workspace.verifyContent(t,
-			"test_copy_dst/new/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/new/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.verifyContent(t,
-			"test_copy_dst/new/alpha/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.md -->
+			"test_copy_dst/new/alpha/one.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/one.yml
 
-# Alpha
-One`)
+name: alpha
+number: one`)
 		workspace.verifyContent(t,
-			"test_copy_dst/new/alpha/two.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.md -->
+			"test_copy_dst/new/alpha/two.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/alpha/two.yml
 
-# Alpha
-Two`)
+name: alpha
+number: two`)
 		workspace.verifyContent(t,
-			"test_copy_dst/new/beta/one.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.md -->
+			"test_copy_dst/new/beta/one.yml", `
+# AUTO-GENERATED, DO NOT EDIT!
+# Please edit the original at https://github.com/ory/meta/blob/master/test_src/beta/one.yml
 
-# Beta
-One`)
+name: beta
+number: one`)
 		workspace.done(t)
 	})
 
@@ -151,54 +164,58 @@ One`)
 
 	t.Run("file --> file", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.dstCopy.CreateFile("README.md", "old content")
-		workspace.dstCp.CreateFile("README.md", "old content")
-		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.dstCopy.CreateFile("SECURITY.md", "old content")
+		workspace.dstCp.CreateFile("SECURITY.md", "old content")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
 		workspace.verifyContent(t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
 	t.Run("file --> non-existing path", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
 		workspace.verifyContent(t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
 	t.Run("file --> existing file", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.dstCopy.CreateFile("README.md", "existing content")
-		workspace.dstCp.CreateFile("README.md", "existing content")
-		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}/README.md")
+		workspace.dstCopy.CreateFile("SECURITY.md", "existing content")
+		workspace.dstCp.CreateFile("SECURITY.md", "existing content")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
 		workspace.verifyContent(t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 
 	t.Run("file --> existing folder", func(t *testing.T) {
 		workspace := createWorkspace()
-		workspace.verifySameBehaviorAsCpr(t, "test_src/README.md", "{{dstDir}}")
+		workspace.verifySameBehaviorAsCpr(t, "test_src/SECURITY.md", "{{dstDir}}")
 		workspace.verifyContent(
 			t,
-			"test_copy_dst/README.md", `
-<!-- AUTO-GENERATED, DO NOT EDIT! Please edit the original at https://github.com/ory/meta/blob/master/test_src/README.md -->
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
 
-# readme header
-readme text`)
+# header
+text about security`)
 		workspace.done(t)
 	})
 }
@@ -220,10 +237,10 @@ type workspace struct {
 func createWorkspace() workspace {
 	root := Dir{Path: "."}
 	src := root.CreateDir("test_src")
-	src.CreateFile("README.md", "# readme header\nreadme text")
-	src.CreateFile("alpha/one.md", "# Alpha\nOne")
-	src.CreateFile("alpha/two.md", "# Alpha\nTwo")
-	src.CreateFile("beta/one.md", "# Beta\nOne")
+	src.CreateFile("SECURITY.md", "# header\ntext about security")
+	src.CreateFile("alpha/one.yml", "name: alpha\nnumber: one")
+	src.CreateFile("alpha/two.yml", "name: alpha\nnumber: two")
+	src.CreateFile("beta/one.yml", "name: beta\nnumber: one")
 	dstCopy := root.CreateDir("test_copy_dst")
 	dstCp := root.CreateDir("test_cp_dst")
 	return workspace{root: root, src: src, dstCopy: dstCopy, dstCp: dstCp, verified: []string{}}
