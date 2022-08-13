@@ -344,7 +344,7 @@ func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate strin
 // the exact same way as the built-in "cp" command in Unix
 func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp"
+	// run "cp -n"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
