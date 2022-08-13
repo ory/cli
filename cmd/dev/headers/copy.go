@@ -148,4 +148,5 @@ func init() {
 // contains the value of the "-r" CLI flag
 var recursive bool
 
+// contains the value of the "-n" CLI flag
 var noOverride bool
