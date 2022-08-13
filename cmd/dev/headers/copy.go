@@ -43,8 +43,9 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
-// Header-aware equivalent of the Unix `cp` command.
+// Header-aware equivalent of the Unix `cp -n` command.
 // Copies the given source file (path must be relative to CWD) to the given absolute path
+// if the destination file does not exist
 // and prepends the COPY_HEADER_TEMPLATE to the content.
 func CopyFileNoOverwrite(src, dst string) error {
 	if strings.HasSuffix(dst, "/") {
