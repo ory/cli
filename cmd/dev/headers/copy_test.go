@@ -348,7 +348,7 @@ func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate stri
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
-	// run "CopyFile"
+	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err = CopyFileNoOverwrite(src, dstCopy)
 	assert.NoError(t, err)
