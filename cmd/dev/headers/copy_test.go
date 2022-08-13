@@ -67,6 +67,56 @@ text about security`)
 	})
 }
 
+func TestCopyFileNoOverride(t *testing.T) {
+	t.Run("file --> non-existing path ending without slash", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpn(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
+		workspace.verifyContent(t,
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
+
+# header
+text about security`)
+		workspace.done(t)
+	})
+
+	t.Run("file --> non-existing path ending with slash", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifyCpnAndCopyErr(t, "test_src/SECURITY.md", "{{dstDir}}/new/")
+		workspace.done(t)
+	})
+
+	t.Run("file --> existing file", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.dstCopy.CreateFile("SECURITY.md", "existing content")
+		workspace.dstCp.CreateFile("SECURITY.md", "existing content")
+		workspace.verifySameBehaviorAsCpn(t, "test_src/SECURITY.md", "{{dstDir}}/SECURITY.md")
+		workspace.verifyContent(t, "test_copy_dst/SECURITY.md", `existing content`)
+		workspace.done(t)
+	})
+
+	t.Run("file --> existing folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifySameBehaviorAsCpn(t, "test_src/SECURITY.md", "{{dstDir}}")
+		workspace.verifyContent(
+			t,
+			"test_copy_dst/SECURITY.md", `
+<!-- AUTO-GENERATED, DO NOT EDIT! -->
+<!-- Please edit the original at https://github.com/ory/meta/blob/master/test_src/SECURITY.md -->
+
+# header
+text about security`)
+		workspace.done(t)
+	})
+
+	t.Run("folder", func(t *testing.T) {
+		workspace := createWorkspace()
+		workspace.verifyCpnAndCopyErr(t, "test_src", "{{dstDir}}")
+		workspace.done(t)
+	})
+}
+
 func TestCopyFiles(t *testing.T) {
 	t.Run("folder --> folder", func(t *testing.T) {
 		workspace := createWorkspace()
@@ -290,6 +340,21 @@ func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate strin
 	ws.verifyEqualDstStructure(t)
 }
 
+// ensures that the "CopyFile" function copies files
+// the exact same way as the built-in "cp" command in Unix
+func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate string) {
+	t.Helper()
+	// run "cp"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, err := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
+	assert.NoError(t, err)
+	// run "CopyFile"
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	err = CopyFileNoOverwrite(src, dstCopy)
+	assert.NoError(t, err)
+	ws.verifyEqualDstStructure(t)
+}
+
 // ensures that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
@@ -315,6 +380,24 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFile(src, dstCopy)
+	// ensure both return errors
+	if (copyErr == nil) || (cpErr == nil) {
+		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
+	}
+	// verify that both created the same files and folders
+	ws.verifyEqualDstStructure(t)
+}
+
+// ensures that the "CopyFileNoOverwrite" function and Unix "cp -n" tool
+// both return an error
+func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) {
+	t.Helper()
+	// run "cp"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
+	// run "CopyFile"
+	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	copyErr := CopyFileNoOverwrite(src, dstCopy)
 	// ensure both return errors
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)

@@ -43,6 +43,31 @@ func CopyFile(src, dst string) error {
 	return nil
 }
 
+// Header-aware equivalent of the Unix `cp` command.
+// Copies the given source file (path must be relative to CWD) to the given absolute path
+// and prepends the COPY_HEADER_TEMPLATE to the content.
+func CopyFileNoOverwrite(src, dst string) error {
+	if strings.HasSuffix(dst, "/") {
+		return fmt.Errorf("cannot create file %q", dst)
+	}
+	body, err := os.ReadFile(src)
+	if err != nil {
+		return fmt.Errorf("cannot read file %q: %w", src, err)
+	}
+	dstPath := dst
+	dstStat, err := os.Lstat(dst)
+	if err == nil {
+		if dstStat.IsDir() {
+			dstPath = filepath.Join(dst, filepath.Base(src))
+		} else {
+			return nil
+		}
+	}
+	headerText := fmt.Sprintf(COPY_HEADER_TEMPLATE, ROOT_PATH+src)
+	comments.WriteFileWithHeader(dstPath, headerText, string(body))
+	return nil
+}
+
 // Header-aware equivalent of the Unix `cp -r` command.
 // Copies all files in the given `src` directory (path must be relative to CWD) to the given absolute path
 // and prepends the COPY_HEADER_TEMPLATE to the content.
@@ -105,6 +130,8 @@ var copy = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if recursive {
 			return CopyFiles(args[0], args[1])
+		} else if noOverride {
+			return CopyFileNoOverwrite(args[0], args[1])
 		} else {
 			return CopyFile(args[0], args[1])
 		}
@@ -114,7 +141,10 @@ var copy = &cobra.Command{
 func init() {
 	Main.AddCommand(copy)
 	copy.Flags().BoolVarP(&recursive, "recursive", "r", false, "Whether to copy files in subdirectories")
+	copy.Flags().BoolVarP(&recursive, "no-clobber", "n", false, "Do not overwrite an existing file")
 }
 
 // contains the value of the "-r" CLI flag
 var recursive bool
+
+var noOverride bool
