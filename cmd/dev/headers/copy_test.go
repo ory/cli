@@ -392,10 +392,10 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 // both return an error
 func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp"
+	// run "cp -n"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
-	// run "CopyFile"
+	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFileNoOverwrite(src, dstCopy)
 	// ensure both return errors
