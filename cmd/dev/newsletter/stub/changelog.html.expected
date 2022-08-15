@@ -1097,6 +1097,7 @@ The configuration value for <code>hashers.argon2.memory</code> is now a string r
 Co-authored-by: aeneasr <a href="mailto:aeneas@ory.sh" target="_blank">aeneas@ory.sh</a>
 Please run SQL migrations when applying this patch.
 The following configuration keys were updated:</p>
+
 <pre style="word-break: break-all; white-space: pre-wrap"><code class="language-patch">selfservice.methods.password.config.max_breaches
 </code></pre>
 
