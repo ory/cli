@@ -20,7 +20,7 @@ const LICENSE_TEMPLATE = "Copyright © %d Ory Corp Inc."
 const LICENSE_TOKEN = "Copyright ©"
 
 // file types that we don't want to add license headers to
-var noLicenseHeadersFor = []comments.FileType{"md"}
+var noLicenseHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 
 // addLicenses adds or updates the Ory license header in all files within the given directory.
 func AddLicenses(dir string, year int) error {

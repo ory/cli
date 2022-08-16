@@ -25,6 +25,7 @@ func TestAddLicenses(t *testing.T) {
 	dir.CreateFile("typescript.ts", "const a = 1\nconst b = 2\n")
 	dir.CreateFile("vue.vue", "<template>\n<Header />")
 	dir.CreateFile("yaml.yml", "one: two\nalpha: beta")
+	dir.CreateFile("yaml.yaml", "one: two\nalpha: beta")
 	err := AddLicenses(dir.Path, 2022)
 	assert.NoError(t, err)
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.Content("c-sharp.cs"))
@@ -40,7 +41,8 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nlet a = 1;\nlet mut b = 2;\n", dir.Content("rust.rs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp Inc.\n\nconst a = 1\nconst b = 2\n", dir.Content("typescript.ts"))
 	assert.Equal(t, "<!-- Copyright © 2022 Ory Corp Inc. -->\n\n<template>\n<Header />", dir.Content("vue.vue"))
-	assert.Equal(t, "# Copyright © 2022 Ory Corp Inc.\n\none: two\nalpha: beta", dir.Content("yaml.yml"))
+	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yml"))
+	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yaml"))
 }
 
 func TestShouldAddLicense(t *testing.T) {
@@ -57,7 +59,8 @@ func TestShouldAddLicense(t *testing.T) {
 		"x.rs":   true,
 		"x.ts":   true,
 		"x.vue":  true,
-		"x.yml":  true,
+		"x.yml":  false,
+		"x.yaml": false,
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
