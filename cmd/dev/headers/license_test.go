@@ -59,8 +59,8 @@ func TestShouldAddLicense(t *testing.T) {
 		"x.rs":   true,
 		"x.ts":   true,
 		"x.vue":  true,
-		"x.yml":  false,
-		"x.yaml": false,
+		"x.yml":  false, // data is not protected by copyright law
+		"x.yaml": false, // data is not protected by copyright law
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
