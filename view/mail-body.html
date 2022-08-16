@@ -1,24 +1,121 @@
 <!DOCTYPE html>
 <!-- Set the language of your main document. This helps screenreaders use the proper language profile, pronunciation, and accent. -->
-<html lang="en">
+<html lang='en'>
 <head>
   <title>{{.ProjectName}} {{.Version}} is here!</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <style type="text/css">
-
-    /* client-specific styles, to avoid rendering issues */
-    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
-    img { -ms-interpolation-mode: bicubic; }
-
-    /* reset styles */
-    img { border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
-    table { border-collapse: collapse !important; }
-    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
-
-    /* iOS link styles */
+    #outlook a {
+      padding: 0;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+    p {
+      display: block;
+      margin: 0;
+    }
+  </style>
+  <link
+    href="https://fonts.googleapis.com/css?family=Inter:700,400,600"
+    rel="stylesheet"
+    type="text/css"
+  />
+  <style type="text/css"></style>
+  <style type="text/css">
+    @media only screen and (min-width: 599px) {
+      .pc100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+      .pc48-30508474576271 {
+        width: 48.30508474576271% !important;
+        max-width: 48.30508474576271%;
+      }
+      .pc3-389830508474576 {
+        width: 3.389830508474576% !important;
+        max-width: 3.389830508474576%;
+      }
+      .xc600 {
+        width: 600px !important;
+        max-width: 600px;
+      }
+      .xc32 {
+        width: 32px !important;
+        max-width: 32px;
+      }
+      .xc16 {
+        width: 16px !important;
+        max-width: 16px;
+      }
+      .xc440 {
+        width: 440px !important;
+        max-width: 440px;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:599px)">
+    .moz-text-html .pc100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+    .moz-text-html .pc48-30508474576271 {
+      width: 48.30508474576271% !important;
+      max-width: 48.30508474576271%;
+    }
+    .moz-text-html .pc3-389830508474576 {
+      width: 3.389830508474576% !important;
+      max-width: 3.389830508474576%;
+    }
+    .moz-text-html .xc600 {
+      width: 600px !important;
+      max-width: 600px;
+    }
+    .moz-text-html .xc32 {
+      width: 32px !important;
+      max-width: 32px;
+    }
+    .moz-text-html .xc16 {
+      width: 16px !important;
+      max-width: 16px;
+    }
+    .moz-text-html .xc440 {
+      width: 440px !important;
+      max-width: 440px;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width: 599px) {
+      table.fwm {
+        width: 100% !important;
+      }
+      td.fwm {
+        width: auto !important;
+      }
+    }
+  </style>
+  <style type="text/css">
+    u + .emailify a,
+    #MessageViewBody a,
     a[x-apple-data-detectors] {
       color: inherit !important;
       text-decoration: none !important;
@@ -27,107 +124,1917 @@
       font-weight: inherit !important;
       line-height: inherit !important;
     }
-
-    /* gmail link styles */
-    u + #body a {
-      color: {{.BrandColor}};
-      text-decoration: none;
-      font-size: inherit;
-      font-family: inherit;
-      font-weight: inherit;
-      line-height: inherit;
+    span.MsoHyperlink {
+      mso-style-priority: 99;
+      color: inherit;
     }
-
-    /* samsung link styles */
-    #MessageViewBody a {
-      color: {{.BrandColor}};
-      text-decoration: none;
-      font-size: inherit;
-      font-family: inherit;
-      font-weight: inherit;
-      line-height: inherit;
+    span.MsoHyperlinkFollowed {
+      mso-style-priority: 99;
+      color: inherit;
     }
-
-    /* link styles */
-    a { color: {{.BrandColor}}; font-weight: 500; text-decoration: none; }
-    a:hover { color: #000000 !important; text-decoration: none !important; }
-
-    @media screen and (min-width:600px) {
-      h1 { font-size: 24px !important; line-height: 32px !important; }
+    u + .emailify .glist {
+      margin-left: 0 !important;
     }
-
-    /* make lists a bit prettier */
-    ul li p:last-child {
-      margin-bottom: 0px;
-      padding-bottom: 0px;
-    }
-    ul li p:first-child {
-      margin-top: 0px;
-      padding-top: 0px;
-    }
-    ul li p + p {
-      padding-bottom: 1em !important;
-      padding-left: .5em;
+    @media only screen and (max-width: 599px) {
+      .emailify {
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+      }
+      u + .emailify .glist {
+        margin-left: 25px !important;
+      }
+      td.x {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      .fwm img {
+        max-width: 100% !important;
+        height: auto !important;
+      }
+      td.stk {
+        border: 0 !important;
+      }
+      br.sb {
+        display: none !important;
+      }
+      .thd-1 .i-thumbnail {
+        display: inline-block !important;
+        height: auto !important;
+        overflow: hidden !important;
+      }
+      .hd-1 {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .ht-1 {
+        display: table !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .hr-1 {
+        display: table-row !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      .hc-1 {
+        display: table-cell !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      div.r.pr-16 > table > tbody > tr > td,
+      div.r.pr-16 > div > table > tbody > tr > td {
+        padding-right: 16px !important;
+      }
+      div.r.pl-16 > table > tbody > tr > td,
+      div.r.pl-16 > div > table > tbody > tr > td {
+        padding-left: 16px !important;
+      }
+      td.i.w-60 img {
+        width: 60px !important;
+      }
+      td.i.h-30 img {
+        height: 30px !important;
+      }
+      div.r.pt-0 > table > tbody > tr > td,
+      div.r.pt-0 > div > table > tbody > tr > td {
+        padding-top: 0px !important;
+      }
+      div.r.pr-0 > table > tbody > tr > td,
+      div.r.pr-0 > div > table > tbody > tr > td {
+        padding-right: 0px !important;
+      }
+      div.r.pb-0 > table > tbody > tr > td,
+      div.r.pb-0 > div > table > tbody > tr > td {
+        padding-bottom: 0px !important;
+      }
+      div.r.pl-0 > table > tbody > tr > td,
+      div.r.pl-0 > div > table > tbody > tr > td {
+        padding-left: 0px !important;
+      }
+      .hm-1 {
+        display: none !important;
+        max-width: 0 !important;
+        max-height: 0 !important;
+        overflow: hidden !important;
+        mso-hide: all !important;
+      }
+      div.g.mb-16 > table > tbody > tr > td {
+        padding-bottom: 16px !important;
+      }
     }
   </style>
+  <meta name="color-scheme" content="light dark" />
+  <meta name="supported-color-schemes" content="light dark" />
 
 </head>
-<body style="margin: 0 !important; padding: 0 !important;">
+<body
+link="#3d53f5"
+vlink="#3d53f5"
+class="emailify"
+style="word-spacing: normal; background-color: #e5e5e5"
+>
+<div class="bg" style="background-color: #e5e5e5">
 
-<!-- preview text, can be removed as it is not that important -->
-<div style="display:none;font-size:1px;color:#333333;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">{{.ProjectName}} {{.Version}} is here!&zwnj;</div>
+  <div
+    class="r pr-16 pl-16"
+    style="
+      background: #fffffe;
+      background-color: #fffffe;
+      margin: 0px auto;
+      border-radius: 0;
+      max-width: 600px;
+    "
+  >
+    <table
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        background: #fffffe;
+        background-color: #fffffe;
+        width: 100%;
+        border-radius: 0;
+      "
+    >
+      <tbody>
+        <tr>
+          <td
+            style="
+              border: none;
+              direction: ltr;
+              font-size: 0;
+              padding: 16px 64px 16px 64px;
+              text-align: left;
+            "
+          >′¨
+            <div
+              class="pc100 ogf"
+              style="
+                font-size: 0;
+                line-height: 0;
+                text-align: left;
+                display: inline-block;
+                width: 100%;
+                direction: ltr;
+              "
+            >
+              <div
+                class="pc48-30508474576271 ogf m c"
+                style="
+                  font-size: 0;
+                  text-align: left;
+                  direction: ltr;
+                  display: inline-block;
+                  vertical-align: middle;
+                  width: 48.30508474576271%;
+                "
+              >
+                <table
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="
+                    background-color: transparent;
+                    border: none;
+                    vertical-align: middle;
+                  "
+                  width="100%"
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        align="left"
+                        class="i w-60 h-30"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 0;
+                          word-break: break-word;
+                        "
+                      >
+                        <table
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="
+                            border-collapse: collapse;
+                            border-spacing: 0;
+                          "
+                        >
+                          <tbody>
+                            <tr>
+                              <td style="width: 80px">
+                                <a
+                                  href="https://www.ory.sh/"
+                                  target="_blank"
+                                >
+                                  <img
+                                    alt=""
+                                    height="auto"
+                                    src="https://f002.backblazeb2.com/file/emailify/879566e4ded61f9133eb4ae85666e0f8.png"
+                                    style="
+                                      border: 0;
+                                      border-radius: 0;
+                                      display: block;
+                                      outline: none;
+                                      text-decoration: none;
+                                      height: auto;
+                                      width: 100%;
+                                      font-size: 13px;
+                                    "
+                                    width="80"
+                                /></a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                class="pc3-389830508474576 ogf g"
+                style="
+                  font-size: 0;
+                  text-align: left;
+                  direction: ltr;
+                  display: inline-block;
+                  vertical-align: top;
+                  width: 3.389830508474576%;
+                "
+              >
+                <table
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                  width="100%"
+                >
+                  <tbody>
+                    <tr>
+                      <td style="vertical-align: top; padding: 0">
+                        <table
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          width="100%"
+                        >
+                          <tbody></tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                class="pc48-30508474576271 ogf c"
+                style="
+                  font-size: 0;
+                  text-align: left;
+                  direction: ltr;
+                  display: inline-block;
+                  vertical-align: middle;
+                  width: 48.30508474576271%;
+                "
+              >
+                <table
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="
+                    background-color: transparent;
+                    border: none;
+                    vertical-align: middle;
+                  "
+                  width="100%"
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        align="right"
+                        class="x"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 0;
+                          word-break: break-word;
+                        "
+                      >
+                        <div
+                          style="
+                            font-family: Inter, Arial, sans-serif;
+                            font-size: 16px;
+                            line-height: 28px;
+                            text-align: right;
+                            color: #000000;
+                          "
+                        >
+                          <p style="margin: 0; text-align: right">
+                            <span
+                              style="
+                                mso-line-height-rule: exactly;
+                                font-size: 16px;
+                                font-family: Inter, Arial, sans-serif;
+                                font-weight: 700;
+                                color: #171717;
+                                line-height: 28px;
+                              "
+                              >Ory Security Newsletter</span
+                            >
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-<!--[if (gte mso 9)|(IE)]>
-<table cellspacing="0" cellpadding="0" border="0" width="600" align="center" role="presentation"><tr><td>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- main - auto generated content-->
+  <div
+    class="r pr-16 pl-16"
+    style="
+      background: #fcfcfc;
+      background-color: #fcfcfc;
+      margin: 0px auto;
+      border-radius: 0;
+      max-width: 600px;
+    "
+  >
+    <table
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        background: #fcfcfc;
+        background-color: #fcfcfc;
+        width: 100%;
+        border-radius: 0;
+      "
+    >
+      <tbody>
+        <tr>
+          <td
+            style="
+              border: none;
+              direction: ltr;
+              font-size: 0;
+              padding: 48px 32px 48px 32px;
+              text-align: left;
+            "
+          >
+            <!--[if mso | IE]>
+<table border="0" cellpadding="0" cellspacing="0"><tr><td class="m-outlook -outlook" style="vertical-align:middle;width:32px;">
 <![endif]-->
-<div role="article" lang="en" style="background-color: white; color: #2b2b2b; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; font-weight: 400; line-height: 28px; margin: 0 auto; max-width: 600px; padding: 40px 20px 40px 20px; overflow-wrap: break-word; word-wrap: break-word">
+            <div
+              class="xc32 ogf m"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: middle; padding: 0 0 0 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              align="left"
+                              class="i hm-1"
+                              style="
+                                font-size: 0;
+                                padding: 0;
+                                word-break: break-word;
+                              "
+                            >
+                              <table
+                                border="0"
+                                cellpadding="0"
+                                cellspacing="0"
+                                style="
+                                  border-collapse: collapse;
+                                  border-spacing: 0;
+                                "
+                              >
+                                <tbody>
+                                  <tr>
+                                    <td style="width: 32px">
+                                      <img
+                                        alt=""
+                                        height="auto"
+                                        src="https://f002.backblazeb2.com/file/emailify/150a8c06dcaa45901e3887296457cc12.jpg"
+                                        style="
+                                          border: 0;
+                                          border-radius: 0;
+                                          display: block;
+                                          outline: none;
+                                          text-decoration: none;
+                                          height: auto;
+                                          width: 100%;
+                                          font-size: 13px;
+                                        "
+                                        width="32"
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="g-outlook mb-16-outlook" style="vertical-align:top;width:16px;">
+<![endif]-->
+            <div
+              class="xc16 ogf g mb-16"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: top;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: top; padding: 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody></tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="m-outlook c-outlook -outlook -outlook" style="vertical-align:middle;width:440px;">
+<![endif]-->
+            <div
+              class="xc440 ogf m c"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  background-color: transparent;
+                  border: none;
+                  vertical-align: middle;
+                "
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td
+                      align="left"
+                      class="x m"
+                      style="
+                        font-size: 0;
+                        padding: 0;
+                        padding-bottom: 16px;
+                        word-break: break-word;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family: Inter, Arial, sans-serif;
+                          font-size: 37px;
+                          line-height: 52px;
+                          text-align: left;
+                          color: #000000;
+                        "
+                      >
+                        <p style="margin: 0; text-align: center">
+                          <span
+                            style="
+                              mso-line-height-rule: exactly;
+                              font-size: 37px;
+                              font-family: Inter, Arial, sans-serif;
+                              font-weight: 400;
+                              color: #171717;
+                              line-height: 52px;
+                            "
+                            >{{.ProjectName}} {{.Version}}</span
+                          >   <br>     <span style="font-size: 16px; font-weight: 400;">is here!</span><br>
+                          <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.sh/{{.RepoName}}" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/{{.RepoName}}" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/{{.RepoName}}/blob/master/CHANGELOG.md" target="_blank">Changelog</a>&nbsp;|&nbsp;<a href="https://github.com/ory/{{.RepoName}}/blob/master/UPGRADE.md" target="_blank">Upgrade Guide</a><br></span>
 
-  <header>
-    <!-- banner -->
-      <a href="https://github.com/ory/{{.RepoName}}" target="_blank"><img alt="ORY {{.RepoName}}" src="https://raw.githubusercontent.com/ory/meta/master/static/banners/{{.RepoName}}.png" width="600" border="0" style="display: block; max-width: 100%; min-width: 100px; width: 100%;"></a>
-    <!-- version header -->
-      <h1 style="color: #000000; font-size: 24px; font-weight: 500; line-height: 32px; margin: 16px 0; text-align: center;">
-        <a href="https://github.com/ory/{{.RepoName}}/releases/tag/{{.GitTag}}" target="_blank">{{.ProjectName}} {{.Version}}</a><br>
-        <span style="font-size: 16px; font-weight: 400;">is here!</span><br>
-        <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.sh/{{.RepoName}}" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/{{.RepoName}}" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/{{.RepoName}}/blob/master/CHANGELOG.md" target="_blank">Changelog</a>&nbsp;|&nbsp;<a href="https://github.com/ory/{{.RepoName}}/blob/master/UPGRADE.md" target="_blank">Upgrade Guide</a><br></span>
-      </h1>
-  </header>
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      class="s m"
+                      style="
+                        font-size: 0;
+                        padding: 0;
+                        padding-bottom: 16px;
+                        word-break: break-word;
+                      "
+                    >
+                      <div style="height: 4px; line-height: 4px">
+                        &#8202;
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      vertical-align="top"
+                      class="c"
+                      style="
+                        font-size: 0;
+                        padding-bottom: 0;
+                        word-break: break-word;
+                      "
+                    >
+                      <div
+                        class="xc440 ogf c"
+                        style="
+                          font-size: 0;
+                          text-align: left;
+                          direction: ltr;
+                          display: inline-block;
+                          vertical-align: top;
+                          width: 100%;
+                        "
+                      >
+                        <table
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          width="100%"
+                        >
+                          <tbody>
+                            <tr>
+                              <td
+                                style="
+                                  background-color: transparent;
+                                  border: none;
+                                  vertical-align: top;
+                                  padding-bottom: 0;
+                                "
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  width="100%"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        align="left"
+                                        class="x m"
+                                        style="
+                                          font-size: 0;
+                                          padding: 0;
+                                          padding-bottom: 16px;
+                                          word-break: break-word;
+                                        "
+                                      >
+                                        <div
+                                          style="
+                                            font-family: Inter, Arial,
+                                              sans-serif;
+                                            font-size: 16px;
+                                            line-height: 28px;
+                                            text-align: left;
+                                            color: #000000;
+                                          "
+                                        >
+                                          <p
+                                            style="
+                                              margin: 0;
+                                              text-align: left;
+                                            "
+                                          >
+                                            <span
+                                              style="
+                                                mso-line-height-rule: exactly;
+                                                font-size: 16px;
+                                                font-family: Inter, Arial,
+                                                  sans-serif;
+                                                font-weight: 400;
+                                                color: #616161;
+                                                line-height: 28px;
+                                              "
+                                              >{{if .Message }}{{ .Message }}<br>
+                                              {{ end -}}
+                                            </span>
+                                          </p>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td
+                                        align="left"
+                                        class="x m"
+                                        style="
+                                          font-size: 0;
+                                          padding: 0;
+                                          padding-bottom: 16px;
+                                          word-break: break-word;
+                                        "
+                                      >
+                                        <div
+                                          style="
+                                            font-family: Inter, Arial,
+                                              sans-serif;
+                                            font-size: 16px;
+                                            line-height: 28px;
+                                            text-align: left;
+                                            color: #000000;
+                                          "
+                                        >
+                                          <p
+                                            style="
+                                              margin: 0;
+                                              text-align: left;
+                                            "
+                                          >
+                                            <span
+                                              style="
+                                                mso-line-height-rule: exactly;
+                                                font-size: 16px;
+                                                font-family: Inter, Arial,
+                                                  sans-serif;
+                                                font-weight: 400;
+                                                color: #616161;
+                                                line-height: 28px;
+                                              "
+                                              >{{.Changelog -}}
+                                            </span>
+                                          </p>
+                                        </div>
+                                      </td>
+                                    </tr>
 
-
-  <main>
-    <!-- auto generated content-->
-    <article>
-      <br>
-      {{if .Message }}{{ .Message }}<br>
-      {{ end -}}<br>
-      <br>
-      {{.Changelog -}}<br>
-      <br>
-      Changes requiring your attention may have been introduced since the last release, please read the&nbsp;<a href="https://github.com/ory/{{.RepoName}}/blob/master/CHANGELOG.md" target="_blank">changelog</a>&nbsp;with care.
-    </article>
-    <br /><br />
-    <!-- careers / top border uses color -->
-    <article style="border-top: 1px solid {{.BrandColor}};">
-      <p style="font-size: 16px; font-weight: 400; line-height: 2; margin-top: 16px; text-align: center">Interested in working at ORY full time?<br>&nbsp;<a href="https://www.ory.sh/jobs/" target="_blank">We are hiring!</a></p>
-    </article>
-  </main>
-  <!-- footer / top border uses color -->
-  <footer style="border-top: 1px solid {{.BrandColor}};">
-    <p style="font-size: 12px; font-weight: 400; line-height: 16px; margin-top: 32px; text-align: center">
-      <em>Copyright © *|CURRENT_YEAR|* *|LIST:COMPANY|*, All rights reserved.</em>
-      <br>*|IFNOT:ARCHIVE_PAGE|* *|LIST:DESCRIPTION|*<br>
-      <br>
-      You subscribed to this newsletter on <a href="https://www.ory.sh/" target="_blank">www.ory.sh</a>.<br>
-      <br>
-      Want to change how you receive these emails?<br>
-      You can <a href="*|UPDATE_PROFILE|*">update your preferences</a> or <a href="*|UNSUB|*">unsubscribe from this list</a>.*|END:IF|*<br>
-      <br>*|IF:REWARDS|* *|HTML:REWARDS|* *|END:IF|*
-    </p>
-  </footer>
-
-</div>
-<!--[if (gte mso 9)|(IE)]>
+                                    <tr>
+                                      <td
+                                        align="left"
+                                        class="x m"
+                                        style="
+                                          font-size: 0;
+                                          padding: 0;
+                                          padding-bottom: 16px;
+                                          word-break: break-word;
+                                        "
+                                      >
+                                        <div
+                                          style="
+                                            font-family: Inter, Arial,
+                                              sans-serif;
+                                            font-size: 16px;
+                                            line-height: 28px;
+                                            text-align: left;
+                                            color: #000000;
+                                          "
+                                        >
+                                          <p
+                                            style="
+                                              margin: 0;
+                                              text-align: left;
+                                            "
+                                          >
+                                            <span
+                                              style="
+                                                mso-line-height-rule: exactly;
+                                                font-size: 16px;
+                                                font-family: Inter, Arial,
+                                                  sans-serif;
+                                                font-weight: 400;
+                                                color: #616161;
+                                                line-height: 28px;
+                                              "
+                                              >Changes requiring your attention may have been introduced since the last release, please read the&nbsp;<a style="color:#3d53f5" href="https://github.com/ory/{{.RepoName}}/blob/master/CHANGELOG.md" target="_blank">changelog</a>&nbsp;with care.
+                                            </span>
+                                          </p>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td
+                                        class="s m"
+                                        style="
+                                          font-size: 0;
+                                          padding: 0;
+                                          padding-bottom: 16px;
+                                          word-break: break-word;
+                                        "
+                                      >
+                                        <div
+                                          style="
+                                            height: 4px;
+                                            line-height: 4px;
+                                          "
+                                        >
+                                          &#8202;
+                                        </div>
+                                      </td>
+                                    </tr>
+                                    <tr>
+                                      <td
+                                        align="left"
+                                        class="i fw-1"
+                                        style="
+                                          font-size: 0;
+                                          padding: 0;
+                                          padding-bottom: 0;
+                                          word-break: break-word;
+                                        "
+                                      >
+                                        <table
+                                          border="0"
+                                          cellpadding="0"
+                                          cellspacing="0"
+                                          style="
+                                            border-collapse: collapse;
+                                            border-spacing: 0;
+                                          "
+                                          class="fwm"
+                                        >
+                                          <tbody>
+                                            <tr>
+                                              <td
+                                                style="width: 440px"
+                                                class="fwm"
+                                              >
+                                                <img
+                                                  alt=""
+                                                  height="auto"
+                                                  src="https://f002.backblazeb2.com/file/emailify/06243b93e25d257b7fbf205634f697bb.png"
+                                                  style="
+                                                    border: 0;
+                                                    border-radius: 10px 10px
+                                                      10px 10px;
+                                                    display: block;
+                                                    outline: none;
+                                                    text-decoration: none;
+                                                    height: auto;
+                                                    width: 100%;
+                                                    font-size: 13px;
+                                                  "
+                                                  width="440"
+                                                />
+                                              </td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="g-outlook mb-16-outlook" style="vertical-align:top;width:16px;">
+<![endif]-->
+            <div
+              class="xc16 ogf g mb-16"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: top;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: top; padding: 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody></tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="" style="vertical-align:middle;width:32px;">
+<![endif]-->
+            <div
+              class="xc32 ogf"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: middle; padding: 0 0 0 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              align="left"
+                              class="i hm-1"
+                              style="
+                                font-size: 0;
+                                padding: 0;
+                                word-break: break-word;
+                              "
+                            >
+                              <table
+                                border="0"
+                                cellpadding="0"
+                                cellspacing="0"
+                                style="
+                                  border-collapse: collapse;
+                                  border-spacing: 0;
+                                "
+                              >
+                                <tbody>
+                                  <tr>
+                                    <td style="width: 32px">
+                                      <img
+                                        alt=""
+                                        height="auto"
+                                        src="https://f002.backblazeb2.com/file/emailify/150a8c06dcaa45901e3887296457cc12.jpg"
+                                        style="
+                                          border: 0;
+                                          border-radius: 0;
+                                          display: block;
+                                          outline: none;
+                                          text-decoration: none;
+                                          height: auto;
+                                          width: 100%;
+                                          font-size: 13px;
+                                        "
+                                        width="32"
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
 </td></tr></table>
 <![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- survey link -->
+  <div
+    class="r pr-16 pl-16"
+    style="
+      background: #eeeeee;
+      background-color: #eeeeee;
+      margin: 0px auto;
+      border-radius: 0;
+      max-width: 600px;
+    "
+  >
+    <table
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        background: #eeeeee;
+        background-color: #eeeeee;
+        width: 100%;
+        border-radius: 0;
+      "
+    >
+      <tbody>
+        <tr>
+          <td
+            style="
+              border: none;
+              direction: ltr;
+              font-size: 0;
+              padding: 32px 32px 48px 32px;
+              text-align: left;
+            "
+          >
+            <!--[if mso | IE]>
+<table border="0" cellpadding="0" cellspacing="0"><tr><td class="m-outlook -outlook" style="vertical-align:middle;width:32px;">
+<![endif]-->
+            <div
+              class="xc32 ogf m"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: middle; padding: 0 0 0 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              align="left"
+                              class="i hm-1"
+                              style="
+                                font-size: 0;
+                                padding: 0;
+                                word-break: break-word;
+                              "
+                            >
+                              <table
+                                border="0"
+                                cellpadding="0"
+                                cellspacing="0"
+                                style="
+                                  border-collapse: collapse;
+                                  border-spacing: 0;
+                                "
+                              >
+                                <tbody>
+                                  <tr>
+                                    <td style="width: 32px">
+                                      <img
+                                        alt=""
+                                        height="auto"
+                                        src="https://f002.backblazeb2.com/file/emailify/c026cf429700701f40428f478d349306.jpg"
+                                        style="
+                                          border: 0;
+                                          border-radius: 0;
+                                          display: block;
+                                          outline: none;
+                                          text-decoration: none;
+                                          height: auto;
+                                          width: 100%;
+                                          font-size: 13px;
+                                        "
+                                        width="32"
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="g-outlook mb-16-outlook" style="vertical-align:top;width:16px;">
+<![endif]-->
+            <div
+              class="xc16 ogf g mb-16"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: top;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: top; padding: 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody></tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="m-outlook c-outlook -outlook -outlook" style="vertical-align:middle;width:440px;">
+<![endif]-->
+            <div
+              class="xc440 ogf m c"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                style="
+                  background-color: transparent;
+                  border: none;
+                  vertical-align: middle;
+                "
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td
+                      align="left"
+                      class="x m"
+                      style="
+                        font-size: 0;
+                        padding: 0;
+                        padding-bottom: 16px;
+                        word-break: break-word;
+                      "
+                    >
+                      <div
+                        style="
+                          font-family: Inter, Arial, sans-serif;
+                          font-size: 31px;
+                          line-height: 48px;
+                          text-align: left;
+                          color: #000000;
+                        "
+                      >
+                        <p style="margin: 0; text-align: left">
+                          <span
+                            style="
+                              mso-line-height-rule: exactly;
+                              font-size: 31px;
+                              font-family: Inter, Arial, sans-serif;
+                              font-weight: 400;
+                              color: #171717;
+                              line-height: 48px;
+                            "
+                            >Your opinion matters!</span
+                          >
+                        </p>
+                        <p style="margin: 0">
+                          <span
+                            style="
+                              mso-line-height-rule: exactly;
+                              font-size: 31px;
+                              font-family: Inter, Arial, sans-serif;
+                              font-weight: 400;
+                              color: #171717;
+                              line-height: 48px;
+                            "
+                          ></span
+                          ><span
+                            style="
+                              mso-line-height-rule: exactly;
+                              font-size: 31px;
+                              font-family: Inter, Arial, sans-serif;
+                              font-weight: 400;
+                              color: #3d53f5;
+                              line-height: 48px;
+                            "
+                            >Ory usage survey</span
+                          >
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      class="s m"
+                      style="
+                        font-size: 0;
+                        padding: 0;
+                        padding-bottom: 16px;
+                        word-break: break-word;
+                      "
+                    >
+                      <div style="height: 4px; line-height: 4px">
+                        &#8202;
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      align="left"
+                      vertical-align="middle"
+                      class="b"
+                      style="
+                        font-size: 0;
+                        padding: 0;
+                        padding-bottom: 0;
+                        word-break: break-word;
+                      "
+                    >
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        style="
+                          border-collapse: separate;
+                          width: 132px;
+                          line-height: 100%;
+                        "
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              align="center"
+                              bgcolor="#3d53f5"
+                              style="
+                                border: none;
+                                border-radius: 0;
+                                cursor: auto;
+                                mso-padding-alt: 12px 0px 12px 0px;
+                                background: #3d53f5;
+                              "
+                              valign="middle"
+                            >
+                              <a
+                                href="https://form.typeform.com/to/Igq7038O"
+                                style="
+                                  display: inline-block;
+                                  width: 132px;
+                                  background: #3d53f5;
+                                  color: #ffffff;
+                                  font-family: Inter, Arial, sans-serif;
+                                  font-size: 13px;
+                                  font-weight: normal;
+                                  line-height: 100%;
+                                  margin: 0;
+                                  text-decoration: none;
+                                  text-transform: none;
+                                  padding: 12px 0px 12px 0px;
+                                  mso-padding-alt: 0;
+                                  border-radius: 0;
+                                "
+                                target="_blank"
+                              >
+                                <span
+                                  style="
+                                    mso-line-height-rule: exactly;
+                                    font-size: 14px;
+                                    font-family: Inter, Arial, sans-serif;
+                                    font-weight: 600;
+                                    color: #ffffff;
+                                    line-height: 20px;
+                                  "
+                                  >Take Survey</span
+                                ></a
+                              >
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="g-outlook mb-16-outlook" style="vertical-align:top;width:16px;">
+<![endif]-->
+            <div
+              class="xc16 ogf g mb-16"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: top;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: top; padding: 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody></tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td><td class="" style="vertical-align:middle;width:32px;">
+<![endif]-->
+            <div
+              class="xc32 ogf"
+              style="
+                font-size: 0;
+                text-align: left;
+                direction: ltr;
+                display: inline-block;
+                vertical-align: middle;
+                width: 100%;
+              "
+            >
+              <table
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tbody>
+                  <tr>
+                    <td style="vertical-align: middle; padding: 0 0 0 0">
+                      <table
+                        border="0"
+                        cellpadding="0"
+                        cellspacing="0"
+                        width="100%"
+                      >
+                        <tbody>
+                          <tr>
+                            <td
+                              align="left"
+                              class="i hm-1"
+                              style="
+                                font-size: 0;
+                                padding: 0;
+                                word-break: break-word;
+                              "
+                            >
+                              <table
+                                border="0"
+                                cellpadding="0"
+                                cellspacing="0"
+                                style="
+                                  border-collapse: collapse;
+                                  border-spacing: 0;
+                                "
+                              >
+                                <tbody>
+                                  <tr>
+                                    <td style="width: 32px">
+                                      <img
+                                        alt=""
+                                        height="auto"
+                                        src="https://f002.backblazeb2.com/file/emailify/c026cf429700701f40428f478d349306.jpg"
+                                        style="
+                                          border: 0;
+                                          border-radius: 0;
+                                          display: block;
+                                          outline: none;
+                                          text-decoration: none;
+                                          height: auto;
+                                          width: 100%;
+                                          font-size: 13px;
+                                        "
+                                        width="32"
+                                      />
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!--[if mso | IE]>
+</td></tr></table>
+<![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- footer -->
+  <div
+    class="r pr-16 pl-16"
+    style="
+      background: #171717;
+      background-color: #171717;
+      margin: 0px auto;
+      border-radius: 0;
+      max-width: 600px;
+    "
+  >
+    <table
+      align="center"
+      border="0"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        background: #171717;
+        background-color: #171717;
+        width: 100%;
+        border-radius: 0;
+      "
+    >
+      <tbody>
+        <tr>
+          <td
+            style="
+              border: none;
+              direction: ltr;
+              font-size: 0;
+              padding: 32px 64px 32px 64px;
+              text-align: left;
+            "
+          >
+            <!--[if mso | IE]>
+<table border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="width:472px;">
+<![endif]-->
+            <div
+              class="pc100 ogf"
+              style="
+                font-size: 0;
+                line-height: 0;
+                text-align: left;
+                display: inline-block;
+                width: 100%;
+                direction: ltr;
+              "
+            >
+              <!--[if mso | IE]>
+<table border="0" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;width:472px;">
+<![endif]-->
+              <div
+                class="pc100 ogf c"
+                style="
+                  font-size: 0;
+                  text-align: left;
+                  direction: ltr;
+                  display: inline-block;
+                  vertical-align: middle;
+                  width: 100%;
+                "
+              >
+                <table
+                  border="0"
+                  cellpadding="0"
+                  cellspacing="0"
+                  style="
+                    background-color: transparent;
+                    border: none;
+                    vertical-align: middle;
+                  "
+                  width="100%"
+                >
+                  <tbody>
+                    <tr>
+                      <td
+                        align="left"
+                        class="i w-60 h-30 m"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 8px;
+                          word-break: break-word;
+                        "
+                      >
+                        <table
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="
+                            border-collapse: collapse;
+                            border-spacing: 0;
+                          "
+                        >
+                          <tbody>
+                            <tr>
+                              <td style="width: 80px">
+                                <a
+                                  href="https://www.ory.sh/"
+                                  target="_blank"
+                                >
+                                  <img
+                                    alt="Ory Logo"
+                                    height="auto"
+                                    src="https://f002.backblazeb2.com/file/emailify/879566e4ded61f9133eb4ae85666e0f8.png"
+                                    style="
+                                      border: 0;
+                                      border-radius: 0;
+                                      display: block;
+                                      outline: none;
+                                      text-decoration: none;
+                                      height: auto;
+                                      width: 100%;
+                                      font-size: 13px;
+                                    "
+                                    width="80"
+                                /></a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        align="left"
+                        class="x m"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 8px;
+                          word-break: break-word;
+                        "
+                      >
+                        <div
+                          style="
+                            font-family: Inter, Arial, sans-serif;
+                            font-size: 10px;
+                            line-height: 16px;
+                            text-align: left;
+                            color: #000000;
+                          "
+                        >
+                          <p style="margin: 0; text-align: left">
+                            <span
+                            style="
+                            mso-line-height-rule: exactly;
+                            font-size: 10px;
+                            font-family: Inter, Arial, sans-serif;
+                            font-weight: 400;
+                            color: #ffffff;
+                            line-height: 16px;
+                          "
+                              >Copyright © *|CURRENT_YEAR|* *|LIST:COMPANY|*, All rights reserved.<br>*|IFNOT:ARCHIVE_PAGE|* *|LIST:DESCRIPTION|*<br>
+                            <br>
+                            You subscribed to this newsletter on <a href="https://www.ory.sh/" target="_blank">www.ory.sh</a>.<br>
+                            <br>
+                            Want to change how you receive these emails?<br>
+                            You can <a href="*|UPDATE_PROFILE|*">update your preferences</a> or <a href="*|UNSUB|*">unsubscribe from this list</a>.*|END:IF|*<br>
+                            <br>*|IF:REWARDS|* *|HTML:REWARDS|* *|END:IF|*</span
+                            > 
+                          </p>
+                          </p>
+                          <p style="margin: 0">
+
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="s m"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 8px;
+                          word-break: break-word;
+                        "
+                      >
+                        <div style="height: 4px; line-height: 4px">
+                          &#8202;
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        class="s m"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 8px;
+                          word-break: break-word;
+                        "
+                      >
+                        <div style="height: 4px; line-height: 4px">
+                          &#8202;
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        align="left"
+                        class="o"
+                        style="
+                          font-size: 0;
+                          padding: 0;
+                          padding-bottom: 0;
+                          word-break: break-word;
+                        "
+                      >
+                        <!--[if mso | IE]>
+<table align="left" border="0" cellpadding="0" cellspacing="0"><tr><td>
+<![endif]-->
+                        <table
+                          align="left"
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="float: none; display: inline-table"
+                        >
+                          <tbody>
+                            <tr class="e m">
+                              <td
+                                style="
+                                  padding: 0 16px 0 0;
+                                  vertical-align: middle;
+                                "
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  style="border-radius: 0; width: 24px"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        style="
+                                          font-size: 0;
+                                          height: 24px;
+                                          vertical-align: middle;
+                                          width: 24px;
+                                        "
+                                      >
+                                        <a
+                                          href="https://github.com/ory"
+                                          target="_blank"
+                                        >
+                                          <img
+                                            alt="GitHub"
+                                            height="24"
+                                            src="https://f002.backblazeb2.com/file/emailify/ef512130ade0d301c30989f4c913c8ee.png"
+                                            style="
+                                              border-radius: 0;
+                                              display: block;
+                                            "
+                                            width="24"
+                                        /></a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!--[if mso | IE]>
+</td><td>
+<![endif]-->
+                        <table
+                          align="left"
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="float: none; display: inline-table"
+                        >
+                          <tbody>
+                            <tr class="e m">
+                              <td
+                                style="
+                                  padding: 0 16px 0 0;
+                                  vertical-align: middle;
+                                "
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  style="border-radius: 0; width: 24px"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        style="
+                                          font-size: 0;
+                                          height: 24px;
+                                          vertical-align: middle;
+                                          width: 24px;
+                                        "
+                                      >
+                                        <a
+                                          href="https://slack.ory.sh/"
+                                          target="_blank"
+                                        >
+                                          <img
+                                            alt="Slack"
+                                            height="24"
+                                            src="https://f002.backblazeb2.com/file/emailify/eb766218760449f56561ca1eced33dbf.png"
+                                            style="
+                                              border-radius: 0;
+                                              display: block;
+                                            "
+                                            width="24"
+                                        /></a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!--[if mso | IE]>
+</td><td>
+<![endif]-->
+                        <table
+                          align="left"
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="float: none; display: inline-table"
+                        >
+                          <tbody>
+                            <tr class="e m">
+                              <td
+                                style="
+                                  padding: 0 16px 0 0;
+                                  vertical-align: middle;
+                                "
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  style="border-radius: 0; width: 24px"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        style="
+                                          font-size: 0;
+                                          height: 24px;
+                                          vertical-align: middle;
+                                          width: 24px;
+                                        "
+                                      >
+                                        <a
+                                          href="https://www.youtube.com/channel/UC9hCxZZeviexX0GclD0brrw"
+                                          target="_blank"
+                                        >
+                                          <img
+                                            alt="YouTube"
+                                            height="24"
+                                            src="https://f002.backblazeb2.com/file/emailify/3da01c1f1191eb2b71d7a649e51e29e5.png"
+                                            style="
+                                              border-radius: 0;
+                                              display: block;
+                                            "
+                                            width="24"
+                                        /></a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!--[if mso | IE]>
+</td><td>
+<![endif]-->
+                        <table
+                          align="left"
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="float: none; display: inline-table"
+                        >
+                          <tbody>
+                            <tr class="e m">
+                              <td
+                                style="
+                                  padding: 0 16px 0 0;
+                                  vertical-align: middle;
+                                "
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  style="border-radius: 0; width: 24px"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        style="
+                                          font-size: 0;
+                                          height: 24px;
+                                          vertical-align: middle;
+                                          width: 24px;
+                                        "
+                                      >
+                                        <a
+                                          href="https://twitter.com/orycorp"
+                                          target="_blank"
+                                        >
+                                          <img
+                                            alt="Twitter"
+                                            height="24"
+                                            src="https://f002.backblazeb2.com/file/emailify/eb45c141aa72d90251c7419d68d6d64d.png"
+                                            style="
+                                              border-radius: 0;
+                                              display: block;
+                                            "
+                                            width="24"
+                                        /></a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!--[if mso | IE]>
+</td><td>
+<![endif]-->
+                        <table
+                          align="left"
+                          border="0"
+                          cellpadding="0"
+                          cellspacing="0"
+                          style="float: none; display: inline-table"
+                        >
+                          <tbody>
+                            <tr class="e">
+                              <td
+                                style="padding: 0; vertical-align: middle"
+                              >
+                                <table
+                                  border="0"
+                                  cellpadding="0"
+                                  cellspacing="0"
+                                  style="border-radius: 0; width: 24px"
+                                >
+                                  <tbody>
+                                    <tr>
+                                      <td
+                                        style="
+                                          font-size: 0;
+                                          height: 24px;
+                                          vertical-align: middle;
+                                          width: 24px;
+                                        "
+                                      >
+                                        <a
+                                          href="https://www.linkedin.com/company/ory-corp/"
+                                          target="_blank"
+                                        >
+                                          <img
+                                            alt="LinkedIn"
+                                            height="24"
+                                            src="https://f002.backblazeb2.com/file/emailify/0cb3b6717df0a6d08795de6808ab115e.png"
+                                            style="
+                                              border-radius: 0;
+                                              display: block;
+                                            "
+                                            width="24"
+                                        /></a>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <!--[if mso | IE]>
+</td></tr></table>
+<![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]>
+</td></tr></table>
+<![endif]-->
+            </div>
+            <!--[if mso | IE]>
+</td></tr></table>
+<![endif]-->
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
 </body>
 </html>
