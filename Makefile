@@ -46,7 +46,7 @@ install:
 		GO111MODULE=on go install -tags sqlite .
 
 .PHONY: test
-test:
+test: lint
 		go test -p 1 -tags sqlite -count=1 -failfast ./...
 
 # Formats the code
