@@ -40,8 +40,7 @@ func CopyFile(src, dst string) error {
 		dstPath = filepath.Join(dst, filepath.Base(src))
 	}
 	headerText := fmt.Sprintf(COPY_HEADER_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(dstPath, headerText, string(body))
-	return nil
+	return comments.WriteFileWithHeader(dstPath, headerText, string(body))
 }
 
 // Header-aware equivalent of the Unix `cp -r` command.
@@ -62,7 +61,7 @@ func CopyFiles(src, dst string) error {
 	extraPath := ""
 	if hasDst {
 		srcLast := filepath.Base(src)
-		os.MkdirAll(filepath.Join(dst, srcLast), 0744)
+		_ = os.MkdirAll(filepath.Join(dst, srcLast), 0744)
 		extraPath = srcLast
 	}
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
