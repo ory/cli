@@ -11,8 +11,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/ory/cli/cmd/dev/headers/comments"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
 // template for the header

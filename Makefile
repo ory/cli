@@ -39,7 +39,7 @@ docs/cli: .bin/clidoc
 
 .PHONY: lint
 lint: .bin/golangci-lint
-		.bin/golangci-lint run -v ./...
+		.bin/golangci-lint run ./...
 
 .PHONY: install
 install:

@@ -8,9 +8,10 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ory/cli/cmd/dev/headers/comments"
 	goGitIgnore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
 // LICENSE defines the full license text.
