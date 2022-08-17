@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/pkg"
-
 	"github.com/ory/x/flagx"
 )
 

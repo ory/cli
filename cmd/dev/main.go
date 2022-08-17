@@ -1,6 +1,8 @@
 package dev
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/dev/ci"
 	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/markdown"
@@ -10,7 +12,6 @@ import (
 	"github.com/ory/cli/cmd/dev/release"
 	"github.com/ory/cli/cmd/dev/schema"
 	"github.com/ory/cli/cmd/dev/swagger"
-	"github.com/spf13/cobra"
 )
 
 var Main = &cobra.Command{

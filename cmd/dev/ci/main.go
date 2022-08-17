@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/dev/ci/deps"
-
 	"github.com/ory/cli/cmd/dev/ci/github"
 	"github.com/ory/cli/cmd/dev/ci/monorepo"
 	"github.com/ory/cli/cmd/dev/ci/orbs"

@@ -59,7 +59,8 @@ func TestAddVersionToSchema(t *testing.T) {
 		require.NoError(t, os.Chdir(testDir))
 
 		cmd := new(cobra.Command)
-		cmd.ExecuteContext(context.Background())
+		err = cmd.ExecuteContext(context.Background())
+		require.NoError(t, err)
 		addVersionToSchema(cmd, []string{"hydra", "v1.0.0", ".schema/config.schema.json"})
 
 		require.NoError(t, os.Chdir(wd))

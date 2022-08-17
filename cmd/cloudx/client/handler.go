@@ -17,11 +17,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/imdario/mergo"
-
-	"github.com/ory/x/jsonx"
-
 	"github.com/gofrs/uuid/v3"
+	"github.com/imdario/mergo"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -29,9 +26,9 @@ import (
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
-
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
+	"github.com/ory/x/jsonx"
 	"github.com/ory/x/stringsx"
 )
 
@@ -116,7 +113,7 @@ type CommandHelper struct {
 	PwReader         passwordReader
 }
 
-const PasswordReader = "password_reader"
+type PasswordReader struct{}
 
 // NewCommandHelper creates a new CommandHelper instance which handles cobra CLI commands.
 func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
@@ -138,7 +135,7 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	pwReader := func() ([]byte, error) {
 		return term.ReadPassword(int(syscall.Stdin))
 	}
-	if p, ok := cmd.Context().Value(PasswordReader).(passwordReader); ok {
+	if p, ok := cmd.Context().Value(PasswordReader{}).(passwordReader); ok {
 		pwReader = p
 	}
 

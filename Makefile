@@ -35,18 +35,18 @@ docs/cli: .bin/clidoc
 		go build -o .bin/cli -tags sqlite github.com/ory/cli
 
 .bin/golangci-lint: Makefile
-		bash <(curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh) -d -b .bin v1.28.3
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.47.2
 
 .PHONY: lint
 lint: .bin/golangci-lint
-		golangci-lint run -v ./...
+		.bin/golangci-lint run --timeout=10m ./...
 
 .PHONY: install
 install:
 		GO111MODULE=on go install -tags sqlite .
 
 .PHONY: test
-test:
+test: lint
 		go test -p 1 -tags sqlite -count=1 -failfast ./...
 
 # Formats the code

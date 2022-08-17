@@ -64,7 +64,6 @@ type ArchitectureMapping struct {
 type OsMapping struct {
 	Darwin string `yaml:"darwin"`
 	Linux  string `yaml:"linux"`
-	ready  bool
 }
 
 func (c *Component) String() string {
@@ -72,7 +71,7 @@ func (c *Component) String() string {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	return fmt.Sprintf("%s", string(d))
+	return string(d)
 }
 
 func (c *Component) getComponentFromConfig(configFilePath string) error {

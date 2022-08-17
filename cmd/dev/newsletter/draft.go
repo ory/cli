@@ -8,15 +8,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ory/cli/view"
-
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
+	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/cli/view"
 	"github.com/ory/gochimp3"
 	_ "github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
 var draft = &cobra.Command{
@@ -83,7 +83,8 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		repoName = pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME")
 	}
 
-	projectName := "Ory " + strings.Title(strings.ToLower(repoName))
+	caser := cases.Title(language.AmericanEnglish)
+	projectName := "ORY " + caser.String(strings.ToLower(repoName))
 
 	changelog := renderMarkdown(changelogRaw)
 	tagMessage := renderMarkdown(tagMessageRaw)

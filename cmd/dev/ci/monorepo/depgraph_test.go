@@ -26,7 +26,7 @@ func TestMonorepoCirclular(t *testing.T) {
 func TestMonorepoWorking(t *testing.T) {
 	var graph ComponentGraph
 
-	graph.getComponentGraph("test/working")
+	_, _ = graph.getComponentGraph("test/working")
 	graph.displayGraph()
 
 	resolved, err := graph.resolveGraph()

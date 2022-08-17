@@ -1,8 +1,6 @@
 package cloudx
 
 import (
-	"fmt"
-
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/project"
 
@@ -12,7 +10,7 @@ import (
 func NewUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: fmt.Sprintf("Update resources"),
+		Short: "Update resources",
 	}
 	cmd.AddCommand(
 		project.NewProjectsUpdateCmd(),

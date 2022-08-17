@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/proxy"
-	"github.com/ory/kratos/cmd/jsonnet"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/buildinfo"
 	"github.com/ory/cli/cmd/cloudx"
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/proxy"
+	"github.com/ory/kratos/cmd/jsonnet"
 	"github.com/ory/x/cmdx"
 )
 

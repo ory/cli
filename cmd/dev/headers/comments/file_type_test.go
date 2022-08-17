@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers/comments"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
 func TestContainsFileType(t *testing.T) {

@@ -5,8 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ory/cli/cmd/dev/headers/comments"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
 func TestFileContentWithoutHeader_knownFile(t *testing.T) {
