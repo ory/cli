@@ -22,7 +22,6 @@ define make-go-dependency
 		GOBIN=$(PWD)/.bin/ go install $1
 endef
 $(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
-$(call make-lint-dependency)
 
 .bin/clidoc: Makefile go.mod go.sum cmd
 		go build -tags nodev -o .bin/clidoc ./cmd/clidoc/.
