@@ -65,8 +65,7 @@ func CopyFileNoOverwrite(src, dst string) error {
 		}
 	}
 	headerText := fmt.Sprintf(COPY_HEADER_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(dstPath, headerText, string(body))
-	return nil
+	return comments.WriteFileWithHeader(dstPath, headerText, string(body))
 }
 
 // Header-aware equivalent of the Unix `cp -r` command.
