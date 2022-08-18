@@ -35,7 +35,7 @@ docs/cli: .bin/clidoc
 		go build -o .bin/cli -tags sqlite github.com/ory/cli
 
 .bin/golangci-lint: Makefile
-		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.47.2
+		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
 
 .PHONY: lint
 lint: .bin/golangci-lint
