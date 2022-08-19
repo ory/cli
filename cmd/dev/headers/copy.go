@@ -65,7 +65,7 @@ func CopyFileNoOverwrite(src, dst string) error {
 		}
 	}
 	headerText := fmt.Sprintf(COPY_HEADER_TEMPLATE, ROOT_PATH+src)
-	comments.WriteFileWithHeader(dstPath, headerText, string(body))
+	_ = comments.WriteFileWithHeader(dstPath, headerText, string(body))
 	return nil
 }
 
