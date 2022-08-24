@@ -368,11 +368,6 @@ func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate stri
 	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err := CopyFiles(src, dst)
 	assert.NoError(t, err)
-	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
-	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
-	if runtime.GOOS != "linux" {
-		return
-	}
 	// run "cp -r"
 	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err = exec.Command("cp", "-rv", src, dst).CombinedOutput()
@@ -388,11 +383,6 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFile(src, dstCopy)
-	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
-	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
-	if runtime.GOOS != "linux" {
-		return
-	}
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
