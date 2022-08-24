@@ -11,7 +11,7 @@ var pr string
 var revisionRange string
 var branch string
 
-//Main cobra command for monorepo support
+// Main cobra command for monorepo support
 var Main = &cobra.Command{
 	Use:   "monorepo",
 	Short: "Helpers for CircleCI Monorepo Support",

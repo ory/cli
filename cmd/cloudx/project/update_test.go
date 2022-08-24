@@ -23,6 +23,8 @@ var (
 	fixtureKratosConfig json.RawMessage
 	//go:embed fixtures/update-keto/json/config.json
 	fixtureKetoConfig json.RawMessage
+	//go:embed fixtures/update-hydra/json/config.json
+	fixtureHydraConfig json.RawMessage
 )
 
 func TestUpdateProject(t *testing.T) {
@@ -56,6 +58,13 @@ func TestUpdateProject(t *testing.T) {
 			failureContains: "cannot unmarshal string into Go struct field",
 			fixture:         fixtureKetoConfig,
 		},
+		{
+			subcommand:      "oauth2-config",
+			pathSuccess:     "fixtures/update-hydra/json/config.json",
+			pathFailure:     "fixtures/update-hydra/fail/config.json",
+			failureContains: "cannot unmarshal number into Go struct field",
+			fixture:         fixtureHydraConfig,
+		},
 	} {
 		t.Run("target="+tc.subcommand, func(t *testing.T) {
 			t.Run("is able to update a project", func(t *testing.T) {
@@ -73,6 +82,10 @@ func TestUpdateProject(t *testing.T) {
 					"services.identity.config.identity.default_schema_id",
 					"services.identity.config.identity.schemas",
 					"services.identity.config.session.cookie",
+					"services.identity.config.session.cookie",
+					"services.oauth2.config.serve.cookies.names",
+					"services.oauth2.config.serve.cookies.domain",
+					"services.oauth2.config.urls.self",
 					// for kratos cmd
 					"serve",
 					"cookies",
@@ -81,6 +94,10 @@ func TestUpdateProject(t *testing.T) {
 					"session.cookie",
 					"courier.smtp.from_name",
 					// for keto cmd
+					// for hydra cmd
+					"serve.cookies.names",
+					"serve.cookies.domain",
+					"urls.self",
 				})
 
 				snapshotx.SnapshotT(t, json.RawMessage(stdout), snapshotx.ExceptPaths(
@@ -93,6 +110,9 @@ func TestUpdateProject(t *testing.T) {
 					"services.identity.config.session.cookie.domain",
 					"services.identity.config.session.cookie.name",
 					"services.identity.config.cookies.domain",
+					"services.oauth2.config.serve.cookies.names",
+					"services.oauth2.config.serve.cookies.domain",
+					"services.oauth2.config.urls.self",
 					// for kratos cmd
 					"serve.public.base_url",
 					"serve.admin.base_url",
@@ -101,6 +121,10 @@ func TestUpdateProject(t *testing.T) {
 					"cookies.domain",
 					"courier.smtp.from_name",
 					// for keto cmd
+					// for hydra cmd
+					"serve.cookies.names",
+					"serve.cookies.domain",
+					"urls.self",
 				))
 			})
 

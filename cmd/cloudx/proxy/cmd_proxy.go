@@ -2,11 +2,12 @@ package proxy
 
 import (
 	"fmt"
-	"github.com/ory/x/corsx"
 	"net/url"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/ory/x/corsx"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
