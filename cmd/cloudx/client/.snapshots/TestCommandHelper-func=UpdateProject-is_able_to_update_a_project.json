@@ -222,6 +222,162 @@
           }
         }
       },
+      "oauth2": {
+        "config": {
+          "clients": {
+            "http": {
+              "disallow_private_ip_ranges": true
+            }
+          },
+          "dev": true,
+          "hsm": {
+            "enabled": false
+          },
+          "oauth2": {
+            "client_credentials": {
+              "default_grant_allowed_scope": false
+            },
+            "expose_internal_errors": true,
+            "grant": {
+              "jwt": {
+                "iat_optional": false,
+                "jti_optional": false,
+                "max_ttl": "720h0m0s"
+              }
+            },
+            "hashers": {
+              "algorithm": "pbkdf2",
+              "pbkdf2": {
+                "iterations": 10000
+              }
+            },
+            "pkce": {
+              "enforced": false,
+              "enforced_for_public_clients": false
+            },
+            "session": {
+              "allowed_top_level_claims": [],
+              "encrypt_at_rest": true,
+              "exclude_not_before_claim": false
+            }
+          },
+          "oidc": {
+            "dynamic_client_registration": {
+              "enabled": false
+            },
+            "subject_identifiers": {}
+          },
+          "serve": {
+            "admin": {
+              "cors": {
+                "allow_credentials": true,
+                "allowed_headers": [
+                  "Accept",
+                  "Content-Type",
+                  "Content-Length",
+                  "Accept-Language",
+                  "Content-Language",
+                  "Authorization"
+                ],
+                "allowed_methods": [
+                  "POST",
+                  "GET",
+                  "PUT",
+                  "PATCH",
+                  "DELETE",
+                  "CONNECT",
+                  "HEAD",
+                  "OPTIONS",
+                  "TRACE"
+                ],
+                "debug": false,
+                "enabled": false,
+                "exposed_headers": [
+                  "Cache-Control",
+                  "Expires",
+                  "Last-Modified",
+                  "Pragma",
+                  "Content-Length",
+                  "Content-Language",
+                  "Content-Type"
+                ],
+                "max_age": 0
+              },
+              "tls": {
+                "enabled": false
+              }
+            },
+            "cookies": {
+              "same_site_legacy_workaround": false,
+              "same_site_mode": "Lax",
+              "secure": true
+            },
+            "public": {
+              "cors": {
+                "allow_credentials": true,
+                "allowed_headers": [
+                  "Accept",
+                  "Content-Type",
+                  "Content-Length",
+                  "Accept-Language",
+                  "Content-Language",
+                  "Authorization"
+                ],
+                "allowed_methods": [
+                  "POST",
+                  "GET",
+                  "PUT",
+                  "PATCH",
+                  "DELETE",
+                  "CONNECT",
+                  "HEAD",
+                  "OPTIONS",
+                  "TRACE"
+                ],
+                "debug": false,
+                "enabled": false,
+                "exposed_headers": [
+                  "Cache-Control",
+                  "Expires",
+                  "Last-Modified",
+                  "Pragma",
+                  "Content-Length",
+                  "Content-Language",
+                  "Content-Type"
+                ],
+                "max_age": 0
+              },
+              "tls": {
+                "enabled": false
+              }
+            },
+            "tls": {
+              "enabled": false
+            }
+          },
+          "strategies": {
+            "access_token": "opaque",
+            "scope": "wildcard"
+          },
+          "ttl": {
+            "access_token": "1h0m0s",
+            "auth_code": "30m0s",
+            "id_token": "1h0m0s",
+            "login_consent_request": "30m0s",
+            "refresh_token": "720h0m0s"
+          },
+          "urls": {
+            "consent": "/oauth2/fallbacks/consent",
+            "error": "/oauth2/fallbacks/error",
+            "login": "/oauth2/fallbacks/login",
+            "post_logout_redirect": "/oauth2/fallbacks/logout"
+          },
+          "webfinger": {
+            "jwks": {},
+            "oidc_discovery": {}
+          }
+        }
+      },
       "permission": {
         "config": {
           "limit": {
