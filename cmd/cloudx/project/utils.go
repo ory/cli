@@ -25,6 +25,10 @@ func prefixPermissionConfig(s []string) []string {
 	return prefixConfig("/services/permission/config", s)
 }
 
+func prefixOAuth2Config(s []string) []string {
+	return prefixConfig("/services/oauth2/config", s)
+}
+
 func prefixFileConfig(prefix string, configs []json.RawMessage) ([]json.RawMessage, error) {
 	for k := range configs {
 		raw, err := sjson.SetRawBytes(json.RawMessage("{}"), prefix, configs[k])
@@ -44,6 +48,10 @@ func prefixFilePermissionConfig(configs []json.RawMessage) ([]json.RawMessage, e
 	return prefixFileConfig("services.permission.config", configs)
 }
 
+func prefixFileOAuth2Config(configs []json.RawMessage) ([]json.RawMessage, error) {
+	return prefixFileConfig("services.oauth2.config", configs)
+}
+
 func prefixFileNop(s []json.RawMessage) ([]json.RawMessage, error) {
 	return s, nil
 }
@@ -58,4 +66,8 @@ func outputIdentityConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) 
 
 func outputPermissionConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
 	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Permission.Config))
+}
+
+func outputOAuth2Config(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Oauth2.Config))
 }
