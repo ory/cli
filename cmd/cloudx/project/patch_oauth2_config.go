@@ -4,57 +4,62 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
+
 	"github.com/ory/x/cmdx"
 )
 
-func NewPatchKetoConfigCmd() *cobra.Command {
+func NewPatchOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "permission-config <project-id>",
-		Aliases: []string{"pc", "keto-config"},
+		Use:     "oauth2-config <project-id>",
+		Aliases: []string{"oc", "hydra-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud Project's Permission Config",
-		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--add '/namespaces=[{"name":"files", "id": 2}]' \
-	--replace '/namespaces/2/name="directories"' \
-	--remove '/limit/max_read_depth' \
+		Short:   "Patch an Ory Cloud Project's OAuth2 Config",
+		Example: `$ ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+	--replace '/strategies/access_token="jwt"' \
+	--add '/ttl/login_consent_request="1h"' \
+	--remove '/strategies/scope' \
 	--format json-pretty
 
 {
-  "namespaces": [
-    {
-      "name": "files",
-      "id": 2
+  "oauth2": {
+    "client_credentials": {
+      "default_grant_allowed_scope": false
     },
-    {
-      "name": "directories",
-      "id": 3
-    },
-    // ...
-  ]
-}`,
-		Long: `Use this command to patch your current Ory Cloud Project's permission service configuration. Only values
+    "expose_internal_errors": true,
+    "grant": {
+      "jwt": {
+        "iat_optional": false,
+        "jti_optional": false,
+        "max_ttl": "720h0m0s"
+      }
+    }
+  },
+  // ...
+}
+`,
+		Long: `Use this command to patch your current Ory Cloud Project's OAuth2 service configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command only updates the permission service configuration
-and also only returns the permission service configuration as a result. This command is useful when you want to
+Compared to the ` + "`patch project`" + ` command, this command only updates the OAuth2 service configuration
+and also only returns the OAuth2 service configuration as a result. This command is useful when you want to
 import an Ory Keto config as well, for example. This allows for shorter paths when specifying the flags
 
 	ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-		--replace '/limit/max_read_depth=5'
+		--replace '/strategies/access_token="jwt"'
 
 when compared to the ` + "`patch project`" + ` command:
 
 	ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-		--replace '/services/permission/config/limit/max_read_depth=5'
+		--replace '/strategies/access_token="jwt"'
 
 The format of the patch is a JSON-Patch document. For more details please check:
 
 	https://www.ory.sh/docs/reference/api#operation/patchProject
 	https://jsonpatch.com`,
 		RunE: runPatch(
-			prefixPermissionConfig,
-			prefixFilePermissionConfig,
-			outputPermissionConfig,
+			prefixOAuth2Config,
+			prefixFileOAuth2Config,
+			outputOAuth2Config,
 		),
 	}
 

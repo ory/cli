@@ -678,8 +678,8 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		return nil, errors.WithStack(err)
 	}
 
-	if payload.Services.Identity == nil && payload.Services.Permission == nil {
-		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` is required and can not be empty")
+	if payload.Services.Identity == nil && payload.Services.Permission == nil && payload.Services.Oauth2 == nil {
+		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` is required and can not be empty")
 	}
 
 	if name != "" {
