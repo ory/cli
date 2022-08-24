@@ -413,12 +413,17 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 // both return an error
 func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -n"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFileNoOverwrite(src, dstCopy)
+	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
+	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	// run "cp -n"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	// ensure both return errors
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
@@ -431,12 +436,17 @@ func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) 
 // both return an error
 func (ws *workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -r"
-	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
 	// run "CopyFiles"
 	dstCopyFiles := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyFilesErr := CopyFiles(src, dstCopyFiles)
+	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
+	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	// run "cp -r"
+	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
 	// ensure both return errors
 	if (copyFilesErr == nil) || (cprErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cprErr, copyFilesErr)
