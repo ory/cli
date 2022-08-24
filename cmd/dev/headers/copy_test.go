@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -329,6 +330,11 @@ func (ws *workspace) verifyContent(t *testing.T, filepath, want string) {
 // the exact same way as the built-in "cp" command in Unix
 func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		// This function verifies that Ory CLI behaves the same as the `cp` command on Linux.
+		// Other OS like macOS have different behavior, we therefore skip the tests there.
+		return
+	}
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", src, dstCp).CombinedOutput()
@@ -344,13 +350,18 @@ func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate strin
 // the exact same way as the built-in "cp" command in Unix
 func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		// This function verifies that Ory CLI behaves the same as the `cp` command on Linux.
+		// Other OS like macOS have different behavior, we therefore skip the tests there.
+		return
+	}
 	// run "cp -n"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, err := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
-	assert.NoError(t, err)
+	// NOTE: ignoring the result of the "cp -n" operation here because it errors with exit code 1 on macOS when the target file exists
+	_, _ = exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	err = CopyFileNoOverwrite(src, dstCopy)
+	err := CopyFileNoOverwrite(src, dstCopy)
 	assert.NoError(t, err)
 	ws.verifyEqualDstStructure(t)
 }
@@ -358,6 +369,11 @@ func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate stri
 // ensures that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		// This function verifies that Ory CLI behaves the same as the `cp` command on Linux.
+		// Other OS like macOS have different behavior, we therefore skip the tests there.
+		return
+	}
 	// run "cp -r"
 	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
@@ -374,6 +390,11 @@ func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate stri
 // both return an error
 func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
+	if runtime.GOOS != "linux" {
+		// This function verifies that Ory CLI behaves the same as the `cp` command on Linux.
+		// Other OS like macOS have different behavior, we therefore skip the tests there.
+		return
+	}
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
