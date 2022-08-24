@@ -5,10 +5,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/pkg"
 	"github.com/ory/gochimp3"
 	"github.com/ory/x/flagx"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
 var send = &cobra.Command{

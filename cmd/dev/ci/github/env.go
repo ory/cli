@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/ory/cli/cmd/pkg"
 )
@@ -39,9 +41,10 @@ $ source $(ory dev ci github env)`,
 		fmt.Printf("export GITHUB_ORG=%s\n", repo[0])
 		fmt.Printf("export GITHUB_REPO=%s\n", repo[1])
 
+		caser := cases.Title(language.AmericanEnglish)
 		fmt.Printf("export SWAGGER_APP_NAME=%s_%s\n",
-			strings.Title(strings.ToLower(repo[0])),
-			strings.Title(strings.ToLower(repo[1])),
+			caser.String(strings.ToLower(repo[0])),
+			caser.String(strings.ToLower(repo[1])),
 		)
 
 		if ignorePkgs := strings.Split(os.Getenv("SWAGGER_SPEC_IGNORE_PKGS"), ","); len(ignorePkgs) > 0 {

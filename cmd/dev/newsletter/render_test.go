@@ -32,6 +32,7 @@ func TestRenderMarkdownLong(t *testing.T) {
 	require.NoError(t, err)
 
 	tmplRaw, err := ioutil.ReadFile("../../../view/mail-body.html")
+	require.NoError(t, err)
 	tmpl, err := template.New("view").Parse(string(tmplRaw))
 	require.NoError(t, err)
 	var body bytes.Buffer

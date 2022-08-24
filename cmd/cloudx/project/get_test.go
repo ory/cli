@@ -1,7 +1,6 @@
 package project_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,7 +9,7 @@ import (
 )
 
 func TestGetProject(t *testing.T) {
-	t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+	t.Run("is able to get project", func(t *testing.T) {
 		stdout, _, err := defaultCmd.Exec(nil, "get", "project", defaultProject, "--format", "json")
 		require.NoError(t, err)
 		assert.Equal(t, defaultProject, gjson.Get(stdout, "id").String())

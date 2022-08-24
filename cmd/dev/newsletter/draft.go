@@ -8,15 +8,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ory/cli/view"
-
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
+	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/cli/view"
 	"github.com/ory/gochimp3"
 	_ "github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
 var draft = &cobra.Command{
@@ -32,7 +32,7 @@ var draft = &cobra.Command{
 		CIRCLE_TAG=... \ # This is set automatically in CircleCI Jobs
 		CIRCLE_PROJECT_REPONAME=... \ # This is set automatically in CircleCI Jobs
 		release campaign draft \
-			--segment-id ... \ # optional - e.g. only to people interested in ORY Hydra
+			--segment-id ... \ # optional - e.g. only to people interested in Ory Hydra
 			list-id-1234123 \
 			./tag-message.md \
 			./changelog.md
@@ -83,7 +83,8 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		repoName = pkg.MustGetEnv("CIRCLE_PROJECT_REPONAME")
 	}
 
-	projectName := "ORY " + strings.Title(strings.ToLower(repoName))
+	caser := cases.Title(language.AmericanEnglish)
+	projectName := "ORY " + caser.String(strings.ToLower(repoName))
 
 	changelog := renderMarkdown(changelogRaw)
 	tagMessage := renderMarkdown(tagMessageRaw)
@@ -149,7 +150,7 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		Settings: gochimp3.CampaignCreationSettings{
 			Title:        campaignID(),
 			SubjectLine:  fmt.Sprintf("%s %s has been released!", projectName, tag),
-			FromName:     "ORY",
+			FromName:     "Ory",
 			ReplyTo:      "office@ory.sh",
 			Authenticate: true,
 			FbComments:   false,

@@ -13,15 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/cors"
-
-	"github.com/ory/x/corsx"
-
-	"github.com/ory/x/proxy"
-
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
+	"github.com/rs/cors"
 	"github.com/spf13/cobra"
 	"github.com/square/go-jose/v3"
 	"github.com/square/go-jose/v3/jwt"
@@ -30,9 +25,11 @@ import (
 
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
+	"github.com/ory/x/corsx"
 	"github.com/ory/x/httpx"
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
+	"github.com/ory/x/proxy"
 	"github.com/ory/x/urlx"
 )
 

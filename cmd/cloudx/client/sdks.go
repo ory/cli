@@ -6,9 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ory/x/stringsx"
-
 	cloud "github.com/ory/client-go"
+	"github.com/ory/x/stringsx"
 )
 
 func makeCloudConsoleURL(prefix string) string {

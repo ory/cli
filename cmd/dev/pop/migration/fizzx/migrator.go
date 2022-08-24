@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"text/tabwriter"
 	"time"
@@ -18,8 +17,6 @@ import (
 
 	"github.com/pkg/errors"
 )
-
-var mrx = regexp.MustCompile(`^(\d+)_([^.]+)(\.[a-z0-9]+)?\.(up|down)\.(sql|fizz)$`)
 
 type MigrationTuple struct {
 	ID        string

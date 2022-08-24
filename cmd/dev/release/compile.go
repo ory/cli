@@ -7,9 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ory/x/flagx"
-
 	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/x/flagx"
 )
 
 var compile = &cobra.Command{

@@ -8,24 +8,20 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/ory/x/logrusx"
-
-	"github.com/ory/x/randx"
-	"github.com/ory/x/stringslice"
-
+	"github.com/avast/retry-go"
 	"github.com/go-sql-driver/mysql"
 	"github.com/gobuffalo/pop/v5"
 	"github.com/gobuffalo/pop/v5/logging"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/spf13/cobra"
 
-	"github.com/ory/x/flagx"
-	"github.com/ory/x/sqlcon/dockertest"
-
-	"github.com/avast/retry-go"
-
 	"github.com/ory/cli/cmd/dev/pop/migration/fizzx"
 	"github.com/ory/cli/cmd/pkg"
+	"github.com/ory/x/flagx"
+	"github.com/ory/x/logrusx"
+	"github.com/ory/x/randx"
+	"github.com/ory/x/sqlcon/dockertest"
+	"github.com/ory/x/stringslice"
 )
 
 var render = &cobra.Command{

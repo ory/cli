@@ -3,9 +3,8 @@ package identity_test
 import (
 	"testing"
 
-	"github.com/ory/x/cmdx"
-
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
+	"github.com/ory/x/cmdx"
 )
 
 var (

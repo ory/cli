@@ -1,10 +1,10 @@
 package project
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
-
-	"github.com/spf13/cobra"
 )
 
 func NewGetKratosConfigCmd() *cobra.Command {

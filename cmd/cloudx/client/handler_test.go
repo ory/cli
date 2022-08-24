@@ -6,7 +6,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"io"
 	"testing"
 
@@ -57,7 +56,7 @@ func TestCommandHelper(t *testing.T) {
 	}
 
 	t.Run("func=GetProject", func(t *testing.T) {
-		t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+		t.Run("is able to get project", func(t *testing.T) {
 			p, err := loggedIn.GetProject(project)
 			require.NoError(t, err)
 			assertValidProject(t, p)
