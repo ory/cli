@@ -14,7 +14,7 @@ func NewPatchKetoConfigCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Patch an Ory Cloud Project's Permission Config",
 		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--add '/namespaces={"name":"files", "id": 2}' \
+	--add '/namespaces=[{"name":"files", "id": 2}]' \
 	--replace '/namespaces/2/name="directories"' \
 	--remove '/limit/max_read_depth' \
 	--format json-pretty

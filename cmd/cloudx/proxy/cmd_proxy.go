@@ -7,8 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ory/x/corsx"
-
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
