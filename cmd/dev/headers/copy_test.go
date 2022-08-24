@@ -334,11 +334,6 @@ func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate strin
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	err := CopyFile(src, dstCopy)
 	assert.NoError(t, err)
-	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
-	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
-	if runtime.GOOS != "linux" {
-		return
-	}
 	// run "cp"
 	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
 	_, err = exec.Command("cp", src, dstCp).CombinedOutput()
