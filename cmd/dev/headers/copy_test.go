@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -329,13 +330,13 @@ func (ws *workspace) verifyContent(t *testing.T, filepath, want string) {
 // the exact same way as the built-in "cp" command in Unix
 func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, err := exec.Command("cp", src, dstCp).CombinedOutput()
-	assert.NoError(t, err)
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	err = CopyFile(src, dstCopy)
+	err := CopyFile(src, dstCopy)
+	assert.NoError(t, err)
+	// run "cp"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, err = exec.Command("cp", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
 	ws.verifyEqualDstStructure(t)
 }
@@ -344,13 +345,18 @@ func (ws *workspace) verifySameBehaviorAsCp(t *testing.T, src, dstTemplate strin
 // the exact same way as the built-in "cp" command in Unix
 func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -n"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, err := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
-	assert.NoError(t, err)
 	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	err = CopyFileNoOverwrite(src, dstCopy)
+	err := CopyFileNoOverwrite(src, dstCopy)
+	assert.NoError(t, err)
+	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
+	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	// run "cp -n"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, err = exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	assert.NoError(t, err)
 	ws.verifyEqualDstStructure(t)
 }
@@ -358,13 +364,13 @@ func (ws *workspace) verifySameBehaviorAsCpn(t *testing.T, src, dstTemplate stri
 // ensures that the "CopyFiles" function copies files the exact same way as the built-in "cp -r" command in Unix.
 func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -r"
-	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, err := exec.Command("cp", "-rv", src, dst).CombinedOutput()
-	assert.NoError(t, err)
 	// run "CopyFiles"
-	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
-	err = CopyFiles(src, dst)
+	dst := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
+	err := CopyFiles(src, dst)
+	assert.NoError(t, err)
+	// run "cp -r"
+	dst = strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, err = exec.Command("cp", "-rv", src, dst).CombinedOutput()
 	assert.NoError(t, err)
 	// verify that both created the same files and folders
 	ws.verifyEqualDstStructure(t)
@@ -374,12 +380,12 @@ func (ws *workspace) verifySameBehaviorAsCpr(t *testing.T, src, dstTemplate stri
 // both return an error
 func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
 	// run "CopyFile"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFile(src, dstCopy)
+	// run "cp"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", src, dstCp).CombinedOutput()
 	// ensure both return errors
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
@@ -392,12 +398,17 @@ func (ws *workspace) verifyCpAndCopyErr(t *testing.T, src, dstTemplate string) {
 // both return an error
 func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -n"
-	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	// run "CopyFileNoOverwrite"
 	dstCopy := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyErr := CopyFileNoOverwrite(src, dstCopy)
+	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
+	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	// run "cp -n"
+	dstCp := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cpErr := exec.Command("cp", "-n", src, dstCp).CombinedOutput()
 	// ensure both return errors
 	if (copyErr == nil) || (cpErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cpErr, copyErr)
@@ -410,12 +421,17 @@ func (ws *workspace) verifyCpnAndCopyErr(t *testing.T, src, dstTemplate string) 
 // both return an error
 func (ws *workspace) verifyCprAndCopyFilesErr(t *testing.T, src, dstTemplate string) {
 	t.Helper()
-	// run "cp -r"
-	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
-	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
 	// run "CopyFiles"
 	dstCopyFiles := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCopy.Path, 1)
 	copyFilesErr := CopyFiles(src, dstCopyFiles)
+	// This function verifies that `ory dev headers cp` behaves the same as the built-in `cp` command on Linux.
+	// The `cp` command on other OS like macOS has different behavior. This feature is used only on CI.
+	if runtime.GOOS != "linux" {
+		return
+	}
+	// run "cp -r"
+	dstCpr := strings.Replace(dstTemplate, "{{dstDir}}", ws.dstCp.Path, 1)
+	_, cprErr := exec.Command("cp", "-r", src, dstCpr).CombinedOutput()
 	// ensure both return errors
 	if (copyFilesErr == nil) || (cprErr == nil) {
 		t.Fatalf("Unexpected success! cp: %v, copy: %v\n", cprErr, copyFilesErr)
