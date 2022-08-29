@@ -698,3 +698,39 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	}
 	return res, nil
 }
+
+func (h *CommandHelper) CreateAPIKey(name string) (*cloud.ProjectApiKey, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	token, _, err := c.V0alpha2Api.CreateProjectApiKey(h.Ctx, ac.SelectedProject.String()).CreateProjectApiKeyRequest(cloud.CreateProjectApiTokenRequest{Name: name}).Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
+func (h *CommandHelper) DeleteAPIKey(id string) error {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return err
+	}
+	if _, err := c.V0alpha2Api.DeleteProjectApiKey(h.Ctx, ac.SelectedProject.String(), id).Execute(); err != nil {
+		return err
+	}
+
+	return nil
+}
