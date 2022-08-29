@@ -55,6 +55,18 @@ func TestCommandHelper(t *testing.T) {
 		return &notYetLoggedIn
 	}
 
+	t.Run("func=CreateAPIKey and DeleteApiKey", func(t *testing.T) {
+		t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+			name := "a test key"
+			token, err := loggedIn.CreateAPIKey(name)
+			require.NoError(t, err)
+			assert.Equal(t, name, token.Name)
+			assert.NotEmpty(t, name, token.Value)
+
+			require.NoError(t, loggedIn.DeleteAPIKey(token.Id))
+		})
+	})
+
 	t.Run("func=GetProject", func(t *testing.T) {
 		t.Run("is able to get project", func(t *testing.T) {
 			p, err := loggedIn.GetProject(project)
