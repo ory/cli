@@ -56,6 +56,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
 			Timeout:   time.Second * 10}
 
+		// We use the cloud console API because it works with ory cloud session tokens.
 		conf.Servers = kratos.ServerConfigurations{{URL: makeCloudConsoleURL(p.Slug + ".projects")}}
 		return kratos.NewAPIClient(conf), nil
 	})
