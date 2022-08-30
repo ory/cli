@@ -1,8 +1,6 @@
 package monorepo
 
-import (
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
 var rootDirectory string
 var verbose bool
@@ -19,10 +17,6 @@ var Main = &cobra.Command{
 
 func isPR() bool {
 	return len(pr) > 0
-}
-
-func isMaster() bool {
-	return branch == "master"
 }
 
 func init() {

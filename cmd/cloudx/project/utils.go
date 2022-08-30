@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 
 	"github.com/spf13/cobra"
+	"github.com/tidwall/sjson"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
-
-	"github.com/tidwall/sjson"
 )
 
 func prefixConfig(prefix string, s []string) []string {
@@ -24,6 +23,10 @@ func prefixIdentityConfig(s []string) []string {
 
 func prefixPermissionConfig(s []string) []string {
 	return prefixConfig("/services/permission/config", s)
+}
+
+func prefixOAuth2Config(s []string) []string {
+	return prefixConfig("/services/oauth2/config", s)
 }
 
 func prefixFileConfig(prefix string, configs []json.RawMessage) ([]json.RawMessage, error) {

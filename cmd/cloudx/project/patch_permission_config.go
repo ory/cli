@@ -4,7 +4,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-
 	"github.com/ory/x/cmdx"
 )
 
@@ -15,10 +14,10 @@ func NewPatchKetoConfigCmd() *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		Short:   "Patch an Ory Cloud Project's Permission Config",
 		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--add '/namespaces={"name":"files", "id": 2}' \
+	--add '/namespaces=[{"name":"files", "id": 2}]' \
 	--replace '/namespaces/2/name="directories"' \
-	--delete '/limit/max_read_depth' \
-	--format json
+	--remove '/limit/max_read_depth' \
+	--format json-pretty
 
 {
   "namespaces": [

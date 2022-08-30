@@ -6,12 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	cloud "github.com/ory/client-go"
-
 	"github.com/ory/cli/cmd/cloudx/client"
-
+	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
-
 	"github.com/ory/x/flagx"
 )
 

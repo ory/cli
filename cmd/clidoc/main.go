@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/ory/cli/cmd"
-
 	"github.com/ory/x/clidoc"
 )
 

@@ -6,7 +6,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"io"
 	"testing"
 
@@ -57,7 +56,7 @@ func TestCommandHelper(t *testing.T) {
 	}
 
 	t.Run("func=GetProject", func(t *testing.T) {
-		t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+		t.Run("is able to get project", func(t *testing.T) {
 			p, err := loggedIn.GetProject(project)
 			require.NoError(t, err)
 			assertValidProject(t, p)
@@ -93,6 +92,17 @@ func TestCommandHelper(t *testing.T) {
 				"services.identity.config.identity.default_schema_id",
 				"services.identity.config.identity.schemas",
 				"services.identity.config.session.cookie",
+				"services.oauth2.config.urls.self",
+				"services.oauth2.config.serve.public.tls",
+				"services.oauth2.config.serve.tls",
+				"services.oauth2.config.serve.admin.tls",
+				"services.oauth2.config.serve.cookies.domain",
+				"services.oauth2.config.serve.cookies.names",
+				"services.oauth2.config.oauth2.session.encrypt_at_rest",
+				"services.oauth2.config.oauth2.expose_internal_errors",
+				"services.oauth2.config.oauth2.hashers",
+				"services.oauth2.config.hsm",
+				"services.oauth2.config.clients",
 			})
 
 			snapshotx.SnapshotT(t, res, snapshotx.ExceptPaths(
@@ -104,6 +114,9 @@ func TestCommandHelper(t *testing.T) {
 				"project.services.identity.config.session.cookie.domain",
 				"project.services.identity.config.session.cookie.name",
 				"project.services.identity.config.cookies.domain",
+				"project.services.oauth2.config.urls.self",
+				"project.services.oauth2.config.serve.cookies.domain",
+				"project.services.oauth2.config.serve.cookies.names",
 			))
 		})
 

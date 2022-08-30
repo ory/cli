@@ -20,7 +20,7 @@ var components = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var graph ComponentGraph
-		graph.getComponentGraph(rootDirectory)
+		_, _ = graph.getComponentGraph(rootDirectory)
 
 		switch componentMode {
 		case "affected":
@@ -88,22 +88,6 @@ func getChangedComponents(graph *ComponentGraph) []*Component {
 	return changedComponents
 }
 
-func getChangedComponentIDs(graph *ComponentGraph) []string {
-	var changedComponentIds []string
-	for _, changedComponent := range getChangedComponents(graph) {
-		changedComponentIds = append(changedComponentIds, changedComponent.ID)
-	}
-	return changedComponentIds
-}
-
-func getAffectedComponentIDs(graph *ComponentGraph) []string {
-	var affectedComponentIds []string
-	for _, affectedComponent := range getAffectedComponents(graph) {
-		affectedComponentIds = append(affectedComponentIds, affectedComponent.ID)
-	}
-	return affectedComponentIds
-}
-
 func getAffectedComponents(graph *ComponentGraph) []*Component {
 	changedComponents := getChangedComponents(graph)
 
@@ -169,10 +153,6 @@ func (component *Component) isAffected(graph *ComponentGraph) bool {
 		}
 	}
 	return false
-}
-
-func (component *Component) isInvolved(graph *ComponentGraph) bool {
-	return component.isChanged(graph) || component.isAffected(graph)
 }
 
 func getCurrentComponent() (*Component, error) {

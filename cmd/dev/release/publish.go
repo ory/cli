@@ -8,16 +8,14 @@ import (
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
-
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/pkg"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/stringslice"
-
-	"github.com/ory/cli/cmd/pkg"
 )
 
-var isTestRelease = regexp.MustCompile("^(([a-zA-Z0-9\\.\\-]+\\.)|)pre\\.[0-9]+$")
+var isTestRelease = regexp.MustCompile(`^(([a-zA-Z0-9\.\-]+\.)|)pre\.[0-9]+$`)
 
 var publish = &cobra.Command{
 	Use:   "publish [version]",

@@ -1,5 +1,8 @@
 # ORY CLI
 
+[![CI test status](https://github.com/ory/cli/actions/workflows/test.yml/badge.svg)](https://github.com/ory/cli/actions/workflows/test.yml)
+[![CI end-to-end test status](https://github.com/ory/cli/actions/workflows/test-e2e.yml/badge.svg)](https://github.com/ory/cli/actions/workflows/test-e2e.yml)
+
 This is the ORY Command Line Interface (CLI).
 
 ## Unix (Linux / macOS)
