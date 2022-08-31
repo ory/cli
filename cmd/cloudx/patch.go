@@ -17,6 +17,7 @@ func NewPatchCmd() *cobra.Command {
 		project.NewProjectsPatchCmd(),
 		project.NewPatchKratosConfigCmd(),
 		project.NewPatchKetoConfigCmd(),
+		project.NewPatchOAuth2ConfigCmd(),
 	)
 	return cmd
 }
