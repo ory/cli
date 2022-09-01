@@ -134,7 +134,7 @@ Actual:
 }
 
 func MigrationContent(mf pop.Migration, c *pop.Connection, r io.Reader, usingTemplate bool) (string, error) {
-	b, err := os.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return "", nil
 	}

@@ -550,7 +550,7 @@ func handleError(message string, res *http.Response, err error) error {
 		return errors.Wrapf(err, "%s", message)
 	}
 
-	body, _ := os.ReadAll(res.Body)
+	body, _ := io.ReadAll(res.Body)
 	return errors.Wrapf(err, "%s: %s", message, body)
 }
 
