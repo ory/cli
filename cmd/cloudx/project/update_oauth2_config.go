@@ -41,7 +41,7 @@ oauth2:
   pkce:
     enabled: true
 # ...`,
-		Long: `Use this command to replace your current Ory Cloud Project's OAuth2 service configuration. All values
+		Long: `Updates your Ory Cloud project's OAuth2 service configuration. All values
 of the OAuth2 service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command only updates the OAuth2 service configuration

@@ -27,7 +27,7 @@ import (
 var render = &cobra.Command{
 	Use:   "render [path/to/fizz-templates] [path/to/output]",
 	Short: "Renders all fizz templates to their SQL counterparts",
-	Long: `This command takes fizz migration templates and renders them as SQL.
+	Long: `Renders all fizz templates to their SQL counterparts. Takes fizz migration templates and renders them as SQL.
 
 It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use this tool you need Docker installed.
 `,

@@ -37,7 +37,7 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
   // ...
 }
 `,
-		Long: `Use this command to patch your current Ory Cloud Project's OAuth2 service configuration. Only values
+		Long: `Patch an Ory Cloud project's OAuth2 service configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 Compared to the ` + "`patch project`" + ` command, this command only updates the OAuth2 service configuration

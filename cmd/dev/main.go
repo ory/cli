@@ -17,7 +17,7 @@ import (
 var Main = &cobra.Command{
 	Use:   "dev",
 	Short: "Developer tools for writing Ory software",
-	Long: `This section of the Ory CLI is full of convenience functions needed when contributing software to Ory.
+	Long: `Developer tools and convenience functions for writing Ory software.
 Please check the individual commands for more information!`,
 	Hidden: true,
 }
