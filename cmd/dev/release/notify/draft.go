@@ -40,7 +40,7 @@ var draft = &cobra.Command{
 
 		pkg.Check(pkg.NewCommand("npm", "--no-git-tag-version", "--allow-same-version", "version", circleTag).Run())
 
-		changelogFile, err := os.TempDir(os.TempDir(), "ory-release-cf-*")
+		changelogFile, err := os.MkdirTemp(os.TempDir(), "ory-release-cf-*")
 		pkg.Check(err)
 		changelogFile = path.Join(changelogFile, "changelog-email.md")
 
