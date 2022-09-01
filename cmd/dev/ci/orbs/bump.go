@@ -2,7 +2,7 @@ package orbs
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"regexp"
 	"sync"
 
@@ -47,7 +47,7 @@ If no argument is supplied, this command uses the default ".circleci/config.yml"
 		}
 		wg.Wait()
 
-		config, err := ioutil.ReadFile(path)
+		config, err := os.ReadFile(path)
 		pkg.Check(err)
 
 		for k, r := range versions {
@@ -56,7 +56,7 @@ If no argument is supplied, this command uses the default ".circleci/config.yml"
 		}
 
 		if flagx.MustGetBool(cmd, "write") {
-			pkg.Check(ioutil.WriteFile(path, config, 0666))
+			pkg.Check(os.WriteFile(path, config, 0666))
 			fmt.Printf("Successfully wrote new orb versions to CircleCI config file: %s\n", path)
 		} else {
 			fmt.Println(string(config))

@@ -3,7 +3,6 @@ package deps
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"text/template"
@@ -75,7 +74,7 @@ func (c *Component) String() string {
 }
 
 func (c *Component) getComponentFromConfig(configFilePath string) error {
-	yamlFile, err := ioutil.ReadFile(configFilePath)
+	yamlFile, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return FileNotFoundError{configFilePath, err}
 	}

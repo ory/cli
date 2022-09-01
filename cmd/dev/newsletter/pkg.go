@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -77,7 +76,7 @@ func newMailchimpRequest(apiKey, path string, payload interface{}) {
 	pkg.Check(err)
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := os.ReadAll(res.Body)
 	pkg.Check(err)
 	if res.StatusCode != http.StatusOK {
 		pkg.Check(errors.Errorf("received unexpected status code: %d", res.StatusCode), "%s", body)

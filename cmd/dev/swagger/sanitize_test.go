@@ -1,7 +1,6 @@
 package swagger
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,10 +15,10 @@ func TestSanitize(t *testing.T) {
 
 	require.NoError(t, sanitize("stub/in.json", fp))
 
-	actual, err := ioutil.ReadFile(fp)
+	actual, err := os.ReadFile(fp)
 	require.NoError(t, err)
 
-	expected, err := ioutil.ReadFile("stub/expected.json")
+	expected, err := os.ReadFile("stub/expected.json")
 	require.NoError(t, err)
 
 	require.NotEmpty(t, actual)

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -57,9 +56,9 @@ If you want to send only to a segment within that list, add the Segment ID as we
 		tagMessagePath := args[1]
 		changelogPath := args[2]
 
-		tagMessageRaw, err := ioutil.ReadFile(tagMessagePath)
+		tagMessageRaw, err := os.ReadFile(tagMessagePath)
 		pkg.Check(err)
-		changelogRaw, err := ioutil.ReadFile(changelogPath)
+		changelogRaw, err := os.ReadFile(changelogPath)
 		pkg.Check(err)
 
 		chimpCampaign, err := Draft(listID, flagx.MustGetInt(cmd, "segment"), tagMessageRaw, changelogRaw)

@@ -42,7 +42,7 @@ func FakeName() string {
 }
 
 func NewConfigDir(t require.TestingT) string {
-	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
+	homeDir, err := os.MkdirTemp("", "cloudx-*")
 	require.NoError(t, err)
 	return filepath.Join(homeDir, "config.json")
 }
@@ -172,7 +172,7 @@ func CreateProject(t require.TestingT, configDir string) string {
 }
 
 func MakeRandomIdentity(t require.TestingT, email string) string {
-	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
+	homeDir, err := os.MkdirTemp("", "cloudx-*")
 	require.NoError(t, err)
 	path := filepath.Join(homeDir, "import.json")
 	require.NoError(t, os.WriteFile(path, []byte(`{

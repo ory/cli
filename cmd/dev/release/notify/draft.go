@@ -2,7 +2,6 @@ package notify
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -29,7 +28,7 @@ var draft = &cobra.Command{
 
 		// Required by conventional-changelog-generator
 		if _, err := os.Stat("package.json"); os.IsNotExist(err) {
-			pkg.Check(ioutil.WriteFile("package.json",
+			pkg.Check(os.WriteFile("package.json",
 				[]byte(`{"private": true, "version": "0.0.0"}`), 0600))
 		}
 
@@ -41,7 +40,7 @@ var draft = &cobra.Command{
 
 		pkg.Check(pkg.NewCommand("npm", "--no-git-tag-version", "--allow-same-version", "version", circleTag).Run())
 
-		changelogFile, err := ioutil.TempDir(os.TempDir(), "ory-release-cf-*")
+		changelogFile, err := os.TempDir(os.TempDir(), "ory-release-cf-*")
 		pkg.Check(err)
 		changelogFile = path.Join(changelogFile, "changelog-email.md")
 
@@ -59,7 +58,7 @@ var draft = &cobra.Command{
 
 		pkg.Check(pkg.NewCommand("npx", "prettier", "-w", changelogFile).Run())
 
-		changelog, err := ioutil.ReadFile(changelogFile)
+		changelog, err := os.ReadFile(changelogFile)
 		pkg.Check(err)
 
 		if strings.TrimSpace(tagMessage) == strings.TrimSpace(commitMessage) {
