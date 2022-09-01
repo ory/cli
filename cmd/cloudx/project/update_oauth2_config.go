@@ -16,7 +16,7 @@ func NewUpdateOAuth2ConfigCmd() *cobra.Command {
 			"hydra-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Cloud Project's OAuth2 Service Configuration",
+		Short: "Update Ory Cloud project's OAuth2 service configuration",
 		Example: `$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \

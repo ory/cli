@@ -12,7 +12,7 @@ var branch string
 // Main cobra command for monorepo support
 var Main = &cobra.Command{
 	Use:   "monorepo",
-	Short: "Helpers for CircleCI Monorepo Support",
+	Short: "Helpers for CircleCI monorepo support",
 }
 
 func isPR() bool {

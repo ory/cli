@@ -6,5 +6,5 @@ import (
 
 var Main = &cobra.Command{
 	Use:   "swagger",
-	Short: "Helpers for Swagger 2.0 / OpenAPI Spec",
+	Short: "Helpers for Swagger 2.0 / OpenAPI spec",
 }

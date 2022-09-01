@@ -16,7 +16,7 @@ func NewProjectsPatchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project <id>",
 		Args:  cobra.ExactArgs(1),
-		Short: "Patch an Ory Cloud Project",
+		Short: "Patch an Ory Cloud project",
 		Example: `ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/name="My new project name"' \
 	--add '/services/identity/config/courier/smtp={"from_name":"My new email name"}' \
