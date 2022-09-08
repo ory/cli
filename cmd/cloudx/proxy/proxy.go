@@ -85,9 +85,15 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use in localhost.
 		w.Header().Set("Strict-Transport-Security", "max-age=0;")
+
+		r.Header.Set("X-Ory-Base-URL-Rewrite", "false")
+		r.Header.Set("Ory-Base-URL-Rewrite", "false")
+		r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
+
 		n(w, r)
 	})
 
