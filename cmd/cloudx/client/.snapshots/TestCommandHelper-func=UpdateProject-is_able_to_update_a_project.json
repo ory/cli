@@ -256,7 +256,6 @@
               "enforced_for_public_clients": false
             },
             "session": {
-              "allowed_top_level_claims": [],
               "encrypt_at_rest": true,
               "exclude_not_before_claim": false
             }
