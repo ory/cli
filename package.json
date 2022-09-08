@@ -1,11 +1,14 @@
 {
-  "version": "0.0.85",
   "name": "@ory/cli",
-  "prettier": "ory-prettier-styles",
-  "config": {
-    "prettierTarget": "{**/,}*{.js,.md,.ts}"
-  },
+  "version": "0.0.85",
   "main": "npm/index.js",
+  "bin": {
+    "ory": "bin/ory"
+  },
+  "files": [
+    "npm/index.js",
+    "bin"
+  ],
   "scripts": {
     "install": "binwrap-install",
     "prepare": "binwrap-prepare",
@@ -17,13 +20,10 @@
     "format": "prettier --write ${npm_package_config_prettierTarget}",
     "format:check": "prettier --check ${npm_package_config_prettierTarget}"
   },
-  "files": [
-    "npm/index.js",
-    "bin"
-  ],
-  "bin": {
-    "ory": "bin/ory"
+  "config": {
+    "prettierTarget": "{**/,}*{.js,.md,.ts}"
   },
+  "prettier": "ory-prettier-styles",
   "dependencies": {
     "binwrap": "^0.2.3"
   },
@@ -32,7 +32,8 @@
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.5",
     "npm-run-all": "^4.1.5",
-    "ory-prettier-styles": "1.1.2",
-    "prettier": "2.3.2"
+    "ory-prettier-styles": "1.3.0",
+    "prettier": "^2.7.1",
+    "prettier-plugin-packagejson": "^2.2.18"
   }
 }

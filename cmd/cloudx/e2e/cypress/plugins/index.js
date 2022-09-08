@@ -11,8 +11,8 @@
 
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
-const jwks = require('jwks-rsa')
-const jwt = require('jsonwebtoken')
+const jwks = require("jwks-rsa")
+const jwt = require("jsonwebtoken")
 
 function getKey(header, callback) {
   client.getSigningKey(header.kid, function (err, key) {
@@ -28,12 +28,12 @@ function getKey(header, callback) {
 module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
-  on('task', {
+  on("task", {
     verify(token) {
       return new Promise((resolve, reject) => {
         const client = jwks({
           cache: false,
-          jwksUri: config.baseUrl + '/.ory/proxy/jwks.json'
+          jwksUri: config.baseUrl + "/.ory/proxy/jwks.json",
         })
 
         jwt.verify(
@@ -50,9 +50,9 @@ module.exports = (on, config) => {
             }
 
             return resolve(decoded)
-          }
+          },
         )
       })
-    }
+    },
   })
 }
