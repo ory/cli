@@ -103,6 +103,7 @@ func TestCommandHelper(t *testing.T) {
 				"services.oauth2.config.oauth2.hashers",
 				"services.oauth2.config.hsm",
 				"services.oauth2.config.clients",
+				"services.oauth2.config.oauth2.session",
 			})
 
 			snapshotx.SnapshotT(t, res, snapshotx.ExceptPaths(
