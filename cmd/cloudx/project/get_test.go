@@ -29,4 +29,10 @@ func TestGetServiceConfig(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
 	})
+
+	t.Run("service=hydra", func(t *testing.T) {
+		stdout, _, err := defaultCmd.Exec(nil, "get", "oauth2-config", defaultProject, "--format", "json")
+		require.NoError(t, err)
+		assert.True(t, gjson.Get(stdout, "oauth2").Exists(), stdout)
+	})
 }
