@@ -44,7 +44,7 @@ docs/cli: .bin/clidoc
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
 
 licenses: .bin/go-licenses .bin/check-licenses
-	.bin/go-licenses report github.com/ory/cli --template .bin/check-license-template.tpl | .bin/check-licenses
+	.bin/go-licenses report github.com/ory/cli --template .bin/check-license-template.tpl 2> /dev/null | .bin/check-licenses
 
 .PHONY: lint
 lint: .bin/golangci-lint
