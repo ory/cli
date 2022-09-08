@@ -19,6 +19,7 @@ func NewGetCmd(parent *cobra.Command) *cobra.Command {
 		project.NewGetProjectCmd(),
 		project.NewGetKratosConfigCmd(),
 		project.NewGetKetoConfigCmd(),
+		project.NewGetOAuth2ConfigCmd(),
 		identity.NewGetIdentityCmd(parent),
 	)
 

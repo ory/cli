@@ -15,7 +15,7 @@ import (
 )
 
 // LICENSE defines the full license text.
-const LICENSE_TEMPLATE = "Copyright © %d Ory Corp Inc."
+const LICENSE_TEMPLATE = "Copyright © %d Ory Corp"
 
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"

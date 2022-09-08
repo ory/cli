@@ -80,6 +80,9 @@
               "after": {
                 "hooks": []
               },
+              "before": {
+                "hooks": []
+              },
               "enabled": true,
               "ui_url": "/ui/recovery"
             },
@@ -122,6 +125,9 @@
                   "hooks": []
                 }
               },
+              "before": {
+                "hooks": []
+              },
               "privileged_session_max_age": "15m0s",
               "required_aal": "highest_available",
               "ui_url": "/ui/settings"
@@ -129,6 +135,9 @@
             "verification": {
               "lifespan": "30m0s",
               "after": {
+                "hooks": []
+              },
+              "before": {
                 "hooks": []
               },
               "enabled": true,
