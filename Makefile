@@ -14,7 +14,8 @@ GO_DEPENDENCIES = github.com/ory/go-acc \
 				  github.com/go-swagger/go-swagger/cmd/swagger \
 				  golang.org/x/tools/cmd/goimports \
 				  github.com/mikefarah/yq \
-				  github.com/mattn/goveralls
+				  github.com/mattn/goveralls \
+					github.com/google/go-licenses@latest
 
 define make-go-dependency
   # go install is responsible for not re-building when the code hasn't changed
@@ -22,6 +23,9 @@ define make-go-dependency
 		GOBIN=$(PWD)/.bin/ go install $1
 endef
 $(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
+
+.bin/check-licenses: Makefile
+	curl https://raw.githubusercontent.com/ory/ci/kg-licenses/licenses/install | sh
 
 .bin/clidoc: Makefile go.mod go.sum cmd
 		go build -tags nodev -o .bin/clidoc ./cmd/clidoc/.
@@ -33,8 +37,14 @@ docs/cli: .bin/clidoc
 .bin/cli: go.mod go.sum Makefile
 		go build -o .bin/cli -tags sqlite github.com/ory/cli
 
+.bin/go-licenses: Makefile
+	GOBIN=$(PWD)/.bin go install github.com/google/go-licenses@latest
+
 .bin/golangci-lint: Makefile
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
+
+licenses: .bin/go-licenses .bin/check-licenses
+	.bin/go-licenses report github.com/ory/cli --template .bin/check-license-template.tpl | .bin/check-licenses
 
 .PHONY: lint
 lint: .bin/golangci-lint
