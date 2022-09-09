@@ -1,4 +1,5 @@
 name: Licenses
+
 on:
   pull_request:
   push:
@@ -7,7 +8,7 @@ on:
       - master
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
