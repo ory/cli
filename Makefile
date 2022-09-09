@@ -37,14 +37,12 @@ docs/cli: .bin/clidoc
 .bin/cli: go.mod go.sum Makefile
 		go build -o .bin/cli -tags sqlite github.com/ory/cli
 
-.bin/go-licenses: Makefile
-	GOBIN=$(PWD)/.bin go install github.com/google/go-licenses@latest
-
 .bin/golangci-lint: Makefile
 		curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
 
-licenses: .bin/go-licenses .bin/check-licenses
-	.bin/go-licenses report github.com/ory/cli --template .bin/check-license-template.tpl 2> /dev/null | .bin/check-licenses
+licenses: .bin/check-licenses
+	.bin/licenses-node
+	.bin/licenses-go github.com/ory/cli
 
 .PHONY: lint
 lint: .bin/golangci-lint
