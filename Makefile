@@ -15,7 +15,7 @@ GO_DEPENDENCIES = github.com/ory/go-acc \
 				  golang.org/x/tools/cmd/goimports \
 				  github.com/mikefarah/yq \
 				  github.com/mattn/goveralls \
-					github.com/google/go-licenses@latest
+				  github.com/google/go-licenses@latest
 
 define make-go-dependency
   # go install is responsible for not re-building when the code hasn't changed
