@@ -21,7 +21,7 @@ var publish = &cobra.Command{
 	Use:   "publish [version]",
 	Args:  cobra.ExactArgs(1),
 	Short: "Publish a new release",
-	Long: `Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
+	Long: `Publishes a new release. Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
 
 To publish a release, you first have to create a pre-release:
 
