@@ -14,8 +14,6 @@ replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.44.0
 
-replace github.com/ory/x => ../x
-
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -39,7 +37,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
-	github.com/ory/x v0.0.394
+	github.com/ory/x v0.0.467
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
