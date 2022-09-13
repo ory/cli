@@ -17,7 +17,7 @@ import (
 var migrateCmd = &cobra.Command{
 	Use:   "migrate [path/to/swagger2.json] [path/to/output.json]",
 	Short: "Migrates Swagger 2.0 to OpenAPI 3.0",
-	Long: `Prints the OpenAPI 3.0 spec to std out.
+	Long: `Migrates Swagger 2.0 to OpenAPI 3.0. Prints the OpenAPI 3.0 spec to std out.
 
 This command can also apply a JSON Patch (https://tools.ietf.org/html/rfc7396) to the OpenAPI 3.0 output using
 the --patch flag. The path can be a file:// or https:// path.

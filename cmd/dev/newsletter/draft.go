@@ -22,7 +22,7 @@ var draft = &cobra.Command{
 	Use:   "draft list-id path/to/tag-message path/to/changelog.md",
 	Args:  cobra.ExactArgs(3),
 	Short: "Creates a draft release notification via the Mailchimp Campaign / Newsletter API",
-	Long: `TL;DR
+	Long: `Creates a draft release notification via the Mailchimp Campaign / Newsletter API. TL;DR
 
 	$ git tag -l --format='%(contents)' v0.0.103 > tag-message.txt
 	$ # run changelog generator > changelog.md
