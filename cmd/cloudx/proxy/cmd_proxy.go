@@ -26,7 +26,7 @@ func NewProxyCommand(self string, version string) *cobra.Command {
 	--allowed-cors-origins https://api.example.org \
 	--allowed-cors-origins https://www.another-app.com
 `, self),
-		Long: fmt.Sprintf(`This command starts a reverse proxy which must be deployed in front of your application.
+		Long: fmt.Sprintf(`Allows running your app and Ory on the same domain by starting a reverse proxy that runs in front of your application.
 This proxy works both in development and in production, for example when deploying a
 React, NodeJS, Java, PHP, ... app to a server / the cloud or when developing it locally
 on your machine.
