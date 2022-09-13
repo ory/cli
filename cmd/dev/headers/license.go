@@ -89,7 +89,7 @@ Does not add the license header to git-ignored files.`,
 
 func init() {
 	Main.AddCommand(copyright)
-	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude")
+	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
 }
 
 // contains the folders to exclude

@@ -46,6 +46,7 @@ func TestAddLicenses(t *testing.T) {
 }
 
 func TestIsExcluded(t *testing.T) {
+	exclude := []string{"internal/httpclient", "generated/"}
 	tests := map[string]bool{
 		"foo.md":                                false,
 		"foo/bar/baz.md":                        false,
@@ -54,7 +55,6 @@ func TestIsExcluded(t *testing.T) {
 		"generated/README.md":                   true,
 		"generated/foo/bar/README.md":           true,
 	}
-	exclude := []string{"internal/httpclient", "generated/"}
 	for give, want := range tests {
 		assert.Equal(t, want, isInExcludedFolder(give, exclude), "%q -> %t", give, want)
 	}
