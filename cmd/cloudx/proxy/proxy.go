@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/x/cmdx"
+
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
@@ -69,16 +72,87 @@ func portFromEnv() int {
 	return int(port)
 }
 
+var errNoApiKeyAvailable = errors.New("no api key available")
+
+func noop() {}
+
+func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey string, cleanup func(), err error) {
+	oryURLParts := strings.Split(conf.oryURL.Hostname(), ".")
+	if len(oryURLParts) < 2 {
+		l.Warnf("The Ory Cloud URL `%s` does not appear to be a a valid Ory Cloud URL. It should be in the format of `https://<project-slug>.projects.oryapis.com`. Skipping API key creation.", conf.oryURL)
+		return "", noop, errNoApiKeyAvailable
+	}
+
+	if ak := client.GetProjectAPIKeyFromEnvironment(); len(ak) > 0 {
+		return ak, noop, nil
+	}
+
+	if oryURLParts[0] == "playground" {
+		l.Warnf("The Ory Proxy / Ory Tunnel does not support Social Sign In for the playground project.")
+		return "", noop, errNoApiKeyAvailable
+	}
+
+	// For all other projects, except the playground, we should to authenticate.
+	_, valid, err := h.HasValidContext()
+	if errors.Is(err, client.ErrNoConfigQuiet) {
+		l.Warn("Because you are not authenticated, the Ory CLI can not configure your project automatically. You can still use the Ory Proxy / Ory Tunnel, but complex flows such as Social Sign In will not work. Remove the `--quiet` flag or run `ory auth login` to authenticate.")
+		return "", noop, errNoApiKeyAvailable
+	} else if err != nil {
+		return "", noop, err
+	}
+
+	if !valid {
+		ok, err := cmdx.AskScannerForConfirmation("To support complex flows such as Social Sign In, the Ory CLI can configure your project automatically. To do so, you need to be signed in. Do you want to sign in?", h.Stdin, h.VerboseErrWriter)
+		if err != nil {
+			return "", noop, err
+		}
+
+		if !ok {
+			l.Warn("Because you are not authenticated, the Ory CLI can not configure your project automatically. You can still use the Ory Proxy / Ory Tunnel, but complex flows such as Social Sign In will not work.")
+			return "", noop, errNoApiKeyAvailable
+		}
+
+		if _, err := h.EnsureContext(); err != nil {
+			return "", noop, err
+		}
+	}
+
+	slug := oryURLParts[0]
+	ak, err := h.CreateAPIKey(slug, "Ory CLI Proxy / Tunnel - Temporary API Key")
+	if err != nil {
+		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`?", slug)
+		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
+	}
+
+	fmt.Printf(`
+ak: %+v
+%s
+`, ak, *ak.ProjectId)
+
+	if !ak.HasValue() {
+		return "", noop, errNoApiKeyAvailable
+	}
+
+	return *ak.Value, func() {
+		if err := h.DeleteAPIKey(slug, ak.Id); err != nil {
+			l.WithError(err).Errorf("Unable to clean up API Key automatically. Please remove it up manually in the Ory Console.")
+		}
+	}, nil
+}
+
 func run(cmd *cobra.Command, conf *config, version string, name string) error {
+	h, err := client.NewCommandHelper(cmd)
+	if err != nil {
+		return err
+	}
+
 	upstream, err := url.ParseRequestURI(conf.upstream)
 	if err != nil {
 		return errors.Wrap(err, "unable to parse upstream URL")
 	}
 
 	l := logrusx.New("ory/"+strings.ToLower(name), version)
-
 	writer := herodot.NewJSONWriter(l)
-
 	mw := negroni.New()
 
 	signer, key, err := newSigner(l, conf)
@@ -86,14 +160,17 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		return errors.WithStack(err)
 	}
 
+	apiKey, removeAPIKey, err := getAPIKey(conf, l, h)
+	if errors.Is(err, errNoApiKeyAvailable) {
+		// Do nothing - no API key is available and social sign in will not work.
+	} else if err != nil {
+		return err
+	}
+	defer removeAPIKey()
+
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use in localhost.
 		w.Header().Set("Strict-Transport-Security", "max-age=0;")
-
-		r.Header.Set("X-Ory-Base-URL-Rewrite", "false")
-		r.Header.Set("Ory-Base-URL-Rewrite", "false")
-		r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
-
 		n(w, r)
 	})
 
@@ -119,9 +196,18 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				PathPrefix:     "",
 			}, nil
 		},
-		proxy.WithReqMiddleware(func(req *http.Request, config *proxy.HostConfig, body []byte) ([]byte, error) {
-			req.Header.Set("X-Base-URL-Rewrite", conf.publicURL.String())
-			req.Header.Set("X-Session-Token", "TBD")
+		proxy.WithReqMiddleware(func(r *http.Request, c *proxy.HostConfig, body []byte) ([]byte, error) {
+			if r.URL.Host == conf.oryURL.Host {
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
+				r.Host = conf.oryURL.Host
+			}
+
+			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
+			r.Header.Set("Ory-Base-URL-Rewrite", conf.publicURL.String())
+			if len(apiKey) > 0 {
+				r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+			}
+
 			return body, nil
 		}),
 		proxy.WithRespMiddleware(func(resp *http.Response, config *proxy.HostConfig, body []byte) ([]byte, error) {
@@ -135,14 +221,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 
 			return body, nil
 		}),
-		proxy.WithReqMiddleware(func(r *http.Request, c *proxy.HostConfig, body []byte) ([]byte, error) {
-			if r.URL.Host == conf.oryURL.Host {
-				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
-				r.Host = conf.oryURL.Host
-			}
-
-			return body, nil
-		})))
+	))
 
 	cleanup := func() error {
 		return nil
