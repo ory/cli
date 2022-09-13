@@ -198,56 +198,71 @@ func (h *CommandHelper) readConfig() (*AuthContext, error) {
 	return &c, nil
 }
 
-func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
+func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 	c, err := h.readConfig()
 	if err != nil {
 		if errors.Is(err, ErrNoConfig) {
 			if h.IsQuiet {
-				return nil, ErrNoConfigQuiet
+				return nil, false, errors.WithStack(ErrNoConfigQuiet)
 			}
-			// Continue to sign in
-		} else {
-			return nil, err
+			// No context
+			return nil, false, nil
 		}
+
+		return nil, false, err
 	}
 
 	if len(c.SessionToken) > 0 {
 		client, err := NewKratosClient()
 		if err != nil {
+			return nil, false, err
+		}
+
+		sess, _, err := client.V0alpha2Api.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
+		if err != nil {
+			return nil, false, err
+		} else if sess == nil {
+			return nil, false, nil
+		}
+		return c, true, nil
+	}
+
+	return nil, false, nil
+}
+
+func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
+	c, valid, err := h.HasValidContext()
+	if err != nil {
+		return nil, err
+	} else if valid {
+		return c, nil
+	}
+
+	// No valid session, but also quiet mode -> failure!
+	if h.IsQuiet {
+		return nil, errors.WithStack(ErrNoConfigQuiet)
+	}
+
+	// Not valid, and no session -> go to authenticate directly.
+	if c == nil {
+		c, err = h.Authenticate()
+		if err != nil {
 			return nil, err
 		}
-		sess, _, err := client.V0alpha2Api.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
-		if sess == nil || err != nil {
-			if h.IsQuiet {
-				return nil, errors.New("Your session has expired and you cannot reauthenticate when the --quiet flag is set")
-			}
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("Your CLI session has expired. Do you wish to log in again as \"%s\"?", c.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
-			if err != nil {
-				return nil, err
-			}
-			if ok {
-				if err := h.SignOut(); err != nil {
-					return nil, err
-				}
-				c, err := h.Authenticate()
-				if err != nil {
-					return nil, err
-				}
-				return c, nil
-			}
-			return nil, errors.New("Your session has expired")
-		}
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are authenticated as: %s\n", c.IdentityTraits.Email)
+
 		return c, nil
+	}
+
+	// Not valid, but we have a session -> tell the user we need to re-authenticate
+	_, _ = fmt.Fprintf(os.Stderr, "Your session has expired. Please re-authenticate to continue.")
+
+	if err := h.SignOut(); err != nil {
+		return nil, err
 	}
 
 	c, err = h.Authenticate()
 	if err != nil {
 		return nil, err
-	}
-
-	if len(c.SessionToken) == 0 {
-		return nil, errors.Errorf("unable to authenticate")
 	}
 
 	return c, nil
@@ -474,6 +489,10 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 
 	_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are now signed in as: %s\n", ac.IdentityTraits.Email)
 
+	if len(ac.SessionToken) == 0 {
+		return nil, errors.Errorf("unable to authenticate")
+	}
+
 	return ac, nil
 }
 
@@ -699,7 +718,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	return res, nil
 }
 
-func (h *CommandHelper) CreateAPIKey(name string) (*cloud.ProjectApiKey, error) {
+func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.ProjectApiKey, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -710,7 +729,7 @@ func (h *CommandHelper) CreateAPIKey(name string) (*cloud.ProjectApiKey, error) 
 		return nil, err
 	}
 
-	token, _, err := c.V0alpha2Api.CreateProjectApiKey(h.Ctx, ac.SelectedProject.String()).CreateProjectApiKeyRequest(cloud.CreateProjectApiTokenRequest{Name: name}).Execute()
+	token, _, err := c.V0alpha2Api.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -718,7 +737,7 @@ func (h *CommandHelper) CreateAPIKey(name string) (*cloud.ProjectApiKey, error) 
 	return token, nil
 }
 
-func (h *CommandHelper) DeleteAPIKey(id string) error {
+func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return err
@@ -728,7 +747,8 @@ func (h *CommandHelper) DeleteAPIKey(id string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := c.V0alpha2Api.DeleteProjectApiKey(h.Ctx, ac.SelectedProject.String(), id).Execute(); err != nil {
+
+	if _, err := c.V0alpha2Api.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 

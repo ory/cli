@@ -7,6 +7,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/x/cmdx"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -223,6 +226,11 @@ An example payload of the JSON Web Token is:
 	proxyCmd.Flags().StringSlice(CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
+
+	client.RegisterConfigFlag(proxyCmd.PersistentFlags())
+	client.RegisterYesFlag(proxyCmd.PersistentFlags())
+	cmdx.RegisterNoiseFlags(proxyCmd.PersistentFlags())
+
 	return proxyCmd
 }
 
