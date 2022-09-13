@@ -13,7 +13,7 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
 		Use:     "oauth2-config <project-id>",
 		Aliases: []string{"oc", "hydra-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud Project's OAuth2 Config",
+		Short:   "Patch an Ory Cloud project's OAuth2 config",
 		Example: `$ ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/strategies/access_token="jwt"' \
 	--add '/ttl/login_consent_request="1h"' \
