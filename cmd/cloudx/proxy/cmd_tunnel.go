@@ -22,7 +22,7 @@ func NewTunnelCommand(self string, version string) *cobra.Command {
 	--allowed-cors-origins https://api.example.org \
 	--allowed-cors-origins https://www.another-app.com
 `, self),
-		Long: fmt.Sprintf(`This command runs an HTTP Server which is connected to Ory's APIs, in order for your application and Ory's
+		Long: fmt.Sprintf(`Tunnels Ory APIs on a subdomain or separate port of your app. This command runs an HTTP Server which is connected to Ory's APIs, in order for your application and Ory's
 APIs to run on the same top level domain (for example yourapp.com, localhost). Having Ory on your domain
 is required for cookies to work.
 

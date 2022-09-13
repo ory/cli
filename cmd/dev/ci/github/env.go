@@ -18,7 +18,7 @@ const branchPrefix = "refs/heads/"
 var env = &cobra.Command{
 	Use:   "env",
 	Short: "Sets up environment variables",
-	Long: `To load the environment variables use:
+	Long: `Sets up environment variables. To load the environment variables use:
 
 $ source $(ory dev ci github env)`,
 	Run: func(cmd *cobra.Command, args []string) {

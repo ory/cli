@@ -49,7 +49,7 @@ $ ory update project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	}
   }
 }`,
-		Long: `Use this command to replace your current Ory Cloud Project's service configuration. All values
+		Long: `Updates your Ory Cloud project's service configuration. All values
 will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 If the ` + "`--name`" + ` flag is not set, the project's name will not be changed.

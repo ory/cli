@@ -27,7 +27,7 @@ ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/name="My new project name"' \
 	--delete '/services/identity/config/selfservice/methods/totp/enabled'
 	--format kratos-config > my-config.yaml`,
-		Long: `Use this command to patch your current Ory Cloud Project's service configuration. Only values
+		Long: `Patches your Ory Cloud project's service configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 The format of the patch is a JSON-Patch document. For more details please check:

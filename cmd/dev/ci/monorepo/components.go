@@ -16,7 +16,7 @@ var componentMode string
 var components = &cobra.Command{
 	Use:   "components",
 	Short: "List components based on mode.",
-	Long:  `Read dependency configs and displays dependency graph.`,
+	Long:  `List components based on mode by reading dependency configs and displaying the dependency graph.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		var graph ComponentGraph

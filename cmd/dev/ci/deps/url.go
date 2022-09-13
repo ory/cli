@@ -113,7 +113,7 @@ func (c *Component) getRenderedURL(osString string, archString string) (string, 
 var url = &cobra.Command{
 	Use:   "url",
 	Short: "Returns the download url based on the provided config file.",
-	Long:  `This cmd will help to simplify our Makefile logic to download binary dependencies. As the values used for os and arch as well as the structure of the download url for different binary tools are not standardized it makes it quite cumbersome to handle this efficiently in Makefiles.`,
+	Long:  `Returns the download url based on the provided config file. This is used to simplify our Makefile logic when downloading binary dependencies. As the values used for os and arch as well as the structure of the download url for different binary tools are not standardized it makes it quite cumbersome to handle this efficiently in Makefiles.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		component := Component{}
 		var pConfig = flagx.MustGetString(cmd, "config")
