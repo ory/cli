@@ -5,6 +5,7 @@ package headers
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -77,10 +78,13 @@ var copyright = &cobra.Command{
 	Long: `Adds the license header to all known files in the current directory.
 
 Does not add the license header to git-ignored files.`,
-	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("cannot determine the current directory: %w", err)
+		}
 		year, _, _ := time.Now().Date()
-		return AddLicenses(args[0], year, exclude)
+		return AddLicenses(cwd, year, exclude)
 	},
 }
 
