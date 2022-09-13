@@ -26,7 +26,7 @@ func TestAddLicenses(t *testing.T) {
 	dir.CreateFile("vue.vue", "<template>\n<Header />")
 	dir.CreateFile("yaml.yml", "one: two\nalpha: beta")
 	dir.CreateFile("yaml.yaml", "one: two\nalpha: beta")
-	err := AddLicenses(dir.Path, 2022)
+	err := AddLicenses(dir.Path, 2022, []string{})
 	assert.NoError(t, err)
 	assert.Equal(t, "// Copyright © 2022 Ory Corp\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.Content("c-sharp.cs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp\n\nint a = 1;\nint b = 2;", dir.Content("dart.dart"))
@@ -43,6 +43,21 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "<!-- Copyright © 2022 Ory Corp -->\n\n<template>\n<Header />", dir.Content("vue.vue"))
 	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yml"))
 	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yaml"))
+}
+
+func TestIsExcluded(t *testing.T) {
+	tests := map[string]bool{
+		"foo.md":                                false,
+		"foo/bar/baz.md":                        false,
+		"internal/httpclient/README.md":         true,
+		"internal/httpclient/foo/bar/README.md": true,
+		"generated/README.md":                   true,
+		"generated/foo/bar/README.md":           true,
+	}
+	exclude := []string{"internal/httpclient", "generated/"}
+	for give, want := range tests {
+		assert.Equal(t, want, isInExcludedFolder(give, exclude), "%q -> %t", give, want)
+	}
 }
 
 func TestShouldAddLicense(t *testing.T) {
@@ -64,7 +79,7 @@ func TestShouldAddLicense(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
-			assert.Equal(t, want, shouldAddLicense(give))
+			assert.Equal(t, want, fileTypeIsLicensed(give))
 		})
 	}
 }
