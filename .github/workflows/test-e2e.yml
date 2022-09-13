@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.17'
+          go-version: '^1.19'
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
@@ -25,7 +25,7 @@ jobs:
         run: |
           cd cmd/cloudx/e2e
           npm run server &
-          ./ory tunnel http://localhost:4001 --project playground &
+          ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 &
           CYPRESS_IS_TUNNEL=1 npm run test
 
   test-proxy:
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '^1.17'
+          go-version: '^1.19'
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
@@ -45,5 +45,5 @@ jobs:
       - name: Run Proxy E2E Tests
         run: |
           cd cmd/cloudx/e2e
-          ./ory proxy https://httpbin.org/anything --project playground &
+          ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 &
           npm run test
