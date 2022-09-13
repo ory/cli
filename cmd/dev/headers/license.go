@@ -25,8 +25,7 @@ const LICENSE_TOKEN = "Copyright ©"
 // file types that we don't want to add license headers to
 var noLicenseHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 
-// AddLicenses adds or updates the Ory license header in all applicable files within the given directory
-// except if in the given list of directories to exclude.
+// AddLicenses adds or updates the Ory license header in all applicable files within the given directory.
 func AddLicenses(dir string, year int, exclude []string) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	gitIgnore, _ := goGitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
