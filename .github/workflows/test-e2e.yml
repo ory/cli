@@ -25,7 +25,7 @@ jobs:
         run: |
           cd cmd/cloudx/e2e
           npm run server &
-          ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 &
+          ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
           CYPRESS_IS_TUNNEL=1 npm run test
 
   test-proxy:
@@ -45,5 +45,5 @@ jobs:
       - name: Run Proxy E2E Tests
         run: |
           cd cmd/cloudx/e2e
-          ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 &
+          ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
           npm run test
