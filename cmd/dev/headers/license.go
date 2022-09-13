@@ -83,6 +83,9 @@ Does not add the license header to git-ignored files.`,
 			return fmt.Errorf("cannot determine the current directory: %w", err)
 		}
 		year, _, _ := time.Now().Date()
+		for e, excluded := range exclude {
+			exclude[e] = filepath.Join(cwd, excluded)
+		}
 		return AddLicenses(cwd, year, exclude)
 	},
 }
