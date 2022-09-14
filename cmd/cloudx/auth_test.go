@@ -103,7 +103,7 @@ func TestAuthenticator(t *testing.T) {
 			testhelpers.ChangeAccessToken(t, configDir)
 			_, stderr, err := cmd.Exec(nil, "list", "projects", "-q")
 			require.Error(t, err)
-			assert.Equal(t, "Your session has expired and you cannot reauthenticate when the --quiet flag is set", err.Error())
+			assert.Equal(t, "please run `ory auth` to initialize your configuration or remove the `--quiet` flag", err.Error())
 			assert.NotContains(t, stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 		})
 

@@ -244,7 +244,7 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 	}
 
 	// Not valid, but we have a session -> tell the user we need to re-authenticate
-	_, _ = fmt.Fprintf(os.Stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
+	_, _ = fmt.Fprintf(h.VerboseErrWriter, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 
 	if err := h.SignOut(); err != nil {
 		return nil, err
