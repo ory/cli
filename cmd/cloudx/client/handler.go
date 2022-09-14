@@ -220,7 +220,7 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 
 		sess, _, err := client.V0alpha2Api.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
 		if err != nil {
-			return nil, false, err
+			return nil, false, nil
 		} else if sess == nil {
 			return nil, false, nil
 		}
@@ -243,18 +243,8 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 		return nil, errors.WithStack(ErrNoConfigQuiet)
 	}
 
-	// Not valid, and no session -> go to authenticate directly.
-	if c == nil {
-		c, err = h.Authenticate()
-		if err != nil {
-			return nil, err
-		}
-
-		return c, nil
-	}
-
 	// Not valid, but we have a session -> tell the user we need to re-authenticate
-	_, _ = fmt.Fprintf(os.Stderr, "Your session has expired. Please re-authenticate to continue.")
+	_, _ = fmt.Fprintf(os.Stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 
 	if err := h.SignOut(); err != nil {
 		return nil, err
