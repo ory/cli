@@ -6,7 +6,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"io"
 	"testing"
 
@@ -57,7 +56,7 @@ func TestCommandHelper(t *testing.T) {
 	}
 
 	t.Run("func=CreateAPIKey and DeleteApiKey", func(t *testing.T) {
-		t.Run(fmt.Sprintf("is able to get project"), func(t *testing.T) {
+		t.Run("is able to get project", func(t *testing.T) {
 			name := "a test key"
 			token, err := loggedIn.CreateAPIKey(project, name)
 			require.NoError(t, err)
