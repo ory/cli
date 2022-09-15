@@ -3,6 +3,8 @@ package cloudx
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/oauth2"
+
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/identity"
 	"github.com/ory/cli/cmd/cloudx/project"
@@ -21,6 +23,7 @@ func NewGetCmd(parent *cobra.Command) *cobra.Command {
 		project.NewGetKetoConfigCmd(),
 		project.NewGetOAuth2ConfigCmd(),
 		identity.NewGetIdentityCmd(parent),
+		oauth2.NewGetOAuth2Client(parent),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
