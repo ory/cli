@@ -7,16 +7,12 @@
   "scripts": {
     "server": "node app.js",
     "test": "cypress run --record",
-    "test:dev": "cypress open",
-    "format": "prettier --write ${npm_package_config_prettierTarget}",
-    "format:check": "prettier --check ${npm_package_config_prettierTarget}"
+    "test:dev": "cypress open"
   },
   "devDependencies": {
     "cypress": "^9.0.0",
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^2.0.5",
-    "ory-prettier-styles": "1.1.2",
-    "prettier": "2.3.2"
+    "jwks-rsa": "^2.0.5"
   },
   "dependencies": {
     "express": "^4.17.3"
