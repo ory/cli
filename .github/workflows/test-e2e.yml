@@ -23,10 +23,18 @@ jobs:
           go build -tags sqlite -o ory .
       - name: Run Tunnel E2E Tests
         run: |
+          docker run \
+            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
+            -e ORY_API_KEY="$ORY_API_KEY" \
+            -p 4445:3000 -d \
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.0
           cd cmd/cloudx/e2e
           npm run server &
           ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
-          CYPRESS_IS_TUNNEL=1 npm run test
+          npm run test
+        env:
+          CYPRESS_IS_TUNNEL: 1
+          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
 
   test-proxy:
     runs-on: ubuntu-latest
@@ -44,6 +52,13 @@ jobs:
           go build -tags sqlite -o ory .
       - name: Run Proxy E2E Tests
         run: |
+          docker run \
+            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
+            -e ORY_API_KEY="$ORY_API_KEY" \
+            -p 4445:3000 -d \
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.0
           cd cmd/cloudx/e2e
           ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
           npm run test
+        env:
+          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
