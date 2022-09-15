@@ -65,6 +65,6 @@ docker:
 post-release:
 		echo "nothing to do"
 
-node_modules: package.json package-lock.json
+node_modules: package-lock.json
 	npm ci
 	touch node_modules
