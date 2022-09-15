@@ -18,22 +18,25 @@ jobs:
         with:
           node-version: "16"
       - run: |
-          go build -tags sqlite -o cmd/cloudx/e2e/ory .
-          cd cmd/cloudx/e2e
-          npm ci
-      - name: Run Tunnel E2E Tests
-        run: |
+          go build -o ory .
+          ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
+        env:
+          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
+      - run: |
           docker run \
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
             -e ORY_API_KEY="$ORY_API_KEY" \
             -p 4445:3000 -d \
             docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
-          cd cmd/cloudx/e2e
-          npm run server &
-          ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-      -
+        working-directory: cmd/cloudx/e2e
+      - name: Install dependencies and run server
+        working-directory: cmd/cloudx/e2e
+        run: |
+          npm ci
+          npm run server &
+      - name: Run tests
         run: |
           npm run test
         env:
@@ -51,21 +54,24 @@ jobs:
         with:
           node-version: "16"
       - run: |
-          go build -tags sqlite -o cmd/cloudx/e2e/ory .
-          cd cmd/cloudx/e2e
-          npm ci
-      - name: Run Proxy E2E Tests
-        run: |
+          go build -o ory .
+          ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
+        env:
+          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
+      - run: |
           docker run \
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
             -e ORY_API_KEY="$ORY_API_KEY" \
             -p 4445:3000 -d \
             docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
-          cd cmd/cloudx/e2e
-          ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
+      - name: Install Node
+        working-directory: cmd/cloudx/e2e
+        run: |
+          npm ci
       -
+        working-directory: cmd/cloudx/e2e
         run: |
           npm run test
         env:
