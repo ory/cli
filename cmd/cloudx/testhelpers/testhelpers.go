@@ -188,9 +188,11 @@ func MakeRandomClient(t require.TestingT, name string) string {
 	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
 	require.NoError(t, err)
 	path := filepath.Join(homeDir, "import.json")
-	require.NoError(t, os.WriteFile(path, []byte(`{
-  "client_name": "`+name+`"
-}`), 0600))
+	require.NoError(t, os.WriteFile(path, []byte(`[
+  {
+    "client_name": "`+name+`"
+  }
+]`), 0600))
 	return path
 }
 
