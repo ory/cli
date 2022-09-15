@@ -35,14 +35,14 @@ jobs:
             -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
             -p 4445:3000 -d \
             --name hydra-ui \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.2
           npm run test
         env:
           CYPRESS_RECORD_KEY: e8bf86fe-6605-4112-af1d-c3a2f052d4f8
           CYPRESS_IS_TUNNEL: 1
       - if: ${{ failure() }}
         run: |
-          docker ps
+          docker ps -a
           docker logs hydra-ui
           curl -v http://localhost:4445
 
@@ -72,12 +72,12 @@ jobs:
             -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
             -p 4445:3000 -d \
             --name hydra-ui \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.2
           npm run test
         env:
           CYPRESS_RECORD_KEY: e8bf86fe-6605-4112-af1d-c3a2f052d4f8
       - if: ${{ failure() }}
         run: |
-          docker ps
+          docker ps -a
           docker logs hydra-ui
           curl -v http://localhost:4445
