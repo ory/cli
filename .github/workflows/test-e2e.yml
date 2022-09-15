@@ -27,7 +27,7 @@ jobs:
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
             -e ORY_API_KEY="$ORY_API_KEY" \
             -p 4445:3000 -d \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.0
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
           cd cmd/cloudx/e2e
           npm run server &
           ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
@@ -56,7 +56,7 @@ jobs:
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
             -e ORY_API_KEY="$ORY_API_KEY" \
             -p 4445:3000 -d \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.0
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
           cd cmd/cloudx/e2e
           ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
           npm run test
