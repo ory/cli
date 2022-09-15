@@ -70,8 +70,7 @@ jobs:
         working-directory: cmd/cloudx/e2e
         run: |
           npm ci
-      -
-        working-directory: cmd/cloudx/e2e
+      - working-directory: cmd/cloudx/e2e
         run: |
           npm run test
         env:
