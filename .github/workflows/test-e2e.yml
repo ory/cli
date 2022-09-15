@@ -37,6 +37,7 @@ jobs:
           npm ci
           npm run server &
       - name: Run tests
+        working-directory: cmd/cloudx/e2e
         run: |
           npm run test
         env:
