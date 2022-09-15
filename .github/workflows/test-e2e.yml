@@ -22,23 +22,19 @@ jobs:
           ./ory tunnel http://localhost:4001 --project admiring-tu-swczqlujc0 --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-      - run: |
-          docker run \
-            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
-            -e ORY_API_KEY="$ORY_API_KEY" \
-            -p 4445:3000 -d \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
-        env:
-          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-        working-directory: cmd/cloudx/e2e
       - name: Install dependencies and run server
         working-directory: cmd/cloudx/e2e
         run: |
           npm ci
-          npm run server &
       - name: Run tests
         working-directory: cmd/cloudx/e2e
         run: |
+          npm run server &
+          docker run \
+            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
+            -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
+            -p 4445:3000 -d \
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1 &
           npm run test
         env:
           CYPRESS_RECORD_KEY: e8bf86fe-6605-4112-af1d-c3a2f052d4f8
@@ -59,20 +55,17 @@ jobs:
           ./ory proxy https://httpbin.org/anything --project admiring-tu-swczqlujc0 --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-      - run: |
-          docker run \
-            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
-            -e ORY_API_KEY="$ORY_API_KEY" \
-            -p 4445:3000 -d \
-            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1
-        env:
-          ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
       - name: Install Node
         working-directory: cmd/cloudx/e2e
         run: |
           npm ci
       - working-directory: cmd/cloudx/e2e
         run: |
+          docker run \
+            -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
+            -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
+            -p 4445:3000 -d \
+            docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.1 &
           npm run test
         env:
           CYPRESS_RECORD_KEY: e8bf86fe-6605-4112-af1d-c3a2f052d4f8
