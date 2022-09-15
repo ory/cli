@@ -16,8 +16,6 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.44.0
 
 replace github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20220818200444-f259791e6dc1
 
-replace github.com/ory/hydra => ../hydra
-
 require (
 	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/avast/retry-go v3.0.0+incompatible
@@ -38,7 +36,8 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.1
 	github.com/ory/herodot v0.9.13
-	github.com/ory/hydra v1.11.11-0.20220912131616-c68e1303cc72
+	github.com/ory/hydra v1.11.11-0.20220915140124-954693feffbb
+	github.com/ory/hydra-client-go v1.11.8
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
@@ -228,7 +227,6 @@ require (
 	github.com/ory/fosite v0.42.3-0.20220801115804-c557908b0db2 // indirect
 	github.com/ory/go-acc v0.2.8 // indirect
 	github.com/ory/go-convenience v0.1.0 // indirect
-	github.com/ory/hydra-client-go v1.11.8 // indirect
 	github.com/ory/mail/v3 v3.0.0 // indirect
 	github.com/ory/nosurf v1.2.7 // indirect
 	github.com/ory/viper v1.7.5 // indirect
