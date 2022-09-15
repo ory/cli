@@ -18,9 +18,9 @@ jobs:
         with:
           node-version: "16"
       - run: |
+          go build -tags sqlite -o cmd/cloudx/e2e/ory .
           cd cmd/cloudx/e2e
           npm ci
-          go build -tags sqlite -o ory .
       - name: Run Tunnel E2E Tests
         run: |
           docker run \
@@ -47,9 +47,9 @@ jobs:
         with:
           node-version: "16"
       - run: |
+          go build -tags sqlite -o cmd/cloudx/e2e/ory .
           cd cmd/cloudx/e2e
           npm ci
-          go build -tags sqlite -o ory .
       - name: Run Proxy E2E Tests
         run: |
           docker run \
