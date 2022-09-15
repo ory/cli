@@ -52,7 +52,7 @@ test: lint
 .PHONY: format
 format: .bin/goimports node_modules
 		goimports -w -local github.com/ory .
-		npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
+		npx prettier --write "{**/,}*{.js,.md,.ts}"
 
 # Runs tests in short mode, without database adapters
 .PHONY: docker
