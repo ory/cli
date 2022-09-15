@@ -27,8 +27,7 @@ const loggedIn = (email) => {
         expect(decoded.session.identity.traits.email).to.equal(email)
       })
     } else {
-      expect(res.body.headers["cookie"].indexOf("ory_session_") > -1)
-        .to.be.true
+      expect(res.body.headers["cookie"].indexOf("ory_session_") > -1).to.be.true
     }
   })
 }

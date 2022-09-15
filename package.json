@@ -16,12 +16,7 @@
     "test:cypress": "cypress run",
     "test:binwrap": "binwrap-test",
     "test:cypress:dev": "cypress open",
-    "prepublishOnly": "npm run test:binwrap",
-    "format": "prettier --write ${npm_package_config_prettierTarget}",
-    "format:check": "prettier --check ${npm_package_config_prettierTarget}"
-  },
-  "config": {
-    "prettierTarget": "{**/,}*{.js,.md,.ts}"
+    "prepublishOnly": "npm run test:binwrap"
   },
   "prettier": "ory-prettier-styles",
   "dependencies": {
