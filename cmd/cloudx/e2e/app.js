@@ -1,12 +1,12 @@
-const express = require("express")
+const express = require('express')
 const app = express()
 const port = 4001
 
-app.get("/", (req, res) => {
-  res.send("app home")
+app.get('/', (req, res) => {
+  res.send('app home')
 })
 
-app.get("/anything", (req, res) => {
+app.get('/anything', (req, res) => {
   res.send({ headers: req.headers })
 })
 
