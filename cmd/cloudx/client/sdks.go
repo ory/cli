@@ -19,6 +19,15 @@ func makeCloudConsoleURL(prefix string) string {
 	return u.Scheme + "://" + u.Host
 }
 
+func makeCloudAPIsURL(prefix string) string {
+	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_ORYAPIS_URL"), "https://oryapis.com"))
+	if err != nil {
+		u = &url.URL{Scheme: "https", Host: "oryapis.com"}
+	}
+	u.Host = prefix + "." + u.Host
+	return u.Scheme + "://" + u.Host
+}
+
 func NewKratosClient() (*cloud.APIClient, error) {
 	conf := cloud.NewConfiguration()
 	conf.Servers = cloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
