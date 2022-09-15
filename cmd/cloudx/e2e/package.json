@@ -6,7 +6,7 @@
   },
   "scripts": {
     "server": "node app.js",
-    "test": "cypress run",
+    "test": "cypress run --record",
     "test:dev": "cypress open",
     "format": "prettier --write ${npm_package_config_prettierTarget}",
     "format:check": "prettier --check ${npm_package_config_prettierTarget}"
