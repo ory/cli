@@ -69,6 +69,7 @@ describe("ory proxy", () => {
   it("should be able to end up locally when signing in with social", () => {
     cy.visit(prefix + "/ui/login")
     cy.get('[value="SnUimsDjTxePInF-"]').click()
+    cy.location("host").should("eq", "localhost:4445")
     cy.get('[name="email"]').type("foo@bar.com")
     cy.get('[name="password"]').type("foobar")
     cy.get("#accept").click()
