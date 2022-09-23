@@ -24,6 +24,7 @@ func NewRootCommand(parent *cobra.Command, project string, version string) *cobr
 	cmd.AddCommand(NewDeleteCmd(parent))
 	cmd.AddCommand(NewPatchCmd())
 	cmd.AddCommand(NewUpdateCmd())
+	cmd.AddCommand(NewParseCmd())
 	cmd.AddCommand(NewImportCmd(parent))
 	cmd.AddCommand(NewGetCmd(parent))
 	cmd.AddCommand(NewPerformCmd(parent))
