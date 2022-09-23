@@ -57,8 +57,9 @@ test: lint
 
 # Formats the code
 .PHONY: format
-format: .bin/goimports
+format: .bin/goimports node_modules
 		goimports -w -local github.com/ory .
+		npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 
 # Runs tests in short mode, without database adapters
 .PHONY: docker
@@ -70,3 +71,7 @@ docker:
 .PHONY: post-release
 post-release:
 		echo "nothing to do"
+
+node_modules: package-lock.json
+	npm ci
+	touch node_modules

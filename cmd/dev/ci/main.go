@@ -11,7 +11,7 @@ import (
 
 var Main = &cobra.Command{
 	Use:   "ci",
-	Short: "Continuous Integration Helpers",
+	Short: "Continuous Integration helpers",
 }
 
 func init() {

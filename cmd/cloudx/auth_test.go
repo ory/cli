@@ -82,7 +82,7 @@ func TestAuthenticator(t *testing.T) {
 			r.WriteString("n\n") // Your CLI session has expired. Do you wish to login again as <email>?
 			_, stderr, err := cmd.Exec(&r, "list", "projects")
 			require.Error(t, err)
-			assert.Contains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
+			assert.Contains(t, stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 		})
 
 		t.Run("user is able to reauthenticate on session expiration", func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestAuthenticator(t *testing.T) {
 			r.WriteString("y\n") // Your CLI session has expired. Do you wish to login again as <email>?
 			_, stderr, err := cmd.Exec(&r, "list", "projects")
 			require.Error(t, err)
-			assert.Contains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
+			assert.Contains(t, stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 			expectSignInSuccess(t)
 		})
 
@@ -103,8 +103,8 @@ func TestAuthenticator(t *testing.T) {
 			testhelpers.ChangeAccessToken(t, configDir)
 			_, stderr, err := cmd.Exec(nil, "list", "projects", "-q")
 			require.Error(t, err)
-			assert.Equal(t, "Your session has expired and you cannot reauthenticate when the --quiet flag is set", err.Error())
-			assert.NotContains(t, stderr, "Your CLI session has expired. Do you wish to log in again as")
+			assert.Equal(t, "please run `ory auth` to initialize your configuration or remove the `--quiet` flag", err.Error())
+			assert.NotContains(t, stderr, "Your session has expired or has otherwise become invalid. Please re-authenticate to continue.")
 		})
 
 		t.Run("set up 2fa", func(t *testing.T) {

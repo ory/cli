@@ -27,8 +27,7 @@ const loggedIn = (email) => {
         expect(decoded.session.identity.traits.email).to.equal(email)
       })
     } else {
-      expect(res.body.headers["cookie"].indexOf("ory_session_playground") > -1)
-        .to.be.true
+      expect(res.body.headers["cookie"].indexOf("ory_session_") > -1).to.be.true
     }
   })
 }
@@ -65,6 +64,18 @@ describe("ory proxy", () => {
     }
 
     loggedIn(email)
+  })
+
+  it("should be able to end up locally when signing in with social", () => {
+    cy.visit(prefix + "/ui/login")
+    cy.get('[value="SnUimsDjTxePInF-"]').click()
+    cy.location("host").should("eq", "localhost:4445")
+
+    cy.get('[name="email"]').type("foo@bar.com")
+    cy.get('[name="password"]').type("foobar")
+    cy.get("#accept").click()
+
+    cy.location("host").should("eq", "localhost:4000")
   })
 
   it("should be able to execute logout", () => {

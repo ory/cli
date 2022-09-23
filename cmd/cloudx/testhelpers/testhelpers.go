@@ -184,6 +184,18 @@ func MakeRandomIdentity(t require.TestingT, email string) string {
 	return path
 }
 
+func MakeRandomClient(t require.TestingT, name string) string {
+	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
+	require.NoError(t, err)
+	path := filepath.Join(homeDir, "import.json")
+	require.NoError(t, os.WriteFile(path, []byte(`[
+  {
+    "client_name": "`+name+`"
+  }
+]`), 0600))
+	return path
+}
+
 func ImportIdentity(t require.TestingT, cmd *cmdx.CommandExecuter, project string, stdin *bytes.Buffer) string {
 	email := FakeEmail()
 	stdout, stderr, err := cmd.Exec(stdin, "import", "identities", "--format", "json", "--project", project, MakeRandomIdentity(t, email))
@@ -192,4 +204,10 @@ func ImportIdentity(t require.TestingT, cmd *cmdx.CommandExecuter, project strin
 	assert.True(t, gjson.Valid(stdout))
 	assert.Equal(t, email, out.Get("traits.username").String())
 	return out.Get("id").String()
+}
+
+func CreateClient(t require.TestingT, cmd *cmdx.CommandExecuter, project string) gjson.Result {
+	stdout, stderr, err := cmd.Exec(nil, "create", "client", "--format", "json", "--project", project)
+	require.NoError(t, err, stderr)
+	return gjson.Parse(stdout)
 }

@@ -12,7 +12,7 @@ func NewPatchKetoConfigCmd() *cobra.Command {
 		Use:     "permission-config <project-id>",
 		Aliases: []string{"pc", "keto-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud Project's Permission Config",
+		Short:   "Patch an Ory Cloud project's permission config",
 		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/namespaces=[{"name":"files", "id": 2}]' \
 	--replace '/namespaces/2/name="directories"' \

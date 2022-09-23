@@ -5,7 +5,9 @@ package headers
 import (
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	goGitIgnore "github.com/sabhiram/go-gitignore"
@@ -23,8 +25,8 @@ const LICENSE_TOKEN = "Copyright ©"
 // file types that we don't want to add license headers to
 var noLicenseHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 
-// addLicenses adds or updates the Ory license header in all files within the given directory.
-func AddLicenses(dir string, year int) error {
+// AddLicenses adds or updates the Ory license header in all applicable files within the given directory.
+func AddLicenses(dir string, year int, exclude []string) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
 	gitIgnore, _ := goGitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -40,7 +42,10 @@ func AddLicenses(dir string, year int) error {
 		if !comments.SupportsFile(path) {
 			return nil
 		}
-		if !shouldAddLicense(path) {
+		if !fileTypeIsLicensed(path) {
+			return nil
+		}
+		if isInExcludedFolder(path, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, LICENSE_TOKEN)
@@ -51,21 +56,44 @@ func AddLicenses(dir string, year int) error {
 	})
 }
 
+// isInExcludedFolder indicates whether the given path exists within the given list of folders
+func isInExcludedFolder(path string, exclude []string) bool {
+	for _, e := range exclude {
+		if strings.HasPrefix(path, e) {
+			return true
+		}
+	}
+	return false
+}
+
 // indicates whether this tool is configured to add a license header to the file with the given path
-func shouldAddLicense(path string) bool {
+func fileTypeIsLicensed(path string) bool {
 	return !comments.ContainsFileType(noLicenseHeadersFor, comments.GetFileType(path))
 }
 
 var copyright = &cobra.Command{
 	Use:   "license",
 	Short: "Adds the license header to all known files in the current directory",
-	Args:  cobra.ExactArgs(1),
+	Long: `Adds the license header to all known files in the current directory.
+
+Does not add the license header to git-ignored files.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return fmt.Errorf("cannot determine the current directory: %w", err)
+		}
 		year, _, _ := time.Now().Date()
-		return AddLicenses(args[0], year)
+		for e, excluded := range exclude {
+			exclude[e] = filepath.Join(cwd, excluded)
+		}
+		return AddLicenses(cwd, year, exclude)
 	},
 }
 
 func init() {
 	Main.AddCommand(copyright)
+	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
 }
+
+// contains the folders to exclude
+var exclude []string

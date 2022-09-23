@@ -5,7 +5,7 @@ on:
       - main
       - master
     tags:
-      - '*'
+      - "*"
   pull_request:
 
 jobs:
@@ -16,7 +16,7 @@ jobs:
       - uses: ory/ci/checkout@master
       - uses: actions/setup-go@v2
         with:
-          go-version: '1.18'
+          go-version: "1.18"
       - run: |
           make test
 
@@ -54,7 +54,7 @@ jobs:
       - uses: ory/ci/checkout@master
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: "16"
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
         run: |
@@ -76,7 +76,7 @@ jobs:
           mailchimp_list_id: 058a056618
           mailchmip_segment_id: 11398953
           mailchimp_api_key: ${{ secrets.MAILCHIMP_API_KEY }}
-          draft: 'true'
+          draft: "true"
           ssh_key: ${{ secrets.ORY_BOT_SSH_KEY }}
 
   slack-approval-notification:
@@ -127,5 +127,5 @@ jobs:
           mailchimp_list_id: 058a056618
           mailchmip_segment_id: 11398953
           mailchimp_api_key: ${{ secrets.MAILCHIMP_API_KEY }}
-          draft: 'false'
+          draft: "false"
           ssh_key: ${{ secrets.ORY_BOT_SSH_KEY }}
