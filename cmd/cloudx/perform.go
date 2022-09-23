@@ -6,22 +6,22 @@ import (
 	"github.com/ory/cli/cmd/cloudx/oauth2"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/identity"
 	"github.com/ory/x/cmdx"
 )
 
-func NewDeleteCmd(parent *cobra.Command) *cobra.Command {
+func NewPerformCmd(parent *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete",
-		Short: "Delete resources",
+		Use:   "perform",
+		Short: "Perform a flow",
 	}
 
-	cmd.AddCommand(identity.NewDeleteIdentityCmd(parent))
-	cmd.AddCommand(oauth2.NewDeleteOAuth2Cmd(parent))
+	cmd.AddCommand(
+		oauth2.NewPerformAuthorizationCodeCmd(parent),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterNoiseFlags(cmd.PersistentFlags())
-	cmdx.RegisterJSONFormatFlags(cmd.PersistentFlags())
+
 	return cmd
 }

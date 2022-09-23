@@ -12,7 +12,7 @@ func NewPatchKratosConfigCmd() *cobra.Command {
 		Use:     "identity-config <project-id>",
 		Aliases: []string{"ic", "kratos-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud Project's Identity Config",
+		Short:   "Patch an Ory Cloud project's identity config",
 		Example: `$ ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/courier/smtp={"from_name":"My new email name"}' \
 	--replace '/selfservice/methods/password/enabled=false' \

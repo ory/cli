@@ -15,7 +15,7 @@ func NewUpdatePermissionConfigCmd() *cobra.Command {
 			"keto-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Cloud Project's Permission Service Configuration",
+		Short: "Update Ory Cloud project's permission service configuration",
 		Example: `$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
