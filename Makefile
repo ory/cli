@@ -19,7 +19,7 @@ GO_DEPENDENCIES = github.com/ory/go-acc \
 define make-go-dependency
   # go install is responsible for not re-building when the code hasn't changed
   .bin/$(notdir $1): go.mod go.sum Makefile
-	GOBIN=$(PWD)/.bin/ go install $1
+		GOBIN=$(PWD)/.bin/ go install $1
 endef
 $(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
 
