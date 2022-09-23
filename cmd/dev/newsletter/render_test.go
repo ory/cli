@@ -3,7 +3,7 @@ package newsletter
 import (
 	"bytes"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -26,12 +26,12 @@ func TestRenderMarkdown(t *testing.T) {
 }
 
 func TestRenderMarkdownLong(t *testing.T) {
-	cl, err := ioutil.ReadFile("stub/changelog.md.expected")
+	cl, err := os.ReadFile("stub/changelog.md.expected")
 	require.NoError(t, err)
-	expected, err := ioutil.ReadFile("stub/changelog.html.expected")
+	expected, err := os.ReadFile("stub/changelog.html.expected")
 	require.NoError(t, err)
 
-	tmplRaw, err := ioutil.ReadFile("../../../view/mail-body.html")
+	tmplRaw, err := os.ReadFile("../../../view/mail-body.html")
 	require.NoError(t, err)
 	tmpl, err := template.New("view").Parse(string(tmplRaw))
 	require.NoError(t, err)
@@ -54,6 +54,6 @@ func TestRenderMarkdownLong(t *testing.T) {
 		BrandColor:  "#5528FF",
 	}))
 
-	require.NoError(t, ioutil.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
+	require.NoError(t, os.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
 	assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(body.String()))
 }

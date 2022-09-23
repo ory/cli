@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -56,7 +55,7 @@ func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, p
 }
 
 func GitClone(repo string) string {
-	dest, err := ioutil.TempDir(os.TempDir(), "ory-release-*")
+	dest, err := os.MkdirTemp(os.TempDir(), "ory-release-*")
 	Check(err)
 	Check(NewCommand("git", "clone", repo, dest).Run())
 	return dest

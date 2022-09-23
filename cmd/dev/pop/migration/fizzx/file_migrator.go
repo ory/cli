@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +30,7 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 	}
 
 	if dumpSchema {
-		d, err := ioutil.TempDir(os.TempDir(),
+		d, err := os.MkdirTemp(os.TempDir(),
 			fmt.Sprintf("schema-%s-*", c.Dialect.Name()))
 		if err != nil {
 			return fm, err
@@ -136,10 +135,10 @@ func writeFile(path string, contents []byte, replace bool) error {
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		if replace {
 			_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
-			return ioutil.WriteFile(path, contents, 0666)
+			return os.WriteFile(path, contents, 0666)
 		} else {
 			_, _ = fmt.Fprintf(os.Stderr, "Skipping file: %s\n", path)
-			original, err := ioutil.ReadFile(path)
+			original, err := os.ReadFile(path)
 			if err != nil {
 				return err
 			}
@@ -162,11 +161,11 @@ Actual:
 		}
 	}
 	_, _ = fmt.Fprintf(os.Stderr, "Wrote file: %s\n", path)
-	return ioutil.WriteFile(path, contents, 0666)
+	return os.WriteFile(path, contents, 0666)
 }
 
 func MigrationContent(mf Migration, c *pop.Connection, r io.Reader, usingTemplate bool) ([]string, error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, nil
 	}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,7 +16,7 @@ import (
 )
 
 func getAllFiles(t *testing.T, dir string) (files []string) {
-	entries, err := ioutil.ReadDir(dir)
+	entries, err := os.ReadDir(dir)
 	require.NoError(t, err)
 
 	for _, e := range entries {
@@ -49,7 +48,7 @@ func copyDir(t *testing.T, src, dst string) {
 
 func TestAddVersionToSchema(t *testing.T) {
 	t.Run("case=simple snapshot", func(t *testing.T) {
-		testDir, err := ioutil.TempDir("", "version-schema-test-")
+		testDir, err := os.MkdirTemp("", "version-schema-test-")
 		require.NoError(t, err)
 
 		copyDir(t, "fixtures/render_version_test", testDir)
@@ -65,9 +64,9 @@ func TestAddVersionToSchema(t *testing.T) {
 
 		require.NoError(t, os.Chdir(wd))
 
-		expected, err := ioutil.ReadFile("expected/render_version_test/.schema/version.schema.json")
+		expected, err := os.ReadFile("expected/render_version_test/.schema/version.schema.json")
 		require.NoError(t, err)
-		actual, err := ioutil.ReadFile(path.Join(testDir, ".schema/version.schema.json"))
+		actual, err := os.ReadFile(path.Join(testDir, ".schema/version.schema.json"))
 		require.NoError(t, err)
 		// converting to string to have nice output in case they are not equal
 		assert.Equal(t, string(expected), string(actual), "To accept the new render output run:\ncp %s %s", path.Join(testDir, ".schema/version.schema.json"), path.Join(wd, "expected/render_version_test/.schema/version.schema.json"))
