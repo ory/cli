@@ -205,9 +205,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 			if r.URL.Host == conf.oryURL.Host {
 				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
 				r.Host = conf.oryURL.Host
-			}
-
-			if conf.rewriteHost {
+			} else if conf.rewriteHost {
 				r.Header.Set("X-Forwarded-Host", r.Host)
 				r.Host = c.UpstreamHost
 			}
