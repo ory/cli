@@ -210,6 +210,7 @@ An example payload of the JSON Web Token is:
 				defaultRedirectTo: redirectURL,
 				isDev:             flagx.MustGetBool(cmd, DevFlag),
 				isDebug:           flagx.MustGetBool(cmd, DebugFlag),
+				rewriteHost:       flagx.MustGetBool(cmd, RewriteHostFlag),
 				corsOrigins:       origins,
 			}
 
@@ -226,6 +227,7 @@ An example payload of the JSON Web Token is:
 	proxyCmd.Flags().StringSlice(CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
+	proxyCmd.Flags().Bool(RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
 
 	client.RegisterConfigFlag(proxyCmd.PersistentFlags())
 	client.RegisterYesFlag(proxyCmd.PersistentFlags())
