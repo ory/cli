@@ -33,6 +33,7 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewListCmd(c),
 		cloudx.NewImportCmd(c),
 		cloudx.NewPatchCmd(),
+		cloudx.NewParseCmd(),
 		cloudx.NewPerformCmd(c),
 		proxy.NewProxyCommand("ory", buildinfo.Version),
 		proxy.NewTunnelCommand("ory", buildinfo.Version),

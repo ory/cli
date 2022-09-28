@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/oauth2"
+	"github.com/ory/cli/cmd/cloudx/relationtuples"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/identity"
@@ -18,6 +19,7 @@ func NewDeleteCmd(parent *cobra.Command) *cobra.Command {
 
 	cmd.AddCommand(identity.NewDeleteIdentityCmd(parent))
 	cmd.AddCommand(oauth2.NewDeleteOAuth2Cmd(parent))
+	cmd.AddCommand(relationtuples.NewDeleteCmd())
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

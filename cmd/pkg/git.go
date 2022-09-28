@@ -55,7 +55,7 @@ func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, p
 }
 
 func GitClone(repo string) string {
-	dest, err := os.MkdirTemp("", "ory-release-*")
+	dest, err := os.MkdirTemp(os.TempDir(), "ory-release-*")
 	Check(err)
 	Check(NewCommand("git", "clone", repo, dest).Run())
 	return dest

@@ -30,7 +30,8 @@ func NewDumpMigrator(path string, dest string, shouldReplace, dumpSchema bool, c
 	}
 
 	if dumpSchema {
-		d, err := os.MkdirTemp("", fmt.Sprintf("schema-%s-*", c.Dialect.Name()))
+		d, err := os.MkdirTemp(os.TempDir(),
+			fmt.Sprintf("schema-%s-*", c.Dialect.Name()))
 		if err != nil {
 			return fm, err
 		}
