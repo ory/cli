@@ -2,7 +2,7 @@ package openapi
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/getkin/kin-openapi/openapi2"
@@ -54,7 +54,7 @@ Example:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var oas2 openapi2.Swagger
 
-		in, err := ioutil.ReadFile(args[0])
+		in, err := os.ReadFile(args[0])
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -105,7 +105,7 @@ func renderFile(path string, content []byte) error {
 		return errors.WithStack(err)
 	}
 
-	return errors.WithStack(ioutil.WriteFile(path, indented, 0644))
+	return errors.WithStack(os.WriteFile(path, indented, 0644))
 }
 
 func init() {

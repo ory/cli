@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -91,5 +90,5 @@ func addVersionToSchema(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	pkg.Check(ioutil.WriteFile(destFile, prettyVersionSchema, 0600))
+	pkg.Check(os.WriteFile(destFile, prettyVersionSchema, 0600))
 }
