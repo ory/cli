@@ -7,8 +7,7 @@ replace (
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20220818200444-f259791e6dc1
-	github.com/ory/keto => github.com/ory/keto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c
-	github.com/ory/keto/proto => github.com/ory/keto/proto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c
+	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 	// github.com/ory/kratos/internal/httpclient
 	github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.9.0-alpha.3
@@ -38,7 +37,7 @@ require (
 	github.com/ory/hydra v1.11.11-0.20220915140124-954693feffbb
 	github.com/ory/hydra-client-go v1.11.8
 	github.com/ory/jsonschema/v3 v3.0.7
-	github.com/ory/keto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c
+	github.com/ory/keto v0.10.0-alpha.0
 	github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
 	github.com/ory/x v0.0.473
@@ -248,7 +247,6 @@ require (
 	github.com/sawadashota/encrypta v0.0.2 // indirect
 	github.com/seatgeek/logrus-gelf-formatter v0.0.0-20210414080842-5b05eb8ff761 // indirect
 	github.com/segmentio/backo-go v1.0.1 // indirect
-	github.com/segmentio/objconv v1.0.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect

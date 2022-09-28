@@ -17,7 +17,7 @@ const FlagAll = "all"
 
 var ErrDeleteMissingAllFlag = fmt.Errorf("please select the tuples to delete or use `--all` to delete all tuples")
 
-func List() *cobra.Command {
+func NewListCmd() *cobra.Command {
 	cmd := relationtuple.NewGetCmd()
 	cmd.Short = "List relation tuples"
 	cmd.Long = `List relation tuples matching the given partial tuple.
@@ -27,7 +27,7 @@ Returns paginated results.`
 	return cmd
 }
 
-func Delete() *cobra.Command {
+func NewDeleteCmd() *cobra.Command {
 	cmd := relationtuple.NewDeleteAllCmd()
 	wrapForOryCLI(cmd)
 
@@ -37,14 +37,14 @@ func Delete() *cobra.Command {
 	return cmd
 }
 
-func Create() *cobra.Command {
+func NewCreateCmd() *cobra.Command {
 	cmd := relationtuple.NewCreateCmd()
 	wrapForOryCLI(cmd)
 
 	return cmd
 }
 
-func Parse() *cobra.Command {
+func NewParseCmd() *cobra.Command {
 	cmd := relationtuple.NewParseCmd()
 	wrapForOryCLI(cmd)
 
@@ -70,9 +70,9 @@ func forwardConnectionInfo(cmd *cobra.Command) {
 		}
 		defer func() { _ = h.DeleteAPIKey(project.Slug, key.Id) }()
 
-		os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
-		os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
+		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
 
 		return originalRunE(cmd, args)
 	}

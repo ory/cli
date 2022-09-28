@@ -22,7 +22,7 @@ func NewListCmd(parent *cobra.Command) *cobra.Command {
 	cmd.AddCommand(project.NewListProjectsCmd())
 	cmd.AddCommand(identity.NewListIdentityCmd(parent))
 	cmd.AddCommand(oauth2.NewListOAuth2Cmd(parent))
-	cmd.AddCommand(relationtuples.List())
+	cmd.AddCommand(relationtuples.NewListCmd())
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

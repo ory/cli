@@ -13,7 +13,7 @@ func NewParseCmd() *cobra.Command {
 		Use:   "parse",
 		Short: "Parse Ory Cloud resources",
 	}
-	cmd.AddCommand(relationtuples.Parse())
+	cmd.AddCommand(relationtuples.NewParseCmd())
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

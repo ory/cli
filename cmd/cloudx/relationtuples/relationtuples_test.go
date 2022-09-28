@@ -109,47 +109,43 @@ func TestCRUD(t *testing.T) {
 		return stdout
 	}
 
-	t.Run("step=create", func(t *testing.T) {
-		stdout := create(t, "o1")
-		assert.True(t, gjson.Valid(stdout))
-	})
+	// 1. create a tuple
+	stdout := create(t, "o1")
+	require.JSONEq(t, tuple("o1"), stdout)
 
-	t.Run("step=list", func(t *testing.T) {
-		stdout := list(t)
-		assert.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
-	})
+	// 2. check that it is listed
+	stdout = list(t)
+	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
 
-	t.Run("step=delete", func(t *testing.T) {
-		t.Run("case=no-force", func(t *testing.T) {
-			stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
-				"--all")
-			require.NoError(t, err, stderr)
-			assert.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
-		})
+	// 3. delete with --all but without --force
+	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
+		"--all")
+	require.NoError(t, err, stderr)
+	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
 
-		create(t, "o2")
-		t.Run("case=force without --all", func(t *testing.T) {
-			_, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
-				"--force")
-			assert.ErrorIs(t, err, relationtuples.ErrDeleteMissingAllFlag, stderr)
-			assert.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 2, list(t))
-		})
+	// 4. create a second tuple
+	create(t, "o2")
 
-		t.Run("case=force with a query", func(t *testing.T) {
-			_, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
-				"--force", "--object=o2")
-			require.NoError(t, err, stderr)
-			assert.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 1, list(t))
-		})
+	// 5. delete without --all but with --force
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
+		"--force")
+	require.ErrorIs(t, err, relationtuples.ErrDeleteMissingAllFlag, stderr)
+	require.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 2, list(t))
 
-		create(t, "o42")
-		t.Run("case=force with --all", func(t *testing.T) {
-			_, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
-				"--force", "--all")
-			require.NoError(t, err, stderr)
-			assert.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 0, list(t))
-		})
-	})
+	// 6. delete one tuple with query and with --force
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
+		"--force", "--object=o2")
+	require.NoError(t, err, stderr)
+	require.JSONEq(t, tuple("o1"), gjson.Get(list(t), "relation_tuples").Raw, list(t))
+
+	// 7. create another tuple (now two on the server)
+	create(t, "o42")
+
+	// 8. delete with --all and with --force
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
+		"--force", "--all")
+	require.NoError(t, err, stderr)
+	assert.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 0, list(t))
 }
 
 func createNamespace(t *testing.T, project, JSON string) {

@@ -1349,14 +1349,10 @@ github.com/ory/hydra-client-go v1.11.9-0.20220818200444-f259791e6dc1 h1:djOS7cZB
 github.com/ory/hydra-client-go v1.11.9-0.20220818200444-f259791e6dc1/go.mod h1:t8MG2Of8TZwY/ZuWYaPy2E0OQyoidVuoQMaGTLJNmVk=
 github.com/ory/jsonschema/v3 v3.0.7 h1:GQ9qfZDiJqs4l2d3p56dozCChvejQFZyLKGHYzDzOSo=
 github.com/ory/jsonschema/v3 v3.0.7/go.mod h1:g8c8YOtN4TrR2wYeMdT02GDmzJDI0fEW2nI26BECafY=
-github.com/ory/keto v0.9.0-alpha.0.0.20220922123749-11ead73fa282 h1:Dy9nLjGSWkvPNa+PRlnB9VywfjlW1TqmhllrgR2YrPo=
-github.com/ory/keto v0.9.0-alpha.0.0.20220922123749-11ead73fa282/go.mod h1:NTOmOIdHTfqFOVVuOJSe+ZlGERfG2VELxq/YrfPA3RY=
-github.com/ory/keto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c h1:3CROlHtU//eXR9YD5QoPJH59lEoj3TEsaAC1ze45Bhw=
-github.com/ory/keto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c/go.mod h1:NTOmOIdHTfqFOVVuOJSe+ZlGERfG2VELxq/YrfPA3RY=
-github.com/ory/keto/proto v0.9.0-alpha.0.0.20220922123749-11ead73fa282 h1:wuh9qgUNJh0SMuDxndFyKC9ouXFWNdqMAxBpZbmlYBc=
-github.com/ory/keto/proto v0.9.0-alpha.0.0.20220922123749-11ead73fa282/go.mod h1:g89tEf3y7WE1E5wPPVsWU36/qP1SAvjQ+LoQaLa1QF0=
-github.com/ory/keto/proto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c h1:owTvOluHpXrB07P9FMleP4L1hFb7AFA3d23Jaol8dIc=
-github.com/ory/keto/proto v0.9.0-alpha.0.0.20220923124203-fa69fb33eb4c/go.mod h1:g89tEf3y7WE1E5wPPVsWU36/qP1SAvjQ+LoQaLa1QF0=
+github.com/ory/keto v0.10.0-alpha.0 h1:XoxoQG6cu4bhjYDektN+YWwxkIJgWXRyrod8P2DWtck=
+github.com/ory/keto v0.10.0-alpha.0/go.mod h1:NTOmOIdHTfqFOVVuOJSe+ZlGERfG2VELxq/YrfPA3RY=
+github.com/ory/keto/proto v0.10.0-alpha.0 h1:35+Xf0gE3jeQEgosbFB9NxgbKIQRo/HAtknKTeqhz2Q=
+github.com/ory/keto/proto v0.10.0-alpha.0/go.mod h1:g89tEf3y7WE1E5wPPVsWU36/qP1SAvjQ+LoQaLa1QF0=
 github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae h1:wtLmknfhGSQDLDNbB+Ulk1XG2mjhay0bfWFhjTAlA5U=
 github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae/go.mod h1:9ZN7Vklr8N00RMGGguSdMjB4jVfscbboFU+dBtYw2aE=
 github.com/ory/kratos-client-go v0.9.0-alpha.3 h1:xa8N5L4kej8s8GPxCN17Z5KX5WR/YqB1Mzd/Dznnuoo=
@@ -1527,7 +1523,6 @@ github.com/segmentio/backo-go v1.0.1/go.mod h1:9/Rh6yILuLysoQnZ2oNooD2g7aBnvM7r/
 github.com/segmentio/conf v1.2.0/go.mod h1:Y3B9O/PqqWqjyxyWWseyj/quPEtMu1zDp/kVbSWWaB0=
 github.com/segmentio/go-snakecase v1.1.0/go.mod h1:jk1miR5MS7Na32PZUykG89Arm+1BUSYhuGR6b7+hJto=
 github.com/segmentio/kafka-go v0.4.29/go.mod h1:m1lXeqJtIFYZayv0shM/tjrAFljvWLTprxBHd+3PnaU=
-github.com/segmentio/objconv v1.0.1 h1:QjfLzwriJj40JibCV3MGSEiAoXixbp4ybhwfTB8RXOM=
 github.com/segmentio/objconv v1.0.1/go.mod h1:auayaH5k3137Cl4SoXTgrzQcuQDmvuVtZgS0fb1Ahys=
 github.com/serenize/snaker v0.0.0-20171204205717-a683aaf2d516/go.mod h1:Yow6lPLSAXx2ifx470yD/nUe22Dv5vBvxK/UK9UUTVs=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=

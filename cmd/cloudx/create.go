@@ -18,7 +18,7 @@ func NewCreateCmd() *cobra.Command {
 	}
 	cmd.AddCommand(project.NewCreateProjectCmd())
 	cmd.AddCommand(oauth2.NewCreateOAuth2Client(cmd))
-	cmd.AddCommand(relationtuples.Create())
+	cmd.AddCommand(relationtuples.NewCreateCmd())
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
