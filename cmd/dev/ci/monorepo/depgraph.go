@@ -3,7 +3,6 @@ package monorepo
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -88,7 +87,7 @@ func isDirectory(path string) (bool, error) {
 }
 
 func (component *Component) getComponentFromConfig(configFilePath, rootDir string) (*Component, error) {
-	yamlFile, err := ioutil.ReadFile(configFilePath)
+	yamlFile, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("Config file not found: '%s'", configFilePath)
 	}

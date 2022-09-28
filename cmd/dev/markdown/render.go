@@ -3,7 +3,7 @@ package markdown
 import (
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/gomarkdown/markdown"
@@ -23,7 +23,7 @@ var render = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Short: "Render a Markdown file",
 	Run: func(cmd *cobra.Command, args []string) {
-		changelogRaw, err := ioutil.ReadFile(args[0])
+		changelogRaw, err := os.ReadFile(args[0])
 		pkg.Check(err)
 
 		fmt.Println(renderMarkdown(changelogRaw))

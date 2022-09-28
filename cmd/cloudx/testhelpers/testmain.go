@@ -9,13 +9,17 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
+func setEnvIfUnset(key, value string) {
+	if _, ok := os.LookupEnv(key); !ok {
+		if err := os.Setenv(key, value); err != nil {
+			panic(err)
+		}
+	}
+}
+
 func UseStaging() {
-	if _, isSet := os.LookupEnv("ORY_CLOUD_CONSOLE_URL"); isSet {
-		return
-	}
-	if err := os.Setenv("ORY_CLOUD_CONSOLE_URL", "https://console.staging.ory.dev"); err != nil {
-		panic(err)
-	}
+	setEnvIfUnset("ORY_CLOUD_CONSOLE_URL", "https://console.staging.ory.dev:443")
+	setEnvIfUnset("ORY_CLOUD_ORYAPIS_URL", "https://staging.oryapis.dev:443")
 }
 
 func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword, defaultProject string, defaultCmd *cmdx.CommandExecuter) {

@@ -10,21 +10,41 @@ import (
 	"github.com/ory/x/stringsx"
 )
 
-func makeCloudConsoleURL(prefix string) string {
+func CloudConsoleURL(prefix string) *url.URL {
 	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_CONSOLE_URL"), "https://console.ory.sh"))
 	if err != nil {
 		u = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
 	u.Host = prefix + "." + u.Host
+	if u.Port() == "" {
+		u.Host = u.Host + ":443"
+	}
+
+	return u
+}
+
+func makeCloudConsoleURL(prefix string) string {
+	u := CloudConsoleURL(prefix)
+
 	return u.Scheme + "://" + u.Host
 }
 
-func makeCloudAPIsURL(prefix string) string {
+func CloudAPIsURL(prefix string) *url.URL {
 	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_ORYAPIS_URL"), "https://oryapis.com"))
 	if err != nil {
 		u = &url.URL{Scheme: "https", Host: "oryapis.com"}
 	}
 	u.Host = prefix + "." + u.Host
+	if u.Port() == "" {
+		u.Host = u.Host + ":443"
+	}
+
+	return u
+}
+
+func makeCloudAPIsURL(prefix string) string {
+	u := CloudAPIsURL(prefix)
+
 	return u.Scheme + "://" + u.Host
 }
 
