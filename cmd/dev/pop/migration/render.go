@@ -2,7 +2,7 @@ package migration
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -39,7 +39,7 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 
 		// Disable log outputs
 		pop.SetLogger(func(lvl logging.Level, s string, args ...interface{}) {})
-		_ = mysql.SetLogger(log.New(ioutil.Discard, "", 0))
+		_ = mysql.SetLogger(log.New(io.Discard, "", 0))
 
 		var l sync.Mutex
 		dialects := flagx.MustGetStringSlice(cmd, "dialects")
@@ -150,7 +150,7 @@ It currently supports MySQL, SQLite, PostgreSQL, and CockroachDB (SQL). To use t
 				fp := filepath.Join(path, fmt.Sprintf("%s_%s.%s.%s.sql", match.Version, match.Name, d, match.Direction))
 				if _, err := os.Stat(fp); os.IsNotExist(err) {
 					logger.WithField("path", fp).Info("Writing filler file.")
-					if err := ioutil.WriteFile(fp, []byte{}, 0666); err != nil {
+					if err := os.WriteFile(fp, []byte{}, 0666); err != nil {
 						return err
 					}
 				}

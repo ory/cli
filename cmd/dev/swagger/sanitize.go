@@ -1,7 +1,6 @@
 package swagger
 
 import (
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -115,7 +114,7 @@ func removeTypeAnnotations(document string, k, value gjson.Result, paths []strin
 }
 
 func sanitize(in string, out string) error {
-	file, err := ioutil.ReadFile(in)
+	file, err := os.ReadFile(in)
 	if err != nil {
 		return errors.Wrapf(err, "unable to read file")
 	}
@@ -135,5 +134,5 @@ func sanitize(in string, out string) error {
 
 	_ = os.Remove(out)
 
-	return errors.Wrapf(ioutil.WriteFile(out, []byte(document), 0766), "unable to write file")
+	return errors.Wrapf(os.WriteFile(out, []byte(document), 0766), "unable to write file")
 }
