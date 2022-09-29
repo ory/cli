@@ -50,8 +50,9 @@ test: lint
 
 # Formats the code
 .PHONY: format
-format: .bin/goimports node_modules
+format: .bin/cli .bin/goimports node_modules
 	goimports -w -local github.com/ory .
+	.bin/cli dev headers license
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 
 # Runs tests in short mode, without database adapters
