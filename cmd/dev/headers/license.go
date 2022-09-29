@@ -25,6 +25,9 @@ const LICENSE_TOKEN = "Copyright ©"
 // file types that we don't want to add license headers to
 var noLicenseHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 
+// folders that are excluded by default
+var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
+
 // AddLicenses adds or updates the Ory license header in all applicable files within the given directory.
 func AddLicenses(dir string, year int, exclude []string) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
@@ -45,7 +48,10 @@ func AddLicenses(dir string, year int, exclude []string) error {
 		if !fileTypeIsLicensed(path) {
 			return nil
 		}
-		if isInExcludedFolder(path, exclude) {
+		if isInFolders(path, defaultExcludedFolders) {
+			return nil
+		}
+		if isInFolders(path, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, LICENSE_TOKEN)
@@ -56,8 +62,8 @@ func AddLicenses(dir string, year int, exclude []string) error {
 	})
 }
 
-// isInExcludedFolder indicates whether the given path exists within the given list of folders
-func isInExcludedFolder(path string, exclude []string) bool {
+// isInFolders indicates whether the given path exists within the given list of folders
+func isInFolders(path string, exclude []string) bool {
 	for _, e := range exclude {
 		if strings.HasPrefix(path, e) {
 			return true

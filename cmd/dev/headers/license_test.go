@@ -56,7 +56,7 @@ func TestIsExcluded(t *testing.T) {
 		"generated/foo/bar/README.md":           true,
 	}
 	for give, want := range tests {
-		assert.Equal(t, want, isInExcludedFolder(give, exclude), "%q -> %t", give, want)
+		assert.Equal(t, want, isInFolders(give, exclude), "%q -> %t", give, want)
 	}
 }
 
