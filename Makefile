@@ -9,7 +9,6 @@ export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
 GO_DEPENDENCIES = github.com/ory/go-acc \
-				  github.com/ory/x/tools/listx \
 				  github.com/golang/mock/mockgen \
 				  github.com/go-swagger/go-swagger/cmd/swagger \
 				  golang.org/x/tools/cmd/goimports \
