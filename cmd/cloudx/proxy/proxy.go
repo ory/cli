@@ -129,11 +129,6 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
 	}
 
-	fmt.Printf(`
-ak: %+v
-%s
-`, ak, *ak.ProjectId)
-
 	if !ak.HasValue() {
 		return "", noop, errNoApiKeyAvailable
 	}
