@@ -205,8 +205,13 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				r.Host = c.UpstreamHost
 			}
 
+			publicURL := conf.publicURL
+			if conf.pathPrefix != "" {
+				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
+			}
+
 			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
-			r.Header.Set("Ory-Base-URL-Rewrite", conf.publicURL.String())
+			r.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
 			if len(apiKey) > 0 {
 				r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
 			}
