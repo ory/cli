@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ory/cli/cmd"
+
 	"github.com/pquerna/otp/totp"
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory/cli/cmd/cloudx"
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	cloud "github.com/ory/client-go"
@@ -23,9 +23,9 @@ func TestAuthenticator(t *testing.T) {
 	configDir := testhelpers.NewConfigDir(t)
 
 	t.Run("errors without config and --quiet flag", func(t *testing.T) {
-		cmd := cloudx.NewRootCommand(new(cobra.Command), "", "")
-		cmd.SetArgs([]string{"auth", "--" + client.ConfigFlag, configDir, "--quiet"})
-		require.Error(t, cmd.Execute())
+		c := cmd.NewRootCmd()
+		c.SetArgs([]string{"auth", "--" + client.ConfigFlag, configDir, "--quiet"})
+		require.Error(t, c.Execute())
 	})
 
 	password := testhelpers.FakePassword()

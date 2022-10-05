@@ -7,8 +7,8 @@ import (
 	"github.com/ory/kratos/cmd/identities"
 )
 
-func NewImportIdentityCmd(parent *cobra.Command) *cobra.Command {
-	cmd := identities.NewImportIdentitiesCmd(parent)
+func NewImportIdentityCmd() *cobra.Command {
+	cmd := identities.NewImportIdentitiesCmd()
 	client.RegisterProjectFlag(cmd.Flags())
 	return cmd
 }

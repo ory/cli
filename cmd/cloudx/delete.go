@@ -11,15 +11,19 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewDeleteCmd(parent *cobra.Command) *cobra.Command {
+func NewDeleteCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "Delete resources",
 	}
 
-	cmd.AddCommand(identity.NewDeleteIdentityCmd(parent))
-	cmd.AddCommand(oauth2.NewDeleteOAuth2Cmd(parent))
-	cmd.AddCommand(relationtuples.NewDeleteCmd())
+	cmd.AddCommand(
+		identity.NewDeleteIdentityCmd(),
+		oauth2.NewDeleteOAuth2Client(),
+		oauth2.NewDeleteJWKs(),
+		oauth2.NewDeleteAccessTokens(),
+		relationtuples.NewDeleteCmd(),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

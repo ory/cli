@@ -8,8 +8,8 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewDeleteIdentityCmd(parent *cobra.Command) *cobra.Command {
-	cmd := identities.NewDeleteIdentityCmd(parent)
+func NewDeleteIdentityCmd() *cobra.Command {
+	cmd := identities.NewDeleteIdentityCmd()
 	client.RegisterProjectFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd

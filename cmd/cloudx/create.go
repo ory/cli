@@ -16,9 +16,12 @@ func NewCreateCmd() *cobra.Command {
 		Use:   "create",
 		Short: "Create Ory Cloud resources",
 	}
-	cmd.AddCommand(project.NewCreateProjectCmd())
-	cmd.AddCommand(oauth2.NewCreateOAuth2Client(cmd))
-	cmd.AddCommand(relationtuples.NewCreateCmd())
+	cmd.AddCommand(
+		project.NewCreateProjectCmd(),
+		oauth2.NewCreateOAuth2Client(),
+		relationtuples.NewCreateCmd(),
+		oauth2.NewCreateJWK(),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
