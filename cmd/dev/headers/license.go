@@ -5,7 +5,6 @@ package headers
 import (
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -84,15 +83,8 @@ var copyright = &cobra.Command{
 
 Does not add the license header to git-ignored files.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return fmt.Errorf("cannot determine the current directory: %w", err)
-		}
 		year, _, _ := time.Now().Date()
-		for e, excluded := range exclude {
-			exclude[e] = filepath.Join(cwd, excluded)
-		}
-		return AddLicenses(cwd, year, exclude)
+		return AddLicenses(".", year, exclude)
 	},
 }
 

@@ -46,6 +46,7 @@ const (
 	DefaultRedirectURLFlag = "default-redirect-url"
 	ProjectFlag            = "project"
 	CORSFlag               = "allowed-cors-origins"
+	RewriteHostFlag        = "rewrite-host"
 )
 
 type config struct {
@@ -62,6 +63,10 @@ type config struct {
 	isDebug           bool
 	isDev             bool
 	corsOrigins       []string
+
+	// rewriteHost means the host header will be rewritten to the upstream host.
+	// This is useful in cases where upstream resolves requests based on Host.
+	rewriteHost bool
 }
 
 func portFromEnv() int {
@@ -123,11 +128,6 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`?", slug)
 		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
 	}
-
-	fmt.Printf(`
-ak: %+v
-%s
-`, ak, *ak.ProjectId)
 
 	if !ak.HasValue() {
 		return "", noop, errNoApiKeyAvailable
@@ -200,10 +200,18 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 			if r.URL.Host == conf.oryURL.Host {
 				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
 				r.Host = conf.oryURL.Host
+			} else if conf.rewriteHost {
+				r.Header.Set("X-Forwarded-Host", r.Host)
+				r.Host = c.UpstreamHost
+			}
+
+			publicURL := conf.publicURL
+			if conf.pathPrefix != "" {
+				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
 			}
 
 			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
-			r.Header.Set("Ory-Base-URL-Rewrite", conf.publicURL.String())
+			r.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
 			if len(apiKey) > 0 {
 				r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
 			}
