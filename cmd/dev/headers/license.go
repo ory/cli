@@ -83,9 +83,9 @@ func fileTypeIsLicensed(path string) bool {
 var copyright = &cobra.Command{
 	Use:   "license",
 	Short: "Adds the license header to all known files in the current directory",
-	Long: `Adds the license header to all known files in the current directory.
+	Long: `Adds the license header to all files that need one in the current directory.
 
-Does not add the license header to git-ignored files.`,
+Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
 		return AddLicenses(".", year, exclude)
