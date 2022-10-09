@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	goGitIgnore "github.com/sabhiram/go-gitignore"
+	ignore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/dev/headers/comments"
@@ -30,7 +30,8 @@ var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 // AddLicenses adds or updates the Ory license header in all applicable files within the given directory.
 func AddLicenses(dir string, year int, exclude []string) error {
 	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
-	gitIgnore, _ := goGitIgnore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
+	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
+	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
@@ -39,6 +40,9 @@ func AddLicenses(dir string, year int, exclude []string) error {
 			return nil
 		}
 		if gitIgnore != nil && gitIgnore.MatchesPath(info.Name()) {
+			return nil
+		}
+		if prettierIgnore != nil && prettierIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
 		if !comments.SupportsFile(path) {
@@ -79,9 +83,9 @@ func fileTypeIsLicensed(path string) bool {
 var copyright = &cobra.Command{
 	Use:   "license",
 	Short: "Adds the license header to all known files in the current directory",
-	Long: `Adds the license header to all known files in the current directory.
+	Long: `Adds the license header to all files that need one in the current directory.
 
-Does not add the license header to git-ignored files.`,
+Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
 		return AddLicenses(".", year, exclude)
