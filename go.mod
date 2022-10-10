@@ -10,7 +10,7 @@ replace (
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 	// github.com/ory/kratos/internal/httpclient
-	github.com/ory/kratos-client-go => github.com/ory/kratos-client-go v0.9.0-alpha.3
+	github.com/ory/kratos-client-go => github.com/ory/kratos/internal/httpclient v0.0.0-20221004123324-f002649d4565
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 )
 
@@ -34,13 +34,13 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.3
 	github.com/ory/herodot v0.9.13
-	github.com/ory/hydra v1.11.11-0.20220915140124-954693feffbb
+	github.com/ory/hydra v1.11.11-0.20221006114209-87105903a7e0
 	github.com/ory/hydra-client-go v1.11.8
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/keto v0.10.0-alpha.0
-	github.com/ory/kratos v0.9.0-alpha.3.0.20220516102132-1090a82b9eae
+	github.com/ory/kratos v0.10.2-0.20221004123324-f002649d4565
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
-	github.com/ory/x v0.0.473
+	github.com/ory/x v0.0.480
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
@@ -110,7 +110,7 @@ require (
 	github.com/elastic/go-licenser v0.3.1 // indirect
 	github.com/elastic/go-sysinfo v1.1.1 // indirect
 	github.com/elastic/go-windows v1.0.0 // indirect
-	github.com/envoyproxy/go-control-plane v0.10.1 // indirect
+	github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.6.2 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -235,7 +235,7 @@ require (
 	github.com/philhofer/fwd v1.1.1 // indirect
 	github.com/pkg/profile v1.6.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/pquerna/cachecontrol v0.0.0-20200921180117-858c6e7e6b7e // indirect
+	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
@@ -282,7 +282,7 @@ require (
 	go.etcd.io/bbolt v1.3.5 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.4 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.4 // indirect
-	go.etcd.io/etcd/client/v2 v2.305.1 // indirect
+	go.etcd.io/etcd/client/v2 v2.305.4 // indirect
 	go.etcd.io/etcd/client/v3 v3.5.4 // indirect
 	go.etcd.io/etcd/etcdctl/v3 v3.5.0-alpha.0 // indirect
 	go.etcd.io/etcd/pkg/v3 v3.5.0-alpha.0 // indirect
@@ -319,7 +319,7 @@ require (
 	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
-	golang.org/x/sys v0.0.0-20220913175220-63ea55921009 // indirect
+	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

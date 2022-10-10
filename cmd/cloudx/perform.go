@@ -9,14 +9,15 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewPerformCmd(parent *cobra.Command) *cobra.Command {
+func NewPerformCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "perform",
 		Short: "Perform a flow",
 	}
 
 	cmd.AddCommand(
-		oauth2.NewPerformAuthorizationCodeCmd(parent),
+		oauth2.NewPerformAuthorizationCode(),
+		oauth2.NewPerformClientCredentials(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

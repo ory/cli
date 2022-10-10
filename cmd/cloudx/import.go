@@ -10,14 +10,17 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewImportCmd(parent *cobra.Command) *cobra.Command {
+func NewImportCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "import",
 		Short: "Import resources",
 	}
 
-	cmd.AddCommand(identity.NewImportIdentityCmd(parent))
-	cmd.AddCommand(oauth2.NewImportOAuth2Cmd(parent))
+	cmd.AddCommand(
+		identity.NewImportIdentityCmd(),
+		oauth2.NewImportOAuth2Client(),
+		oauth2.NewImportJWK(),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

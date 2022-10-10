@@ -19,7 +19,7 @@ func NewUpdateCmd() *cobra.Command {
 		project.NewUpdateIdentityConfigCmd(),
 		project.NewUpdateOAuth2ConfigCmd(),
 		project.NewUpdatePermissionConfigCmd(),
-		oauth2.NewUpdateOAuth2Client(cmd),
+		oauth2.NewUpdateOAuth2Client(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
