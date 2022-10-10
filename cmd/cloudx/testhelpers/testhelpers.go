@@ -9,10 +9,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx"
+	"github.com/ory/cli/cmd"
+
 	"github.com/ory/cli/cmd/cloudx/client"
 
-	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
@@ -87,9 +87,7 @@ func AssertConfig(t *testing.T, configDir string, email string, name string, new
 
 func ConfigAwareCmd(configDir string) *cmdx.CommandExecuter {
 	return &cmdx.CommandExecuter{
-		New: func() *cobra.Command {
-			return cloudx.NewRootCommand(new(cobra.Command), "", "")
-		},
+		New:            cmd.NewRootCmd,
 		Ctx:            client.ContextWithClient(context.Background()),
 		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},
 	}
@@ -100,9 +98,7 @@ func ConfigPasswordAwareCmd(configDir, password string) *cmdx.CommandExecuter {
 		return []byte(password), nil
 	}))
 	return &cmdx.CommandExecuter{
-		New: func() *cobra.Command {
-			return cloudx.NewRootCommand(new(cobra.Command), "", "")
-		},
+		New:            cmd.NewRootCmd,
 		Ctx:            ctx,
 		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},
 	}
@@ -131,9 +127,7 @@ func RegisterAccount(t require.TestingT, configDir string) (email, password stri
 	_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 
 	exec := cmdx.CommandExecuter{
-		New: func() *cobra.Command {
-			return cloudx.NewRootCommand(new(cobra.Command), "", "")
-		},
+		New: cmd.NewRootCmd,
 		Ctx: context.WithValue(context.Background(), client.PasswordReader{}, func() ([]byte, error) {
 			return []byte(password), nil
 		}),

@@ -11,7 +11,7 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func NewGetCmd(parent *cobra.Command) *cobra.Command {
+func NewGetCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "Get a resource",
@@ -22,8 +22,9 @@ func NewGetCmd(parent *cobra.Command) *cobra.Command {
 		project.NewGetKratosConfigCmd(),
 		project.NewGetKetoConfigCmd(),
 		project.NewGetOAuth2ConfigCmd(),
-		identity.NewGetIdentityCmd(parent),
-		oauth2.NewGetOAuth2Client(parent),
+		identity.NewGetIdentityCmd(),
+		oauth2.NewGetOAuth2Client(),
+		oauth2.NewGetJWK(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

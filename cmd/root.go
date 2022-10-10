@@ -28,19 +28,22 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewCreateCmd(),
 		jsonnet.NewFormatCmd(),
 		jsonnet.NewLintCmd(),
-		cloudx.NewDeleteCmd(c),
-		cloudx.NewGetCmd(c),
-		cloudx.NewListCmd(c),
-		cloudx.NewImportCmd(c),
+		cloudx.NewDeleteCmd(),
+		cloudx.NewGetCmd(),
+		cloudx.NewListCmd(),
+		cloudx.NewImportCmd(),
 		cloudx.NewPatchCmd(),
 		cloudx.NewParseCmd(),
-		cloudx.NewPerformCmd(c),
+		cloudx.NewPerformCmd(),
 		proxy.NewProxyCommand("ory", buildinfo.Version),
 		proxy.NewTunnelCommand("ory", buildinfo.Version),
 		cloudx.NewUpdateCmd(),
 		cloudx.NewValidateCmd(),
+		cloudx.NewRevokeCmd(),
+		cloudx.NewIntrospectCmd(),
 		versionCmd,
 	)
+	cmdx.EnableUsageTemplating(c)
 
 	return c
 }
