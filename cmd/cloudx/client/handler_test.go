@@ -130,6 +130,7 @@ func TestCommandHelper(t *testing.T) {
 				"project.services.oauth2.config.urls.self",
 				"project.services.oauth2.config.serve.cookies.domain",
 				"project.services.oauth2.config.serve.cookies.names",
+				"project.services.identity.config.identity.schemas.1.url", // bucket changes locally vs staging
 			))
 		})
 
