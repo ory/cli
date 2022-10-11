@@ -11,3 +11,4 @@ unpacked_bin/
 .idea
 cypress/screenshots
 cypress/videos
+cli

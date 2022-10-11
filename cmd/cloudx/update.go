@@ -19,6 +19,7 @@ func NewUpdateCmd() *cobra.Command {
 		project.NewUpdateIdentityConfigCmd(),
 		project.NewUpdateOAuth2ConfigCmd(),
 		project.NewUpdatePermissionConfigCmd(),
+		project.NewUpdateNamespaceConfigCmd(),
 		oauth2.NewUpdateOAuth2Client(),
 	)
 
