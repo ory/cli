@@ -124,6 +124,9 @@ func TestUpdateProject(t *testing.T) {
 					"serve.cookies.names",
 					"serve.cookies.domain",
 					"urls.self",
+					// bucket changes locally vs staging
+					"services.identity.config.identity.schemas.1.url",
+					"identity.schemas.1.url",
 				))
 			})
 
