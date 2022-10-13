@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 package comments
 
 import (
@@ -27,8 +29,6 @@ func TestDoubleSlashCommentsRender(t *testing.T) {
 func TestDoubleSlashCommentsRemove(t *testing.T) {
 	t.Parallel()
 	give := strings.Trim(`
-// Copyright © 1997 Ory Corp Inc.
-
 // another comment
 
 name: test

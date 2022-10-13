@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 // Tool for copying files inside https://github.com/ory/meta/blob/master/scripts/sync.sh
 // and adding a link to the original as a header comment.
 

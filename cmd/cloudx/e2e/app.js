@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 const express = require("express")
 const app = express()
 const port = 4001

@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 var binwrap = require("binwrap")
 var path = require("path")
 

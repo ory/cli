@@ -1,3 +1,5 @@
+// Copyright © 2022 Ory Corp
+
 // Tool for adding a license header to all supported files.
 
 package headers
