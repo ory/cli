@@ -35,6 +35,9 @@ docs/cli: .bin/clidoc
 .bin/golangci-lint: Makefile
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
 
+.bin/licenses: Makefile
+	curl https://raw.githubusercontent.com/ory/ci/master/licenses/install | sh
+
 .PHONY: lint
 lint: .bin/golangci-lint
 	.bin/golangci-lint run --timeout=10m ./...
@@ -52,6 +55,9 @@ test: lint
 format: .bin/goimports node_modules
 	goimports -w -local github.com/ory .
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
+
+licenses: .bin/licenses node_modules  # checks open-source licenses
+	.bin/licenses
 
 # Runs tests in short mode, without database adapters
 .PHONY: docker
