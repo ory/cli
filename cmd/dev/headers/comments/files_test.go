@@ -10,48 +10,54 @@ import (
 	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
-func TestFileContentWithoutHeader_knownFile(t *testing.T) {
-	give := strings.Trim(`
-// copyright Ory
-// all rights reserved
+func TestFileContentWithoutHeader(t *testing.T) {
+	t.Run("known file, copyright header", func(t *testing.T) {
+		give := strings.Trim(`
+// Copyright © 2021 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 
 file content`, "\n")
-	want := strings.Trim(`
+		want := strings.Trim(`
 file content`, "\n")
-	createTestFile(t, "testfile.go", give)
-	defer os.Remove("testfile.go")
-	have, err := comments.FileContentWithoutHeader("testfile.go", "copyright")
-	assert.NoError(t, err)
-	assert.Equal(t, want, have)
-}
+		createTestFile(t, "testfile.go", give)
+		defer os.Remove("testfile.go")
+		have, err := comments.FileContentWithoutHeader("testfile.go", "copyright")
+		assert.NoError(t, err)
+		assert.Equal(t, want, have)
+	})
 
-func TestFileContentWithoutHeader_otherCommentFirst(t *testing.T) {
-	give := strings.Trim(`
+	t.Run("known file, other comment first", func(t *testing.T) {
+		give := strings.Trim(`
 // another comment block
 
-// copyright Ory
-// all rights reserved
+// Copyright © 2021 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 
 file content`, "\n")
-	want := strings.Trim(`
+		want := strings.Trim(`
 // another comment block
 
 file content`, "\n")
-	createTestFile(t, "testfile.go", give)
-	defer os.Remove("testfile.go")
-	have, err := comments.FileContentWithoutHeader("testfile.go", "copyright")
-	assert.NoError(t, err)
-	assert.Equal(t, want, have)
-}
+		createTestFile(t, "testfile.go", give)
+		defer os.Remove("testfile.go")
+		have, err := comments.FileContentWithoutHeader("testfile.go", "copyright")
+		assert.NoError(t, err)
+		assert.Equal(t, want, have)
+	})
 
-func TestFileContentWithoutHeader_unknownFile(t *testing.T) {
-	give := "file content"
-	want := "file content"
-	createTestFile(t, "testfile.txt", give)
-	defer os.Remove("testfile.txt")
-	have, err := comments.FileContentWithoutHeader("testfile.txt", "copyright")
-	assert.NoError(t, err)
-	assert.Equal(t, want, have)
+	t.Run("unknown file", func(t *testing.T) {
+		give := strings.Trim(`
+// Copyright © 2021 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
+file content`, "\n")
+		want := "file content"
+		createTestFile(t, "testfile.txt", give)
+		defer os.Remove("testfile.txt")
+		have, err := comments.FileContentWithoutHeader("testfile.txt", "copyright")
+		assert.NoError(t, err)
+		assert.Equal(t, want, have)
+	})
 }
 
 func createTestFile(t *testing.T, name, content string) {
