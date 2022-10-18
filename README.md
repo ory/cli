@@ -8,7 +8,7 @@ This is the ORY Command Line Interface (CLI).
 ## Unix (Linux / macOS)
 
 ```shell-session
-$ curl https://raw.githubusercontent.com/ory/meta/master/install.sh | sh
+$ curl https://raw.githubusercontent.com/ory/meta/master/install.sh | sh -s ory
 $ ory help
 ```
 
