@@ -25,6 +25,18 @@
                   }
                 }
               },
+              "recovery_code": {
+                "invalid": {
+                  "email": {
+                    "body": {}
+                  }
+                },
+                "valid": {
+                  "email": {
+                    "body": {}
+                  }
+                }
+              },
               "verification": {
                 "invalid": {
                   "email": {
@@ -93,7 +105,8 @@
                 },
                 "enabled": true,
                 "lifespan": "30m0s",
-                "ui_url": "/ui/recovery"
+                "ui_url": "/ui/recovery",
+                "use": "code"
               },
               "registration": {
                 "after": {
@@ -154,6 +167,12 @@
               }
             },
             "methods": {
+              "code": {
+                "config": {
+                  "lifespan": "15m0s"
+                },
+                "enabled": true
+              },
               "link": {
                 "config": {
                   "base_url": "",
