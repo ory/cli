@@ -12,7 +12,11 @@ const login = (email, password) => {
 
 const loggedIn = (email) => {
   cy.visit("/.ory/ui/welcome")
-  cy.get('[data-testid="logout"] a').should("have.attr", "aria-disabled", "false")
+  cy.get('[data-testid="logout"] a').should(
+    "have.attr",
+    "aria-disabled",
+    "false",
+  )
   cy.visit("/.ory/ui/sessions")
   cy.get("pre").should("contain.text", email)
 }
