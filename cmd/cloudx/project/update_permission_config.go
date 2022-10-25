@@ -15,7 +15,7 @@ func NewUpdatePermissionConfigCmd() *cobra.Command {
 			"keto-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Cloud project's permission service configuration",
+		Short: "Update Ory Permissions configuration",
 		Example: `$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -40,7 +40,7 @@ $ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 namespaces:
   - name: files
     # ...`,
-		Long: `Updates your Ory Cloud project's permission service configuration. All values
+		Long: `Updates your Ory Permissions configuration. All values
 of the permission service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command only updates the permission service configuration

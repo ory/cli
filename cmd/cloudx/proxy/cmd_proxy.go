@@ -42,7 +42,7 @@ will pass all traffic through to this URL.
 
 ### Connecting to Ory
 
-Before you start, you need to have a running Ory Cloud project. You can create one with the following command:
+Before you start, you need to have a running Ory Network project. You can create one with the following command:
 
 	$ %[1]s create project --name "Command Line Project"
 
@@ -220,7 +220,7 @@ An example payload of the JSON Web Token is:
 
 	proxyCmd.Flags().Bool(OpenFlag, false, "Open the browser when the proxy starts.")
 	proxyCmd.Flags().String(CookieDomainFlag, "", "Set a dedicated cookie domain.")
-	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Cloud Project.")
+	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Network Project.")
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
 	proxyCmd.Flags().String(DefaultRedirectURLFlag, "", "Set the URL to redirect to per default after e.g. login or account creation.")
