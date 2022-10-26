@@ -18,7 +18,7 @@ func NewUpdateOAuth2ConfigCmd() *cobra.Command {
 			"hydra-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Cloud project's OAuth2 service configuration",
+		Short: "Update Ory OAuth2 & OpenID configuration",
 		Example: `$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -43,7 +43,7 @@ oauth2:
   pkce:
     enabled: true
 # ...`,
-		Long: `Updates your Ory Cloud project's OAuth2 service configuration. All values
+		Long: `Updates your Ory OAuth2 & OpenID configuration. All values
 of the OAuth2 service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command only updates the OAuth2 service configuration

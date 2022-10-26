@@ -16,7 +16,7 @@ import (
 func NewCreateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Create Ory Cloud resources",
+		Short: "Create Ory Network resources",
 	}
 	cmd.AddCommand(
 		project.NewCreateProjectCmd(),

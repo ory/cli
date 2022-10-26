@@ -42,7 +42,7 @@ const (
 )
 
 func RegisterConfigFlag(f *pflag.FlagSet) {
-	f.StringP(ConfigFlag, ConfigFlag[:1], "", "Path to the Ory Cloud configuration file.")
+	f.StringP(ConfigFlag, ConfigFlag[:1], "", "Path to the Ory Network configuration file.")
 }
 
 func RegisterYesFlag(f *pflag.FlagSet) {
@@ -466,7 +466,7 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 			return nil, err
 		}
 	} else {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you here, creating an Ory Cloud account is absolutely free and only requires to answer four easy questions.")
+		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you here, creating an Ory Network account is absolutely free and only requires to answer four easy questions.")
 
 		ac, err = h.signup(c)
 		if err != nil {

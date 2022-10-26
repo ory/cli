@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ory/x/randx"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/cobra"
 
@@ -20,13 +22,14 @@ import (
 var isTestRelease = regexp.MustCompile(`^(([a-zA-Z0-9\.\-]+\.)|)pre\.[0-9]+$`)
 
 var publish = &cobra.Command{
-	Use:   "publish [version]",
-	Args:  cobra.ExactArgs(1),
+	Use:   "publish [version] [git-hash]",
+	Args:  cobra.RangeArgs(1, 2),
 	Short: "Publish a new release",
 	Long: `Publishes a new release. Performs git magic and other automated tasks such as tagging the example applications for ORY Kratos and ORY Hydra as well.
 
 To publish a release, you first have to create a pre-release:
 
+	ory dev release publish v0.1.0-pre.0
 	ory dev release publish v0.1.0-pre.0
 
 Once the release pipeline finished successfully (skip publishing the newsletter!) you can run:
@@ -41,6 +44,10 @@ Here are some examples how to choose pre:
 - v0.1.0-alpha.1.pre.0 -> v0.1.0-alpha.1
 - v0.1.0-rc.1.pre.0 -> v0.1.0-rc.1
 
+You may also release a specific commit by using its hash as the second argument:
+
+	ory dev release publish v0.1.0-pre.0 28472a9f15457f55ae18aee2c5d26a18c1216a39
+
 In case where the release pipeline failed and you re-create another release where you want to include the changelog from the failed release, perform the following:
 
 1. Assuming release "v0.1.0" failed
@@ -54,7 +61,11 @@ In case where the release pipeline failed and you re-create another release wher
 		pkg.Check(err)
 
 		dry := flagx.MustGetBool(cmd, "dry")
+
 		gitCleanTags()
+		if len(args) == 2 {
+			pkg.Check(pkg.NewCommand("git", "checkout", "-b", randx.MustString(8, randx.AlphaLowerNum), args[2]).Run())
+		}
 
 		var latestTag string
 		if cfg.IgnoreTags != nil && len(cfg.IgnoreTags.String()) > 0 {

@@ -14,7 +14,7 @@ func NewPatchKratosConfigCmd() *cobra.Command {
 		Use:     "identity-config <project-id>",
 		Aliases: []string{"ic", "kratos-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud project's identity config",
+		Short:   "Patch an Ory Identities config",
 		Example: `$ ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/courier/smtp={"from_name":"My new email name"}' \
 	--replace '/selfservice/methods/password/enabled=false' \
@@ -29,7 +29,7 @@ func NewPatchKratosConfigCmd() *cobra.Command {
     // ...
   }
 }`,
-		Long: `Patch an Ory Cloud project's identity configuration. Only values specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
+		Long: `Patch an Ory Identities configuration. Only values specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 Compared to the ` + "`patch project`" + ` command, this command only updates the identity service configuration
 and also only returns the identity service configuration as a result. This command is useful when you want to

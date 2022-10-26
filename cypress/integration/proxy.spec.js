@@ -14,8 +14,13 @@ const login = (email, password) => {
 
 const loggedIn = (email) => {
   cy.visit("/.ory/ui/welcome")
-  cy.get("pre code").should("contain.text", email)
-  cy.get('[data-testid="logout"]').should("have.attr", "aria-disabled", "false")
+  cy.get('[data-testid="logout"] a').should(
+    "have.attr",
+    "aria-disabled",
+    "false",
+  )
+  cy.visit("/.ory/ui/sessions")
+  cy.get("pre").should("contain.text", email)
 }
 
 describe("ory proxy", () => {
@@ -27,7 +32,7 @@ describe("ory proxy", () => {
 
   it("navigation works", () => {
     cy.visit("/.ory/ui/registration")
-    cy.get(".card-action a").click()
+    cy.get('[data-testid="cta-link"]').click()
     cy.location("pathname").should("eq", "/.ory/ui/login")
   })
 
@@ -45,7 +50,6 @@ describe("ory proxy", () => {
     cy.request("/anything").should((res) => {
       expect(res.body.headers["Authorization"]).to.not.be.empty
       const token = res.body.headers["Authorization"].replace(/bearer /gi, "")
-      console.log({ token })
 
       cy.task(
         "verify",
@@ -59,12 +63,14 @@ describe("ory proxy", () => {
   it("should be able to execute logout", () => {
     login(email, password)
     cy.visit("/.ory/ui/welcome")
-    cy.get('[data-testid="logout"]').should(
+    cy.get('[data-testid="logout"] a').should(
       "have.attr",
       "aria-disabled",
       "false",
     )
-    cy.get('[data-testid="logout"]').click()
+
+    cy.get('[data-testid="logout"] a').click()
+    cy.location("pathname").should("not.contain", "/ui/")
     cy.request("/anything").should((res) => {
       expect(res.body.headers["Authorization"]).to.be.undefined
     })

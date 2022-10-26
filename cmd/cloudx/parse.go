@@ -13,7 +13,7 @@ import (
 func NewParseCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "parse",
-		Short: "Parse Ory Cloud resources",
+		Short: "Parse Ory Network resources",
 	}
 	cmd.AddCommand(relationtuples.NewParseCmd())
 

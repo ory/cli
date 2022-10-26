@@ -86,7 +86,7 @@ func noop() {}
 func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey string, cleanup func(), err error) {
 	oryURLParts := strings.Split(conf.oryURL.Hostname(), ".")
 	if len(oryURLParts) < 2 {
-		l.Warnf("The Ory Cloud URL `%s` does not appear to be a a valid Ory Cloud URL. It should be in the format of `https://<project-slug>.projects.oryapis.com`. Skipping API key creation.", conf.oryURL)
+		l.Warnf("The Ory Network URL `%s` does not appear to be a a valid Ory Network URL. It should be in the format of `https://<project-slug>.projects.oryapis.com`. Skipping API key creation.", conf.oryURL)
 		return "", noop, errNoApiKeyAvailable
 	}
 
