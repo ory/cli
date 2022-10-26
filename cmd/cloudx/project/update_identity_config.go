@@ -15,7 +15,7 @@ func NewUpdateIdentityConfigCmd() *cobra.Command {
 			"kratos-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Identities service configuration",
+		Short: "Update the Ory Identities configuration of the specified Ory Network project.",
 		Example: `$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -39,12 +39,12 @@ $ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 courier:
   smtp:
     # ...`,
-		Long: `Updates your Ory Identities configuration. All values
-of the identity service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
+		Long: `Update the Ory Identities configuration of the specified Ory Network project. All values
+will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command only updates the identity service configuration
-and also only returns the identity service configuration as a result. This command is useful when you want to
-import an Ory Kratos config as well, for example.
+Compared to the ` + "`update project`" + ` command, this command only updates the Ory Identities configuration
+and returns the configuration as a result. This command is useful when you want to import configuration from 
+self-hosted Ory Kratos to Ory Network.
 
 The full configuration payload can be found at:
 

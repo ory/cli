@@ -11,7 +11,7 @@ func NewGetProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project <id>",
 		Args:  cobra.ExactArgs(1),
-		Short: "Get an Ory Network project",
+		Short: "Get the complete configuration of an Ory Network project.",
 		Example: `$ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 
 ID		ecaaa3cb-0730-4ee8-a6df-9553cdfeef89

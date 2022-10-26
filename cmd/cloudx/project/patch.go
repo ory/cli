@@ -16,7 +16,7 @@ func NewProjectsPatchCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project <id>",
 		Args:  cobra.ExactArgs(1),
-		Short: "Patch an Ory Network project",
+		Short: "Patch the Ory Network project configuration.",
 		Example: `ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/name="My new project name"' \
 	--add '/services/identity/config/courier/smtp={"from_name":"My new email name"}' \
@@ -27,7 +27,7 @@ ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/name="My new project name"' \
 	--delete '/services/identity/config/selfservice/methods/totp/enabled'
 	--format kratos-config > my-config.yaml`,
-		Long: `Patches your Ory Network project's service configuration. Only values
+		Long: `Patch the Ory Network project configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 The format of the patch is a JSON-Patch document. For more details please check:

@@ -12,8 +12,8 @@ func NewGetOAuth2ConfigCmd() *cobra.Command {
 		Use:     "oauth2-config <project-id>",
 		Aliases: []string{"oc", "oauth2-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Get an Ory OAuth2 & OpenID configuration",
-		Long:    "Get an Ory OAuth2 & OpenID configuration. You can use this command to render Ory OAuth2 & OpenID configuration as well.",
+		Short:   "Get Ory OAuth2 & OpenID Connect configuration.",
+		Long:    "Get the Ory OAuth2 & OpenID Connect configuration for the specified Ory Network project.",
 		Example: `$ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > oauth2-config.yaml
 
 $ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json

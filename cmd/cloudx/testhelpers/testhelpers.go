@@ -119,10 +119,10 @@ func RegisterAccount(t require.TestingT, configDir string) (email, password stri
 
 	// Create the account
 	var r bytes.Buffer
-	_, _ = r.WriteString("n\n")        // Do you already have an Ory Console account you wish to use? [y/n]: n
+	_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
 	_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
 	_, _ = r.WriteString(name + "\n")  // Name: FakeName()
-	_, _ = r.WriteString("n\n")        // Please inform me about platform and security updates? [y/n]: n
+	_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates?? [y/n]: n
 	_, _ = r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
 	_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 
@@ -149,7 +149,7 @@ func WithReAuth(t require.TestingT, email, password string) (*cmdx.CommandExecut
 	cmd := ConfigPasswordAwareCmd(configDir, password)
 	// Create the account
 	var r bytes.Buffer
-	r.WriteString("y\n")        // Do you already have an Ory Console account you wish to use? [y/n]: y
+	r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
 	r.WriteString(email + "\n") // Email FakeEmail()
 	return cmd, &r
 }

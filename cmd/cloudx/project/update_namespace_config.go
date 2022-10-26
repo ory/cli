@@ -19,13 +19,13 @@ func NewUpdateNamespaceConfigCmd() *cobra.Command {
 			"namespaces-config",
 		},
 		Args:  cobra.NoArgs,
-		Short: "Update the Ory Permission Language file in your Ory Network project",
+		Short: "Update the Ory Permission Language file in Ory Network",
 		Example: `$ {{ .CommandPath }} ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/namespace_config.ts
 
 class Example implements Namespace {}
 `,
-		Long: "Update the Ory Permission Language file in your Ory Network project. Legacy namespace definitions will be overwritten.",
+		Long: "Update the Ory Permission Language file in Ory Network. Legacy namespace definitions will be overwritten.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCommandHelper(cmd)
 			if err != nil {
