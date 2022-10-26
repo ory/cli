@@ -448,7 +448,7 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 		return nil, err
 	}
 
-	signIn, err := cmdx.AskScannerForConfirmation("Do you already have an Ory Console account you wish to use?", h.Stdin, h.VerboseErrWriter)
+	signIn, err := cmdx.AskScannerForConfirmation("Do you want to sign in to an existing Ory Network account?", h.Stdin, h.VerboseErrWriter)
 	if err != nil {
 		return nil, err
 	}
@@ -464,7 +464,7 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 			return nil, err
 		}
 	} else {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you here, creating an Ory Network account is absolutely free and only requires to answer four easy questions.")
+		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you! Let's create a new Ory Network account. Select the Enter key to start the account creation wizard.")
 
 		ac, err = h.signup(c)
 		if err != nil {
