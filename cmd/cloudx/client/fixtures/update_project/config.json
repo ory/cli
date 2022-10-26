@@ -19,6 +19,18 @@
                 }
               }
             },
+            "recovery_code": {
+              "invalid": {
+                "email": {
+                  "body": {}
+                }
+              },
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
+            },
             "verification": {
               "invalid": {
                 "email": {
@@ -54,7 +66,6 @@
               "ui_url": "/ui/error"
             },
             "login": {
-              "lifespan": "30m0s",
               "after": {
                 "hooks": [],
                 "oidc": {
@@ -70,13 +81,13 @@
               "before": {
                 "hooks": []
               },
+              "lifespan": "30m0s",
               "ui_url": "/ui/login"
             },
             "logout": {
               "after": {}
             },
             "recovery": {
-              "lifespan": "30m0s",
               "after": {
                 "hooks": []
               },
@@ -84,11 +95,11 @@
                 "hooks": []
               },
               "enabled": true,
-              "ui_url": "/ui/recovery"
+              "lifespan": "30m0s",
+              "ui_url": "/ui/recovery",
+              "use": "code"
             },
             "registration": {
-              "enabled": true,
-              "lifespan": "30m0s",
               "after": {
                 "hooks": [],
                 "oidc": {
@@ -112,10 +123,11 @@
               "before": {
                 "hooks": []
               },
+              "enabled": true,
+              "lifespan": "30m0s",
               "ui_url": "/ui/registration"
             },
             "settings": {
-              "lifespan": "30m0s",
               "after": {
                 "hooks": [],
                 "password": {
@@ -128,12 +140,12 @@
               "before": {
                 "hooks": []
               },
+              "lifespan": "30m0s",
               "privileged_session_max_age": "15m0s",
               "required_aal": "highest_available",
               "ui_url": "/ui/settings"
             },
             "verification": {
-              "lifespan": "30m0s",
               "after": {
                 "hooks": []
               },
@@ -141,10 +153,17 @@
                 "hooks": []
               },
               "enabled": true,
+              "lifespan": "30m0s",
               "ui_url": "/ui/custom-verification"
             }
           },
           "methods": {
+            "code": {
+              "config": {
+                "lifespan": "15m0s"
+              },
+              "enabled": true
+            },
             "link": {
               "config": {
                 "base_url": "",
@@ -175,10 +194,10 @@
               "enabled": true
             },
             "totp": {
-              "enabled": false,
               "config": {
                 "issuer": "afds"
-              }
+              },
+              "enabled": false
             },
             "webauthn": {
               "enabled": false,

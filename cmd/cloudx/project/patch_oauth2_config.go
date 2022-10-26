@@ -13,7 +13,7 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
 		Use:     "oauth2-config <project-id>",
 		Aliases: []string{"oc", "hydra-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Cloud project's OAuth2 config",
+		Short:   "Patch an Ory OAuth2 & OpenID config",
 		Example: `$ ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/strategies/access_token="jwt"' \
 	--add '/ttl/login_consent_request="1h"' \
@@ -37,7 +37,7 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
   // ...
 }
 `,
-		Long: `Patch an Ory Cloud project's OAuth2 service configuration. Only values
+		Long: `Patch an Ory OAuth2 & OpenID configuration. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 Compared to the ` + "`patch project`" + ` command, this command only updates the OAuth2 service configuration
