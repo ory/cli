@@ -6,7 +6,7 @@ replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
-	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20220818200444-f259791e6dc1
+	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221025084544-5e50d3cc8604
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 	// github.com/ory/kratos/internal/httpclient
@@ -34,13 +34,13 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.3
 	github.com/ory/herodot v0.9.13
-	github.com/ory/hydra v1.11.11-0.20221006114209-87105903a7e0
+	github.com/ory/hydra v1.11.11-0.20221025084653-ca724399bd25
 	github.com/ory/hydra-client-go v1.11.8
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/keto v0.10.0-alpha.0
 	github.com/ory/kratos v0.10.2-0.20221004123324-f002649d4565
 	github.com/ory/kratos-client-go v0.9.0-alpha.3
-	github.com/ory/x v0.0.480
+	github.com/ory/x v0.0.486
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2

@@ -41,7 +41,7 @@ describe("ory proxy", () => {
 
   it("navigation works", () => {
     cy.visit(prefix + "/ui/registration")
-    cy.get(".card-action a").click()
+    cy.get('[data-testid="cta-link"]').click()
     cy.location("pathname").should("eq", prefix + "/ui/login")
   })
 
@@ -83,12 +83,12 @@ describe("ory proxy", () => {
     loggedIn(email)
 
     cy.visit(prefix + "/ui/welcome")
-    cy.get('[data-testid="logout"]').should(
+    cy.get('[data-testid="logout"] a').should(
       "have.attr",
       "aria-disabled",
       "false",
     )
-    cy.get('[data-testid="logout"]').click()
+    cy.get('[data-testid="logout"] a').click()
 
     if (isTunnel) {
       cy.location("host").should("eq", "localhost:4001")

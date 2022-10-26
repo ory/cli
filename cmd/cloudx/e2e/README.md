@@ -4,7 +4,7 @@ This suite end-to-end tests the Ory Proxy and Ory Tunnel.
 
 ## Social Sign In
 
-To perform Social Sign In, we use a pre-configured Ory Cloud Project with ID
+To perform Social Sign In, we use a pre-configured Ory Network Project with ID
 `c3564677-7641-4bc4-a49d-e1a19acdbaf9`.
 
 The project is configured to use a localhost login & consent app which we run in

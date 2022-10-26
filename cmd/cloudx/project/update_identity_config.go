@@ -15,7 +15,7 @@ func NewUpdateIdentityConfigCmd() *cobra.Command {
 			"kratos-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Cloud project's identity service configuration",
+		Short: "Update Ory Identities service configuration",
 		Example: `$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -39,7 +39,7 @@ $ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 courier:
   smtp:
     # ...`,
-		Long: `Updates your Ory Cloud project's identity service configuration. All values
+		Long: `Updates your Ory Identities configuration. All values
 of the identity service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command only updates the identity service configuration
