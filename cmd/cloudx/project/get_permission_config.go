@@ -12,8 +12,8 @@ func NewGetKetoConfigCmd() *cobra.Command {
 		Use:     "permission-config <project-id>",
 		Aliases: []string{"pc", "keto-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Get an Ory Cloud project's permission configuration",
-		Long:    "Get an Ory Cloud or Ory Keto project's permission configuration.",
+		Short:   "Get an Ory Permissions configuration",
+		Long:    "Get an Ory Permissions permission configuration.",
 		Example: `$ ory get keto-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > keto-config.yaml
 
 $ ory get keto-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json

@@ -12,8 +12,8 @@ func NewGetKratosConfigCmd() *cobra.Command {
 		Use:     "identity-config <project-id>",
 		Aliases: []string{"ic", "kratos-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Get an Ory Cloud project's identity configuration",
-		Long:    "Get an Ory Cloud or Ory Kratos project's identity configuration.",
+		Short:   "Get an Ory Identities configuration",
+		Long:    "Get an Ory Identities configuration.",
 		Example: `$ ory get kratos-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > kratos-config.yaml
 
 $ ory get kratos-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json

@@ -15,7 +15,7 @@ import (
 func NewCreateProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project",
-		Short: "Create a new Ory Cloud project",
+		Short: "Create a new Ory Network project",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCommandHelper(cmd)
 			if err != nil {
