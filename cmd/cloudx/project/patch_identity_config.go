@@ -29,7 +29,7 @@ func NewPatchKratosConfigCmd() *cobra.Command {
 }`,
 		Long: `Patch the Ory Identities configuration of the defined Ory Network project. Only values specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command only updates the Ory Identities configuration
+Compared to the ` + "`patch project`" + ` command, this command updates only the Ory Identities configuration
 and returns the configuration as a result. This command is useful when you want to import configuration from 
 self-hosted Ory Kratos to Ory Network. Using this command allows for shorter paths when specifying the flags:
 

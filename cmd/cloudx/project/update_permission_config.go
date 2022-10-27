@@ -43,9 +43,9 @@ namespaces:
 		Long: `Update Ory Permissions configuration of the specified Ory Network project. All values
 of the permission service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command only updates the permission service configuration
-and also only returns the permission service configuration as a result. This command is useful when you want to
-import an Ory Keto config as well, for example.
+Compared to the ` + "`update project`" + ` command, this command updates only the Ory Permissions configuration
+and returns the configuration as a result. This command is useful when you want to import configuration from 
+self-hosted Ory Keto to Ory Network.
 
 The full configuration payload can be found at:
 
