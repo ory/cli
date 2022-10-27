@@ -122,7 +122,7 @@ func RegisterAccount(t require.TestingT, configDir string) (email, password stri
 	_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
 	_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
 	_, _ = r.WriteString(name + "\n")  // Name: FakeName()
-	_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates?? [y/n]: n
+	_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
 	_, _ = r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
 	_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 

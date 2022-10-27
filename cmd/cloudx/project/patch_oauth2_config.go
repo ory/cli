@@ -40,11 +40,11 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
 		Long: `Patch the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command only updates the OAuth2 service configuration
-and also only returns the OAuth2 service configuration as a result. This command is useful when you want to
-import an Ory Keto config as well, for example. This allows for shorter paths when specifying the flags
+Compared to the ` + "`patch project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect 
+configuration and returns configuration as a result. This command is useful when you want to import configuration 
+from self-hosted Ory Hydra to Ory Network. Using this command allows for shorter paths when specifying the flags:
 
-	ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+	ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 		--replace '/strategies/access_token="jwt"'
 
 when compared to the ` + "`patch project`" + ` command:

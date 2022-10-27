@@ -62,7 +62,7 @@ func TestCreateProject(t *testing.T) {
 		r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
 		r.WriteString(email + "\n") // Email fakeEmail()
 		r.WriteString(name + "\n")  // Name: fakeName()
-		r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates?? [y/n]: n
+		r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
 		r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
 		r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
 		stdout, stderr, err := cmd.Exec(&r, "create", "project", "--name", name, "--format", "json")

@@ -42,7 +42,7 @@ courier:
 		Long: `Update the Ory Identities configuration of the specified Ory Network project. All values
 will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command only updates the Ory Identities configuration
+Compared to the ` + "`update project`" + ` command, this command updates only the Ory Identities configuration
 and returns the configuration as a result. This command is useful when you want to import configuration from 
 self-hosted Ory Kratos to Ory Network.
 
