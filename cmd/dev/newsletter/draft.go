@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -61,7 +63,7 @@ If you want to send only to a segment within that list, add the Segment ID as we
 		changelogRaw, err := os.ReadFile(changelogPath)
 		pkg.Check(err)
 
-		chimpCampaign, err := Draft(listID, flagx.MustGetInt(cmd, "segment"), tagMessageRaw, changelogRaw)
+		chimpCampaign, err := Draft(listID, flagx.MustGetInt(cmd, "segment"), tagMessageRaw, changelogRaw, flagx.MustGetBool(cmd, "dry"))
 		pkg.Check(err)
 
 		fmt.Printf(`Created campaign "%s" (%s)`, chimpCampaign.Settings.Title, chimpCampaign.ID)
@@ -71,7 +73,7 @@ If you want to send only to a segment within that list, add the Segment ID as we
 	},
 }
 
-func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*gochimp3.CampaignResponse, error) {
+func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte, dry bool) (*gochimp3.CampaignResponse, error) {
 	tag := pkg.GitHubTag()
 
 	var repoName string
@@ -88,17 +90,6 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 	changelog := renderMarkdown(changelogRaw)
 	tagMessage := renderMarkdown(tagMessageRaw)
 
-	chimpKey := pkg.MustGetEnv("MAILCHIMP_API_KEY")
-	var segmentOptions *gochimp3.CampaignCreationSegmentOptions
-	if segmentID > 0 {
-		var payload struct {
-			Options gochimp3.CampaignCreationSegmentOptions `json:"options"`
-		}
-		newMailchimpRequest(chimpKey, fmt.Sprintf("/lists/%s/segments/%d", listID, segmentID), &payload)
-		segmentOptions = &payload.Options
-		segmentOptions.SavedSegmentId = segmentID
-	}
-
 	brandColor := "#5528FF"
 	switch strings.ToLower(repoName) {
 	case "oathkeeper":
@@ -112,7 +103,6 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 	}
 
 	var body bytes.Buffer
-
 	t, err := template.New("mail-body.html").Parse(string(view.MailBody))
 	pkg.Check(err)
 
@@ -133,6 +123,22 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 		Message:     tagMessage,
 		BrandColor:  brandColor,
 	}))
+
+	if dry {
+		fmt.Printf("%s", body.String())
+		return nil, errors.New("dry run")
+	}
+
+	chimpKey := pkg.MustGetEnv("MAILCHIMP_API_KEY")
+	var segmentOptions *gochimp3.CampaignCreationSegmentOptions
+	if segmentID > 0 {
+		var payload struct {
+			Options gochimp3.CampaignCreationSegmentOptions `json:"options"`
+		}
+		newMailchimpRequest(chimpKey, fmt.Sprintf("/lists/%s/segments/%d", listID, segmentID), &payload)
+		segmentOptions = &payload.Options
+		segmentOptions.SavedSegmentId = segmentID
+	}
 
 	chimp := gochimp3.New(chimpKey)
 	chimpTemplate, err := chimp.CreateTemplate(&gochimp3.TemplateCreationRequest{
@@ -171,4 +177,5 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte) (*g
 func init() {
 	Main.AddCommand(draft)
 	draft.Flags().Int("segment", 0, "The Mailchimp Segment ID")
+	draft.Flags().Bool("dry", false, "Dry run")
 }
