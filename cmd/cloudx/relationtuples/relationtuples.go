@@ -119,7 +119,8 @@ func hideKetoFlags(cmd *cobra.Command) {
 
 // wrapForOryCLI wraps the Keto command to be used in the ORY CLI.
 func wrapForOryCLI(cmd *cobra.Command) {
-	cmd.Use = "relation-tuples"
+	cmd.Use = "relationships"
+	cmd.Aliases = []string{"relation-tuples"}
 	client.RegisterProjectFlag(cmd.Flags())
 	forwardConnectionInfo(cmd)
 	hideKetoFlags(cmd)
