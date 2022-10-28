@@ -41,7 +41,7 @@ func TestNoUnauthenticated(t *testing.T) {
 		t.Run("verb="+tc.verb, func(t *testing.T) {
 			configDir := testhelpers.NewConfigDir(t)
 			cmd := testhelpers.ConfigAwareCmd(configDir)
-			args := append([]string{tc.verb, "relation-tuples", "--quiet", "--project", project},
+			args := append([]string{tc.verb, "relationships", "--quiet", "--project", project},
 				tc.extraArgs...)
 			_, _, err := cmd.Exec(nil, args...)
 			require.ErrorIsf(t, err, client.ErrNoConfigQuiet, "got error: %v", err)
@@ -108,6 +108,13 @@ func TestCRUD(t *testing.T) {
 		require.NoError(t, err, stderr)
 		return stdout
 	}
+	isAllowed := func(t *testing.T, subject, relation, namespace, object string) string {
+		stdout, stderr, err := defaultCmd.Exec(nil,
+			"is", "allowed", subject, relation, namespace, object,
+			"--project", project, "--format", "json")
+		require.NoError(t, err, stderr)
+		return stdout
+	}
 
 	// 1. create a tuple
 	stdout := create(t, "o1")
@@ -116,6 +123,10 @@ func TestCRUD(t *testing.T) {
 	// 2. check that it is listed
 	stdout = list(t)
 	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
+
+	// check that it is allowed
+	stdout = isAllowed(t, "s", "r", "n", "o1")
+	require.JSONEq(t, `{"allowed":true}`, stdout, stdout)
 
 	// 3. delete with --all but without --force
 	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project,
