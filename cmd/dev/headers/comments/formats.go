@@ -25,6 +25,10 @@ func (f Format) remove(text string, token string) string {
 			inComment = false
 			continue
 		}
+		if inComment && !strings.HasPrefix(line, f.startToken) {
+			inComment = false
+			continue
+		}
 		if !inComment {
 			result = append(result, line)
 		}

@@ -28,6 +28,7 @@ func TestDoubleSlashCommentsRemove(t *testing.T) {
 	t.Parallel()
 	give := strings.Trim(`
 // Copyright © 1997 Ory Corp Inc.
+// SPDX-License-Identifier: Apache-2.0
 
 // another comment
 
