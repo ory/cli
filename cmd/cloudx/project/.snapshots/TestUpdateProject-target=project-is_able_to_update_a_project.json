@@ -66,6 +66,7 @@
             }
           ]
         },
+        "oauth2_provider": {},
         "selfservice": {
           "allowed_return_urls": [],
           "default_browser_return_url": "/ui/welcome",
@@ -392,9 +393,9 @@
           "refresh_token": "720h0m0s"
         },
         "urls": {
-          "consent": "/oauth2/fallbacks/consent",
-          "error": "/oauth2/fallbacks/error",
-          "login": "/oauth2/fallbacks/login",
+          "consent": "/ui/consent",
+          "error": "/ui/error",
+          "login": "/ui/login",
           "post_logout_redirect": "/oauth2/fallbacks/logout"
         },
         "webfinger": {

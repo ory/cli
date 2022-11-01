@@ -61,6 +61,7 @@
       }
     ]
   },
+  "oauth2_provider": {},
   "selfservice": {
     "allowed_return_urls": [],
     "default_browser_return_url": "/ui/welcome",
