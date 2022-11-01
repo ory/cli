@@ -47,6 +47,7 @@
       }
     }
   },
+  "oauth2_provider": {},
   "identity": {
     "default_schema_id": "from-disk",
     "schemas": [
