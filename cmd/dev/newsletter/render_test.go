@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ory/x/snapshotx"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
@@ -27,8 +29,6 @@ func TestRenderMarkdown(t *testing.T) {
 
 func TestRenderMarkdownLong(t *testing.T) {
 	cl, err := os.ReadFile("stub/changelog.md.expected")
-	require.NoError(t, err)
-	expected, err := os.ReadFile("stub/changelog.html.expected")
 	require.NoError(t, err)
 
 	tmplRaw, err := os.ReadFile("../../../view/mail-body.html")
@@ -55,5 +55,5 @@ func TestRenderMarkdownLong(t *testing.T) {
 	}))
 
 	require.NoError(t, os.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
-	assert.EqualValues(t, strings.TrimSpace(string(expected)), strings.TrimSpace(body.String()))
+	snapshotx.SnapshotT(t, body.String())
 }
