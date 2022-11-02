@@ -76,6 +76,7 @@ var draft = &cobra.Command{
 			flagx.MustGetInt(cmd, "segment"),
 			[]byte(tagMessage),
 			changelog,
+			false,
 		)
 		pkg.Check(err)
 		fmt.Printf(`Created campaign "%s" (%s)`, campaign.Settings.Title, campaign.ID)

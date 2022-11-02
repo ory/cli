@@ -43,6 +43,7 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewValidateCmd(),
 		cloudx.NewRevokeCmd(),
 		cloudx.NewIntrospectCmd(),
+		cloudx.NewIsCmd(),
 		versionCmd,
 	)
 	cmdx.EnableUsageTemplating(c)

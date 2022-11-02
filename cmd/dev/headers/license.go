@@ -18,7 +18,7 @@ import (
 )
 
 // LICENSE defines the full license text.
-const LICENSE_TEMPLATE = "Copyright © %d Ory Corp"
+const LICENSE_TEMPLATE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
 
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"
