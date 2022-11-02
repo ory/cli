@@ -10,8 +10,18 @@ import (
 )
 
 func TestFileContentWithoutHeader(t *testing.T) {
-	t.Run("known file, copyright header", func(t *testing.T) {
+	t.Run("known file, copyright header, empty line", func(t *testing.T) {
 		give := "// Copyright © 2021 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nfile content"
+		want := "file content"
+		createTestFile(t, "testfile.go", give)
+		defer os.Remove("testfile.go")
+		have, err := comments.FileContentWithoutHeader("testfile.go", "Copyright ©")
+		assert.NoError(t, err)
+		assert.Equal(t, want, have)
+	})
+
+	t.Run("known file, copyright header, no empty line", func(t *testing.T) {
+		give := "// Copyright © 2021 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\nfile content"
 		want := "file content"
 		createTestFile(t, "testfile.go", give)
 		defer os.Remove("testfile.go")
