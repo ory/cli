@@ -1,4 +1,5 @@
 // Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
 
 package comments_test
 
@@ -15,9 +16,6 @@ import (
 func TestFileContentWithoutHeader(t *testing.T) {
 	t.Run("known file, copyright header", func(t *testing.T) {
 		give := strings.Trim(`
-// Copyright © 2021 Ory Corp
-// SPDX-License-Identifier: Apache-2.0
-
 file content`, "\n")
 		want := strings.Trim(`
 file content`, "\n")
@@ -31,9 +29,6 @@ file content`, "\n")
 	t.Run("known file, other comment first", func(t *testing.T) {
 		give := strings.Trim(`
 // another comment block
-
-// Copyright © 2021 Ory Corp
-// SPDX-License-Identifier: Apache-2.0
 
 file content`, "\n")
 		want := strings.Trim(`
@@ -49,9 +44,6 @@ file content`, "\n")
 
 	t.Run("unknown file", func(t *testing.T) {
 		give := strings.Trim(`
-// Copyright © 2021 Ory Corp
-// SPDX-License-Identifier: Apache-2.0
-
 file content`, "\n")
 		want := give
 		createTestFile(t, "testfile.txt", give)
