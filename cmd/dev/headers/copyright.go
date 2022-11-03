@@ -78,7 +78,7 @@ func isInFolders(path string, exclude []string) bool {
 	return false
 }
 
-// indicates whether this tool is configured to add a copyright header to the file with the given path
+// indicates whether this tool should add a copyright header to the given file
 func fileTypeNeedsCopyrightHeader(path string) bool {
 	return !comments.ContainsFileType(noHeadersFor, comments.GetFileType(path))
 }
