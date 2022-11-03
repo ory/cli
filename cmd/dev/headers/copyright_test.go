@@ -82,7 +82,7 @@ func TestNeedsHeader(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
-			assert.Equal(t, want, fileTypeNeedsHeader(give))
+			assert.Equal(t, want, fileTypeNeedsCopyrightHeader(give))
 		})
 	}
 }
