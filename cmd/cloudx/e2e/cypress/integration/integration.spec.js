@@ -1,3 +1,6 @@
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 const randomString = () => (Math.random() + 1).toString(36).substring(7)
 const randomPassword = () => randomString() + randomString()
 const randomEmail = () => randomString() + "@" + randomString() + ".com"
