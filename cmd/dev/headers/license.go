@@ -21,6 +21,9 @@ import (
 // HEADER_TEMPLATE_OPEN_SOURCE defines the full header text for open-source files.
 const HEADER_TEMPLATE_OPEN_SOURCE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
 
+// HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
+const HEADER_TEMPLATE_PROPRIETARY = "Copyright © %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
+
 // HEADER_TOKEN defines the token that identifies comments containing the license.
 const HEADER_TOKEN = "Copyright ©"
 
@@ -91,14 +94,32 @@ var license = &cobra.Command{
 Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
-		return AddHeaders(".", year, HEADER_TEMPLATE_OPEN_SOURCE, exclude)
+		var template string
+		if headerType == proprietary {
+			template = HEADER_TEMPLATE_PROPRIETARY
+		} else if headerType == openSource {
+			template = HEADER_TEMPLATE_OPEN_SOURCE
+		} else {
+			return fmt.Errorf("unknown value for type, expected one of %q or %q", openSource, proprietary)
+		}
+		return AddHeaders(".", year, template, exclude)
 	},
 }
 
 func init() {
 	Main.AddCommand(license)
 	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	license.Flags().StringVarP(&headerType, "type", "t", openSource, "whether to create a proprietary header")
 }
 
 // contains the folders to exclude
 var exclude []string
+
+// indicates whether to create a headerType header (
+var headerType string
+
+// the possible values for `headerType` variable
+const (
+	proprietary string = "proprietary"
+	openSource  string = "open-source"
+)
