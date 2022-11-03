@@ -109,7 +109,7 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 func init() {
 	Main.AddCommand(license)
 	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
-	license.Flags().StringVarP(&headerType, "type", "t", openSource, "whether to create a proprietary header")
+	license.Flags().StringVarP(&headerType, "type", "t", openSource, `type of header to create ("open-source", "proprietary")`)
 }
 
 // contains the folders to exclude
