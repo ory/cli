@@ -83,7 +83,7 @@ func fileTypeIsLicensed(path string) bool {
 	return !comments.ContainsFileType(noHeadersFor, comments.GetFileType(path))
 }
 
-var copyright = &cobra.Command{
+var license = &cobra.Command{
 	Use:   "license",
 	Short: "Adds the license header to all known files in the current directory",
 	Long: `Adds the license header to all files that need one in the current directory.
@@ -96,8 +96,8 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 }
 
 func init() {
-	Main.AddCommand(copyright)
-	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	Main.AddCommand(license)
+	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
 }
 
 // contains the folders to exclude
