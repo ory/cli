@@ -18,7 +18,7 @@ import (
 	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
-// HEADER_TEMPLATE defines the full header text for open-source files.
+// HEADER_TEMPLATE defines the full header text.
 const HEADER_TEMPLATE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
 
 // HEADER_TOKEN defines the token that identifies comments containing the license.
