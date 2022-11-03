@@ -21,7 +21,7 @@ import (
 // HEADER_TEMPLATE defines the full header text.
 const HEADER_TEMPLATE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
 
-// HEADER_TOKEN defines text to recognize existing copyright headers in files.
+// HEADER_TOKEN defines a text snippet to recognize an existing copyright header in a file.
 const HEADER_TOKEN = "Copyright ©"
 
 // file types that we don't want to add copyright headers to
