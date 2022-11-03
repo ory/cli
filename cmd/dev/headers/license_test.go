@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddOpenSourceLicenses(t *testing.T) {
+func TestAddHeaders(t *testing.T) {
 	t.Parallel()
 	dir := CreateTmpDir()
 	dir.CreateFile(".gitignore", "git-ignored.go")
