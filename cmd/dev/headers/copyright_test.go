@@ -63,7 +63,7 @@ func TestIsInFolders(t *testing.T) {
 	}
 }
 
-func TestNeedsHeader(t *testing.T) {
+func TestFileTypeNeedsCopyrightHeader(t *testing.T) {
 	tests := map[string]bool{
 		"x.cs":   true,
 		"x.dart": true,
