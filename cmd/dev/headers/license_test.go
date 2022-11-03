@@ -29,7 +29,7 @@ func TestAddLicenses(t *testing.T) {
 	dir.CreateFile("vue.vue", "<template>\n<Header />")
 	dir.CreateFile("yaml.yml", "one: two\nalpha: beta")
 	dir.CreateFile("yaml.yaml", "one: two\nalpha: beta")
-	err := AddLicenses(dir.Path, 2022, []string{})
+	err := AddHeaders(dir.Path, 2022, []string{})
 	assert.NoError(t, err)
 	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.Content("c-sharp.cs"))
 	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nint a = 1;\nint b = 2;", dir.Content("dart.dart"))
