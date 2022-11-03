@@ -95,12 +95,12 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
 		var template string
-		if headerType == proprietary {
+		if headerType == headerTypeProprietary {
 			template = HEADER_TEMPLATE_PROPRIETARY
-		} else if headerType == openSource {
+		} else if headerType == headerTypeOpenSource {
 			template = HEADER_TEMPLATE_OPEN_SOURCE
 		} else {
-			return fmt.Errorf("unknown value for type, expected one of %q or %q", openSource, proprietary)
+			return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
 		}
 		return AddHeaders(".", year, template, exclude)
 	},
@@ -109,7 +109,7 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 func init() {
 	Main.AddCommand(license)
 	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
-	license.Flags().StringVarP(&headerType, "type", "t", openSource, `type of header to create ("open-source", "proprietary")`)
+	license.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, `type of header to create ("open-source", "proprietary")`)
 }
 
 // contains the folders to exclude
@@ -120,6 +120,6 @@ var headerType string
 
 // the possible values for `headerType` variable
 const (
-	proprietary string = "proprietary"
-	openSource  string = "open-source"
+	headerTypeProprietary string = "proprietary"
+	headerTypeOpenSource  string = "open-source"
 )
