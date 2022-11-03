@@ -31,8 +31,8 @@ var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
 // AddHeaders adds or updates the Ory license header in all applicable files within the given directory.
-func AddHeaders(dir string, year int, exclude []string) error {
-	licenseText := fmt.Sprintf(HEADER_TEMPLATE_OPEN_SOURCE, year)
+func AddHeaders(dir string, year int, template string, exclude []string) error {
+	licenseText := fmt.Sprintf(template, year)
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -91,7 +91,7 @@ var copyright = &cobra.Command{
 Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
-		return AddHeaders(".", year, exclude)
+		return AddHeaders(".", year, HEADER_TEMPLATE_OPEN_SOURCE, exclude)
 	},
 }
 
