@@ -51,7 +51,7 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if !comments.SupportsFile(path) {
 			return nil
 		}
-		if !fileTypeIsLicensed(path) {
+		if !fileTypeNeedsHeader(path) {
 			return nil
 		}
 		if isInFolders(path, defaultExcludedFolders) {
@@ -79,14 +79,14 @@ func isInFolders(path string, exclude []string) bool {
 }
 
 // indicates whether this tool is configured to add a license header to the file with the given path
-func fileTypeIsLicensed(path string) bool {
+func fileTypeNeedsHeader(path string) bool {
 	return !comments.ContainsFileType(noHeadersFor, comments.GetFileType(path))
 }
 
-var license = &cobra.Command{
-	Use:   "license",
-	Short: "Adds the license header to all known files in the current directory",
-	Long: `Adds the license header to all files that need one in the current directory.
+var add = &cobra.Command{
+	Use:   "add",
+	Short: "Adds the copyright header to all files in the current directory",
+	Long: `Adds the copyright header to all files that need one in the current directory.
 
 Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -96,8 +96,8 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 }
 
 func init() {
-	Main.AddCommand(license)
-	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	Main.AddCommand(add)
+	add.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
 }
 
 // contains the folders to exclude
