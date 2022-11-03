@@ -19,7 +19,7 @@ import (
 )
 
 // LICENSE defines the full license text.
-const LICENSE_TEMPLATE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
+const LICENSE_TEMPLATE_OPEN_SOURCE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
 
 // LICENSE_TOKEN defines the token that identifies comments containing the license.
 const LICENSE_TOKEN = "Copyright ©"
@@ -30,9 +30,9 @@ var noLicenseHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 // folders that are excluded by default
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
-// AddLicenses adds or updates the Ory license header in all applicable files within the given directory.
-func AddLicenses(dir string, year int, exclude []string) error {
-	licenseText := fmt.Sprintf(LICENSE_TEMPLATE, year)
+// AddOpenSourceLicenses adds or updates the Ory license header in all applicable files within the given directory.
+func AddOpenSourceLicenses(dir string, year int, exclude []string) error {
+	licenseText := fmt.Sprintf(LICENSE_TEMPLATE_OPEN_SOURCE, year)
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -91,7 +91,7 @@ var copyright = &cobra.Command{
 Does not add the license header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
-		return AddLicenses(".", year, exclude)
+		return AddOpenSourceLicenses(".", year, exclude)
 	},
 }
 
