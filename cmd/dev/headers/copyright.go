@@ -119,7 +119,7 @@ func init() {
 // contains the folders to exclude
 var exclude []string
 
-// indicates whether to create a headerType header (
+// indicates whether to create a headerType header
 var headerType string
 
 // the possible values for `headerType` variable
