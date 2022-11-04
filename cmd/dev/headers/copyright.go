@@ -39,7 +39,7 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
-		relPath, err := filepath.Rel(dir, path)
+		relativePath, err := filepath.Rel(dir, path)
 		if err != nil {
 			return fmt.Errorf("cannot determine relative path from %q to %q", dir, path)
 		}
@@ -52,16 +52,16 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if prettierIgnore != nil && prettierIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
-		if !comments.SupportsFile(relPath) {
+		if !comments.SupportsFile(relativePath) {
 			return nil
 		}
-		if !fileTypeNeedsCopyrightHeader(relPath) {
+		if !fileTypeNeedsCopyrightHeader(relativePath) {
 			return nil
 		}
-		if isInFolders(relPath, defaultExcludedFolders) {
+		if isInFolders(relativePath, defaultExcludedFolders) {
 			return nil
 		}
-		if isInFolders(relPath, exclude) {
+		if isInFolders(relativePath, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, HEADER_TOKEN)
