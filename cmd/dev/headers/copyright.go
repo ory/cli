@@ -120,6 +120,6 @@ var headerType string
 
 // the possible values for `headerType` variable
 const (
-	headerTypeProprietary string = "proprietary"
 	headerTypeOpenSource  string = "open-source"
+	headerTypeProprietary string = "proprietary"
 )
