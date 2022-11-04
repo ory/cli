@@ -33,7 +33,7 @@ var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 // folders that are excluded by default
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
-// AddHeaders adds or updates the Ory license header in all applicable files within the given directory.
+// AddHeaders adds or updates the Ory copyright header in all applicable files within the given directory.
 func AddHeaders(dir string, year int, template string, exclude []string) error {
 	headerText := fmt.Sprintf(template, year)
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
