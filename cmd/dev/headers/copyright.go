@@ -1,7 +1,7 @@
 // Copyright © 2022 Ory Corp
 // SPDX-License-Identifier: Apache-2.0
 
-// Tool for adding a license header to all supported files.
+// Tool for adding copyright headers to files.
 
 package headers
 
@@ -24,10 +24,10 @@ const HEADER_TEMPLATE_OPEN_SOURCE = "Copyright © %d Ory Corp\nSPDX-License-Iden
 // HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
 const HEADER_TEMPLATE_PROPRIETARY = "Copyright © %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
 
-// HEADER_TOKEN defines the token that identifies comments containing the license.
+// HEADER_TOKEN defines a text snippet to recognize an existing copyright header in a file.
 const HEADER_TOKEN = "Copyright ©"
 
-// file types that we don't want to add license headers to
+// file types that we don't want to add copyright headers to
 var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 
 // folders that are excluded by default
@@ -35,7 +35,7 @@ var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
 // AddHeaders adds or updates the Ory license header in all applicable files within the given directory.
 func AddHeaders(dir string, year int, template string, exclude []string) error {
-	licenseText := fmt.Sprintf(template, year)
+	headerText := fmt.Sprintf(template, year)
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -54,7 +54,7 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 		if !comments.SupportsFile(path) {
 			return nil
 		}
-		if !fileTypeIsLicensed(path) {
+		if !fileTypeNeedsCopyrightHeader(path) {
 			return nil
 		}
 		if isInFolders(path, defaultExcludedFolders) {
@@ -67,7 +67,7 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 		if err != nil {
 			return err
 		}
-		return comments.WriteFileWithHeader(path, licenseText, contentNoHeader)
+		return comments.WriteFileWithHeader(path, headerText, contentNoHeader)
 	})
 }
 
@@ -81,17 +81,17 @@ func isInFolders(path string, exclude []string) bool {
 	return false
 }
 
-// indicates whether this tool is configured to add a license header to the file with the given path
-func fileTypeIsLicensed(path string) bool {
+// indicates whether this tool should add a copyright header to the given file
+func fileTypeNeedsCopyrightHeader(path string) bool {
 	return !comments.ContainsFileType(noHeadersFor, comments.GetFileType(path))
 }
 
-var license = &cobra.Command{
-	Use:   "license",
-	Short: "Adds the license header to all known files in the current directory",
-	Long: `Adds the license header to all files that need one in the current directory.
+var copyright = &cobra.Command{
+	Use:   "copyright",
+	Short: "Adds the copyright header to all files in the current directory",
+	Long: `Adds the copyright header to all files that need one in the current directory.
 
-Does not add the license header to files listed in .gitignore and .prettierignore.`,
+Does not add the header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
 		var template string
@@ -107,9 +107,9 @@ Does not add the license header to files listed in .gitignore and .prettierignor
 }
 
 func init() {
-	Main.AddCommand(license)
-	license.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
-	license.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, `type of header to create ("open-source", "proprietary")`)
+	Main.AddCommand(copyright)
+	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	copyright.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, `type of header to create ("open-source", "proprietary")`)
 }
 
 // contains the folders to exclude
