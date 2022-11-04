@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddLicenses(t *testing.T) {
+func TestAddHeaders(t *testing.T) {
 	t.Parallel()
 	dir := CreateTmpDir()
 	dir.CreateFile(".gitignore", "git-ignored.go")
@@ -48,7 +48,7 @@ func TestAddLicenses(t *testing.T) {
 	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yaml"))
 }
 
-func TestIsExcluded(t *testing.T) {
+func TestIsInFolders(t *testing.T) {
 	exclude := []string{"internal/httpclient", "generated/"}
 	tests := map[string]bool{
 		"foo.md":                                false,
@@ -63,7 +63,7 @@ func TestIsExcluded(t *testing.T) {
 	}
 }
 
-func TestShouldAddLicense(t *testing.T) {
+func TestFileTypeNeedsCopyrightHeader(t *testing.T) {
 	tests := map[string]bool{
 		"x.cs":   true,
 		"x.dart": true,
@@ -82,7 +82,7 @@ func TestShouldAddLicense(t *testing.T) {
 	}
 	for give, want := range tests {
 		t.Run(fmt.Sprintf("%s -> %t", give, want), func(t *testing.T) {
-			assert.Equal(t, want, fileTypeIsLicensed(give))
+			assert.Equal(t, want, fileTypeNeedsCopyrightHeader(give))
 		})
 	}
 }
