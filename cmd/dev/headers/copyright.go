@@ -39,6 +39,10 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
 		}
+		relPath, err := filepath.Rel(dir, path)
+		if err != nil {
+			return fmt.Errorf("cannot determine relative path from %q to %q", dir, path)
+		}
 		if info.IsDir() {
 			return nil
 		}
@@ -48,16 +52,16 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if prettierIgnore != nil && prettierIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
-		if !comments.SupportsFile(path) {
+		if !comments.SupportsFile(relPath) {
 			return nil
 		}
-		if !fileTypeNeedsCopyrightHeader(path) {
+		if !fileTypeNeedsCopyrightHeader(relPath) {
 			return nil
 		}
-		if isInFolders(path, defaultExcludedFolders) {
+		if isInFolders(relPath, defaultExcludedFolders) {
 			return nil
 		}
-		if isInFolders(path, exclude) {
+		if isInFolders(relPath, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, HEADER_TOKEN)
@@ -69,9 +73,9 @@ func AddHeaders(dir string, year int, exclude []string) error {
 }
 
 // isInFolders indicates whether the given path exists within the given list of folders
-func isInFolders(path string, exclude []string) bool {
-	for _, e := range exclude {
-		if strings.HasPrefix(path, e) {
+func isInFolders(path string, excludes []string) bool {
+	for _, exclude := range excludes {
+		if strings.HasPrefix(path, exclude) {
 			return true
 		}
 	}

@@ -48,7 +48,7 @@ func TestAddHeaders(t *testing.T) {
 		}
 	})
 
-	t.Run("ignores files in .gitignore", func(t *testing.T) {
+	t.Run("does not add a header to files in .gitignore", func(t *testing.T) {
 		dir := root.CreateDir("gitignored")
 		dir.CreateFile(".gitignore", "git-ignored.go")
 		dir.CreateFile("git-ignored.go", "package ignore_this_file")
@@ -57,8 +57,14 @@ func TestAddHeaders(t *testing.T) {
 		assert.Equal(t, "package ignore_this_file", dir.Content("git-ignored.go"))
 	})
 
-	t.Run("ignores files in the given `exclude` parameter", func(t *testing.T) {
-		//
+	t.Run("does not add a header to files in the given `exclude` argument", func(t *testing.T) {
+		dir1 := root.CreateDir("excluded")
+		dir2 := dir1.CreateDir("generated")
+		content := "package this_file_is_excluded"
+		dir2.CreateFile("excluded.go", content)
+		err := AddHeaders(dir1.Path, 2022, []string{"generated"})
+		assert.NoError(t, err)
+		assert.Equal(t, content, dir2.Content("excluded.go"))
 	})
 }
 
