@@ -109,7 +109,7 @@ Does not add the header to files listed in .gitignore and .prettierignore.`,
 func init() {
 	Main.AddCommand(copyright)
 	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
-	copyright.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, `type of header to create ("open-source", "proprietary")`)
+	copyright.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, fmt.Sprintf("type of header to create (%q, %q)", headerTypeOpenSource, headerTypeProprietary))
 }
 
 // contains the folders to exclude
