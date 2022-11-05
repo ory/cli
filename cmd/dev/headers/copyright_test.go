@@ -41,7 +41,7 @@ func TestAddHeaders(t *testing.T) {
 				dir := root.CreateDir(test.ext)
 				filename := fmt.Sprintf("file.%s", test.ext)
 				dir.CreateFile(filename, test.give)
-				err := AddHeaders(dir.Path, 2022, []string{})
+				err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
 				assert.NoError(t, err)
 				assert.Equal(t, test.want, dir.Content(filename))
 			})
@@ -52,7 +52,7 @@ func TestAddHeaders(t *testing.T) {
 		dir := root.CreateDir("gitignored")
 		dir.CreateFile(".gitignore", "git-ignored.go")
 		dir.CreateFile("git-ignored.go", "package ignore_this_file")
-		err := AddHeaders(dir.Path, 2022, []string{})
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
 		assert.NoError(t, err)
 		assert.Equal(t, "package ignore_this_file", dir.Content("git-ignored.go"))
 	})
@@ -62,9 +62,25 @@ func TestAddHeaders(t *testing.T) {
 		dir2 := dir1.CreateDir("generated")
 		content := "package this_file_is_excluded"
 		dir2.CreateFile("excluded.go", content)
-		err := AddHeaders(dir1.Path, 2022, []string{"generated"})
+		err := AddHeaders(dir1.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{"generated"})
 		assert.NoError(t, err)
 		assert.Equal(t, content, dir2.Content("excluded.go"))
+	})
+
+	t.Run("open-source copyright headers", func(t *testing.T) {
+		dir := root.CreateDir("open-source")
+		dir.CreateFile("file.go", "package open_source")
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\npackage open_source", dir.Content("file.go"))
+	})
+
+	t.Run("proprietary copyright headers", func(t *testing.T) {
+		dir := root.CreateDir("open-source")
+		dir.CreateFile("file.go", "package open_source")
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_PROPRIETARY, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, "// Copyright © 2022 Ory Corp\n// Proprietary and confidential.\n// Unauthorized copying of this file is prohibited.\n\npackage open_source", dir.Content("file.go"))
 	})
 }
 
