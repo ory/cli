@@ -1,3 +1,6 @@
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 // Tool for copying files inside https://github.com/ory/meta/blob/master/scripts/sync.sh
 // and adding a link to the original as a header comment.
 

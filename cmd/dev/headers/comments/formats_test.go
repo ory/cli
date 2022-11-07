@@ -1,3 +1,6 @@
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 package comments
 
 import (
@@ -26,19 +29,8 @@ func TestDoubleSlashCommentsRender(t *testing.T) {
 
 func TestDoubleSlashCommentsRemove(t *testing.T) {
 	t.Parallel()
-	give := strings.Trim(`
-// Copyright © 1997 Ory Corp Inc.
-// SPDX-License-Identifier: Apache-2.0
-
-// another comment
-
-name: test
-hello: world`, "\n")
-	want := strings.Trim(`
-// another comment
-
-name: test
-hello: world`, "\n")
+	give := "// Copyright © 1997 Ory Corp Inc.\n// SPDX-License-Identifier: Apache-2.0\n\n// another comment\n\nname: test\nhello: world"
+	want := "// another comment\n\nname: test\nhello: world"
 	have := doubleSlashComments.remove(give, "Copyright ©")
 	assert.Equal(t, want, have)
 }

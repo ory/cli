@@ -1,3 +1,6 @@
+// Copyright © 2022 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 package comments
 
 import "strings"
@@ -27,7 +30,6 @@ func (f Format) remove(text string, token string) string {
 		}
 		if inComment && !strings.HasPrefix(line, f.startToken) {
 			inComment = false
-			continue
 		}
 		if !inComment {
 			result = append(result, line)
