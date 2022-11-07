@@ -2,13 +2,13 @@
 
 This suite end-to-end tests the Ory Proxy and Ory Tunnel.
 
-## Social Sign In
+## Social sign-in
 
-To perform Social Sign In, we use a pre-configured Ory Network Project with ID
+To perform social sign-in, we use a pre-configured Ory Network project with ID
 `c3564677-7641-4bc4-a49d-e1a19acdbaf9`.
 
 The project is configured to use a localhost login & consent app which we run in
-the background during the tests. The project has a social sign in provider
+the background during the tests. The project has a social sign-in provider
 called "hydra" which uses the project's own OAuth2 service. That service has an
 OAuth2 client registered:
 

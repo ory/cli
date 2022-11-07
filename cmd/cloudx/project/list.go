@@ -13,7 +13,7 @@ import (
 func NewListProjectsCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "projects",
-		Short: "List your Ory Network projects",
+		Short: "List your Ory Network projects.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCommandHelper(cmd)
 			if err != nil {

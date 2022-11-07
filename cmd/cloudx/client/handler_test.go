@@ -53,7 +53,7 @@ func TestCommandHelper(t *testing.T) {
 			return []byte(password), nil
 		}
 		notYetLoggedIn.Stdin = bufio.NewReader(bytes.NewBufferString(
-			"y\n" + // Do you already have an Ory Console account you wish to use? [y/n]: y
+			"y\n" + // Do you want to sign in to an existing Ory Network account? [y/n]: y
 				email + "\n")) // Email fakeEmail()
 		return &notYetLoggedIn
 	}

@@ -19,7 +19,7 @@ func NewUpdateOAuth2ConfigCmd() *cobra.Command {
 			"hydra-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory OAuth2 & OpenID configuration",
+		Short: "Update the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project.",
 		Example: `$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -44,12 +44,12 @@ oauth2:
   pkce:
     enabled: true
 # ...`,
-		Long: `Updates your Ory OAuth2 & OpenID configuration. All values
+		Long: `Update the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project. All values
 of the OAuth2 service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command only updates the OAuth2 service configuration
-and also only returns the OAuth2 service configuration as a result. This command is useful when you want to
-import an Ory Keto config as well, for example.
+Compared to the ` + "`update project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect 
+configuration and returns the configuration as a result. This command is useful when you want to import configuration 
+from self-hosted Ory Hydra to Ory Network.
 
 The full configuration payload can be found at:
 

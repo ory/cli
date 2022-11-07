@@ -159,7 +159,7 @@ TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+
 	}
 
 	proxyCmd.Flags().String(CookieDomainFlag, "", "Set a dedicated cookie domain.")
-	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Network Project.")
+	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Network project.")
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
