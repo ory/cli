@@ -55,6 +55,7 @@ test: lint
 format: .bin/cli .bin/goimports node_modules
 	.bin/cli dev headers copyright --type=open-source
 	goimports -w -local github.com/ory .
+	curl https://raw.githubusercontent.com/ory/ci/kg-authors/authors/authors.sh | bash
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 
 licenses: .bin/licenses node_modules  # checks open-source licenses
