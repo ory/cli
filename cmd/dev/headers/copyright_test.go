@@ -11,41 +11,77 @@ import (
 )
 
 func TestAddHeaders(t *testing.T) {
-	t.Parallel()
-	dir := CreateTmpDir()
-	dir.CreateFile(".gitignore", "git-ignored.go")
-	dir.CreateFile("c-sharp.cs", "using System;\n\nnamespace Foo.Bar {\n")
-	dir.CreateFile("dart.dart", "int a = 1;\nint b = 2;")
-	dir.CreateFile("golang.go", "package test\n\nimport foo\n")
-	dir.CreateFile("java.java", "import java.io.File;\n\nFile myFile = new File();")
-	dir.CreateFile("javascript.js", "const a = 1\nconst b = 2\n")
-	dir.CreateFile("git-ignored.go", "package ignore_this_file")
-	dir.CreateFile("markdown.md", "# hello world")
-	dir.CreateFile("php.php", "$a = 1;\n$b = 2;\n")
-	dir.CreateFile("python.py", "a = 1\nb = 2\n")
-	dir.CreateFile("ruby.rb", "a = 1\nb = 2\n")
-	dir.CreateFile("rust.rs", "let a = 1;\nlet mut b = 2;\n")
-	dir.CreateFile("typescript.ts", "const a = 1\nconst b = 2\n")
-	dir.CreateFile("vue.vue", "<template>\n<Header />")
-	dir.CreateFile("yaml.yml", "one: two\nalpha: beta")
-	dir.CreateFile("yaml.yaml", "one: two\nalpha: beta")
-	err := AddHeaders(dir.Path, 2022, []string{})
-	assert.NoError(t, err)
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nusing System;\n\nnamespace Foo.Bar {\n", dir.Content("c-sharp.cs"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nint a = 1;\nint b = 2;", dir.Content("dart.dart"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\npackage test\n\nimport foo\n", dir.Content("golang.go"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nimport java.io.File;\n\nFile myFile = new File();", dir.Content("java.java"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nconst a = 1\nconst b = 2\n", dir.Content("javascript.js"))
-	assert.Equal(t, "package ignore_this_file", dir.Content("git-ignored.go"))
-	assert.Equal(t, "# hello world", dir.Content("markdown.md"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\n$a = 1;\n$b = 2;\n", dir.Content("php.php"))
-	assert.Equal(t, "# Copyright © 2022 Ory Corp\n# SPDX-License-Identifier: Apache-2.0\n\na = 1\nb = 2\n", dir.Content("python.py"))
-	assert.Equal(t, "# Copyright © 2022 Ory Corp\n# SPDX-License-Identifier: Apache-2.0\n\na = 1\nb = 2\n", dir.Content("ruby.rb"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nlet a = 1;\nlet mut b = 2;\n", dir.Content("rust.rs"))
-	assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nconst a = 1\nconst b = 2\n", dir.Content("typescript.ts"))
-	assert.Equal(t, "<!-- Copyright © 2022 Ory Corp -->\n<!-- SPDX-License-Identifier: Apache-2.0 -->\n\n<template>\n<Header />", dir.Content("vue.vue"))
-	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yml"))
-	assert.Equal(t, "one: two\nalpha: beta", dir.Content("yaml.yaml"))
+	root := CreateTmpDir()
+	defer root.Delete()
+
+	t.Run("adds the given comment in a format matching the file type", func(t *testing.T) {
+		type test struct {
+			ext  string // extension of the file type to test
+			give string // file content before `AddHeaders` runs
+			want string // expected file content after `AddHeaders` runs
+		}
+		tests := []test{
+			{ext: "cs", give: "using System;\n\nnamespace Foo.Bar {\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nusing System;\n\nnamespace Foo.Bar {\n"},
+			{ext: "dart", give: "int a = 1;\nint b = 2;", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nint a = 1;\nint b = 2;"},
+			{ext: "go", give: "package test\n\nimport foo\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\npackage test\n\nimport foo\n"},
+			{ext: "java", give: "import java.io.File;\n\nFile myFile = new File();", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nimport java.io.File;\n\nFile myFile = new File();"},
+			{ext: "js", give: "const a = 1\nconst b = 2\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nconst a = 1\nconst b = 2\n"},
+			{ext: "md", give: "# hello world", want: "# hello world"},
+			{ext: "php", give: "$a = 1;\n$b = 2;\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\n$a = 1;\n$b = 2;\n"},
+			{ext: "py", give: "a = 1\nb = 2\n", want: "# Copyright © 2022 Ory Corp\n# SPDX-License-Identifier: Apache-2.0\n\na = 1\nb = 2\n"},
+			{ext: "rb", give: "a = 1\nb = 2\n", want: "# Copyright © 2022 Ory Corp\n# SPDX-License-Identifier: Apache-2.0\n\na = 1\nb = 2\n"},
+			{ext: "rs", give: "let a = 1;\nlet mut b = 2;\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nlet a = 1;\nlet mut b = 2;\n"},
+			{ext: "ts", give: "const a = 1\nconst b = 2\n", want: "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\nconst a = 1\nconst b = 2\n"},
+			{ext: "vue", give: "<template>\n<Header />", want: "<!-- Copyright © 2022 Ory Corp -->\n<!-- SPDX-License-Identifier: Apache-2.0 -->\n\n<template>\n<Header />"},
+			{ext: "yml", give: "one: two\nalpha: beta", want: "one: two\nalpha: beta"},
+			{ext: "yaml", give: "one: two\nalpha: beta", want: "one: two\nalpha: beta"},
+		}
+		for _, test := range tests {
+			t.Run(fmt.Sprintf("%q file type", test.ext), func(t *testing.T) {
+				dir := root.CreateDir(test.ext)
+				filename := fmt.Sprintf("file.%s", test.ext)
+				dir.CreateFile(filename, test.give)
+				err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+				assert.NoError(t, err)
+				assert.Equal(t, test.want, dir.Content(filename))
+			})
+		}
+	})
+
+	t.Run("does not add a header to files in .gitignore", func(t *testing.T) {
+		dir := root.CreateDir("gitignored")
+		dir.CreateFile(".gitignore", "git-ignored.go")
+		dir.CreateFile("git-ignored.go", "package ignore_this_file")
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, "package ignore_this_file", dir.Content("git-ignored.go"))
+	})
+
+	t.Run("does not add a header to files in the given `exclude` argument", func(t *testing.T) {
+		dir1 := root.CreateDir("excluded")
+		dir2 := dir1.CreateDir("generated")
+		content := "package this_file_is_excluded"
+		dir2.CreateFile("excluded.go", content)
+		err := AddHeaders(dir1.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{"generated"})
+		assert.NoError(t, err)
+		assert.Equal(t, content, dir2.Content("excluded.go"))
+	})
+
+	t.Run("open-source copyright headers", func(t *testing.T) {
+		dir := root.CreateDir("open-source")
+		dir.CreateFile("file.go", "package open_source")
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, "// Copyright © 2022 Ory Corp\n// SPDX-License-Identifier: Apache-2.0\n\npackage open_source", dir.Content("file.go"))
+	})
+
+	t.Run("proprietary copyright headers", func(t *testing.T) {
+		dir := root.CreateDir("open-source")
+		dir.CreateFile("file.go", "package open_source")
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_PROPRIETARY, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, "// Copyright © 2022 Ory Corp\n// Proprietary and confidential.\n// Unauthorized copying of this file is prohibited.\n\npackage open_source", dir.Content("file.go"))
+	})
 }
 
 func TestIsInFolders(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 func NewAuthCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
-		Short: "Create an or sign into your Ory Network account",
+		Short: "Create a new Ory Network account or sign in to an existing account.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCommandHelper(cmd)
 			if err != nil {

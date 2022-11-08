@@ -18,8 +18,11 @@ import (
 	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
-// HEADER_TEMPLATE defines the full header text.
-const HEADER_TEMPLATE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
+// HEADER_TEMPLATE_OPEN_SOURCE defines the full header text for open-source files.
+const HEADER_TEMPLATE_OPEN_SOURCE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
+
+// HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
+const HEADER_TEMPLATE_PROPRIETARY = "Copyright © %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
 
 // HEADER_TOKEN defines a text snippet to recognize an existing copyright header in a file.
 const HEADER_TOKEN = "Copyright ©"
@@ -31,13 +34,17 @@ var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
 // AddHeaders adds or updates the Ory copyright header in all applicable files within the given directory.
-func AddHeaders(dir string, year int, exclude []string) error {
-	headerText := fmt.Sprintf(HEADER_TEMPLATE, year)
+func AddHeaders(dir string, year int, template string, exclude []string) error {
+	headerText := fmt.Sprintf(template, year)
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return fmt.Errorf("cannot read directory %q: %w", path, err)
+		}
+		relativePath, err := filepath.Rel(dir, path)
+		if err != nil {
+			return fmt.Errorf("cannot determine relative path from %q to %q", dir, path)
 		}
 		if info.IsDir() {
 			return nil
@@ -48,16 +55,16 @@ func AddHeaders(dir string, year int, exclude []string) error {
 		if prettierIgnore != nil && prettierIgnore.MatchesPath(info.Name()) {
 			return nil
 		}
-		if !comments.SupportsFile(path) {
+		if !comments.SupportsFile(relativePath) {
 			return nil
 		}
-		if !fileTypeNeedsCopyrightHeader(path) {
+		if !fileTypeNeedsCopyrightHeader(relativePath) {
 			return nil
 		}
-		if isInFolders(path, defaultExcludedFolders) {
+		if isInFolders(relativePath, defaultExcludedFolders) {
 			return nil
 		}
-		if isInFolders(path, exclude) {
+		if isInFolders(relativePath, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, HEADER_TOKEN)
@@ -69,9 +76,9 @@ func AddHeaders(dir string, year int, exclude []string) error {
 }
 
 // isInFolders indicates whether the given path exists within the given list of folders
-func isInFolders(path string, exclude []string) bool {
-	for _, e := range exclude {
-		if strings.HasPrefix(path, e) {
+func isInFolders(path string, excludes []string) bool {
+	for _, exclude := range excludes {
+		if strings.HasPrefix(path, exclude) {
 			return true
 		}
 	}
@@ -91,14 +98,32 @@ var copyright = &cobra.Command{
 Does not add the header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
-		return AddHeaders(".", year, exclude)
+		var template string
+		if headerType == headerTypeProprietary {
+			template = HEADER_TEMPLATE_PROPRIETARY
+		} else if headerType == headerTypeOpenSource {
+			template = HEADER_TEMPLATE_OPEN_SOURCE
+		} else {
+			return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
+		}
+		return AddHeaders(".", year, template, exclude)
 	},
 }
 
 func init() {
 	Main.AddCommand(copyright)
 	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	copyright.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, fmt.Sprintf("type of header to create (%q, %q)", headerTypeOpenSource, headerTypeProprietary))
 }
 
 // contains the folders to exclude
 var exclude []string
+
+// indicates whether to create a headerType header
+var headerType string
+
+// the possible values for `headerType` variable
+const (
+	headerTypeOpenSource  string = "open-source"
+	headerTypeProprietary string = "proprietary"
+)

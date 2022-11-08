@@ -18,7 +18,7 @@ func NewUpdatePermissionConfigCmd() *cobra.Command {
 			"keto-config",
 		},
 		Args:  cobra.ExactArgs(1),
-		Short: "Update Ory Permissions configuration",
+		Short: "Update Ory Permissions configuration of the specified Ory Network project.",
 		Example: `$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
@@ -43,12 +43,12 @@ $ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 namespaces:
   - name: files
     # ...`,
-		Long: `Updates your Ory Permissions configuration. All values
+		Long: `Update Ory Permissions configuration of the specified Ory Network project. All values
 of the permission service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command only updates the permission service configuration
-and also only returns the permission service configuration as a result. This command is useful when you want to
-import an Ory Keto config as well, for example.
+Compared to the ` + "`update project`" + ` command, this command updates only the Ory Permissions configuration
+and returns the configuration as a result. This command is useful when you want to import configuration from 
+self-hosted Ory Keto to Ory Network.
 
 The full configuration payload can be found at:
 

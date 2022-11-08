@@ -223,9 +223,9 @@ An example payload of the JSON Web Token is:
 
 	proxyCmd.Flags().Bool(OpenFlag, false, "Open the browser when the proxy starts.")
 	proxyCmd.Flags().String(CookieDomainFlag, "", "Set a dedicated cookie domain.")
-	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Network Project.")
+	proxyCmd.Flags().StringP(ProjectFlag, ProjectFlag[:0], "", "The slug of your Ory Network project.")
 	proxyCmd.Flags().Int(PortFlag, portFromEnv(), "The port the proxy should listen on.")
-	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Kratos Session. Useful if you need fast start up times of the Ory Proxy.")
+	proxyCmd.Flags().Bool(WithoutJWTFlag, false, "Do not create a JWT from the Ory Session. Useful if you need fast start up times of the Ory Proxy.")
 	proxyCmd.Flags().String(DefaultRedirectURLFlag, "", "Set the URL to redirect to per default after e.g. login or account creation.")
 	proxyCmd.Flags().StringSlice(CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")

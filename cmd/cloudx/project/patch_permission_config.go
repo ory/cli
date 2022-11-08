@@ -15,7 +15,7 @@ func NewPatchKetoConfigCmd() *cobra.Command {
 		Use:     "permission-config <project-id>",
 		Aliases: []string{"pc", "keto-config"},
 		Args:    cobra.ExactArgs(1),
-		Short:   "Patch an Ory Permissions config",
+		Short:   "Patch the Ory Permissions configuration of the specified Ory Network project.",
 		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/namespaces=[{"name":"files", "id": 2}]' \
 	--replace '/namespaces/2/name="directories"' \
@@ -35,12 +35,12 @@ func NewPatchKetoConfigCmd() *cobra.Command {
     // ...
   ]
 }`,
-		Long: `Patches an Ory Permissions configuration. Only values
+		Long: `Patch the Ory Permissions configuration of the specified Ory Network project. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command only updates the permission service configuration
-and also only returns the permission service configuration as a result. This command is useful when you want to
-import an Ory Keto config as well, for example. This allows for shorter paths when specifying the flags
+Compared to the ` + "`patch project`" + ` command, this command updates only the Ory Permissions configuration
+and returns the configuration as a result. This command is useful when you want to import configuration from 
+self-hosted Ory Keto to Ory Network. Using this command allows for shorter paths when specifying the flags:
 
 	ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 		--replace '/limit/max_read_depth=5'
