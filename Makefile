@@ -53,7 +53,7 @@ test: lint
 # Formats the code
 .PHONY: format
 format: .bin/cli .bin/goimports node_modules
-	.bin/cli dev headers license
+	.bin/cli dev headers copyright --type=open-source
 	goimports -w -local github.com/ory .
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 
