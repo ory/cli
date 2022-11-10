@@ -61,10 +61,10 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 		if !fileTypeNeedsCopyrightHeader(relativePath) {
 			return nil
 		}
-		if isInFolders(relativePath, defaultExcludedFolders) {
+		if pathContainsFolders(path, defaultExcludedFolders) {
 			return nil
 		}
-		if isInFolders(relativePath, exclude) {
+		if pathContainsFolders(path, exclude) {
 			return nil
 		}
 		contentNoHeader, err := comments.FileContentWithoutHeader(path, HEADER_TOKEN)
@@ -76,9 +76,9 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 }
 
 // isInFolders indicates whether the given path exists within the given list of folders
-func isInFolders(path string, excludes []string) bool {
+func pathContainsFolders(path string, excludes []string) bool {
 	for _, exclude := range excludes {
-		if strings.HasPrefix(path, exclude) {
+		if strings.Contains(path, exclude) {
 			return true
 		}
 	}

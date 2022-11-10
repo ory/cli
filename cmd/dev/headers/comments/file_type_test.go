@@ -42,4 +42,7 @@ func TestSupports(t *testing.T) {
 	assert.True(t, comments.SupportsFile("foo.ts"))
 	assert.True(t, comments.SupportsFile("foo.md"))
 	assert.False(t, comments.SupportsFile("foo.xxx"))
+	assert.False(t, comments.SupportsFile("nodemon"))
+	assert.False(t, comments.SupportsFile("./nodemon"))
+	assert.False(t, comments.SupportsFile(".bin/nodemon"))
 }

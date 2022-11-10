@@ -57,6 +57,15 @@ func TestAddHeaders(t *testing.T) {
 		assert.Equal(t, "package ignore_this_file", dir.Content("git-ignored.go"))
 	})
 
+	t.Run("does not add a header to files in node_modules", func(t *testing.T) {
+		dir := root.CreateDir("node_modules").CreateDir(".bin")
+		content := "#!/usr/bin/env bash\necho hello"
+		dir.CreateFile("nodemon.ts", content)
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, content, dir.Content("nodemon.ts"))
+	})
+
 	t.Run("does not add a header to files in the given `exclude` argument", func(t *testing.T) {
 		dir1 := root.CreateDir("excluded")
 		dir2 := dir1.CreateDir("generated")
@@ -84,7 +93,7 @@ func TestAddHeaders(t *testing.T) {
 	})
 }
 
-func TestIsInFolders(t *testing.T) {
+func TestPathContainsFolders(t *testing.T) {
 	exclude := []string{"internal/httpclient", "generated/"}
 	tests := map[string]bool{
 		"foo.md":                                false,
@@ -95,7 +104,7 @@ func TestIsInFolders(t *testing.T) {
 		"generated/foo/bar/README.md":           true,
 	}
 	for give, want := range tests {
-		assert.Equal(t, want, isInFolders(give, exclude), "%q -> %t", give, want)
+		assert.Equal(t, want, pathContainsFolders(give, exclude), "%q -> %t", give, want)
 	}
 }
 
