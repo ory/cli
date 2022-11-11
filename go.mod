@@ -6,11 +6,9 @@ replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
-	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221025084544-5e50d3cc8604
+	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
-	// github.com/ory/kratos/internal/httpclient
-	github.com/ory/kratos-client-go => github.com/ory/kratos/internal/httpclient v0.0.0-20221004123324-f002649d4565
 	google.golang.org/grpc => google.golang.org/grpc v1.44.0
 )
 
@@ -30,17 +28,16 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/ory/client-go v0.2.0-alpha.39
+	github.com/ory/client-go v0.2.0-alpha.60
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.3
 	github.com/ory/herodot v0.9.13
 	github.com/ory/hydra v1.11.11-0.20221025084653-ca724399bd25
-	github.com/ory/hydra-client-go v1.11.8
+	github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/keto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
-	github.com/ory/kratos v0.10.2-0.20221004123324-f002649d4565
-	github.com/ory/kratos-client-go v0.9.0-alpha.3
-	github.com/ory/x v0.0.507
+	github.com/ory/kratos v0.10.2-0.20221108163448-d3d148b3a589
+	github.com/ory/x v0.0.511-0.20221108105728-3fed9bc99daf
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
@@ -62,7 +59,6 @@ require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.39.0 // indirect
-	github.com/DataDog/datadog-go v4.8.2+incompatible // indirect
 	github.com/DataDog/datadog-go/v5 v5.1.1 // indirect
 	github.com/DataDog/sketches-go v1.4.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -120,7 +116,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fullstorydev/grpcurl v1.8.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -250,7 +245,6 @@ require (
 	github.com/sawadashota/encrypta v0.0.2 // indirect
 	github.com/seatgeek/logrus-gelf-formatter v0.0.0-20210414080842-5b05eb8ff761 // indirect
 	github.com/segmentio/backo-go v1.0.1 // indirect
-	github.com/segmentio/objconv v1.0.1 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect

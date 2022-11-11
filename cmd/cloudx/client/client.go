@@ -19,8 +19,6 @@ import (
 	flag "github.com/spf13/pflag"
 
 	hydra "github.com/ory/hydra-client-go"
-	kratos "github.com/ory/kratos-client-go"
-
 	hydracli "github.com/ory/hydra/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
@@ -92,10 +90,12 @@ func ContextWithClient(ctx context.Context) context.Context {
 		if err != nil {
 			return nil, nil, err
 		}
+
 		conf := hydra.NewConfiguration()
 		conf.HTTPClient = &http.Client{
 			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
-			Timeout:   time.Second * 10}
+			Timeout:   time.Second * 10,
+		}
 
 		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
 		if err != nil {
@@ -106,19 +106,23 @@ func ContextWithClient(ctx context.Context) context.Context {
 		return hydra.NewAPIClient(conf), consoleURL, nil
 	})
 
-	ctx = context.WithValue(ctx, kratoscli.ClientContextKey, func(cmd *cobra.Command) (*kratos.APIClient, error) {
+	ctx = context.WithValue(ctx, kratoscli.ClientContextKey, func(cmd *cobra.Command) (*kratoscli.ClientContext, error) {
 		c, ac, p, err := Client(cmd)
 		if err != nil {
 			return nil, err
 		}
-		conf := kratos.NewConfiguration()
-		conf.HTTPClient = &http.Client{
-			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
-			Timeout:   time.Second * 10}
 
 		// We use the cloud console API because it works with ory cloud session tokens.
-		conf.Servers = kratos.ServerConfigurations{{URL: makeCloudConsoleURL(p.Slug + ".projects")}}
-		return kratos.NewAPIClient(conf), nil
+		return &kratoscli.ClientContext{
+			Endpoint: makeCloudConsoleURL(p.Slug + ".projects"),
+			HTTPClient: &http.Client{
+				Transport: &bearerTokenTransporter{
+					RoundTripper: c.StandardClient().Transport,
+					bearerToken:  ac.SessionToken,
+				},
+				Timeout: time.Second * 10,
+			},
+		}, nil
 	})
 	return ctx
 }
