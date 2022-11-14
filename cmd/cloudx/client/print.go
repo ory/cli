@@ -16,7 +16,7 @@ func (h *CommandHelper) PrintUpdateProjectWarnings(p *client.SuccessfulProjectUp
 		for _, warning := range p.Warnings {
 			_, _ = fmt.Fprintf(h.VerboseErrWriter, "- %s\n", *warning.Message)
 		}
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "It is save to ignore these warnings unless your intention was to set these keys.")
+		_, _ = fmt.Fprintln(h.VerboseErrWriter, "It is safe to ignore these warnings unless your intention was to set these keys.")
 	}
 
 	_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nProject updated successfully!\n")
