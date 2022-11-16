@@ -65,7 +65,7 @@ In case where the release pipeline failed and you re-create another release wher
 
 		gitCleanTags()
 		if len(args) == 2 {
-			pkg.Check(pkg.NewCommand("git", "checkout", "-b", randx.MustString(8, randx.AlphaLowerNum), args[2]).Run())
+			pkg.Check(pkg.NewCommand("git", "checkout", "-b", randx.MustString(8, randx.AlphaLowerNum), args[1]).Run())
 		}
 
 		var latestTag string
