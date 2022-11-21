@@ -135,7 +135,7 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}
 
 	pwReader := func() ([]byte, error) {
-		return term.ReadPassword(int(syscall.Stdin))
+		return term.ReadPassword(syscall.Stdin)
 	}
 	if p, ok := cmd.Context().Value(PasswordReader{}).(passwordReader); ok {
 		pwReader = p

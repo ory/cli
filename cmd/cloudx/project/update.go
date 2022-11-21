@@ -5,6 +5,7 @@ package project
 
 import (
 	"encoding/json"
+	"io"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -96,14 +97,19 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 			return err
 		}
 
+		var configs []json.RawMessage
 		files := flagx.MustGetStringSlice(cmd, "file")
 		if len(files) == 0 {
-			return errors.New("--file must be set")
-		}
-
-		configs, err := client.ReadConfigFiles(files)
-		if err != nil {
-			return err
+			content, err := io.ReadAll(cmd.InOrStdin())
+			if err != nil {
+				return errors.New("error reading from STDIN: use --file flag to read from a file instead: " + err.Error())
+			}
+			configs = []json.RawMessage{content}
+		} else {
+			configs, err = client.ReadConfigFiles(files)
+			if err != nil {
+				return err
+			}
 		}
 
 		configs, err = filePrefixer(configs)
