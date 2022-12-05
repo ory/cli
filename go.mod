@@ -37,7 +37,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.7
 	github.com/ory/keto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	github.com/ory/kratos v0.10.2-0.20221108163448-d3d148b3a589
-	github.com/ory/x v0.0.511-0.20221108105728-3fed9bc99daf
+	github.com/ory/x v0.0.520
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
