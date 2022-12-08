@@ -6,6 +6,7 @@ package comments
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 // FileContentWithoutHeader provides the content of the file with the given path,
@@ -23,6 +24,17 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	return format.remove(text, token), nil
 }
 
+func StripPrefixes(fileContent string, prefixes []string) (string, string) {
+	prefix := ""
+	for _, p := range prefixes {
+		if len(p) > len(prefix) && strings.HasPrefix(fileContent, p) {
+			prefix = p
+		}
+	}
+
+	return prefix, strings.TrimPrefix(fileContent, prefix)
+}
+
 // WriteFileWithHeader creates a file at the given path containing the given file content (header + body).
 // The header argument should contain only text. This method will transform it into the correct comment format.
 func WriteFileWithHeader(path, header, body string) error {
@@ -36,7 +48,15 @@ func WriteFileWithHeader(path, header, body string) error {
 		return os.WriteFile(path, []byte(body), 0744)
 	}
 	headerComment := format.renderBlock(header)
-	content := fmt.Sprintf("%s\n\n%s", headerComment, body)
+	bom, orig := StripPrefixes(body, []string{
+		// see: https://en.wikipedia.org/wiki/Byte_order_mark#Byte_order_marks_by_encoding
+		"\xef\xbb\xbf",   // UTF-8
+		"\ufffe",         // UTF-16 (LE)
+		"\ufeff",         // UTF-16 (BE)
+		"\ufffe\x00\x00", // UTF-32 (LE)
+		"\x00\x00\ufeff", // UTF-32 (BE)
+	})
+	content := fmt.Sprintf("%s%s\n\n%s", bom, headerComment, orig)
 	count, err := file.WriteString(content)
 	if err != nil {
 		return fmt.Errorf("cannot write into file %q: %w", path, err)
