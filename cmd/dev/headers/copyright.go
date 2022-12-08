@@ -49,10 +49,10 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 		if info.IsDir() {
 			return nil
 		}
-		if gitIgnore != nil && gitIgnore.MatchesPath(info.Name()) {
+		if gitIgnore != nil && gitIgnore.MatchesPath(relativePath) {
 			return nil
 		}
-		if prettierIgnore != nil && prettierIgnore.MatchesPath(info.Name()) {
+		if prettierIgnore != nil && prettierIgnore.MatchesPath(relativePath) {
 			return nil
 		}
 		if !comments.SupportsFile(relativePath) {
