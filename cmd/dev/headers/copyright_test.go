@@ -48,6 +48,38 @@ func TestAddHeaders(t *testing.T) {
 		}
 	})
 
+	t.Run("does not add a header to files in .prettierignore", func(t *testing.T) {
+		dir := root.CreateDir("prettierignored")
+		dir.CreateFile(".prettierignore", "prettier-ignored.go")
+		content := "package ignore_this_file"
+		dir.CreateFile("prettier-ignored.go", content)
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, content, dir.Content("prettier-ignored.go"))
+	})
+
+	t.Run("does not add a header to files ignored by path in .prettierignore", func(t *testing.T) {
+		dir := root.CreateDir("prettierignored")
+		subdir := dir.CreateDir("subdir")
+		dir.CreateFile(".prettierignore", "subdir/")
+		content := "package ignore_this_file"
+		subdir.CreateFile("prettier-ignored.go", content)
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, content, subdir.Content("prettier-ignored.go"))
+	})
+
+	t.Run("does not add a header to files ignored by path in .gitignore", func(t *testing.T) {
+		dir := root.CreateDir("gitignored")
+		subdir := dir.CreateDir("subdir")
+		dir.CreateFile(".gitignore", "subdir/")
+		content := "package ignore_this_file"
+		subdir.CreateFile("git-ignored.go", content)
+		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_OPEN_SOURCE, []string{})
+		assert.NoError(t, err)
+		assert.Equal(t, content, subdir.Content("git-ignored.go"))
+	})
+
 	t.Run("does not add a header to files in .gitignore", func(t *testing.T) {
 		dir := root.CreateDir("gitignored")
 		dir.CreateFile(".gitignore", "git-ignored.go")
@@ -90,6 +122,30 @@ func TestAddHeaders(t *testing.T) {
 		err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_PROPRIETARY, []string{})
 		assert.NoError(t, err)
 		assert.Equal(t, "// Copyright © 2022 Ory Corp\n// Proprietary and confidential.\n// Unauthorized copying of this file is prohibited.\n\npackage open_source", dir.Content("file.go"))
+	})
+
+	t.Run("correctly handles files with BOM", func(t *testing.T) {
+		type test struct {
+			bom  string
+			name string
+		}
+		for _, test := range []test{
+			{bom: "\xef\xbb\xbf", name: "UTF-8"},
+			{bom: "\ufffe", name: "UTF-16 (LE)"},
+			{bom: "\ufeff", name: "UTF-16 (BE)"},
+			{bom: "\ufffe\x00\x00", name: "UTF-32 (LE)"},
+			{bom: "\x00\x00\ufeff", name: "UTF-32 (BE)"},
+		} {
+			t.Run(fmt.Sprintf("%s BOM", test.name), func(t *testing.T) {
+				dir := root.CreateDir("bom-test")
+
+				content := "package open_source"
+				dir.CreateFile("file.go", fmt.Sprintf("%s%s", test.bom, content))
+				err := AddHeaders(dir.Path, 2022, HEADER_TEMPLATE_PROPRIETARY, []string{})
+				assert.NoError(t, err)
+				assert.Equal(t, fmt.Sprintf("%s// Copyright © 2022 Ory Corp\n// Proprietary and confidential.\n// Unauthorized copying of this file is prohibited.\n\n%s", test.bom, content), dir.Content("file.go"))
+			})
+		}
 	})
 }
 
