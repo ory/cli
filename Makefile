@@ -50,6 +50,10 @@ install:
 test: lint
 	go test -p 1 -tags sqlite -count=1 -failfast ./...
 
+.PHONY: refresh
+refresh:
+	UPDATE_SNAPSHOTS=true go test -tags sqlite,json1,refresh ./...
+
 # Formats the code
 .PHONY: format
 format: .bin/cli .bin/goimports node_modules

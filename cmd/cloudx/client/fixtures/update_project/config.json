@@ -42,6 +42,18 @@
                   "body": {}
                 }
               }
+            },
+            "verification_code": {
+              "invalid": {
+                "email": {
+                  "body": {}
+                }
+              },
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
             }
           }
         },
@@ -155,7 +167,8 @@
               },
               "enabled": true,
               "lifespan": "30m0s",
-              "ui_url": "/ui/custom-verification"
+              "ui_url": "/ui/custom-verification",
+              "use": "code"
             }
           },
           "methods": {
