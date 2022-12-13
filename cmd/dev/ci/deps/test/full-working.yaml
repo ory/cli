@@ -3,6 +3,7 @@ url: https://storage.googleapis.com/kubernetes-release/release/{{.Version}}/bin/
 mappings:
   architecture:
     amd64: x64
+    arm64: aarch64
   os:
     darwin: mac
     linux: unix
