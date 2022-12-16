@@ -24,7 +24,7 @@ func TestValidFile(t *testing.T) {
 	comp1 := Component{}
 	path := "test/full-working.yaml"
 	err := comp1.getComponentFromConfig(path)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, FullWorking, comp1.String())
 }
 
@@ -32,7 +32,6 @@ func TestInvalidFile(t *testing.T) {
 	comp1 := Component{}
 	err := comp1.getComponentFromConfig("test/invalidFile.yaml")
 	var ifError InvalidFileError
-	assert.NotNil(t, err, "Excepted Error!")
 	assert.ErrorAs(t, err, &ifError, "Wrong Error Type")
 }
 
@@ -41,7 +40,6 @@ func TestFileNotFound(t *testing.T) {
 	comp1 := Component{}
 	err := comp1.getComponentFromConfig(path)
 	var fnfError FileNotFoundError
-	assert.NotNil(t, err, "Excepted Error!")
 	assert.ErrorAs(t, err, &fnfError, "Wrong Error Type")
 }
 
@@ -51,7 +49,7 @@ func TestDefaultURL(t *testing.T) {
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/defaultURL.yaml")
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.Nil(t, err, "Expected no Error!")
+	assert.NoError(t, err)
 	assert.Equal(t, defaultURL, url)
 }
 
@@ -63,11 +61,11 @@ func TestCustomArchURL(t *testing.T) {
 	_ = comp1.getComponentFromConfig("test/customArchURL.yaml")
 
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.Nil(t, err, "Expected no Error!")
+	assert.NoError(t, err)
 	assert.Equal(t, customArchURL1, url)
 
 	url, err = comp1.getRenderedURL("darwin", "arm64")
-	assert.Nil(t, err, "Expected no Error!")
+	assert.NoError(t, err)
 	assert.Equal(t, customArchURL2, url)
 }
 
@@ -78,9 +76,9 @@ func TestCustomOSURL(t *testing.T) {
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/customOSURL.yaml")
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.Nil(t, err, "Expected no Error!")
+	assert.NoError(t, err)
 	assert.Equal(t, customOSURL1, url)
 	url, err = comp1.getRenderedURL("linux", "amd64")
-	assert.Nil(t, err, "Expected no Error!")
+	assert.NoError(t, err)
 	assert.Equal(t, customOSURL2, url)
 }
