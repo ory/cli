@@ -60,6 +60,9 @@
     }
   },
   "oauth2_provider": {},
+  "feature_flags": {
+    "cacheable_sessions": false
+  },
   "identity": {
     "default_schema_id": "from-disk",
     "schemas": [
