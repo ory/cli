@@ -14,6 +14,7 @@ url: https://storage.googleapis.com/kubernetes-release/release/{{.Version}}/bin/
 mappings:
   architecture:
     amd64: x64
+    arm64: aarch64
   os:
     darwin: mac
     linux: unix
@@ -55,13 +56,19 @@ func TestDefaultURL(t *testing.T) {
 }
 
 func TestCustomArchURL(t *testing.T) {
-	var customArchURL = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/x64/kubectl`
+	var customArchURL1 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/x64/kubectl`
+	var customArchURL2 = `https://storage.googleapis.com/kubernetes-release/release/v1.20.2/bin/darwin/aarch64/kubectl`
 
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/customArchURL.yaml")
+
 	url, err := comp1.getRenderedURL("darwin", "amd64")
 	assert.Nil(t, err, "Expected no Error!")
-	assert.Equal(t, customArchURL, url)
+	assert.Equal(t, customArchURL1, url)
+
+	url, err = comp1.getRenderedURL("darwin", "arm64")
+	assert.Nil(t, err, "Expected no Error!")
+	assert.Equal(t, customArchURL2, url)
 }
 
 func TestCustomOSURL(t *testing.T) {

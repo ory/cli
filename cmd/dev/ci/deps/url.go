@@ -61,6 +61,7 @@ type Mappings struct {
 
 type ArchitectureMapping struct {
 	AMD64 string `yaml:"amd64"`
+	ARM64 string `yaml:"arm64"`
 }
 
 type OsMapping struct {
@@ -93,15 +94,18 @@ func (c *Component) getComponentFromConfig(configFilePath string) error {
 
 func (c *Component) getRenderedURL(osString string, archString string) (string, error) {
 	c.Os = osString
-	if osString == "darwin" && c.Mappings.OsMapping.Darwin != "" && osString != c.Mappings.OsMapping.Darwin {
+	if osString == "darwin" && c.Mappings.OsMapping.Darwin != "" {
 		c.Os = c.Mappings.OsMapping.Darwin
 	}
-	if osString == "linux" && c.Mappings.OsMapping.Linux != "" && osString != c.Mappings.OsMapping.Linux {
+	if osString == "linux" && c.Mappings.OsMapping.Linux != "" {
 		c.Os = c.Mappings.OsMapping.Linux
 	}
 	c.Architecture = archString
-	if archString == "amd64" && c.Mappings.ArchitectureMapping.AMD64 != "" && archString != c.Mappings.ArchitectureMapping.AMD64 {
+	if archString == "amd64" && c.Mappings.ArchitectureMapping.AMD64 != "" {
 		c.Architecture = c.Mappings.ArchitectureMapping.AMD64
+	}
+	if archString == "arm64" && c.Mappings.ArchitectureMapping.ARM64 != "" {
+		c.Architecture = c.Mappings.ArchitectureMapping.ARM64
 	}
 	t := template.Must(template.New("url").Parse(c.Url))
 	buf := new(bytes.Buffer)
