@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const FullWorking = `version: v1.20.2
@@ -24,7 +25,7 @@ func TestValidFile(t *testing.T) {
 	comp1 := Component{}
 	path := "test/full-working.yaml"
 	err := comp1.getComponentFromConfig(path)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, FullWorking, comp1.String())
 }
 
@@ -49,7 +50,7 @@ func TestDefaultURL(t *testing.T) {
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/defaultURL.yaml")
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, defaultURL, url)
 }
 
@@ -61,11 +62,11 @@ func TestCustomArchURL(t *testing.T) {
 	_ = comp1.getComponentFromConfig("test/customArchURL.yaml")
 
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, customArchURL1, url)
 
 	url, err = comp1.getRenderedURL("darwin", "arm64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, customArchURL2, url)
 }
 
@@ -76,9 +77,9 @@ func TestCustomOSURL(t *testing.T) {
 	comp1 := Component{}
 	_ = comp1.getComponentFromConfig("test/customOSURL.yaml")
 	url, err := comp1.getRenderedURL("darwin", "amd64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, customOSURL1, url)
 	url, err = comp1.getRenderedURL("linux", "amd64")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, customOSURL2, url)
 }
