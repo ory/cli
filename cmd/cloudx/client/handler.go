@@ -455,11 +455,6 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 		return nil, err
 	}
 
-	var retry bool
-	if retry {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Unable to Authenticate you, please try again.")
-	}
-
 	if signIn {
 		ac, err = h.signin(c, "")
 		if err != nil {
