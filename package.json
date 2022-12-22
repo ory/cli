@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "cypress": "^8.7.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^2.0.5",
     "license-checker": "^25.0.1",
     "npm-run-all": "^4.1.5",
