@@ -58,6 +58,103 @@ func TestCommandHelper(t *testing.T) {
 		return &notYetLoggedIn
 	}
 
+	t.Run("func=Authenticate", func(t *testing.T) {
+		cmd_base := &client.CommandHelper{
+			ConfigLocation:   testhelpers.NewConfigDir(t),
+			NoConfirm:        true,
+			IsQuiet:          false,
+			VerboseWriter:    io.Discard,
+			VerboseErrWriter: io.Discard,
+			Ctx:              context.Background(),
+		}
+
+		t.Run("create new account", func(t *testing.T) {
+			cmd := *cmd_base
+
+			name := testhelpers.FakeName()
+			email := testhelpers.FakeEmail()
+			var r bytes.Buffer
+			_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			_, _ = r.WriteString(name + "\n")  // Name: FakeName()
+			_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
+			_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
+			cmd.Stdin = bufio.NewReader(&r)
+
+			password := testhelpers.FakePassword()
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+
+		t.Run("log into existing account", func(t *testing.T) {
+			cmd := *cmd_base
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			cmd.Stdin = bufio.NewReader(&r)
+
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+
+		t.Run("retry login after wrong password", func(t *testing.T) {
+			cmd := *cmd_base
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail() [RETRY]
+			cmd.Stdin = bufio.NewReader(&r)
+
+			var retry = false
+			cmd.PwReader = func() ([]byte, error) {
+				if retry {
+					return []byte(password), nil
+				}
+				retry = true
+				return []byte("wrong"), nil
+			}
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+
+		t.Run("switch logged in account", func(t *testing.T) {
+			cmd := *loggedIn
+
+			cmd.NoConfirm = false
+			cmd.IsQuiet = false
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // You are signed in as \"%s\" already. Do you wish to authenticate with another account?: y
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			cmd.Stdin = bufio.NewReader(&r)
+
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+	})
+
 	t.Run("func=CreateAPIKey and DeleteApiKey", func(t *testing.T) {
 		t.Run("is able to get project", func(t *testing.T) {
 			name := "a test key"
