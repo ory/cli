@@ -42,7 +42,7 @@ func TestGetEndpointURL(t *testing.T) {
 		actual, err := getEndpointURL(cmd)
 		require.NoError(t, err)
 		assert.Equal(t, "https://"+expected+".projects.oryapis.com/", actual.String())
-		assert.Equal(t, "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_PROJECT_SLUG=someslug\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: https://someslug.projects.oryapis.com/\n\n", b.String())
+		assert.Equal(t, "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_PROJECT_SLUG=someslug\n\nOrder of precedence is: ORY_SDK_URL > ORY_KRATOS_URL > ORY_PROJECT_SLUG > --project\nDecided to use value: https://someslug.projects.oryapis.com/\n\n", b.String())
 	})
 
 	t.Run("should return the right value from the OS using a legacy value", func(t *testing.T) {
