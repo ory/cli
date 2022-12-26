@@ -34,7 +34,7 @@ docs/cli: .bin/clidoc
 .bin/cli: go.mod go.sum Makefile
 	go build -o .bin/cli -tags sqlite github.com/ory/cli
 
-.bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
+.bin/golangci-lint-$(GOLANGCI_LINT_VERSION):
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v$(GOLANGCI_LINT_VERSION)
 	mv .bin/golangci-lint .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
