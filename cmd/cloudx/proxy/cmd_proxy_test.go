@@ -5,6 +5,7 @@ package proxy
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -55,6 +56,54 @@ func TestGetEndpointURL(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, expected, actual.String())
 		assert.Equal(t, "It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer experience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_SDK_URL=https://someslug.projects.oryapis.com/\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: https://someslug.projects.oryapis.com/\n\n", b.String())
+	})
+
+	t.Run("should adhere to configuration order of precedence", func(t *testing.T) {
+		t.Run("ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project", func(t *testing.T) {
+			var b bytes.Buffer
+			project_slug := "correct-slug"
+			cmd_slug := "cmd-slug"
+			sdk_url := "https://sdk-slug.projects.oryapis.com/"
+			kratos_url := "https://kratos-slug.projects.oryapis.com/"
+			expected := fmt.Sprintf("https://%s.projects.oryapis.com/", project_slug)
+			t.Setenv(envVarSlug, project_slug)
+			t.Setenv(envVarSDK, sdk_url)
+			t.Setenv(envVarKratos, kratos_url)
+			cmd := newEndpointCmd(cmd_slug)
+			cmd.SetErr(&b)
+			actual, err := getEndpointURL(cmd)
+			require.NoError(t, err)
+			assert.Equal(t, expected, actual.String())
+			assert.Equal(t, fmt.Sprintf("It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer experience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=%s\n\tORY_KRATOS_URL=%s\n\tORY_PROJECT_SLUG=%s\n\tORY_SDK_URL=%s\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: %s\n\n", cmd_slug, kratos_url, project_slug, sdk_url, expected), b.String())
+		})
+		t.Run("ORY_SDK_URL > ORY_KRATOS_URL > --project", func(t *testing.T) {
+			var b bytes.Buffer
+			cmd_slug := "cmd-slug"
+			sdk_url := "https://sdk-slug.projects.oryapis.com/"
+			kratos_url := "https://kratos-slug.projects.oryapis.com/"
+			expected := sdk_url
+			t.Setenv(envVarSDK, sdk_url)
+			t.Setenv(envVarKratos, kratos_url)
+			cmd := newEndpointCmd(cmd_slug)
+			cmd.SetErr(&b)
+			actual, err := getEndpointURL(cmd)
+			require.NoError(t, err)
+			assert.Equal(t, expected, actual.String())
+			assert.Equal(t, fmt.Sprintf("It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer experience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=%s\n\tORY_KRATOS_URL=%s\n\tORY_SDK_URL=%s\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: %s\n\n", cmd_slug, kratos_url, sdk_url, expected), b.String())
+		})
+		t.Run("ORY_KRATOS_URL > --project", func(t *testing.T) {
+			var b bytes.Buffer
+			cmd_slug := "cmd-slug"
+			kratos_url := "https://kratos-slug.projects.oryapis.com/"
+			expected := kratos_url
+			t.Setenv(envVarKratos, kratos_url)
+			cmd := newEndpointCmd(cmd_slug)
+			cmd.SetErr(&b)
+			actual, err := getEndpointURL(cmd)
+			require.NoError(t, err)
+			assert.Equal(t, expected, actual.String())
+			assert.Equal(t, fmt.Sprintf("It is recommended to use the --project flag or the ORY_PROJECT_SLUG environment variable for better developer experience. Environment variables ORY_SDK_URL and ORY_KRATOS_URL will continue to work!\nAttention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=%s\n\tORY_KRATOS_URL=%s\n\nOrder of precedence is: ORY_PROJECT_SLUG > ORY_SDK_URL > ORY_KRATOS_URL > --project\nDecided to use value: %s\n\n", cmd_slug, kratos_url, expected), b.String())
+		})
 	})
 
 	t.Run("should fail if legacy value is not a URL", func(t *testing.T) {

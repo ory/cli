@@ -245,9 +245,11 @@ const envVarKratos = "ORY_KRATOS_URL"
 
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	var target string
-	if fromEnv := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(fromEnv) > 0 {
-		target = fromEnv
-	} else if slug := stringsx.Coalesce(os.Getenv(envVarSlug), flagx.MustGetString(cmd, ProjectFlag)); len(slug) > 0 {
+	if slug := os.Getenv(envVarSlug); len(slug) > 0 {
+		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
+	} else if url := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(url) > 0 {
+		target = url
+	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
 		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
 	}
 
