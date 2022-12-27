@@ -8,6 +8,8 @@ export GO111MODULE := on
 export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
+GOLANGCI_LINT_VERSION = 1.48.0
+
 GO_DEPENDENCIES = github.com/ory/go-acc \
 				  github.com/golang/mock/mockgen \
 				  github.com/go-swagger/go-swagger/cmd/swagger \
@@ -32,15 +34,16 @@ docs/cli: .bin/clidoc
 .bin/cli: go.mod go.sum Makefile
 	go build -o .bin/cli -tags sqlite github.com/ory/cli
 
-.bin/golangci-lint: Makefile
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v1.48.0
+.bin/golangci-lint-$(GOLANGCI_LINT_VERSION):
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v$(GOLANGCI_LINT_VERSION)
+	mv .bin/golangci-lint .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 .bin/licenses: Makefile
 	curl https://raw.githubusercontent.com/ory/ci/master/licenses/install | sh
 
 .PHONY: lint
-lint: .bin/golangci-lint
-	.bin/golangci-lint run --timeout=10m ./...
+lint: .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
+	.bin/golangci-lint-$(GOLANGCI_LINT_VERSION) run --timeout=10m ./...
 
 .PHONY: install
 install:
