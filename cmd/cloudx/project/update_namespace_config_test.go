@@ -33,23 +33,37 @@ func writeFile(t *testing.T, content string) (path string) {
 }
 
 func TestUpdateNamespaceConfig(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig)
 	content := `class Default implements Namespace {}`
 	config := writeFile(t, content)
 	verbs := []string{"update", "patch"}
 
 	for _, verb := range verbs {
 		t.Run(fmt.Sprintf("is able to %q the namespace config", verb), func(t *testing.T) {
-			stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--project", project, "--format", "json", "--file", config)
-			require.NoError(t, err, stderr)
+			testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
+			t.Run("explicit project", func(t *testing.T) {
+				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--project", extraProject, "--format", "json", "--file", config)
+				require.NoError(t, err, stderr)
 
-			if !testing.Short() {
-				// Don't download and compare the config in short mode, might not have internet everywhere
-				url := gjson.Get(stdout, "namespaces.location").String()
-				data, err := fetcher.NewFetcher().Fetch(url)
-				require.NoError(t, err, "could not download the config")
-				assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
-			}
+				if !testing.Short() {
+					// Don't download and compare the config in short mode, might not have internet everywhere
+					url := gjson.Get(stdout, "namespaces.location").String()
+					data, err := fetcher.NewFetcher().Fetch(url)
+					require.NoError(t, err, "could not download the config")
+					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
+				}
+			})
+			t.Run("default project", func(t *testing.T) {
+				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--format", "json", "--file", config)
+				require.NoError(t, err, stderr)
+
+				if !testing.Short() {
+					// Don't download and compare the config in short mode, might not have internet everywhere
+					url := gjson.Get(stdout, "namespaces.location").String()
+					data, err := fetcher.NewFetcher().Fetch(url)
+					require.NoError(t, err, "could not download the config")
+					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
+				}
+			})
 		})
 	}
 }

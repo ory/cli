@@ -12,12 +12,12 @@ import (
 
 func NewUpdatePermissionConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "permission-config <project-id>",
+		Use: "permission-config [project-id]",
 		Aliases: []string{
 			"pc",
 			"keto-config",
 		},
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Update Ory Permissions configuration of the specified Ory Network project.",
 		Example: `$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \

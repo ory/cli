@@ -12,8 +12,8 @@ import (
 
 func NewGetProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "project <id>",
-		Args:  cobra.ExactArgs(1),
+		Use:   "project [id]",
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Get the complete configuration of an Ory Network project.",
 		Example: `$ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 
@@ -45,7 +45,15 @@ $ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				return err
 			}
 
-			project, err := h.GetProject(args[0])
+			var id string
+			if len(args) == 0 {
+				if id, err = h.GetDefaultProjectID(); err != nil {
+					return cmdx.PrintOpenAPIError(cmd, err)
+				}
+			} else {
+				id = args[0]
+			}
+			project, err := h.GetProject(id)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

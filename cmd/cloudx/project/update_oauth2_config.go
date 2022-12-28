@@ -13,12 +13,12 @@ import (
 
 func NewUpdateOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "oauth2-config <project-id>",
+		Use: "oauth2-config [project-id]",
 		Aliases: []string{
 			"oc",
 			"hydra-config",
 		},
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Update the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project.",
 		Example: `$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \

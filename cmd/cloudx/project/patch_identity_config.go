@@ -12,9 +12,9 @@ import (
 
 func NewPatchKratosConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "identity-config <project-id>",
+		Use:     "identity-config [project-id]",
 		Aliases: []string{"ic", "kratos-config"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		Short:   "Patch the Ory Identities configuration of the defined Ory Network project.",
 		Example: `$ ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/courier/smtp={"from_name":"My new email name"}' \
