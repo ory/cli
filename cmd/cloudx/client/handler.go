@@ -515,6 +515,10 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 		return nil, handleError("unable to list projects", res, err)
 	}
 
+	if def, _ := h.GetDefaultProjectID(); def == "" && len(projects) > 0 {
+		h.SetDefaultProject(projects[0].Id)
+	}
+
 	return projects, nil
 }
 
@@ -560,10 +564,14 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		return nil, handleError("unable to get project", res, err)
 	}
 
+	if def, _ := h.GetDefaultProjectID(); def == "" {
+		h.SetDefaultProject(project.Id)
+	}
+
 	return project, nil
 }
 
-func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
+func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -579,8 +587,8 @@ func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
 		return nil, handleError("unable to list projects", res, err)
 	}
 
-	if err := h.SetDefaultProject(project.Id); err != nil {
-		return nil, err
+	if def, _ := h.GetDefaultProjectID(); setDefault || def == "" {
+		h.SetDefaultProject(project.Id)
 	}
 
 	return project, nil
@@ -670,6 +678,11 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	if err != nil {
 		return nil, err
 	}
+
+	if def, _ := h.GetDefaultProjectID(); def == "" {
+		h.SetDefaultProject(id)
+	}
+
 	return res, nil
 }
 
@@ -740,6 +753,11 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if err != nil {
 		return nil, err
 	}
+
+	if def, _ := h.GetDefaultProjectID(); def == "" {
+		h.SetDefaultProject(id)
+	}
+
 	return res, nil
 }
 

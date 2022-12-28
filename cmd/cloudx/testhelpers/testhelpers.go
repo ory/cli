@@ -162,6 +162,15 @@ func CreateProject(t require.TestingT, configDir string) string {
 	name := TestProjectName()
 	stdout, stderr, err := cmd.Exec(nil, "create", "project", "--name", name, "--format", "json")
 	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
+	id := gjson.Get(stdout, "id").String()
+	return id
+}
+
+func CreateAndUseProject(t require.TestingT, configDir string) string {
+	cmd := ConfigAwareCmd(configDir)
+	name := TestProjectName()
+	stdout, stderr, err := cmd.Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
+	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
 	ac := ReadConfig(t, configDir)
 	id := gjson.Get(stdout, "id").String()
 	assert.Equal(t, ac.SelectedProject.String(), id)

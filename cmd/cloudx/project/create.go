@@ -39,7 +39,8 @@ func NewCreateProjectCmd() *cobra.Command {
 				}
 			}
 
-			p, err := h.CreateProject(name)
+			use := flagx.MustGetBool(cmd, "use-project")
+			p, err := h.CreateProject(name, use)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -51,6 +52,7 @@ func NewCreateProjectCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP("name", "n", "", "The name of the project, required when quiet mode is used")
+	cmd.Flags().BoolP("use-project", "", false, "Uses the created project as default.")
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

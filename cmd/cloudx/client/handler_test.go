@@ -115,9 +115,9 @@ func TestCommandHelper(t *testing.T) {
 			project_name1 := "new_project_name1"
 			project_name2 := "new_project_name2"
 
-			project1, err := cmd.CreateProject(project_name1)
+			project1, err := cmd.CreateProject(project_name1, false)
 			require.NoError(t, err)
-			project2, err := cmd.CreateProject(project_name2)
+			project2, err := cmd.CreateProject(project_name2, false)
 			require.NoError(t, err)
 
 			projects, err := cmd.ListProjects()
@@ -147,7 +147,7 @@ func TestCommandHelper(t *testing.T) {
 			cmd := *cmd_base
 			project_name := "new_project_name"
 
-			project, err := cmd.CreateProject(project_name)
+			project, err := cmd.CreateProject(project_name, true)
 			require.NoError(t, err)
 			assert.Equal(t, project.Name, project_name)
 
@@ -161,10 +161,10 @@ func TestCommandHelper(t *testing.T) {
 			project_name1 := "new_project_name1"
 			project_name2 := "new_project_name2"
 
-			project1, err := cmd.CreateProject(project_name1)
+			project1, err := cmd.CreateProject(project_name1, true)
 			require.NoError(t, err)
 
-			project2, err := cmd.CreateProject(project_name2)
+			project2, err := cmd.CreateProject(project_name2, false)
 			require.NoError(t, err)
 
 			assert.NotEqual(t, project1.Id, project2.Id)
@@ -173,7 +173,7 @@ func TestCommandHelper(t *testing.T) {
 
 			defaultId, err := cmd.GetDefaultProjectID()
 			require.NoError(t, err)
-			assert.Equal(t, project2.Id, defaultId)
+			assert.Equal(t, project1.Id, defaultId)
 		})
 	})
 

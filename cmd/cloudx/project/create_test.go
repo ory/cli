@@ -16,18 +16,38 @@ import (
 )
 
 func TestCreateProject(t *testing.T) {
+	parseOutput := func(stdout string) (id string, slug string, name string) {
+		id = gjson.Get(stdout, "id").String()
+		slug = gjson.Get(stdout, "slug").String()
+		name = gjson.Get(stdout, "name").String()
+		return
+	}
 	assertResult := func(t *testing.T, configDir string, stdout string, expectedName string) {
-		ac := testhelpers.ReadConfig(t, configDir)
-		assert.Equal(t, gjson.Get(stdout, "id").String(), ac.SelectedProject.String(), stdout)
-		assert.NotEmpty(t, gjson.Get(stdout, "slug").String(), stdout)
-		assert.Equal(t, expectedName, gjson.Get(stdout, "name").String(), stdout)
+		_, slug, name := parseOutput(stdout)
+		assert.NotEmpty(t, slug, stdout)
+		assert.Equal(t, expectedName, name, stdout)
 	}
 
 	t.Run("is able to create a project", func(t *testing.T) {
+		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
+
 		name := testhelpers.TestProjectName()
 		stdout, _, err := defaultCmd.Exec(nil, "create", "project", "--name", name, "--format", "json")
 		require.NoError(t, err)
 		assertResult(t, defaultConfig, stdout, name)
+
+		assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+	})
+
+	t.Run("is able to create a project and use the project as default", func(t *testing.T) {
+		name := testhelpers.TestProjectName()
+
+		stdout, _, err := defaultCmd.Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
+		require.NoError(t, err)
+		assertResult(t, defaultConfig, stdout, name)
+
+		id, _, _ := parseOutput(stdout)
+		assert.Equal(t, id, testhelpers.GetDefaultProject(t, defaultConfig))
 	})
 
 	t.Run("is able to create a project and use name from stdin", func(t *testing.T) {
