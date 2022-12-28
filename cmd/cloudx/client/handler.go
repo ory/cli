@@ -516,7 +516,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	}
 
 	if def, _ := h.GetDefaultProjectID(); def == "" && len(projects) > 0 {
-		h.SetDefaultProject(projects[0].Id)
+		_ = h.SetDefaultProject(projects[0].Id)
 	}
 
 	return projects, nil
@@ -565,7 +565,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 	}
 
 	if def, _ := h.GetDefaultProjectID(); def == "" {
-		h.SetDefaultProject(project.Id)
+		_ = h.SetDefaultProject(project.Id)
 	}
 
 	return project, nil
@@ -588,7 +588,7 @@ func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Proj
 	}
 
 	if def, _ := h.GetDefaultProjectID(); setDefault || def == "" {
-		h.SetDefaultProject(project.Id)
+		_ = h.SetDefaultProject(project.Id)
 	}
 
 	return project, nil
@@ -680,7 +680,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	}
 
 	if def, _ := h.GetDefaultProjectID(); def == "" {
-		h.SetDefaultProject(id)
+		_ = h.SetDefaultProject(id)
 	}
 
 	return res, nil
@@ -755,7 +755,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	}
 
 	if def, _ := h.GetDefaultProjectID(); def == "" {
-		h.SetDefaultProject(id)
+		_ = h.SetDefaultProject(id)
 	}
 
 	return res, nil
