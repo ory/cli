@@ -18,26 +18,11 @@ func NewUseProjectCmd() *cobra.Command {
 		Example: `$ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 
 ID		ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
-SLUG	good-wright-t7kzy3vugf
-STATE	running
-NAME	Example Project
 
 $ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 
 {
-  "name": "Example Project",
-  "identity": {
-	"services": {
-	  "config": {
-		"courier": {
-		  "smtp": {
-			"from_name": "..."
-		  }
-		  // ...
-		}
-	  }
-	}
-  }
+  "id": "ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 }`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCommandHelper(cmd)
@@ -58,12 +43,7 @@ $ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				}
 			}
 
-			project, err := h.GetProject(id)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-
-			cmdx.PrintRow(cmd, (*outputProject)(project))
+			cmdx.PrintRow(cmd, &selectedProject{Id: id})
 			return nil
 		},
 	}

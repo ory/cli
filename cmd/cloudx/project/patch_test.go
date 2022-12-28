@@ -16,11 +16,15 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to replace a key", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
 			require.NoError(t, err)
 			assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
 			require.NoError(t, err)
 			assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
@@ -30,11 +34,15 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to add a key", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
 			require.NoError(t, err)
 			assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
 			require.NoError(t, err)
 			assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
@@ -44,11 +52,15 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to add a key with string", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
 			require.NoError(t, err)
 			assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
 			require.NoError(t, err)
 			assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
@@ -58,11 +70,15 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to add a key with raw json", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
 			require.NoError(t, err)
 			assert.Equal(t, "https://example.org/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
 			require.NoError(t, err)
 			assert.Equal(t, "https://example.org/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
@@ -72,11 +88,15 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to remove a key", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
@@ -86,10 +106,14 @@ func TestPatchProject(t *testing.T) {
 	t.Run("fails if no opts are given", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json")
 			require.Error(t, err, stdout)
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json")
 			require.Error(t, err, stdout)
 		})
@@ -98,6 +122,8 @@ func TestPatchProject(t *testing.T) {
 	t.Run("is able to update several keys", func(t *testing.T) {
 		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 		t.Run("explicit project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", extraProject, "--format", "json",
 				"--replace", `/services/identity/config/selfservice/methods/link/enabled=true`,
 				"--replace", `/services/identity/config/selfservice/methods/oidc/enabled=true`,
@@ -120,6 +146,8 @@ func TestPatchProject(t *testing.T) {
 			assert.Equal(t, "some value", gjson.Get(stdout, "services.identity.config.selfservice.methods.webauthn.config.rp.display_name").String())
 		})
 		t.Run("default project", func(t *testing.T) {
+			assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 			stdout, _, err := defaultCmd.Exec(nil, "patch", "project", "--format", "json",
 				"--replace", `/services/identity/config/selfservice/methods/link/enabled=true`,
 				"--replace", `/services/identity/config/selfservice/methods/oidc/enabled=true`,

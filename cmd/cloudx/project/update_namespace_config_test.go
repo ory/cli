@@ -41,6 +41,8 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 		t.Run(fmt.Sprintf("is able to %q the namespace config", verb), func(t *testing.T) {
 			testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
 			t.Run("explicit project", func(t *testing.T) {
+				assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--project", extraProject, "--format", "json", "--file", config)
 				require.NoError(t, err, stderr)
 
@@ -53,6 +55,8 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 				}
 			})
 			t.Run("default project", func(t *testing.T) {
+				assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
+
 				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--format", "json", "--file", config)
 				require.NoError(t, err, stderr)
 

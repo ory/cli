@@ -178,6 +178,16 @@ func SetDefaultProject(t require.TestingT, configDir string, projectId string) {
 	assert.Equal(t, projectId, id)
 }
 
+func GetDefaultProject(t require.TestingT, configDir string) string {
+	cmd := ConfigAwareCmd(configDir)
+	stdout, stderr, err := cmd.Exec(nil, "use", "project", "--format", "json")
+	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
+	ac := ReadConfig(t, configDir)
+	id := gjson.Get(stdout, "id").String()
+	assert.Equal(t, ac.SelectedProject.String(), id)
+	return id
+}
+
 func MakeRandomIdentity(t require.TestingT, email string) string {
 	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
 	require.NoError(t, err)

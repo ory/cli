@@ -58,6 +58,36 @@ func TestCommandHelper(t *testing.T) {
 		return &notYetLoggedIn
 	}
 
+	t.Run("func=SetDefaultProject", func(t *testing.T) {
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+		otherId := testhelpers.CreateProject(t, configDir)
+		defaultId := testhelpers.CreateProject(t, configDir)
+		testhelpers.SetDefaultProject(t, configDir, defaultId)
+
+		cmd_base := &client.CommandHelper{
+			ConfigLocation:   configDir,
+			NoConfirm:        true,
+			IsQuiet:          false,
+			VerboseWriter:    io.Discard,
+			VerboseErrWriter: io.Discard,
+			Ctx:              context.Background(),
+		}
+
+		t.Run("can change the selected project", func(t *testing.T) {
+			cmd := *cmd_base
+			current, _ := cmd.GetDefaultProjectID()
+			assert.Equal(t, current, defaultId)
+
+			err := cmd.SetDefaultProject(otherId)
+			assert.NoError(t, err)
+
+			selected, err := cmd.GetDefaultProjectID()
+			assert.NoError(t, err)
+			assert.Equal(t, selected, otherId)
+		})
+	})
+
 	t.Run("func=ListProjects", func(t *testing.T) {
 		configDir := testhelpers.NewConfigDir(t)
 		testhelpers.RegisterAccount(t, configDir)
@@ -98,7 +128,6 @@ func TestCommandHelper(t *testing.T) {
 			assert.Contains(t, listedIds, project1.Id)
 			assert.Contains(t, listedIds, project2.Id)
 		})
-
 	})
 
 	t.Run("func=CreateProject", func(t *testing.T) {
