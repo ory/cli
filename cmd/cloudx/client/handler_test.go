@@ -58,6 +58,96 @@ func TestCommandHelper(t *testing.T) {
 		return &notYetLoggedIn
 	}
 
+	t.Run("func=ListProjects", func(t *testing.T) {
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+
+		cmd_base := &client.CommandHelper{
+			ConfigLocation:   configDir,
+			NoConfirm:        true,
+			IsQuiet:          false,
+			VerboseWriter:    io.Discard,
+			VerboseErrWriter: io.Discard,
+			Ctx:              context.Background(),
+		}
+
+		t.Run("With no projects returns empty list", func(t *testing.T) {
+			cmd := *cmd_base
+
+			projects, err := cmd.ListProjects()
+
+			require.NoError(t, err)
+			require.Empty(t, projects)
+		})
+
+		t.Run("With some projects returns list of projects", func(t *testing.T) {
+			cmd := *cmd_base
+			project_name1 := "new_project_name1"
+			project_name2 := "new_project_name2"
+
+			project1, err := cmd.CreateProject(project_name1)
+			require.NoError(t, err)
+			project2, err := cmd.CreateProject(project_name2)
+			require.NoError(t, err)
+
+			projects, err := cmd.ListProjects()
+
+			require.NoError(t, err)
+			assert.Len(t, projects, 2)
+			listedIds := [2]string{projects[0].Id, projects[1].Id}
+			assert.Contains(t, listedIds, project1.Id)
+			assert.Contains(t, listedIds, project2.Id)
+		})
+
+	})
+
+	t.Run("func=CreateProject", func(t *testing.T) {
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+
+		cmd_base := &client.CommandHelper{
+			ConfigLocation:   configDir,
+			NoConfirm:        true,
+			IsQuiet:          false,
+			VerboseWriter:    io.Discard,
+			VerboseErrWriter: io.Discard,
+			Ctx:              context.Background(),
+		}
+
+		t.Run("creates project and sets default project", func(t *testing.T) {
+			cmd := *cmd_base
+			project_name := "new_project_name"
+
+			project, err := cmd.CreateProject(project_name)
+			require.NoError(t, err)
+			assert.Equal(t, project.Name, project_name)
+
+			defaultId, err := cmd.GetDefaultProjectID()
+			require.NoError(t, err)
+			assert.Equal(t, project.Id, defaultId)
+		})
+
+		t.Run("creates two projects with different names", func(t *testing.T) {
+			cmd := *cmd_base
+			project_name1 := "new_project_name1"
+			project_name2 := "new_project_name2"
+
+			project1, err := cmd.CreateProject(project_name1)
+			require.NoError(t, err)
+
+			project2, err := cmd.CreateProject(project_name2)
+			require.NoError(t, err)
+
+			assert.NotEqual(t, project1.Id, project2.Id)
+			assert.NotEqual(t, project1.Name, project2.Name)
+			assert.NotEqual(t, project1.Slug, project2.Slug)
+
+			defaultId, err := cmd.GetDefaultProjectID()
+			require.NoError(t, err)
+			assert.Equal(t, project2.Id, defaultId)
+		})
+	})
+
 	t.Run("func=Authenticate", func(t *testing.T) {
 		cmd_base := &client.CommandHelper{
 			ConfigLocation:   testhelpers.NewConfigDir(t),

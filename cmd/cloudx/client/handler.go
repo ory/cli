@@ -152,6 +152,19 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}, nil
 }
 
+func (h *CommandHelper) GetDefaultProjectID() (string, error) {
+	conf, err := h.readConfig()
+	if err != nil {
+		return "", err
+	}
+
+	if conf.SelectedProject != uuid.Nil {
+		return conf.SelectedProject.String(), nil
+	}
+
+	return "", errors.New("No valid default project was specified")
+}
+
 func (h *CommandHelper) SetDefaultProject(id string) error {
 	conf, err := h.readConfig()
 	if err != nil {
