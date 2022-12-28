@@ -6,10 +6,11 @@ package project_test
 import (
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
+
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
 func TestPatchHydraConfig(t *testing.T) {
