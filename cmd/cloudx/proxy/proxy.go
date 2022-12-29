@@ -50,6 +50,7 @@ const (
 	ProjectFlag            = "project"
 	CORSFlag               = "allowed-cors-origins"
 	RewriteHostFlag        = "rewrite-host"
+	LegacyEndpointConfig   = "legacy-endpoint-cfg"
 )
 
 type config struct {

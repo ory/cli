@@ -231,6 +231,7 @@ An example payload of the JSON Web Token is:
 	proxyCmd.Flags().Bool(DevFlag, false, "Use this flag when developing locally.")
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	proxyCmd.Flags().Bool(RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
+	proxyCmd.Flags().Bool(LegacyEndpointConfig, false, "Use this flag to accept multiple endpoint configs to choose from (LEGACY SUPPORT).")
 
 	client.RegisterConfigFlag(proxyCmd.PersistentFlags())
 	client.RegisterYesFlag(proxyCmd.PersistentFlags())
@@ -262,12 +263,14 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 		return nil, errors.Errorf("Unable to parse \"%s\" as an URL: %s", target, err)
 	}
 
-	printDeprecations(cmd, target)
+	if err = printDeprecations(cmd, target); err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	return upstream, nil
 }
 
-func printDeprecations(cmd *cobra.Command, target string) {
+func printDeprecations(cmd *cobra.Command, target string) error {
 	if deprecated := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(deprecated) > 0 {
 		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "It is recommended to use the --%s flag or the %s environment variable for better developer experience. Environment variables %s and %s will continue to work!\n", ProjectFlag, envVarSlug, envVarSDK, envVarKratos)
 	}
@@ -291,6 +294,13 @@ func printDeprecations(cmd *cobra.Command, target string) {
 		}
 		sort.Strings(values)
 
-		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
+		if flagx.MustGetBool(cmd, LegacyEndpointConfig) {
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
+		} else {
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nTo allow the CLI to choose a config automatically you can enable the legacy behavior via the --%s flag\n\n", strings.Join(values, "\n\t"), LegacyEndpointConfig)
+			return errors.New("Could not decide which source to use for endpoint configuration")
+		}
 	}
+
+	return nil
 }

@@ -165,6 +165,7 @@ TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+
 	proxyCmd.Flags().Bool(DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	proxyCmd.Flags().String(DefaultRedirectURLFlag, "", "Set the URL to redirect to per default after e.g. login or account creation.")
 	proxyCmd.Flags().StringSlice(CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
+	proxyCmd.Flags().Bool(LegacyEndpointConfig, false, "Use this flag to accept multiple endpoint configs to choose from (LEGACY SUPPORT).")
 
 	client.RegisterConfigFlag(proxyCmd.PersistentFlags())
 	client.RegisterYesFlag(proxyCmd.PersistentFlags())
