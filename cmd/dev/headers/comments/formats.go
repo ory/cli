@@ -38,6 +38,33 @@ func (f Format) remove(text string, token string) string {
 	return strings.Join(result, "\n")
 }
 
+func (f Format) SplitHeaderFromContent(text string, token string) (header, content string) {
+	commentWithToken := f.renderLineStart(token)
+	inComment := false
+	content_lines := []string{}
+	header_lines := []string{}
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, commentWithToken) {
+			inComment = true
+		}
+		if inComment && line == "" {
+			// the type of comment blocks we remove here is separated by an empty line
+			// --> empty line marks the end of our comment block
+			inComment = false
+			continue
+		}
+		if inComment && !strings.HasPrefix(line, f.startToken) {
+			inComment = false
+		}
+		if !inComment {
+			content_lines = append(content_lines, line)
+		} else {
+			header_lines = append(header_lines, line)
+		}
+	}
+	return strings.Join(header_lines, "\n"), strings.Join(content_lines, "\n")
+}
+
 // renders the given text block (consisting of many text lines) into a comment block
 func (f Format) renderBlock(text string) string {
 	result := []string{}
@@ -93,4 +120,9 @@ var commentFormats = map[FileType]Format{
 	"ts":   doubleSlashComments,
 	"vue":  htmlComments,
 	"yml":  poundComments,
+}
+
+func GetFormat(path string) (Format, bool) {
+	fmt, ok := commentFormats[GetFileType(path)]
+	return fmt, ok
 }

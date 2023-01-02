@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -18,14 +19,16 @@ import (
 	"github.com/ory/cli/cmd/dev/headers/comments"
 )
 
-// HEADER_TEMPLATE_OPEN_SOURCE defines the full header text for open-source files.
-const HEADER_TEMPLATE_OPEN_SOURCE = "Copyright © %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
-
-// HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
-const HEADER_TEMPLATE_PROPRIETARY = "Copyright © %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
-
 // HEADER_TOKEN defines a text snippet to recognize an existing copyright header in a file.
 const HEADER_TOKEN = "Copyright ©"
+
+const HEADER_REGEXP = HEADER_TOKEN + `\s+(\d{4})\s+`
+
+// HEADER_TEMPLATE_OPEN_SOURCE defines the full header text for open-source files.
+const HEADER_TEMPLATE_OPEN_SOURCE = HEADER_TOKEN + " %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
+
+// HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
+const HEADER_TEMPLATE_PROPRIETARY = HEADER_TOKEN + " %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
 
 // file types that we don't want to add copyright headers to
 var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
@@ -34,8 +37,8 @@ var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
 // AddHeaders adds or updates the Ory copyright header in all applicable files within the given directory.
-func AddHeaders(dir string, year int, template string, exclude []string) error {
-	headerText := fmt.Sprintf(template, year)
+// Skips the file if any existing headers match `skipMatchingHeaders`
+func AddHeaders(dir string, headerText string, exclude []string, skipMatchingHeaders *regexp.Regexp) error {
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -67,10 +70,19 @@ func AddHeaders(dir string, year int, template string, exclude []string) error {
 		if pathContainsFolders(path, exclude) {
 			return nil
 		}
-		contentNoHeader, err := comments.FileContentWithoutHeader(path, HEADER_TOKEN)
+		format, ok := comments.GetFormat(path)
+		if !ok {
+			return nil
+		}
+		content, err := comments.FileContent(path)
 		if err != nil {
 			return err
 		}
+		header, contentNoHeader := format.SplitHeaderFromContent(content, HEADER_TOKEN)
+		if skipMatchingHeaders != nil && skipMatchingHeaders.MatchString(header) {
+			return nil
+		}
+
 		return comments.WriteFileWithHeader(path, headerText, contentNoHeader)
 	})
 }
@@ -106,7 +118,7 @@ Does not add the header to files listed in .gitignore and .prettierignore.`,
 		} else {
 			return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
 		}
-		return AddHeaders(".", year, template, exclude)
+		return AddHeaders(".", fmt.Sprintf(template, year), exclude, regexp.MustCompile(HEADER_REGEXP))
 	},
 }
 

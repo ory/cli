@@ -12,16 +12,24 @@ import (
 // FileContentWithoutHeader provides the content of the file with the given path,
 // without the comment block identified by the given token.
 func FileContentWithoutHeader(path, token string) (string, error) {
-	buffer, err := os.ReadFile(path)
+	text, err := FileContent(path)
 	if err != nil {
-		return "", fmt.Errorf("cannot open file %q: %w", path, err)
+		return "", err
 	}
-	text := string(buffer)
 	format, knowsFormat := commentFormats[GetFileType(path)]
 	if !knowsFormat {
 		return text, nil
 	}
 	return format.remove(text, token), nil
+}
+
+func FileContent(path string) (string, error) {
+	buffer, err := os.ReadFile(path)
+	if err != nil {
+		return "", fmt.Errorf("cannot open file %q: %w", path, err)
+	}
+	text := string(buffer)
+	return text, nil
 }
 
 func StripPrefixes(fileContent string, prefixes []string) (string, string) {
