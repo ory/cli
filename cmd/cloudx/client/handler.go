@@ -220,7 +220,7 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 			return nil, false, err
 		}
 
-		sess, _, err := client.V0alpha2Api.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
+		sess, _, err := client.FrontendApi.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
 		if err != nil {
 			return nil, false, nil
 		} else if sess == nil {
@@ -270,7 +270,7 @@ func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, err
 }
 
 func (h *CommandHelper) signup(c *cloud.APIClient) (*AuthContext, error) {
-	flow, _, err := c.V0alpha2Api.InitializeSelfServiceRegistrationFlowWithoutBrowser(h.Ctx).Execute()
+	flow, _, err := c.FrontendApi.CreateNativeRegistrationFlow(h.Ctx).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -282,22 +282,22 @@ retryRegistration:
 	}
 	isRetry = true
 
-	var form cloud.SubmitSelfServiceRegistrationFlowWithPasswordMethodBody
+	var form cloud.UpdateRegistrationFlowWithPasswordMethod
 	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
 		return nil, err
 	}
 
-	signup, _, err := c.V0alpha2Api.SubmitSelfServiceRegistrationFlow(h.Ctx).
-		Flow(flow.Id).SubmitSelfServiceRegistrationFlowBody(cloud.SubmitSelfServiceRegistrationFlowBody{
-		SubmitSelfServiceRegistrationFlowWithPasswordMethodBody: &form,
+	signup, _, err := c.FrontendApi.UpdateRegistrationFlow(h.Ctx).
+		Flow(flow.Id).UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{
+		UpdateRegistrationFlowWithPasswordMethod: &form,
 	}).Execute()
 	if err != nil {
 		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.SelfServiceRegistrationFlow:
+			case *cloud.RegistrationFlow:
 				flow = m
 				goto retryRegistration
-			case cloud.SelfServiceRegistrationFlow:
+			case cloud.RegistrationFlow:
 				flow = &m
 				goto retryRegistration
 			}
@@ -307,7 +307,7 @@ retryRegistration:
 	}
 
 	sessionToken := *signup.SessionToken
-	sess, _, err := c.V0alpha2Api.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
+	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +316,7 @@ retryRegistration:
 }
 
 func (h *CommandHelper) signin(c *cloud.APIClient, sessionToken string) (*AuthContext, error) {
-	req := c.V0alpha2Api.InitializeSelfServiceLoginFlowWithoutBrowser(h.Ctx)
+	req := c.FrontendApi.CreateNativeLoginFlow(h.Ctx)
 	if len(sessionToken) > 0 {
 		req = req.XSessionToken(sessionToken).Aal("aal2")
 	}
@@ -333,7 +333,7 @@ retryLogin:
 	}
 	isRetry = true
 
-	var form interface{} = &cloud.SubmitSelfServiceLoginFlowWithPasswordMethodBody{}
+	var form interface{} = &cloud.UpdateLoginFlowWithPasswordMethod{}
 	method := "password"
 	if len(sessionToken) > 0 {
 		var foundTOTP bool
@@ -351,7 +351,7 @@ retryLogin:
 
 		method = "lookup_secret"
 		if foundTOTP {
-			form = &cloud.SubmitSelfServiceLoginFlowWithTotpMethodBody{}
+			form = &cloud.UpdateLoginFlowWithTotpMethod{}
 			method = "totp"
 		}
 	}
@@ -360,25 +360,25 @@ retryLogin:
 		return nil, err
 	}
 
-	var body cloud.SubmitSelfServiceLoginFlowBody
+	var body cloud.UpdateLoginFlowBody
 	switch e := form.(type) {
-	case *cloud.SubmitSelfServiceLoginFlowWithTotpMethodBody:
-		body.SubmitSelfServiceLoginFlowWithTotpMethodBody = e
-	case *cloud.SubmitSelfServiceLoginFlowWithPasswordMethodBody:
-		body.SubmitSelfServiceLoginFlowWithPasswordMethodBody = e
+	case *cloud.UpdateLoginFlowWithTotpMethod:
+		body.UpdateLoginFlowWithTotpMethod = e
+	case *cloud.UpdateLoginFlowWithPasswordMethod:
+		body.UpdateLoginFlowWithPasswordMethod = e
 	default:
 		panic("unexpected type")
 	}
 
-	login, _, err := c.V0alpha2Api.SubmitSelfServiceLoginFlow(h.Ctx).XSessionToken(sessionToken).
-		Flow(flow.Id).SubmitSelfServiceLoginFlowBody(body).Execute()
+	login, _, err := c.FrontendApi.UpdateLoginFlow(h.Ctx).XSessionToken(sessionToken).
+		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
 	if err != nil {
 		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.SelfServiceLoginFlow:
+			case *cloud.LoginFlow:
 				flow = m
 				goto retryLogin
-			case cloud.SelfServiceLoginFlow:
+			case cloud.LoginFlow:
 				flow = &m
 				goto retryLogin
 			}
@@ -388,7 +388,7 @@ retryLogin:
 	}
 
 	sessionToken = stringsx.Coalesce(*login.SessionToken, sessionToken)
-	sess, _, err := c.V0alpha2Api.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
+	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
 	if err == nil {
 		return h.sessionToContext(sess, sessionToken)
 	}
@@ -503,7 +503,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 		return nil, err
 	}
 
-	projects, res, err := c.V0alpha2Api.ListProjects(h.Ctx).Execute()
+	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -522,7 +522,7 @@ func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.V0alpha2Api.GetProject(h.Ctx, id).Execute()
+	project, res, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -541,7 +541,7 @@ func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.V0alpha2Api.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -633,7 +633,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	res, _, err := c.V0alpha2Api.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
+	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -680,7 +680,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
-	var payload cloud.UpdateProject
+	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
 		return nil, errors.WithStack(err)
@@ -696,14 +696,14 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.V0alpha2Api.GetProject(h.Ctx, id).Execute()
+		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		payload.Name = res.Name
 	}
 
-	res, _, err := c.V0alpha2Api.UpdateProject(h.Ctx, id).UpdateProject(payload).Execute()
+	res, _, err := c.ProjectApi.SetProject(h.Ctx, id).SetProject(payload).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -721,7 +721,7 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 		return nil, err
 	}
 
-	token, _, err := c.V0alpha2Api.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -740,7 +740,7 @@ func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
 		return err
 	}
 
-	if _, err := c.V0alpha2Api.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
+	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 
