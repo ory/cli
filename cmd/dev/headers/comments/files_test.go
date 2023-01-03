@@ -5,6 +5,7 @@ package comments_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func TestFileContentWithoutHeader(t *testing.T) {
 		want := "file content"
 		createTestFile(t, "testfile.go", give)
 		defer os.Remove("testfile.go")
-		have, err := comments.FileContentWithoutHeader("testfile.go", "Copyright ©")
+		have, err := comments.FileContentWithoutHeader("testfile.go", regexp.MustCompile(`Copyright © \d{4} Ory Corp`))
 		assert.NoError(t, err)
 		assert.Equal(t, want, have)
 	})
@@ -28,7 +29,7 @@ func TestFileContentWithoutHeader(t *testing.T) {
 		want := "file content"
 		createTestFile(t, "testfile.go", give)
 		defer os.Remove("testfile.go")
-		have, err := comments.FileContentWithoutHeader("testfile.go", "Copyright ©")
+		have, err := comments.FileContentWithoutHeader("testfile.go", regexp.MustCompile(`Copyright © \d{4} Ory Corp`))
 		assert.NoError(t, err)
 		assert.Equal(t, want, have)
 	})
@@ -38,7 +39,7 @@ func TestFileContentWithoutHeader(t *testing.T) {
 		want := "// another comment block\n\nfile content"
 		createTestFile(t, "testfile.go", give)
 		defer os.Remove("testfile.go")
-		have, err := comments.FileContentWithoutHeader("testfile.go", "Copyright ©")
+		have, err := comments.FileContentWithoutHeader("testfile.go", regexp.MustCompile(`Copyright © \d{4} Ory Corp`))
 		assert.NoError(t, err)
 		assert.Equal(t, want, have)
 	})
@@ -48,7 +49,7 @@ func TestFileContentWithoutHeader(t *testing.T) {
 		want := give
 		createTestFile(t, "testfile.txt", give)
 		defer os.Remove("testfile.txt")
-		have, err := comments.FileContentWithoutHeader("testfile.txt", "Copyright ©")
+		have, err := comments.FileContentWithoutHeader("testfile.txt", regexp.MustCompile(`Copyright © \d{4} Ory Corp`))
 		assert.NoError(t, err)
 		assert.Equal(t, want, have)
 	})

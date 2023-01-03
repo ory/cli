@@ -22,13 +22,15 @@ import (
 // HEADER_TOKEN defines a text snippet to recognize an existing copyright header in a file.
 const HEADER_TOKEN = "Copyright ©"
 
-const HEADER_REGEXP = HEADER_TOKEN + `\s+(\d{4})\s+`
+const COMPANY_NAME = "Ory Corp"
+
+const HEADER_REGEXP = HEADER_TOKEN + `\s+(\d{4})\s+` + COMPANY_NAME
 
 // HEADER_TEMPLATE_OPEN_SOURCE defines the full header text for open-source files.
-const HEADER_TEMPLATE_OPEN_SOURCE = HEADER_TOKEN + " %d Ory Corp\nSPDX-License-Identifier: Apache-2.0"
+const HEADER_TEMPLATE_OPEN_SOURCE = HEADER_TOKEN + " %d " + COMPANY_NAME + "\nSPDX-License-Identifier: Apache-2.0"
 
 // HEADER_TEMPLATE_PROPRIETARY defines the full header text for proprietary files.
-const HEADER_TEMPLATE_PROPRIETARY = HEADER_TOKEN + " %d Ory Corp\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
+const HEADER_TEMPLATE_PROPRIETARY = HEADER_TOKEN + " %d " + COMPANY_NAME + "\nProprietary and confidential.\nUnauthorized copying of this file is prohibited."
 
 // file types that we don't want to add copyright headers to
 var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
@@ -37,8 +39,8 @@ var noHeadersFor = []comments.FileType{"md", "yml", "yaml"}
 var defaultExcludedFolders = []string{"dist", "node_modules", "vendor"}
 
 // AddHeaders adds or updates the Ory copyright header in all applicable files within the given directory.
-// Skips the file if any existing headers match `skipMatchingHeaders`
-func AddHeaders(dir string, headerText string, exclude []string, skipMatchingHeaders *regexp.Regexp) error {
+// Skips the file if any existing headers match `headerRegexp`
+func AddHeaders(dir string, headerText string, exclude []string, headerRegexp *regexp.Regexp) error {
 	gitIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".gitignore"))
 	prettierIgnore, _ := ignore.CompileIgnoreFile(filepath.Join(dir, ".prettierignore"))
 	return filepath.Walk(dir, func(path string, info fs.FileInfo, err error) error {
@@ -78,8 +80,8 @@ func AddHeaders(dir string, headerText string, exclude []string, skipMatchingHea
 		if err != nil {
 			return err
 		}
-		header, contentNoHeader := format.SplitHeaderFromContent(content, HEADER_TOKEN)
-		if skipMatchingHeaders != nil && skipMatchingHeaders.MatchString(header) {
+		header, contentNoHeader := format.SplitHeaderFromContent(content, headerRegexp)
+		if len(header) > 0 {
 			return nil
 		}
 

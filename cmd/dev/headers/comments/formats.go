@@ -3,7 +3,10 @@
 
 package comments
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 // a comment format known to this app
 type Format struct {
@@ -13,13 +16,12 @@ type Format struct {
 	endToken string
 }
 
-func (f Format) SplitHeaderFromContent(text string, token string) (header, content string) {
-	commentWithToken := f.renderLineStart(token)
+func (f Format) SplitHeaderFromContent(text string, headerRegexp *regexp.Regexp) (header, content string) {
 	inComment := false
 	content_lines := []string{}
 	header_lines := []string{}
 	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
+		if f.isComment(line) && headerRegexp.MatchString(line) {
 			inComment = true
 		}
 		if inComment && line == "" {
@@ -28,7 +30,7 @@ func (f Format) SplitHeaderFromContent(text string, token string) (header, conte
 			inComment = false
 			continue
 		}
-		if inComment && !strings.HasPrefix(line, f.startToken) {
+		if inComment && !f.isComment(line) {
 			inComment = false
 		}
 		if !inComment {
@@ -38,6 +40,10 @@ func (f Format) SplitHeaderFromContent(text string, token string) (header, conte
 		}
 	}
 	return strings.Join(header_lines, "\n"), strings.Join(content_lines, "\n")
+}
+
+func (f Format) isComment(line string) bool {
+	return strings.HasPrefix(line, f.startToken)
 }
 
 // renders the given text block (consisting of many text lines) into a comment block

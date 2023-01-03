@@ -6,12 +6,13 @@ package comments
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
 // FileContentWithoutHeader provides the content of the file with the given path,
 // without the comment block identified by the given token.
-func FileContentWithoutHeader(path, token string) (string, error) {
+func FileContentWithoutHeader(path string, headerRegexp *regexp.Regexp) (string, error) {
 	text, err := FileContent(path)
 	if err != nil {
 		return "", err
@@ -20,7 +21,7 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	if !knowsFormat {
 		return text, nil
 	}
-	_, content := format.SplitHeaderFromContent(text, token)
+	_, content := format.SplitHeaderFromContent(text, headerRegexp)
 	return content, nil
 }
 
