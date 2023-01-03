@@ -245,9 +245,11 @@ const envVarKratos = "ORY_KRATOS_URL"
 
 func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 	var target string
-	if fromEnv := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(fromEnv) > 0 {
-		target = fromEnv
-	} else if slug := stringsx.Coalesce(os.Getenv(envVarSlug), flagx.MustGetString(cmd, ProjectFlag)); len(slug) > 0 {
+	if slug := os.Getenv(envVarSlug); len(slug) > 0 {
+		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
+	} else if url := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(url) > 0 {
+		target = url
+	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
 		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
 	}
 
@@ -260,12 +262,14 @@ func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
 		return nil, errors.Errorf("Unable to parse \"%s\" as an URL: %s", target, err)
 	}
 
-	printDeprecations(cmd, target)
+	if err = printDeprecations(cmd, target); err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	return upstream, nil
 }
 
-func printDeprecations(cmd *cobra.Command, target string) {
+func printDeprecations(cmd *cobra.Command, target string) error {
 	if deprecated := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(deprecated) > 0 {
 		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "It is recommended to use the --%s flag or the %s environment variable for better developer experience. Environment variables %s and %s will continue to work!\n", ProjectFlag, envVarSlug, envVarSDK, envVarKratos)
 	}
@@ -289,6 +293,9 @@ func printDeprecations(cmd *cobra.Command, target string) {
 		}
 		sort.Strings(values)
 
-		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\nOrder of precedence is: %s > %s > %s > --%s\nDecided to use value: %s\n\n", strings.Join(values, "\n\t"), envVarSlug, envVarSDK, envVarKratos, ProjectFlag, target)
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t%s\n\n", strings.Join(values, "\n\t"))
+		return errors.New("Could not decide which source to use for endpoint configuration")
 	}
+
+	return nil
 }
