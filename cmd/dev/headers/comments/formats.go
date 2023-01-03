@@ -3,7 +3,10 @@
 
 package comments
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+)
 
 // a comment format known to this app
 type Format struct {
@@ -13,13 +16,12 @@ type Format struct {
 	endToken string
 }
 
-// removes the comment block in the given format containing the given token from the given text
-func (f Format) remove(text string, token string) string {
-	commentWithToken := f.renderLineStart(token)
+func (f Format) SplitHeaderFromContent(text string, headerRegexp *regexp.Regexp) (header, content string) {
 	inComment := false
-	result := []string{}
+	content_lines := []string{}
+	header_lines := []string{}
 	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
+		if f.isComment(line) && headerRegexp.MatchString(line) {
 			inComment = true
 		}
 		if inComment && line == "" {
@@ -28,14 +30,20 @@ func (f Format) remove(text string, token string) string {
 			inComment = false
 			continue
 		}
-		if inComment && !strings.HasPrefix(line, f.startToken) {
+		if inComment && !f.isComment(line) {
 			inComment = false
 		}
 		if !inComment {
-			result = append(result, line)
+			content_lines = append(content_lines, line)
+		} else {
+			header_lines = append(header_lines, line)
 		}
 	}
-	return strings.Join(result, "\n")
+	return strings.Join(header_lines, "\n"), strings.Join(content_lines, "\n")
+}
+
+func (f Format) isComment(line string) bool {
+	return strings.HasPrefix(line, f.startToken)
 }
 
 // renders the given text block (consisting of many text lines) into a comment block
@@ -93,4 +101,9 @@ var commentFormats = map[FileType]Format{
 	"ts":   doubleSlashComments,
 	"vue":  htmlComments,
 	"yml":  poundComments,
+}
+
+func GetFormat(path string) (Format, bool) {
+	fmt, ok := commentFormats[GetFileType(path)]
+	return fmt, ok
 }

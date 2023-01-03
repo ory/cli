@@ -5,6 +5,7 @@ package comments
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -31,7 +32,7 @@ func TestDoubleSlashCommentsRemove(t *testing.T) {
 	t.Parallel()
 	give := "// Copyright © 1997 Ory Corp Inc.\n// SPDX-License-Identifier: Apache-2.0\n\n// another comment\n\nname: test\nhello: world"
 	want := "// another comment\n\nname: test\nhello: world"
-	have := doubleSlashComments.remove(give, "Copyright ©")
+	_, have := doubleSlashComments.SplitHeaderFromContent(give, regexp.MustCompile(`Copyright © \d{4} Ory Corp Inc.`))
 	assert.Equal(t, want, have)
 }
 
@@ -65,7 +66,7 @@ hello: world`, "\n")
 
 name: test
 hello: world`, "\n")
-	have := poundComments.remove(give, "Copyright ©")
+	_, have := poundComments.SplitHeaderFromContent(give, regexp.MustCompile(`Copyright © \d{4} Ory Corp Inc.`))
 	assert.Equal(t, want, have)
 }
 
@@ -114,6 +115,6 @@ hello: world`, "\n")
 
 name: test
 hello: world`, "\n")
-	have := htmlComments.remove(give, "Copyright ©")
+	_, have := htmlComments.SplitHeaderFromContent(give, regexp.MustCompile(`Copyright © \d{4} Ory Corp Inc.`))
 	assert.Equal(t, want, have)
 }
