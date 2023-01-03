@@ -13,31 +13,6 @@ type Format struct {
 	endToken string
 }
 
-// removes the comment block in the given format containing the given token from the given text
-func (f Format) remove(text string, token string) string {
-	commentWithToken := f.renderLineStart(token)
-	inComment := false
-	result := []string{}
-	for _, line := range strings.Split(text, "\n") {
-		if strings.HasPrefix(line, commentWithToken) {
-			inComment = true
-		}
-		if inComment && line == "" {
-			// the type of comment blocks we remove here is separated by an empty line
-			// --> empty line marks the end of our comment block
-			inComment = false
-			continue
-		}
-		if inComment && !strings.HasPrefix(line, f.startToken) {
-			inComment = false
-		}
-		if !inComment {
-			result = append(result, line)
-		}
-	}
-	return strings.Join(result, "\n")
-}
-
 func (f Format) SplitHeaderFromContent(text string, token string) (header, content string) {
 	commentWithToken := f.renderLineStart(token)
 	inComment := false

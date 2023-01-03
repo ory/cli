@@ -20,7 +20,8 @@ func FileContentWithoutHeader(path, token string) (string, error) {
 	if !knowsFormat {
 		return text, nil
 	}
-	return format.remove(text, token), nil
+	_, content := format.SplitHeaderFromContent(text, token)
+	return content, nil
 }
 
 func FileContent(path string) (string, error) {
