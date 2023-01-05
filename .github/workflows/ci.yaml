@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - master
+      - debug-release-pipeline
     tags:
       - "*"
   pull_request:
@@ -32,17 +33,17 @@ jobs:
   release:
     name: Generate release
     runs-on: ubuntu-latest
-    if: ${{ github.ref_type == 'tag' }}
-    needs:
-      - test
+    # if: ${{ github.ref_type == 'tag' }}
+    # needs:
+    #   - test
     steps:
       - uses: ory/ci/releaser@master
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
-          cosign_pwd: ${{ secrets.COSIGN_PWD }}
-          docker_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          docker_password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          cosign_pwd: "test123"
+          docker_username: ""
+          docker_password: ""
 
   npm-publish:
     name: Publish to npm
