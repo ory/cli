@@ -41,7 +41,7 @@ jobs:
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
-          cosign_pwd: "test123"
+          cosign_pwd: "test124"
           docker_username: ""
           docker_password: ""
 
