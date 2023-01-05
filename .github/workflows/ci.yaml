@@ -37,7 +37,7 @@ jobs:
     # needs:
     #   - test
     steps:
-      - uses: ory/ci/releaser@master
+      - uses: ory/ci/releaser@debug-release
         with:
           token: ${{ secrets.ORY_BOT_PAT }}
           goreleaser_key: ${{ secrets.GORELEASER_KEY }}
