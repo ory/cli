@@ -42,6 +42,17 @@ func ProjectID(cmd *cobra.Command) (uuid.UUID, error) {
 	return project, nil
 }
 
+func ProjectIDFromSlug(cmd *cobra.Command, pjs []cloud.ProjectMetadata) string {
+	sl := flagx.MustGetString(cmd, projectFlag)
+	var pid string
+	for _, pm := range pjs {
+		if pm.GetSlug() == sl {
+			pid = pm.GetId()
+		}
+	}
+	return pid
+}
+
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
 	sc, err := NewCommandHelper(cmd)
 	if err != nil {
@@ -54,12 +65,21 @@ func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Pro
 		return nil, nil, nil, err
 	}
 
-	project, err := ProjectID(cmd)
+	pjs, err := sc.ListProjects()
 	if err != nil {
-		return nil, nil, nil, cmdx.FailSilently(cmd)
+		return nil, nil, nil, err
 	}
 
-	p, err := sc.GetProject(project.String())
+	pid := ProjectIDFromSlug(cmd, pjs)
+	if pid == "" {
+		pid2, err := ProjectID(cmd)
+		pid = pid2.String()
+		if err != nil {
+			return nil, nil, nil, cmdx.FailSilently(cmd)
+		}
+	}
+
+	p, err := sc.GetProject(pid)
 	if err != nil {
 		return nil, nil, nil, err
 	}
