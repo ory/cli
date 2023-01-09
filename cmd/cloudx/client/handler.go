@@ -524,13 +524,13 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 	id := uuid.FromStringOrNil(projectOrSlug)
 	if id == uuid.Nil {
 		pjs, err := h.ListProjects()
+		if err != nil {
+			return nil, err
+		}
 		for _, pm := range pjs {
 			if pm.GetSlug() == projectOrSlug {
 				id = uuid.FromStringOrNil(pm.GetId())
 			}
-		}
-		if err != nil {
-			return nil, err
 		}
 	}
 	if id == uuid.Nil {
