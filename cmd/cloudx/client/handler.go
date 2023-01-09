@@ -17,7 +17,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/imdario/mergo"
@@ -134,7 +133,7 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}
 
 	pwReader := func() ([]byte, error) {
-		return term.ReadPassword(syscall.Stdin)
+		return term.ReadPassword(int(os.Stdin.Fd()))
 	}
 	if p, ok := cmd.Context().Value(PasswordReader{}).(passwordReader); ok {
 		pwReader = p
