@@ -21,17 +21,16 @@ import (
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/imdario/mergo"
-	"github.com/pkg/errors"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"github.com/tidwall/gjson"
-	"golang.org/x/term"
-
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
 	"github.com/ory/x/stringsx"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"github.com/tidwall/gjson"
+	"golang.org/x/term"
 )
 
 const (
@@ -511,7 +510,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	return projects, nil
 }
 
-func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
+func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -522,7 +521,23 @@ func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+	id := uuid.FromStringOrNil(projectOrSlug)
+	if id == uuid.Nil {
+		pjs, err := h.ListProjects()
+		for _, pm := range pjs {
+			if pm.GetSlug() == projectOrSlug {
+				id = uuid.FromStringOrNil(pm.GetId())
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	if id == uuid.Nil {
+		return nil, errors.Errorf("No project selected! Please use the flag --project to specify one.\n")
+	}
+
+	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}

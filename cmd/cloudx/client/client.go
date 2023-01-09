@@ -13,7 +13,6 @@ import (
 
 	cloud "github.com/ory/client-go"
 
-	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -31,31 +30,6 @@ func RegisterProjectFlag(f *flag.FlagSet) {
 	f.String(projectFlag, "", "The project to use")
 }
 
-// ProjectID returns the ID the user set with the `--project` flag, or prints a warning and returns an error
-// if none was set.
-func ProjectID(cmd *cobra.Command, h *CommandHelper) (uuid.UUID, error) {
-	pf := flagx.MustGetString(cmd, projectFlag)
-	project := uuid.FromStringOrNil(pf)
-
-	if project == uuid.Nil {
-		pjs, err := h.ListProjects()
-		for _, pm := range pjs {
-			if pm.GetSlug() == pf {
-				project = uuid.FromStringOrNil(pm.GetId())
-			}
-		}
-		if err != nil {
-			return uuid.Nil, cmdx.FailSilently(cmd)
-		}
-	}
-
-	if project == uuid.Nil {
-		_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
-		return uuid.Nil, cmdx.FailSilently(cmd)
-	}
-	return project, nil
-}
-
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
 	sc, err := NewCommandHelper(cmd)
 	if err != nil {
@@ -68,12 +42,8 @@ func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Pro
 		return nil, nil, nil, err
 	}
 
-	pid, err := ProjectID(cmd, sc)
-	if err != nil {
-		return nil, nil, nil, cmdx.FailSilently(cmd)
-	}
-
-	p, err := sc.GetProject(pid.String())
+	projectOrSlug := flagx.MustGetString(cmd, projectFlag)
+	p, err := sc.GetProject(projectOrSlug)
 	if err != nil {
 		return nil, nil, nil, err
 	}
