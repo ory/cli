@@ -59,23 +59,19 @@ func TestCommandHelper(t *testing.T) {
 	}
 
 	t.Run("func=SetDefaultProject", func(t *testing.T) {
+		t.Parallel()
 		configDir := testhelpers.NewConfigDir(t)
 		testhelpers.RegisterAccount(t, configDir)
 		otherId := testhelpers.CreateProject(t, configDir)
 		defaultId := testhelpers.CreateProject(t, configDir)
 		testhelpers.SetDefaultProject(t, configDir, defaultId)
 
-		cmd_base := &client.CommandHelper{
-			ConfigLocation:   configDir,
-			NoConfirm:        true,
-			IsQuiet:          false,
-			VerboseWriter:    io.Discard,
-			VerboseErrWriter: io.Discard,
-			Ctx:              context.Background(),
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
 		}
 
 		t.Run("can change the selected project", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 			current, _ := cmd.GetDefaultProjectID()
 			assert.Equal(t, current, defaultId)
 
@@ -89,20 +85,16 @@ func TestCommandHelper(t *testing.T) {
 	})
 
 	t.Run("func=ListProjects", func(t *testing.T) {
+		t.Parallel()
 		configDir := testhelpers.NewConfigDir(t)
 		testhelpers.RegisterAccount(t, configDir)
 
-		cmd_base := &client.CommandHelper{
-			ConfigLocation:   configDir,
-			NoConfirm:        true,
-			IsQuiet:          false,
-			VerboseWriter:    io.Discard,
-			VerboseErrWriter: io.Discard,
-			Ctx:              context.Background(),
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
 		}
 
 		t.Run("With no projects returns empty list", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 
 			projects, err := cmd.ListProjects()
 
@@ -111,7 +103,7 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("With some projects returns list of projects", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 			project_name1 := "new_project_name1"
 			project_name2 := "new_project_name2"
 
@@ -124,27 +116,21 @@ func TestCommandHelper(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Len(t, projects, 2)
-			listedIds := [2]string{projects[0].Id, projects[1].Id}
-			assert.Contains(t, listedIds, project1.Id)
-			assert.Contains(t, listedIds, project2.Id)
+			assert.ElementsMatch(t, []string{projects[0].Id, projects[1].Id}, []string{project1.Id, project2.Id})
 		})
 	})
 
 	t.Run("func=CreateProject", func(t *testing.T) {
+		t.Parallel()
 		configDir := testhelpers.NewConfigDir(t)
 		testhelpers.RegisterAccount(t, configDir)
 
-		cmd_base := &client.CommandHelper{
-			ConfigLocation:   configDir,
-			NoConfirm:        true,
-			IsQuiet:          false,
-			VerboseWriter:    io.Discard,
-			VerboseErrWriter: io.Discard,
-			Ctx:              context.Background(),
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
 		}
 
 		t.Run("creates project and sets default project", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 			project_name := "new_project_name"
 
 			project, err := cmd.CreateProject(project_name, true)
@@ -157,7 +143,7 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("creates two projects with different names", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 			project_name1 := "new_project_name1"
 			project_name2 := "new_project_name2"
 
@@ -178,17 +164,17 @@ func TestCommandHelper(t *testing.T) {
 	})
 
 	t.Run("func=Authenticate", func(t *testing.T) {
-		cmd_base := &client.CommandHelper{
+		t.Parallel()
+		cmdBase := client.CommandHelper{
 			ConfigLocation:   testhelpers.NewConfigDir(t),
 			NoConfirm:        true,
 			IsQuiet:          false,
 			VerboseWriter:    io.Discard,
 			VerboseErrWriter: io.Discard,
-			Ctx:              context.Background(),
 		}
 
 		t.Run("create new account", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 
 			name := testhelpers.FakeName()
 			email := testhelpers.FakeEmail()
@@ -211,7 +197,7 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("log into existing account", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 
 			var r bytes.Buffer
 			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
@@ -228,7 +214,7 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("retry login after wrong password", func(t *testing.T) {
-			cmd := *cmd_base
+			cmd := cmdBase
 
 			var r bytes.Buffer
 			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
