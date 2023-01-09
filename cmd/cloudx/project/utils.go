@@ -9,9 +9,22 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tidwall/sjson"
 
+	"github.com/ory/cli/cmd/cloudx/client"
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 )
+
+func getSelectedProjectId(h *client.CommandHelper, args []string) (string, error) {
+	if len(args) == 0 {
+		if id, err := h.GetDefaultProjectID(); err != nil {
+			return "", err
+		} else {
+			return id, nil
+		}
+	} else {
+		return args[0], nil
+	}
+}
 
 func prefixConfig(prefix string, s []string) []string {
 	for k := range s {

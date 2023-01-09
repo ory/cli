@@ -122,12 +122,8 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 			name = n.Value.String()
 		}
 		var id string
-		if len(args) == 0 {
-			if id, err = h.GetDefaultProjectID(); err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-		} else {
-			id = args[0]
+		if id, err = getSelectedProjectId(h, args); err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
 		}
 		p, err := h.UpdateProject(id, name, configs)
 		if err != nil {

@@ -82,12 +82,8 @@ func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.Ra
 		}
 
 		var id string
-		if len(args) == 0 {
-			if id, err = h.GetDefaultProjectID(); err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-		} else {
-			id = args[0]
+		if id, err = getSelectedProjectId(h, args); err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
 		}
 		p, err := h.PatchProject(id, configs, add, replace, remove)
 		if err != nil {

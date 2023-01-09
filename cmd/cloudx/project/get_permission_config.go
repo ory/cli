@@ -37,12 +37,8 @@ $ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 			}
 
 			var id string
-			if len(args) == 0 {
-				if id, err = h.GetDefaultProjectID(); err != nil {
-					return cmdx.PrintOpenAPIError(cmd, err)
-				}
-			} else {
-				id = args[0]
+			if id, err = getSelectedProjectId(h, args); err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 			project, err := h.GetProject(id)
 			if err != nil {
