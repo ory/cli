@@ -189,11 +189,11 @@ func TestCommandHelper(t *testing.T) {
 			password := testhelpers.FakePassword()
 			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
 
-			auth_ctx, err := cmd.Authenticate()
+			authCtx, err := cmd.Authenticate()
 
 			require.NoError(t, err)
-			require.NotNil(t, auth_ctx)
-			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+			require.NotNil(t, authCtx)
+			require.Equal(t, authCtx.IdentityTraits.Email, email)
 		})
 
 		t.Run("log into existing account", func(t *testing.T) {
