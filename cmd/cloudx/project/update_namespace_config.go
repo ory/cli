@@ -44,7 +44,7 @@ class Example implements Namespace {}
 			patch := fmt.Sprintf(`/services/permission/config/namespaces={"location": "base64://%s"}`,
 				base64.StdEncoding.EncodeToString(data))
 
-			projectID, err := client.ProjectID(cmd)
+			projectID, err := client.ProjectID(cmd, h)
 			if err != nil {
 				return err
 			}

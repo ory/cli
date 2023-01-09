@@ -33,24 +33,27 @@ func RegisterProjectFlag(f *flag.FlagSet) {
 
 // ProjectID returns the ID the user set with the `--project` flag, or prints a warning and returns an error
 // if none was set.
-func ProjectID(cmd *cobra.Command) (uuid.UUID, error) {
-	project := uuid.FromStringOrNil(flagx.MustGetString(cmd, projectFlag))
+func ProjectID(cmd *cobra.Command, h *CommandHelper) (uuid.UUID, error) {
+	pf := flagx.MustGetString(cmd, projectFlag)
+	project := uuid.FromStringOrNil(pf)
+
+	if project == uuid.Nil {
+		pjs, err := h.ListProjects()
+		for _, pm := range pjs {
+			if pm.GetSlug() == pf {
+				project = uuid.FromStringOrNil(pm.GetId())
+			}
+		}
+		if err != nil {
+			return uuid.Nil, cmdx.FailSilently(cmd)
+		}
+	}
+
 	if project == uuid.Nil {
 		_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
 		return uuid.Nil, cmdx.FailSilently(cmd)
 	}
 	return project, nil
-}
-
-func ProjectIDFromSlug(cmd *cobra.Command, pjs []cloud.ProjectMetadata) string {
-	sl := flagx.MustGetString(cmd, projectFlag)
-	var pid string
-	for _, pm := range pjs {
-		if pm.GetSlug() == sl {
-			pid = pm.GetId()
-		}
-	}
-	return pid
 }
 
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
@@ -65,21 +68,12 @@ func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Pro
 		return nil, nil, nil, err
 	}
 
-	pjs, err := sc.ListProjects()
+	pid, err := ProjectID(cmd, sc)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, cmdx.FailSilently(cmd)
 	}
 
-	pid := ProjectIDFromSlug(cmd, pjs)
-	if pid == "" {
-		pid2, err := ProjectID(cmd)
-		pid = pid2.String()
-		if err != nil {
-			return nil, nil, nil, cmdx.FailSilently(cmd)
-		}
-	}
-
-	p, err := sc.GetProject(pid)
+	p, err := sc.GetProject(pid.String())
 	if err != nil {
 		return nil, nil, nil, err
 	}
