@@ -534,14 +534,14 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 
 		var availableSlugs string
 		for _, pm := range pjs {
-			if pm.GetSlug() == projectOrSlug {
+			if len(projectOrSlug) >= 3 && strings.HasPrefix(pm.GetSlug(), projectOrSlug) {
 				id = uuid.FromStringOrNil(pm.GetId())
 			} else {
 				availableSlugs = availableSlugs + "\n" + pm.GetSlug()
 			}
 		}
 		if id == uuid.Nil {
-			return nil, errors.Errorf("no project found with slug %s, only slugs known are: %s", projectOrSlug, availableSlugs)
+			return nil, errors.Errorf("no project found with slug %s, only slugs known are: %v", projectOrSlug, availableSlugs)
 		}
 	}
 
