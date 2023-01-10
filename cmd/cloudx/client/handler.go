@@ -512,7 +512,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
 	if projectOrSlug == "" {
-		return nil, errors.Errorf("No project selected! Please use the flag --project to specify one.\n")
+		return nil, errors.Errorf("No project selected! Please see the help message on how to set one.")
 	}
 
 	ac, err := h.EnsureContext()
