@@ -511,6 +511,10 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 }
 
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
+	if projectOrSlug == "" {
+		return nil, errors.Errorf("No project selected! Please use the flag --project to specify one.\n")
+	}
+
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -527,14 +531,18 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		if err != nil {
 			return nil, err
 		}
+
+		var availableSlugs string
 		for _, pm := range pjs {
 			if pm.GetSlug() == projectOrSlug {
 				id = uuid.FromStringOrNil(pm.GetId())
+			} else {
+				availableSlugs = availableSlugs + "\n" + pm.GetSlug()
 			}
 		}
-	}
-	if id == uuid.Nil {
-		return nil, errors.Errorf("No project selected! Please use the flag --project to specify one.\n")
+		if id == uuid.Nil {
+			return nil, errors.Errorf("no project found with slug %s, only slugs known are: %s", projectOrSlug, availableSlugs)
+		}
 	}
 
 	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
