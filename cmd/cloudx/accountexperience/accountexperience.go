@@ -1,10 +1,14 @@
+// Copyright © 2023 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 package accountexperience
 
 import (
-	"github.com/ory/cli/cmd/cloudx/client"
 	br "github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
+
+	"github.com/ory/cli/cmd/cloudx/client"
 )
 
 const project = "project"

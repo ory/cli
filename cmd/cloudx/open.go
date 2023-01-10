@@ -1,10 +1,14 @@
+// Copyright © 2023 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 package cloudx
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/ory/cli/cmd/cloudx/accountexperience"
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
-	"github.com/spf13/cobra"
 )
 
 func NewOpenCmd() *cobra.Command {
