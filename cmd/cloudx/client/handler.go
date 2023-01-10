@@ -532,12 +532,14 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 			return nil, err
 		}
 
-		var availableSlugs string
-		for _, pm := range pjs {
-			if len(projectOrSlug) >= 3 && strings.HasPrefix(pm.GetSlug(), projectOrSlug) {
+		availableSlugs := make([]string, len(pjs))
+		for i, pm := range pjs {
+			availableSlugs[i] = pm.GetSlug()
+			if strings.HasPrefix(pm.GetSlug(), projectOrSlug) {
+				if id != uuid.Nil {
+					return nil, errors.Errorf("The slug prefix %q is not unique, please use more characters. Found slugs:\n%s", projectOrSlug, strings.Join(availableSlugs, "\n"))
+				}
 				id = uuid.FromStringOrNil(pm.GetId())
-			} else {
-				availableSlugs = availableSlugs + "\n" + pm.GetSlug()
 			}
 		}
 		if id == uuid.Nil {
