@@ -27,7 +27,7 @@ import (
 const projectFlag = "project"
 
 func RegisterProjectFlag(f *flag.FlagSet) {
-	f.String(projectFlag, "", "The project to use")
+	f.String(projectFlag, "", "The project to use, either project ID or a (partial) slug.")
 }
 
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
