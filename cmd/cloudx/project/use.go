@@ -4,6 +4,8 @@
 package project
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -32,8 +34,9 @@ $ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 
 			var id string
 			if len(args) == 0 {
-				if id, err = h.GetDefaultProjectID(); err != nil {
-					return cmdx.PrintOpenAPIError(cmd, err)
+				if id = h.GetDefaultProjectID(); id == "" {
+					_, _ = fmt.Println("No default project selected")
+					return nil
 				}
 			} else {
 				id = args[0]
@@ -43,7 +46,7 @@ $ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				}
 			}
 
-			cmdx.PrintRow(cmd, &selectedProject{Id: id})
+			cmdx.PrintRow(cmd, &selectedProject{ID: id})
 			return nil
 		},
 	}

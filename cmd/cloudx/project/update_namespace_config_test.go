@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
 
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/ory/x/fetcher"
 )
 
@@ -39,11 +38,8 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 
 	for _, verb := range verbs {
 		t.Run(fmt.Sprintf("is able to %q the namespace config", verb), func(t *testing.T) {
-			testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
-			t.Run("explicit project", func(t *testing.T) {
-				assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
-
-				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--project", extraProject, "--format", "json", "--file", config)
+			runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+				stdout, stderr, err := exec(nil, verb, "opl", "--format", "json", "--file", config)
 				require.NoError(t, err, stderr)
 
 				if !testing.Short() {
@@ -53,21 +49,7 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 					require.NoError(t, err, "could not download the config")
 					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
 				}
-			})
-			t.Run("default project", func(t *testing.T) {
-				assert.Equal(t, defaultProject, testhelpers.GetDefaultProject(t, defaultConfig))
-
-				stdout, stderr, err := defaultCmd.Exec(nil, verb, "opl", "--format", "json", "--file", config)
-				require.NoError(t, err, stderr)
-
-				if !testing.Short() {
-					// Don't download and compare the config in short mode, might not have internet everywhere
-					url := gjson.Get(stdout, "namespaces.location").String()
-					data, err := fetcher.NewFetcher().Fetch(url)
-					require.NoError(t, err, "could not download the config")
-					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
-				}
-			})
+			}, DefaultProject|FlagProject)
 		})
 	}
 }

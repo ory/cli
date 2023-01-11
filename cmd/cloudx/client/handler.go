@@ -152,17 +152,17 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}, nil
 }
 
-func (h *CommandHelper) GetDefaultProjectID() (string, error) {
+func (h *CommandHelper) GetDefaultProjectID() string {
 	conf, err := h.readConfig()
 	if err != nil {
-		return "", err
+		return ""
 	}
 
 	if conf.SelectedProject != uuid.Nil {
-		return conf.SelectedProject.String(), nil
+		return conf.SelectedProject.String()
 	}
 
-	return "", errors.New("No valid default project was specified")
+	return ""
 }
 
 func (h *CommandHelper) SetDefaultProject(id string) error {
@@ -579,7 +579,7 @@ func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Proj
 		return nil, handleError("unable to list projects", res, err)
 	}
 
-	if def, _ := h.GetDefaultProjectID(); setDefault || def == "" {
+	if def := h.GetDefaultProjectID(); setDefault || def == "" {
 		_ = h.SetDefaultProject(project.Id)
 	}
 

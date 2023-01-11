@@ -6,6 +6,7 @@ package project
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/sjson"
 
@@ -14,10 +15,12 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
+var defaultProjectNotSetError = errors.New("no project was specified")
+
 func getSelectedProjectId(h *client.CommandHelper, args []string) (string, error) {
 	if len(args) == 0 {
-		if id, err := h.GetDefaultProjectID(); err != nil {
-			return "", err
+		if id := h.GetDefaultProjectID(); id == "" {
+			return "", defaultProjectNotSetError
 		} else {
 			return id, nil
 		}

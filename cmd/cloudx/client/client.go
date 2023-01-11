@@ -34,7 +34,7 @@ func RegisterProjectFlag(f *flag.FlagSet) {
 // if none was set.
 func ProjectOrDefault(cmd *cobra.Command, h *CommandHelper) (string, error) {
 	if flag := flagx.MustGetString(cmd, projectFlag); flag == "" {
-		if id, err := h.GetDefaultProjectID(); err == nil {
+		if id := h.GetDefaultProjectID(); id != "" {
 			return id, nil
 		} else {
 			_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)

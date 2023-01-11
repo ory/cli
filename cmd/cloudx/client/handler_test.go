@@ -72,14 +72,13 @@ func TestCommandHelper(t *testing.T) {
 
 		t.Run("can change the selected project", func(t *testing.T) {
 			cmd := cmdBase
-			current, _ := cmd.GetDefaultProjectID()
+			current := cmd.GetDefaultProjectID()
 			assert.Equal(t, current, defaultId)
 
 			err := cmd.SetDefaultProject(otherId)
 			assert.NoError(t, err)
 
-			selected, err := cmd.GetDefaultProjectID()
-			assert.NoError(t, err)
+			selected := cmd.GetDefaultProjectID()
 			assert.Equal(t, selected, otherId)
 		})
 	})
@@ -137,8 +136,7 @@ func TestCommandHelper(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, project.Name, project_name)
 
-			defaultId, err := cmd.GetDefaultProjectID()
-			require.NoError(t, err)
+			defaultId := cmd.GetDefaultProjectID()
 			assert.Equal(t, project.Id, defaultId)
 		})
 
@@ -157,8 +155,7 @@ func TestCommandHelper(t *testing.T) {
 			assert.NotEqual(t, project1.Name, project2.Name)
 			assert.NotEqual(t, project1.Slug, project2.Slug)
 
-			defaultId, err := cmd.GetDefaultProjectID()
-			require.NoError(t, err)
+			defaultId := cmd.GetDefaultProjectID()
 			assert.Equal(t, project1.Id, defaultId)
 		})
 	})

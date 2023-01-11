@@ -43,8 +43,8 @@ $ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				return err
 			}
 
-			var id string
-			if id, err = getSelectedProjectId(h, args); err != nil {
+			id, err := getSelectedProjectId(h, args)
+			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 			project, err := h.GetProject(id)

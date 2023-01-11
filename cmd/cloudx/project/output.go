@@ -73,15 +73,15 @@ func (c *outputProjectCollection) Len() int {
 }
 
 type selectedProject struct {
-	Id string `json:"id"`
+	ID string `json:"id"`
 }
 
 func (i selectedProject) String() string {
-	return i.Id
+	return i.ID
 }
 
-func (i *selectedProject) ID() string {
-	return i.Id
+func (i *selectedProject) ProjectID() string {
+	return i.ID
 }
 
 func (*selectedProject) Header() []string {
@@ -90,7 +90,7 @@ func (*selectedProject) Header() []string {
 
 func (i *selectedProject) Columns() []string {
 	return []string{
-		i.Id,
+		i.ID,
 	}
 }
 
