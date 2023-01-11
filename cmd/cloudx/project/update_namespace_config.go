@@ -44,12 +44,12 @@ class Example implements Namespace {}
 			patch := fmt.Sprintf(`/services/permission/config/namespaces={"location": "base64://%s"}`,
 				base64.StdEncoding.EncodeToString(data))
 
-			projectID, err := client.ProjectID(cmd)
+			project, err := h.GetProject(flagx.MustGetString(cmd, "project"))
 			if err != nil {
 				return err
 			}
 
-			p, err := h.PatchProject(projectID.String(), nil, nil, []string{patch}, nil)
+			p, err := h.PatchProject(project.Id, nil, nil, []string{patch}, nil)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

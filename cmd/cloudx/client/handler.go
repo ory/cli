@@ -510,7 +510,11 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	return projects, nil
 }
 
-func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
+func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
+	if projectOrSlug == "" {
+		return nil, errors.Errorf("No project selected! Please see the help message on how to set one.")
+	}
+
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -521,7 +525,29 @@ func (h *CommandHelper) GetProject(id string) (*cloud.Project, error) {
 		return nil, err
 	}
 
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+	id := uuid.FromStringOrNil(projectOrSlug)
+	if id == uuid.Nil {
+		pjs, err := h.ListProjects()
+		if err != nil {
+			return nil, err
+		}
+
+		availableSlugs := make([]string, len(pjs))
+		for i, pm := range pjs {
+			availableSlugs[i] = pm.GetSlug()
+			if strings.HasPrefix(pm.GetSlug(), projectOrSlug) {
+				if id != uuid.Nil {
+					return nil, errors.Errorf("The slug prefix %q is not unique, please use more characters. Found slugs:\n%s", projectOrSlug, strings.Join(availableSlugs, "\n"))
+				}
+				id = uuid.FromStringOrNil(pm.GetId())
+			}
+		}
+		if id == uuid.Nil {
+			return nil, errors.Errorf("no project found with slug %s, only slugs known are: %v", projectOrSlug, availableSlugs)
+		}
+	}
+
+	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}

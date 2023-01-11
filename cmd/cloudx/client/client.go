@@ -13,7 +13,6 @@ import (
 
 	cloud "github.com/ory/client-go"
 
-	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -28,18 +27,7 @@ import (
 const projectFlag = "project"
 
 func RegisterProjectFlag(f *flag.FlagSet) {
-	f.String(projectFlag, "", "The project to use")
-}
-
-// ProjectID returns the ID the user set with the `--project` flag, or prints a warning and returns an error
-// if none was set.
-func ProjectID(cmd *cobra.Command) (uuid.UUID, error) {
-	project := uuid.FromStringOrNil(flagx.MustGetString(cmd, projectFlag))
-	if project == uuid.Nil {
-		_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
-		return uuid.Nil, cmdx.FailSilently(cmd)
-	}
-	return project, nil
+	f.String(projectFlag, "", "The project to use, either project ID or a (partial) slug.")
 }
 
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
@@ -54,12 +42,8 @@ func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Pro
 		return nil, nil, nil, err
 	}
 
-	project, err := ProjectID(cmd)
-	if err != nil {
-		return nil, nil, nil, cmdx.FailSilently(cmd)
-	}
-
-	p, err := sc.GetProject(project.String())
+	projectOrSlug := flagx.MustGetString(cmd, projectFlag)
+	p, err := sc.GetProject(projectOrSlug)
 	if err != nil {
 		return nil, nil, nil, err
 	}

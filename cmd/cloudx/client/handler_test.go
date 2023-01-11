@@ -75,6 +75,10 @@ func TestCommandHelper(t *testing.T) {
 			p, err := loggedIn.GetProject(project)
 			require.NoError(t, err)
 			assertValidProject(t, p)
+
+			actual, err := loggedIn.GetProject(p.Slug[0:4])
+			require.NoError(t, err)
+			assert.Equal(t, p, actual)
 		})
 
 		t.Run("is not able to list projects if not authenticated and quiet flag", func(t *testing.T) {
