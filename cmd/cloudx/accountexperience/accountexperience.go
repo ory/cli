@@ -4,6 +4,8 @@
 package accountexperience
 
 import (
+	"strings"
+
 	br "github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -17,35 +19,50 @@ func RegisterProjectFlag(f *flag.FlagSet) {
 	f.String(project, "", "The project to use")
 }
 
+var axmap = map[string]string{
+	"signin":       "login",
+	"signup":       "registration",
+	"recovery":     "recovery",
+	"verification": "verification",
+	"settings":     "settings",
+}
+
 func NewAccountExperienceOpenCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "account-experience",
 		Short: "Open Ory Account Experience Pages",
 	}
-	cmd.AddCommand(NewLoginCmd())
+
+	for _, v := range axmap {
+		cmd.AddCommand(NewAxCmd(v))
+	}
 
 	return cmd
 }
-func NewLoginCmd() *cobra.Command {
+
+func NewAxCmd(subcmd string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "login",
-		Aliases: []string{"registration", "settings"},
-		Short:   "Open Ory Account Experience Pages",
+		Use:   subcmd,
+		Short: "Open " + strings.Title(subcmd) + " Page",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, _, p, err := client.Client(cmd)
-			if err != nil {
-				return err
-			}
-
-			url := "https://" + p.GetSlug() + ".projects.oryapis.com/ui/" + cmd.CalledAs()
-
-			err = br.OpenURL(url)
-			if err != nil {
-				return err
-			}
-
-			return nil
+			return AXWrapper(cmd, args)
 		},
 	}
 	return cmd
+}
+
+func AXWrapper(cmd *cobra.Command, args []string) error {
+	_, _, p, err := client.Client(cmd)
+	if err != nil {
+		return err
+	}
+
+	url := "https://" + p.GetSlug() + ".projects.oryapis.com/ui/" + axmap[cmd.CalledAs()]
+
+	err = br.OpenURL(url)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
