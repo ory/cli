@@ -4,8 +4,6 @@
 package accountexperience
 
 import (
-	"strings"
-
 	br "github.com/pkg/browser"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
@@ -43,7 +41,7 @@ func NewAccountExperienceOpenCmd() *cobra.Command {
 func NewAxCmd(subcmd string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   subcmd,
-		Short: "Open " + strings.Title(subcmd) + " Page",
+		Short: "Open " + subcmd + " page",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return AXWrapper(cmd, args)
 		},
