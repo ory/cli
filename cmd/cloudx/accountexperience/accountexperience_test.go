@@ -6,8 +6,9 @@ package accountexperience_test
 import (
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
 var defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
