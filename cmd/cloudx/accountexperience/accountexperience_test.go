@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var defaultConfig, defaultEmail, defaultPassword, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+var defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 
 func TestOpenAXPages(t *testing.T) {
 
