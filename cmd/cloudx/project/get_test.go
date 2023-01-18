@@ -12,30 +12,36 @@ import (
 )
 
 func TestGetProject(t *testing.T) {
-	t.Run("is able to get project", func(t *testing.T) {
-		stdout, _, err := defaultCmd.Exec(nil, "get", "project", defaultProject, "--format", "json")
+	runWithProject(t, func(t *testing.T, exec execFunc, projectID string) {
+		stdout, _, err := exec(nil, "get", "project", "--format", "json")
 		require.NoError(t, err)
-		assert.Equal(t, defaultProject, gjson.Get(stdout, "id").String())
+		assert.Equal(t, projectID, gjson.Get(stdout, "id").String())
 		assert.NotEmpty(t, gjson.Get(stdout, "slug").String())
-	})
+	}, WithDefaultProject, WithPositionalProject)
 }
 
 func TestGetServiceConfig(t *testing.T) {
 	t.Run("service=kratos", func(t *testing.T) {
-		stdout, _, err := defaultCmd.Exec(nil, "get", "kratos-config", defaultProject, "--format", "json")
-		require.NoError(t, err)
-		assert.True(t, gjson.Get(stdout, "selfservice.flows.error.ui_url").Exists())
+		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+			stdout, _, err := exec(nil, "get", "kratos-config", "--format", "json")
+			require.NoError(t, err)
+			assert.True(t, gjson.Get(stdout, "selfservice.flows.error.ui_url").Exists())
+		}, WithDefaultProject, WithPositionalProject)
 	})
 
 	t.Run("service=keto", func(t *testing.T) {
-		stdout, _, err := defaultCmd.Exec(nil, "get", "keto-config", defaultProject, "--format", "json")
-		require.NoError(t, err)
-		assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
+		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+			stdout, _, err := exec(nil, "get", "keto-config", "--format", "json")
+			require.NoError(t, err)
+			assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
+		}, WithDefaultProject, WithPositionalProject)
 	})
 
 	t.Run("service=hydra", func(t *testing.T) {
-		stdout, _, err := defaultCmd.Exec(nil, "get", "oauth2-config", defaultProject, "--format", "json")
-		require.NoError(t, err)
-		assert.True(t, gjson.Get(stdout, "oauth2").Exists(), stdout)
+		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+			stdout, _, err := exec(nil, "get", "oauth2-config", "--format", "json")
+			require.NoError(t, err)
+			assert.True(t, gjson.Get(stdout, "oauth2").Exists(), stdout)
+		}, WithDefaultProject, WithPositionalProject)
 	})
 }

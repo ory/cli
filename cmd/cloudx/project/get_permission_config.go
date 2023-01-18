@@ -12,9 +12,9 @@ import (
 
 func NewGetKetoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "permission-config <project-id>",
+		Use:     "permission-config [project-id]",
 		Aliases: []string{"pc", "keto-config"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		Short:   "Get Ory Permissions configuration.",
 		Long:    "Get the Ory Permissions configuration for the specified Ory Network project.",
 		Example: `$ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > permission-config.yaml
@@ -36,7 +36,11 @@ $ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				return err
 			}
 
-			project, err := h.GetProject(args[0])
+			id, err := getSelectedProjectId(h, args)
+			if err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
+			}
+			project, err := h.GetProject(id)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

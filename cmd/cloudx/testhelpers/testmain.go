@@ -25,7 +25,7 @@ func UseStaging() {
 	setEnvIfUnset("ORY_CLOUD_ORYAPIS_URL", "https://staging.oryapis.dev:443")
 }
 
-func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword, defaultProject string, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject string, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
 	t := testingT{}
@@ -33,6 +33,7 @@ func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword, defaul
 	defaultConfig = NewConfigDir(t)
 
 	defaultEmail, defaultPassword = RegisterAccount(t, defaultConfig)
+	extraProject = CreateProject(t, defaultConfig)
 	defaultProject = CreateProject(t, defaultConfig)
 	defaultCmd = ConfigAwareCmd(defaultConfig)
 	return

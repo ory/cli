@@ -12,9 +12,9 @@ import (
 
 func NewGetKratosConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "identity-config <project-id>",
+		Use:     "identity-config [project-id]",
 		Aliases: []string{"ic", "kratos-config"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		Short:   "Get Ory Identities configuration.",
 		Long:    "Get the Ory Identities configuration for the specified Ory Network project.",
 		Example: `$ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > identity-config.yaml
@@ -35,7 +35,11 @@ $ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				return err
 			}
 
-			project, err := h.GetProject(args[0])
+			id, err := getSelectedProjectId(h, args)
+			if err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
+			}
+			project, err := h.GetProject(id)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

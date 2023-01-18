@@ -15,6 +15,8 @@ import (
 	"github.com/ory/x/flagx"
 )
 
+const useProjectFlag = "use-project"
+
 func NewCreateProjectCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project",
@@ -39,7 +41,8 @@ func NewCreateProjectCmd() *cobra.Command {
 				}
 			}
 
-			p, err := h.CreateProject(name)
+			use := flagx.MustGetBool(cmd, useProjectFlag)
+			p, err := h.CreateProject(name, use)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -51,6 +54,7 @@ func NewCreateProjectCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringP("name", "n", "", "The name of the project, required when quiet mode is used")
+	cmd.Flags().Bool(useProjectFlag, false, "Set the created project as the default.")
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }
