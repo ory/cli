@@ -49,7 +49,7 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 					require.NoError(t, err, "could not download the config")
 					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
 				}
-			}, DefaultProject|FlagProject)
+			}, WithDefaultProject, WithFlagProject)
 		})
 	}
 }
