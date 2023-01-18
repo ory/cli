@@ -11,7 +11,7 @@ import (
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
-var defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+var _, _, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 
 func TestOpenAXPages(t *testing.T) {
 
