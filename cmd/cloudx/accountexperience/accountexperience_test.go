@@ -4,7 +4,7 @@
 package accountexperience_test
 
 import (
-	"fmt"
+	"os/exec"
 	"testing"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
@@ -16,12 +16,9 @@ func TestOpenAXPages(t *testing.T) {
 
 	t.Run("is able to open login page", func(t *testing.T) {
 		var pages = [5]string{"login", "registration", "recovery", "verification", "settings"}
-
 		for _, p := range pages {
-			e := fmt.Errorf("xdg-open: no method available for opening 'https://cool-shamir-px8pubwbfq.projects.oryapis.com/ui/%s'", p)
-
 			_, _, err := defaultCmd.Exec(nil, "open", "account-experience", p, "--project", defaultProject)
-			if err != nil || err != e {
+			if err != nil || err != exec.ErrNotFound {
 				t.Fail()
 			}
 		}
