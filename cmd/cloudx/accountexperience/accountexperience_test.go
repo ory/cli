@@ -8,8 +8,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
@@ -21,10 +19,12 @@ func TestOpenAXPages(t *testing.T) {
 		var pages = [5]string{"login", "registration", "recovery", "verification", "settings"}
 
 		for _, p := range pages {
-			defaultCmd.Exec(nil, "open", "account-experience", p, "--project", defaultProject)
 			e := errors.New(fmt.Sprintf("xdg-open: no method available for opening 'https://cool-shamir-px8pubwbfq.projects.oryapis.com/ui/%s'", p))
-			require.Error(t, e)
 
+			_, _, err := defaultCmd.Exec(nil, "open", "account-experience", p, "--project", defaultProject)
+			if err != nil || err != e {
+				t.Fail()
+			}
 		}
 	})
 
