@@ -152,6 +152,19 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 	}, nil
 }
 
+func (h *CommandHelper) GetDefaultProjectID() string {
+	conf, err := h.readConfig()
+	if err != nil {
+		return ""
+	}
+
+	if conf.SelectedProject != uuid.Nil {
+		return conf.SelectedProject.String()
+	}
+
+	return ""
+}
+
 func (h *CommandHelper) SetDefaultProject(id string) error {
 	conf, err := h.readConfig()
 	if err != nil {
@@ -455,11 +468,6 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 		return nil, err
 	}
 
-	var retry bool
-	if retry {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Unable to Authenticate you, please try again.")
-	}
-
 	if signIn {
 		ac, err = h.signin(c, "")
 		if err != nil {
@@ -555,7 +563,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 	return project, nil
 }
 
-func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
+func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
@@ -571,8 +579,8 @@ func (h *CommandHelper) CreateProject(name string) (*cloud.Project, error) {
 		return nil, handleError("unable to list projects", res, err)
 	}
 
-	if err := h.SetDefaultProject(project.Id); err != nil {
-		return nil, err
+	if def := h.GetDefaultProjectID(); setDefault || def == "" {
+		_ = h.SetDefaultProject(project.Id)
 	}
 
 	return project, nil
@@ -662,6 +670,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	if err != nil {
 		return nil, err
 	}
+
 	return res, nil
 }
 
@@ -732,6 +741,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if err != nil {
 		return nil, err
 	}
+
 	return res, nil
 }
 

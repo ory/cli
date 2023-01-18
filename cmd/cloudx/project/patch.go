@@ -17,8 +17,8 @@ import (
 
 func NewProjectsPatchCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "project <id>",
-		Args:  cobra.ExactArgs(1),
+		Use:   "project [id]",
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Patch the Ory Network project configuration.",
 		Example: `ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/name="My new project name"' \
@@ -81,7 +81,11 @@ func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.Ra
 			return err
 		}
 
-		p, err := h.PatchProject(args[0], configs, add, replace, remove)
+		id, err := getSelectedProjectId(h, args)
+		if err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
+		}
+		p, err := h.PatchProject(id, configs, add, replace, remove)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}

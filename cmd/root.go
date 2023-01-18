@@ -33,6 +33,7 @@ func NewRootCmd() *cobra.Command {
 		jsonnet.NewLintCmd(),
 		cloudx.NewDeleteCmd(),
 		cloudx.NewGetCmd(),
+		cloudx.NewUseCmd(),
 		cloudx.NewListCmd(),
 		cloudx.NewImportCmd(),
 		cloudx.NewPatchCmd(),

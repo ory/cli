@@ -18,8 +18,8 @@ import (
 
 func NewProjectsUpdateCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "project <id>",
-		Args:  cobra.ExactArgs(1),
+		Use:   "project [id]",
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Update Ory Network project service configuration",
 		Example: `$ ory update project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--name \"my updated name\" \
@@ -121,7 +121,11 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 		if n := cmd.Flags().Lookup("name"); n != nil {
 			name = n.Value.String()
 		}
-		p, err := h.UpdateProject(args[0], name, configs)
+		id, err := getSelectedProjectId(h, args)
+		if err != nil {
+			return cmdx.PrintOpenAPIError(cmd, err)
+		}
+		p, err := h.UpdateProject(id, name, configs)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}

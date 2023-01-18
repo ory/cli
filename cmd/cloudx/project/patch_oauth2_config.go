@@ -13,9 +13,9 @@ import (
 
 func NewPatchOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "oauth2-config <project-id>",
+		Use:     "oauth2-config [project-id]",
 		Aliases: []string{"oc", "hydra-config"},
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MaximumNArgs(1),
 		Short:   "Patch the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project.",
 		Example: `$ ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/strategies/access_token="jwt"' \

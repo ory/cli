@@ -71,3 +71,29 @@ func (c *outputProjectCollection) Interface() interface{} {
 func (c *outputProjectCollection) Len() int {
 	return len(c.projects)
 }
+
+type selectedProject struct {
+	ID string `json:"id"`
+}
+
+func (i selectedProject) String() string {
+	return i.ID
+}
+
+func (i *selectedProject) ProjectID() string {
+	return i.ID
+}
+
+func (*selectedProject) Header() []string {
+	return []string{"ID"}
+}
+
+func (i *selectedProject) Columns() []string {
+	return []string{
+		i.ID,
+	}
+}
+
+func (i *selectedProject) Interface() interface{} {
+	return i
+}

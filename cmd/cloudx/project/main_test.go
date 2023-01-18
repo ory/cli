@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	defaultProject, defaultConfig, defaultEmail, defaultPassword string
-	defaultCmd                                                   *cmdx.CommandExecuter
+	extraProject, defaultProject, defaultConfig, defaultEmail, defaultPassword string
+	defaultCmd                                                                 *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	defaultConfig, defaultEmail, defaultPassword, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 	testhelpers.RunAgainstStaging(m)
 }

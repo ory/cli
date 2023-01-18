@@ -58,6 +58,205 @@ func TestCommandHelper(t *testing.T) {
 		return &notYetLoggedIn
 	}
 
+	t.Run("func=SetDefaultProject", func(t *testing.T) {
+		t.Parallel()
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+		otherId := testhelpers.CreateProject(t, configDir)
+		defaultId := testhelpers.CreateProject(t, configDir)
+		testhelpers.SetDefaultProject(t, configDir, defaultId)
+
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
+		}
+
+		t.Run("can change the selected project", func(t *testing.T) {
+			cmd := cmdBase
+			current := cmd.GetDefaultProjectID()
+			assert.Equal(t, current, defaultId)
+
+			err := cmd.SetDefaultProject(otherId)
+			assert.NoError(t, err)
+
+			selected := cmd.GetDefaultProjectID()
+			assert.Equal(t, selected, otherId)
+		})
+	})
+
+	t.Run("func=ListProjects", func(t *testing.T) {
+		t.Parallel()
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
+		}
+
+		t.Run("With no projects returns empty list", func(t *testing.T) {
+			cmd := cmdBase
+
+			projects, err := cmd.ListProjects()
+
+			require.NoError(t, err)
+			require.Empty(t, projects)
+		})
+
+		t.Run("With some projects returns list of projects", func(t *testing.T) {
+			cmd := cmdBase
+			project_name1 := "new_project_name1"
+			project_name2 := "new_project_name2"
+
+			project1, err := cmd.CreateProject(project_name1, false)
+			require.NoError(t, err)
+			project2, err := cmd.CreateProject(project_name2, false)
+			require.NoError(t, err)
+
+			projects, err := cmd.ListProjects()
+
+			require.NoError(t, err)
+			assert.Len(t, projects, 2)
+			assert.ElementsMatch(t, []string{projects[0].Id, projects[1].Id}, []string{project1.Id, project2.Id})
+		})
+	})
+
+	t.Run("func=CreateProject", func(t *testing.T) {
+		t.Parallel()
+		configDir := testhelpers.NewConfigDir(t)
+		testhelpers.RegisterAccount(t, configDir)
+
+		cmdBase := client.CommandHelper{
+			ConfigLocation: configDir,
+		}
+
+		t.Run("creates project and sets default project", func(t *testing.T) {
+			cmd := cmdBase
+			project_name := "new_project_name"
+
+			project, err := cmd.CreateProject(project_name, true)
+			require.NoError(t, err)
+			assert.Equal(t, project.Name, project_name)
+
+			defaultId := cmd.GetDefaultProjectID()
+			assert.Equal(t, project.Id, defaultId)
+		})
+
+		t.Run("creates two projects with different names", func(t *testing.T) {
+			cmd := cmdBase
+			project_name1 := "new_project_name1"
+			project_name2 := "new_project_name2"
+
+			project1, err := cmd.CreateProject(project_name1, true)
+			require.NoError(t, err)
+
+			project2, err := cmd.CreateProject(project_name2, false)
+			require.NoError(t, err)
+
+			assert.NotEqual(t, project1.Id, project2.Id)
+			assert.NotEqual(t, project1.Name, project2.Name)
+			assert.NotEqual(t, project1.Slug, project2.Slug)
+
+			defaultId := cmd.GetDefaultProjectID()
+			assert.Equal(t, project1.Id, defaultId)
+		})
+	})
+
+	t.Run("func=Authenticate", func(t *testing.T) {
+		t.Parallel()
+		cmdBase := client.CommandHelper{
+			ConfigLocation:   testhelpers.NewConfigDir(t),
+			NoConfirm:        true,
+			IsQuiet:          false,
+			VerboseWriter:    io.Discard,
+			VerboseErrWriter: io.Discard,
+		}
+
+		t.Run("create new account", func(t *testing.T) {
+			cmd := cmdBase
+
+			name := testhelpers.FakeName()
+			email := testhelpers.FakeEmail()
+			var r bytes.Buffer
+			_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			_, _ = r.WriteString(name + "\n")  // Name: FakeName()
+			_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
+			_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
+			cmd.Stdin = bufio.NewReader(&r)
+
+			password := testhelpers.FakePassword()
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			authCtx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, authCtx)
+			require.Equal(t, authCtx.IdentityTraits.Email, email)
+		})
+
+		t.Run("log into existing account", func(t *testing.T) {
+			cmd := cmdBase
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			cmd.Stdin = bufio.NewReader(&r)
+
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+
+		t.Run("retry login after wrong password", func(t *testing.T) {
+			cmd := cmdBase
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail() [RETRY]
+			cmd.Stdin = bufio.NewReader(&r)
+
+			var retry = false
+			cmd.PwReader = func() ([]byte, error) {
+				if retry {
+					return []byte(password), nil
+				}
+				retry = true
+				return []byte("wrong"), nil
+			}
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+
+		t.Run("switch logged in account", func(t *testing.T) {
+			cmd := *loggedIn
+
+			cmd.NoConfirm = false
+			cmd.IsQuiet = false
+
+			var r bytes.Buffer
+			_, _ = r.WriteString("y\n")        // You are signed in as \"%s\" already. Do you wish to authenticate with another account?: y
+			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
+			cmd.Stdin = bufio.NewReader(&r)
+
+			cmd.PwReader = func() ([]byte, error) { return []byte(password), nil }
+
+			auth_ctx, err := cmd.Authenticate()
+
+			require.NoError(t, err)
+			require.NotNil(t, auth_ctx)
+			require.Equal(t, auth_ctx.IdentityTraits.Email, email)
+		})
+	})
+
 	t.Run("func=CreateAPIKey and DeleteApiKey", func(t *testing.T) {
 		t.Run("is able to get project", func(t *testing.T) {
 			name := "a test key"

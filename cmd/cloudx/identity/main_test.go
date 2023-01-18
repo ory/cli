@@ -16,6 +16,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	defaultConfig, defaultEmail, defaultPassword, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	defaultConfig, defaultEmail, defaultPassword, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 	testhelpers.RunAgainstStaging(m)
 }
