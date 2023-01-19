@@ -13,6 +13,8 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
+      - run: |
+          sudo apt install lynx
       - uses: ory/ci/checkout@master
       - uses: actions/setup-go@v2
         with:
