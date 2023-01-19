@@ -353,7 +353,6 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 		}
 
 		session, err := checkSession(hc, r, endpoint)
-		r.Header.Del("Authorization")
 		if err != nil || !gjson.GetBytes(session, "active").Bool() {
 			next(w, r)
 			return
@@ -378,6 +377,7 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 			return
 		}
 
+		r.Header.Del("Authorization")
 		r.Header.Set("Authorization", "Bearer "+raw)
 		next(w, r)
 	}
