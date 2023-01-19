@@ -13,8 +13,12 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
+      - uses: abhi1693/setup-browser@v0.3.4
+        with:
+          browser: chrome
+          version: latest
       - run: |
-          sudo apt install lynx
+          alias open="google-chrome --headless --remote-debugging-port=9222"
       - uses: ory/ci/checkout@master
       - uses: actions/setup-go@v2
         with:
