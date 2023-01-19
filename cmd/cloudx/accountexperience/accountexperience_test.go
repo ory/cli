@@ -4,10 +4,10 @@
 package accountexperience_test
 
 import (
-	"os/exec"
 	"testing"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
+	"github.com/stretchr/testify/require"
 )
 
 var _, _, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
@@ -18,9 +18,7 @@ func TestOpenAXPages(t *testing.T) {
 		var pages = [5]string{"login", "registration", "recovery", "verification", "settings"}
 		for _, p := range pages {
 			_, _, err := defaultCmd.Exec(nil, "open", "account-experience", p, "--project", defaultProject)
-			if err != nil || err != exec.ErrNotFound {
-				t.Fail()
-			}
+			require.NoError(t, err)
 		}
 	})
 

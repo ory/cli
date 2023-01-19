@@ -6,8 +6,10 @@ package accountexperience
 import (
 	"flag"
 	"fmt"
+	"os"
 
-	br "github.com/pkg/browser"
+	"os/exec"
+
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -49,9 +51,10 @@ func AxWrapper(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	url := fmt.Sprintf("https://%s.projects.oryapis.com/ui/%s", p.GetSlug(), cmd.CalledAs())
-	err = br.OpenURL(url)
-	if err != nil {
-		return err
+
+	// #nosec G204 - this is ok
+	if err := exec.Command("open", url); err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
 	}
 
 	return nil

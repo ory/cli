@@ -38,7 +38,6 @@ require (
 	github.com/ory/keto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	github.com/ory/kratos v0.10.2-0.20221108163448-d3d148b3a589
 	github.com/ory/x v0.0.511-0.20221108105728-3fed9bc99daf
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
