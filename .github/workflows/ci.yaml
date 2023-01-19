@@ -18,6 +18,7 @@ jobs:
           browser: chrome
           version: latest
       - run: |
+          shopt -s expand_aliases
           alias open="google-chrome --headless --remote-debugging-port=9222"
       - uses: ory/ci/checkout@master
       - uses: actions/setup-go@v2
