@@ -4,26 +4,23 @@
 package accountexperience
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	"os/exec"
 
+	"github.com/pkg/browser"
 	"github.com/spf13/cobra"
 
-	"github.com/ory/cli/cmd/cloudx/client"
+	client "github.com/ory/cli/cmd/cloudx/client"
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
 )
-
-const project = "project"
-
-func RegisterProjectFlag(f *flag.FlagSet) {
-	f.String(project, "", "The project to use")
-}
 
 func NewAccountExperienceOpenCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "account-experience ",
+		Use:   "account-experience [project-id]",
+		Args:  cobra.MaximumNArgs(1),
 		Short: "Open Ory Account Experience Pages",
 	}
 	var pages = [5]string{"login", "registration", "recovery", "verification", "settings"}
@@ -34,27 +31,38 @@ func NewAccountExperienceOpenCmd() *cobra.Command {
 	return cmd
 }
 
-func NewAxCmd(subcmd string) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   subcmd,
-		Short: "Open " + subcmd + " page",
-		RunE: func(subcmd *cobra.Command, args []string) error {
-			return AxWrapper(subcmd, args)
-		},
-	}
-	return cmd
+func NewAxCmd(cmd string) *cobra.Command {
+	return &cobra.Command{
+		Use:   cmd,
+		Short: "Open " + cmd + " page",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			h, err := client.NewCommandHelper(cmd)
+			if err != nil {
+				return err
+			}
+			id, err := getSelectedProjectId(h, args)
+			if err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
+			}
+			project, err := h.GetProject(id)
+			if err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
+			}
+			return AxWrapper(cmd, project)
+
+		}}
 }
 
-func AxWrapper(cmd *cobra.Command, args []string) error {
-	_, _, p, err := client.Client(cmd)
-	if err != nil {
-		return err
-	}
+func AxWrapper(cmd *cobra.Command, p *cloud.Project) error {
 	url := fmt.Sprintf("https://%s.projects.oryapis.com/ui/%s", p.GetSlug(), cmd.CalledAs())
 
-	// #nosec G204 - this is ok
-	if err := exec.Command("open", url); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
+	err := browser.OpenURL(url)
+	if err != nil {
+
+		// #nosec G204 - this is ok
+		if err := exec.Command("open", url); err != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the %s page in your browser. Please open it manually!", cmd.CalledAs())
+		}
 	}
 
 	return nil
