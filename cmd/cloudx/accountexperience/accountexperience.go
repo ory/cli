@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 
 	client "github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/project"
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 )
@@ -41,7 +40,7 @@ func NewAxCmd(cmd string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			id, err := project.GetSelectedProjectId(h, args)
+			id, err := getSelectedProjectId(h, args)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

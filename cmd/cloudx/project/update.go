@@ -121,7 +121,7 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 		if n := cmd.Flags().Lookup("name"); n != nil {
 			name = n.Value.String()
 		}
-		id, err := GetSelectedProjectId(h, args)
+		id, err := getSelectedProjectId(h, args)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}
