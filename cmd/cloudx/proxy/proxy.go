@@ -377,7 +377,6 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 			return
 		}
 
-		r.Header.Del("Authorization")
 		r.Header.Set("Authorization", "Bearer "+raw)
 		next(w, r)
 	}
