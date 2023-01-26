@@ -36,6 +36,7 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewUseCmd(),
 		cloudx.NewListCmd(),
 		cloudx.NewImportCmd(),
+		cloudx.NewOpenCmd(),
 		cloudx.NewPatchCmd(),
 		cloudx.NewParseCmd(),
 		cloudx.NewPerformCmd(),
