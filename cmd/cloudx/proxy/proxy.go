@@ -144,7 +144,7 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 }
 
 func run(cmd *cobra.Command, conf *config, version string, name string) error {
-	h, err := client.NewCommandHelper(cmd)
+	_, err := client.NewCommandHelper(cmd)
 	if err != nil {
 		return err
 	}
@@ -163,13 +163,13 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		return errors.WithStack(err)
 	}
 
-	apiKey, removeAPIKey, err := getAPIKey(conf, l, h)
-	if errors.Is(err, errNoApiKeyAvailable) {
-		// Do nothing - no API key is available and social sign in will not work.
-	} else if err != nil {
-		return err
-	}
-	defer removeAPIKey()
+	// apiKey, removeAPIKey, err := getAPIKey(conf, l, h)
+	// if errors.Is(err, errNoApiKeyAvailable) {
+	// 	// Do nothing - no API key is available and social sign in will not work.
+	// } else if err != nil {
+	// 	return err
+	// }
+	// defer removeAPIKey()
 
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use in localhost.
@@ -215,9 +215,9 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 
 			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
 			r.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
-			if len(apiKey) > 0 {
-				r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
-			}
+			// if len(apiKey) > 0 {
+			// 	r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+			// }
 
 			return body, nil
 		}),
