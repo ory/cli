@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 
@@ -140,14 +141,16 @@ Are you sure you want to proceed without creating a pre version first?`, current
 			for _, h := range cfg.PreReleaseHooks {
 				parts := strings.Split(h, " ")
 
-				var err error
+				var cmd *exec.Cmd
 				if len(parts) > 1 {
-					err = pkg.NewCommand(parts[0], parts[1:]...).Run()
+					cmd = pkg.NewCommand(parts[0], parts[1:]...)
 				} else {
-					err = pkg.NewCommand(parts[0]).Run()
+					cmd = pkg.NewCommand(parts[0])
 				}
+				cmd.Env = append(os.Environ(), "NEXT_VERSION=v"+nextVersion.String())
+				cmd.Env = append(cmd.Env, "CURRENT_VERSION=v"+currentVersion.String())
 
-				if err != nil {
+				if err := cmd.Run(); err != nil {
 					pkg.Fatalf("Pre-release hook failed: %s\nAborting release.", err.Error())
 				}
 			}
