@@ -32,6 +32,7 @@ import (
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
 	"github.com/ory/x/corsx"
+	"github.com/ory/x/flagx"
 	"github.com/ory/x/httpx"
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
@@ -170,6 +171,22 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		return err
 	}
 	defer removeAPIKey()
+
+	if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
+		projectId := uuid.FromStringOrNil(slug)
+		if projectId != uuid.Nil && apiKey == "" {
+			return errors.WithStack(errors.New("A project ID was provided instead of a project slug, but no API key was found. Please provide a project slug instead of a project ID or sign in with your Ory account."))
+		} else if projectId != uuid.Nil && apiKey != "" {
+			project, err := h.GetProject(projectId.String())
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			conf.oryURL, err = url.Parse(strings.Replace(conf.oryURL.String(), slug, project.GetSlug(), -1))
+			if err != nil {
+				return errors.WithStack(err)
+			}
+		}
+	}
 
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use in localhost.
