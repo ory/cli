@@ -125,7 +125,9 @@ TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+
 				return err
 			}
 
-			oryURL, err := getEndpointURL(cmd)
+			projectSlugId := getProjectSlugId(cmd)
+
+			oryURL, err := getEndpointURL(cmd, projectSlugId)
 			if err != nil {
 				return err
 			}
@@ -142,23 +144,24 @@ TO use a different default redirect URL, use the `+"`"+`--default-redirect-url`+
 				return err
 			}
 
-			conf := &config{
-				port:              flagx.MustGetInt(cmd, PortFlag),
-				noJWT:             true,
-				noOpen:            true,
-				upstream:          oryURL.String(),
-				cookieDomain:      flagx.MustGetString(cmd, CookieDomainFlag),
-				publicURL:         selfURL,
-				oryURL:            oryURL,
-				pathPrefix:        "",
-				isTunnel:          true,
-				defaultRedirectTo: redirectURL,
-				isDev:             flagx.MustGetBool(cmd, DevFlag),
-				isDebug:           flagx.MustGetBool(cmd, DebugFlag),
-				corsOrigins:       origins,
+			conf := &ProxyConfig{
+				Port:              flagx.MustGetInt(cmd, PortFlag),
+				NoJWT:             true,
+				NoOpen:            true,
+				Upstream:          oryURL.String(),
+				CookieDomain:      flagx.MustGetString(cmd, CookieDomainFlag),
+				PublicURL:         selfURL,
+				OryURL:            oryURL,
+				PathPrefix:        "",
+				IsTunnel:          true,
+				DefaultRedirectTo: redirectURL,
+				IsDev:             flagx.MustGetBool(cmd, DevFlag),
+				IsDebug:           flagx.MustGetBool(cmd, DebugFlag),
+				CorsOrigins:       origins,
+				ProjectSlugId:     projectSlugId,
 			}
 
-			return run(cmd, conf, version, "cloud")
+			return Run(cmd, conf, version, "cloud")
 		},
 	}
 

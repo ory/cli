@@ -86,8 +86,10 @@ type AuthProject struct {
 	Slug string    `json:"slug"`
 }
 
-var ErrNoConfig = stderrs.New("no ory configuration file present")
-var ErrNoConfigQuiet = stderrs.New("please run `ory auth` to initialize your configuration or remove the `--quiet` flag")
+var (
+	ErrNoConfig      = stderrs.New("no ory configuration file present")
+	ErrNoConfigQuiet = stderrs.New("please run `ory auth` to initialize your configuration or remove the `--quiet` flag")
+)
 
 func getConfigPath(cmd *cobra.Command) (string, error) {
 	path, err := os.UserHomeDir()
@@ -102,6 +104,10 @@ func getConfigPath(cmd *cobra.Command) (string, error) {
 	), nil
 }
 
+type Command interface {
+	GetProject(string) (*cloud.Project, error)
+}
+
 type CommandHelper struct {
 	Ctx              context.Context
 	VerboseWriter    io.Writer
@@ -114,6 +120,8 @@ type CommandHelper struct {
 	PwReader         passwordReader
 }
 
+var _ Command = new(CommandHelper)
+
 type PasswordReader struct{}
 
 // NewCommandHelper creates a new CommandHelper instance which handles cobra CLI commands.
@@ -123,12 +131,12 @@ func NewCommandHelper(cmd *cobra.Command) (*CommandHelper, error) {
 		return nil, err
 	}
 
-	var out = cmd.OutOrStdout()
+	out := cmd.OutOrStdout()
 	if flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
 		out = io.Discard
 	}
 
-	var outErr = cmd.ErrOrStderr()
+	outErr := cmd.ErrOrStderr()
 	if flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
 		outErr = io.Discard
 	}

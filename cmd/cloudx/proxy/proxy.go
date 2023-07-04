@@ -32,7 +32,6 @@ import (
 	"github.com/ory/graceful"
 	"github.com/ory/herodot"
 	"github.com/ory/x/corsx"
-	"github.com/ory/x/flagx"
 	"github.com/ory/x/httpx"
 	"github.com/ory/x/jwksx"
 	"github.com/ory/x/logrusx"
@@ -53,24 +52,24 @@ const (
 	RewriteHostFlag        = "rewrite-host"
 )
 
-type config struct {
-	port              int
-	noOpen            bool
-	noJWT             bool
-	upstream          string
-	cookieDomain      string
-	publicURL         *url.URL
-	oryURL            *url.URL
-	pathPrefix        string
-	defaultRedirectTo *url.URL
-	isTunnel          bool
-	isDebug           bool
-	isDev             bool
-	corsOrigins       []string
-
-	// rewriteHost means the host header will be rewritten to the upstream host.
+type ProxyConfig struct {
+	Port              int
+	NoOpen            bool
+	NoJWT             bool
+	Upstream          string
+	CookieDomain      string
+	PublicURL         *url.URL
+	OryURL            *url.URL
+	PathPrefix        string
+	DefaultRedirectTo *url.URL
+	IsTunnel          bool
+	IsDebug           bool
+	IsDev             bool
+	CorsOrigins       []string
+	ProjectSlugId     string
+	// RewriteHost means the host header will be rewritten to the upstream host.
 	// This is useful in cases where upstream resolves requests based on Host.
-	rewriteHost bool
+	RewriteHost bool
 }
 
 func portFromEnv() int {
@@ -85,10 +84,10 @@ var errNoApiKeyAvailable = errors.New("no api key available")
 
 func noop() {}
 
-func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey string, cleanup func(), err error) {
-	oryURLParts := strings.Split(conf.oryURL.Hostname(), ".")
+func getAPIKey(conf *ProxyConfig, l *logrusx.Logger, h *client.CommandHelper) (apiKey string, cleanup func(), err error) {
+	oryURLParts := strings.Split(conf.OryURL.Hostname(), ".")
 	if len(oryURLParts) < 2 {
-		l.Warnf("The Ory Network URL `%s` does not appear to be a a valid Ory Network URL. Valid URLs must follow this format: `https://<project-slug>.projects.oryapis.com`. Skipping API key creation.", conf.oryURL)
+		l.Warnf("The Ory Network URL `%s` does not appear to be a a valid Ory Network URL. Valid URLs must follow this format: `https://<project-slug>.projects.oryapis.com`. Skipping API key creation.", conf.OryURL)
 		return "", noop, errNoApiKeyAvailable
 	}
 
@@ -144,13 +143,35 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 	}, nil
 }
 
-func run(cmd *cobra.Command, conf *config, version string, name string) error {
+func UseProjectIdOrSlug(commandHelper client.Command, conf *ProxyConfig, apiKey string) (*ProxyConfig, error) {
+	if conf.ProjectSlugId != "" {
+		projectId := uuid.FromStringOrNil(conf.ProjectSlugId)
+		if projectId != uuid.Nil && apiKey == "" {
+			return nil, errors.New("A project ID was provided instead of a project slug, but no API key was found. Please provide a project slug instead of a project ID or sign in with your Ory account.")
+		} else if projectId != uuid.Nil && apiKey != "" {
+			project, err := commandHelper.GetProject(projectId.String())
+			if err != nil {
+				return nil, err
+			}
+			conf.OryURL, err = url.Parse(strings.Replace(conf.OryURL.String(), conf.ProjectSlugId, project.GetSlug(), -1))
+			if err != nil {
+				return nil, err
+			}
+			// the ory tunnel uses the same value as the oryURL to determine the upstream URL
+			// the ory proxy however, uses the application URL to determine the upstream URL
+			conf.Upstream = strings.Replace(conf.Upstream, conf.ProjectSlugId, project.GetSlug(), -1)
+		}
+	}
+	return conf, nil
+}
+
+func Run(cmd *cobra.Command, conf *ProxyConfig, version string, name string) error {
 	h, err := client.NewCommandHelper(cmd)
 	if err != nil {
 		return err
 	}
 
-	upstream, err := url.ParseRequestURI(conf.upstream)
+	upstream, err := url.ParseRequestURI(conf.Upstream)
 	if err != nil {
 		return errors.Wrap(err, "unable to parse upstream URL")
 	}
@@ -172,20 +193,9 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	}
 	defer removeAPIKey()
 
-	if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
-		projectId := uuid.FromStringOrNil(slug)
-		if projectId != uuid.Nil && apiKey == "" {
-			return errors.WithStack(errors.New("A project ID was provided instead of a project slug, but no API key was found. Please provide a project slug instead of a project ID or sign in with your Ory account."))
-		} else if projectId != uuid.Nil && apiKey != "" {
-			project, err := h.GetProject(projectId.String())
-			if err != nil {
-				return errors.WithStack(err)
-			}
-			conf.oryURL, err = url.Parse(strings.Replace(conf.oryURL.String(), slug, project.GetSlug(), -1))
-			if err != nil {
-				return errors.WithStack(err)
-			}
-		}
+	conf, err = UseProjectIdOrSlug(h, conf, apiKey)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
@@ -194,22 +204,22 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		n(w, r)
 	})
 
-	mw.UseFunc(checkOry(conf, l, writer, key, signer, conf.oryURL)) // This must be the last method before the handler
+	mw.UseFunc(checkOry(conf, l, writer, key, signer, conf.OryURL)) // This must be the last method before the handler
 
 	mw.UseHandler(proxy.New(
 		func(_ context.Context, r *http.Request) (*proxy.HostConfig, error) {
-			if conf.isTunnel || strings.HasPrefix(r.URL.Path, conf.pathPrefix) {
+			if conf.IsTunnel || strings.HasPrefix(r.URL.Path, conf.PathPrefix) {
 				return &proxy.HostConfig{
-					CookieDomain:   conf.cookieDomain,
-					UpstreamHost:   conf.oryURL.Host,
-					UpstreamScheme: conf.oryURL.Scheme,
-					TargetHost:     conf.oryURL.Host,
-					PathPrefix:     conf.pathPrefix,
+					CookieDomain:   conf.CookieDomain,
+					UpstreamHost:   conf.OryURL.Host,
+					UpstreamScheme: conf.OryURL.Scheme,
+					TargetHost:     conf.OryURL.Host,
+					PathPrefix:     conf.PathPrefix,
 				}, nil
 			}
 
 			return &proxy.HostConfig{
-				CookieDomain:   conf.cookieDomain,
+				CookieDomain:   conf.CookieDomain,
 				UpstreamHost:   upstream.Host,
 				UpstreamScheme: upstream.Scheme,
 				TargetHost:     upstream.Host,
@@ -217,17 +227,17 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 			}, nil
 		},
 		proxy.WithReqMiddleware(func(r *http.Request, c *proxy.HostConfig, body []byte) ([]byte, error) {
-			if r.URL.Host == conf.oryURL.Host {
-				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
-				r.Host = conf.oryURL.Host
-			} else if conf.rewriteHost {
+			if r.URL.Host == conf.OryURL.Host {
+				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.PathPrefix)
+				r.Host = conf.OryURL.Host
+			} else if conf.RewriteHost {
 				r.Header.Set("X-Forwarded-Host", r.Host)
 				r.Host = c.UpstreamHost
 			}
 
-			publicURL := conf.publicURL
-			if conf.pathPrefix != "" {
-				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
+			publicURL := conf.PublicURL
+			if conf.PathPrefix != "" {
+				publicURL = urlx.AppendPaths(publicURL, conf.PathPrefix)
 			}
 
 			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
@@ -242,8 +252,8 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 			l, err := resp.Location()
 			if err == nil {
 				// Redirect to main page if path is the default ui welcome page.
-				if l.Path == filepath.Join(conf.pathPrefix, "/ui/welcome") {
-					resp.Header.Set("Location", conf.defaultRedirectTo.String())
+				if l.Path == filepath.Join(conf.PathPrefix, "/ui/welcome") {
+					resp.Header.Set("Location", conf.DefaultRedirectTo.String())
 				}
 			}
 
@@ -256,16 +266,16 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	}
 
 	var originFunc func(r *http.Request, origin string) bool
-	if conf.isDev {
+	if conf.IsDev {
 		originFunc = func(r *http.Request, origin string) bool {
 			return true
 		}
 	}
 
 	proto := "http"
-	addr := fmt.Sprintf(":%d", conf.port)
+	addr := fmt.Sprintf(":%d", conf.Port)
 	ch := cors.New(cors.Options{
-		AllowedOrigins:         conf.corsOrigins,
+		AllowedOrigins:         conf.CorsOrigins,
 		AllowOriginRequestFunc: originFunc,
 		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
 		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
@@ -273,7 +283,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		MaxAge:                 0,
 		AllowCredentials:       true,
 		OptionsPassthrough:     false,
-		Debug:                  conf.isDebug,
+		Debug:                  conf.IsDebug,
 	})
 
 	server := graceful.WithDefaults(&http.Server{
@@ -281,7 +291,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		Handler: ch.Handler(mw),
 	})
 
-	if conf.isTunnel {
+	if conf.IsTunnel {
 		_, _ = fmt.Fprintf(os.Stderr, `To access Ory's APIs, use URL
 
 	%s
@@ -296,17 +306,17 @@ and configure your SDKs to point to it, for example in JavaScript:
 	  }
 	}))
 
-`, conf.publicURL.String())
+`, conf.PublicURL.String())
 	} else {
 		_, _ = fmt.Fprintf(os.Stderr, `To access your application via the Ory Proxy, open:
 
 	%s
-`, conf.publicURL.String())
+`, conf.PublicURL.String())
 	}
 
-	if !conf.noOpen {
+	if !conf.NoOpen {
 		// #nosec G204 - this is ok
-		if err := exec.Command("open", conf.publicURL.String()).Run(); err != nil {
+		if err := exec.Command("open", conf.PublicURL.String()).Run(); err != nil {
 			_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
 		}
 	}
@@ -327,8 +337,8 @@ and configure your SDKs to point to it, for example in JavaScript:
 	return nil
 }
 
-func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySet, error) {
-	if conf.noJWT {
+func newSigner(l *logrusx.Logger, conf *ProxyConfig) (jose.Signer, *jose.JSONWebKeySet, error) {
+	if conf.NoJWT {
 		return nil, &jose.JSONWebKeySet{}, nil
 	}
 
@@ -349,7 +359,7 @@ func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySe
 	return sig, key, nil
 }
 
-func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
+func checkOry(conf *ProxyConfig, _ *logrusx.Logger, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
 	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
 
 	var publicKeys jose.JSONWebKeySet
@@ -358,13 +368,13 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		if !conf.noJWT && r.URL.Path == filepath.Join(conf.pathPrefix, "/proxy/jwks.json") {
+		if !conf.NoJWT && r.URL.Path == filepath.Join(conf.PathPrefix, "/proxy/jwks.json") {
 			writer.Write(w, r, publicKeys)
 			return
 		}
 
 		switch r.URL.Path {
-		case filepath.Join(conf.pathPrefix, "/jwks.json"):
+		case filepath.Join(conf.PathPrefix, "/jwks.json"):
 			writer.Write(w, r, publicKeys)
 			return
 		}
@@ -375,7 +385,7 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 			return
 		}
 
-		if conf.noJWT || (len(conf.pathPrefix) > 0 && strings.HasPrefix(r.URL.Path, conf.pathPrefix)) {
+		if conf.NoJWT || (len(conf.PathPrefix) > 0 && strings.HasPrefix(r.URL.Path, conf.PathPrefix)) {
 			next(w, r)
 			return
 		}

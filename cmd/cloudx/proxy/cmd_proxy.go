@@ -193,7 +193,9 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
-			oryURL, err := getEndpointURL(cmd)
+			projectSlugId := getProjectSlugId(cmd)
+
+			oryURL, err := getEndpointURL(cmd, projectSlugId)
 			if err != nil {
 				return err
 			}
@@ -205,23 +207,24 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
-			conf := &config{
-				port:              flagx.MustGetInt(cmd, PortFlag),
-				noJWT:             flagx.MustGetBool(cmd, WithoutJWTFlag),
-				noOpen:            !flagx.MustGetBool(cmd, OpenFlag),
-				upstream:          args[0],
-				cookieDomain:      flagx.MustGetString(cmd, CookieDomainFlag),
-				publicURL:         selfURL,
-				oryURL:            oryURL,
-				pathPrefix:        "/.ory",
-				defaultRedirectTo: redirectURL,
-				isDev:             flagx.MustGetBool(cmd, DevFlag),
-				isDebug:           flagx.MustGetBool(cmd, DebugFlag),
-				rewriteHost:       flagx.MustGetBool(cmd, RewriteHostFlag),
-				corsOrigins:       origins,
+			conf := &ProxyConfig{
+				Port:              flagx.MustGetInt(cmd, PortFlag),
+				NoJWT:             flagx.MustGetBool(cmd, WithoutJWTFlag),
+				NoOpen:            !flagx.MustGetBool(cmd, OpenFlag),
+				Upstream:          args[0],
+				CookieDomain:      flagx.MustGetString(cmd, CookieDomainFlag),
+				PublicURL:         selfURL,
+				OryURL:            oryURL,
+				PathPrefix:        "/.ory",
+				DefaultRedirectTo: redirectURL,
+				IsDev:             flagx.MustGetBool(cmd, DevFlag),
+				IsDebug:           flagx.MustGetBool(cmd, DebugFlag),
+				RewriteHost:       flagx.MustGetBool(cmd, RewriteHostFlag),
+				CorsOrigins:       origins,
+				ProjectSlugId:     projectSlugId,
 			}
 
-			return run(cmd, conf, version, "cloud")
+			return Run(cmd, conf, version, "cloud")
 		},
 	}
 
@@ -243,22 +246,31 @@ An example payload of the JSON Web Token is:
 	return proxyCmd
 }
 
-const envVarSlug = "ORY_PROJECT_SLUG"
-const envVarSDK = "ORY_SDK_URL"
-const envVarKratos = "ORY_KRATOS_URL"
+const (
+	envVarSlug   = "ORY_PROJECT_SLUG"
+	envVarSDK    = "ORY_SDK_URL"
+	envVarKratos = "ORY_KRATOS_URL"
+)
 
-func getEndpointURL(cmd *cobra.Command) (*url.URL, error) {
-	var target string
+func getProjectSlugId(cmd *cobra.Command) string {
 	if slug := os.Getenv(envVarSlug); len(slug) > 0 {
+		return slug
+	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
+		return slug
+	}
+	return ""
+}
+
+func getEndpointURL(cmd *cobra.Command, slug string) (*url.URL, error) {
+	var target string
+	if slug != "" {
 		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
 	} else if url := stringsx.Coalesce(os.Getenv(envVarSDK), os.Getenv(envVarKratos)); len(url) > 0 {
 		target = url
-	} else if slug := flagx.MustGetString(cmd, ProjectFlag); len(slug) > 0 {
-		target = fmt.Sprintf("https://%s.projects.oryapis.com/", slug)
 	}
 
 	if len(target) == 0 {
-		return nil, errors.Errorf("Please provide your project slug using the --%s flag or the %s environment variable.", ProjectFlag, envVarSlug)
+		return nil, errors.Errorf("Please provide your project slug or project id using the --%s flag or the %s environment variable.", ProjectFlag, envVarSlug)
 	}
 
 	upstream, err := url.ParseRequestURI(target)
