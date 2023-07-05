@@ -17,6 +17,8 @@ import (
 
 func TestProxyUseProjectID(t *testing.T) {
 	projectId, err := uuid.NewV4()
+	require.NoError(t, err)
+
 	p := &cloud.Project{
 		Id:   projectId.String(),
 		Slug: "test",
@@ -41,6 +43,7 @@ func TestProxyUseProjectID(t *testing.T) {
 			ProjectSlugId: projectId.String(),
 		}
 
+		var err error
 		conf, err = proxy.UseProjectIdOrSlug(noopCommand, conf, "test")
 		require.NoError(t, err)
 		require.Equal(t, projectId.String(), conf.ProjectSlugId)
@@ -55,6 +58,7 @@ func TestProxyUseProjectID(t *testing.T) {
 			ProjectSlugId: projectId.String(),
 		}
 
+		var err error
 		conf, err = proxy.UseProjectIdOrSlug(noopCommand, conf, "test")
 		require.NoError(t, err)
 		require.Equal(t, projectId.String(), conf.ProjectSlugId)
@@ -69,7 +73,7 @@ func TestProxyUseProjectID(t *testing.T) {
 			ProjectSlugId: projectId.String(),
 		}
 
-		conf, err = proxy.UseProjectIdOrSlug(noopCommand, conf, "")
+		_, err := proxy.UseProjectIdOrSlug(noopCommand, conf, "")
 		require.ErrorContains(t, err, "A project ID was provided instead of a project slug, but no API key was found.")
 	})
 
@@ -80,6 +84,7 @@ func TestProxyUseProjectID(t *testing.T) {
 			OryURL:        projectURL(t, slug),
 			ProjectSlugId: slug,
 		}
+		var err error
 		conf, err = proxy.UseProjectIdOrSlug(noopCommand, conf, "")
 		require.NoError(t, err)
 		require.Equal(t, slug, conf.ProjectSlugId)
