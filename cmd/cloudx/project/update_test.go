@@ -89,6 +89,7 @@ func TestUpdateProject(t *testing.T) {
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
 					"services.oauth2.config.oauth2.session",
+					"services.identity.config.selfservice.allowed_return_urls.0",
 					// for kratos cmd
 					"serve",
 					"cookies",
@@ -118,6 +119,7 @@ func TestUpdateProject(t *testing.T) {
 					"services.oauth2.config.serve.cookies.names",
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
+					"services.identity.config.selfservice.allowed_return_urls.0",
 					// for kratos cmd
 					"serve.public.base_url",
 					"serve.admin.base_url",
