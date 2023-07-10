@@ -121,7 +121,8 @@
               "lifespan": "30m0s",
               "notify_unknown_recipients": false,
               "ui_url": "/ui/recovery",
-              "use": "code"
+              "use": "code",
+              "notify_unknown_recipients": false
             },
             "registration": {
               "after": {

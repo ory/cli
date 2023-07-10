@@ -219,7 +219,7 @@ func TestCommandHelper(t *testing.T) {
 			_, _ = r.WriteString(email + "\n") // Email: FakeEmail() [RETRY]
 			cmd.Stdin = bufio.NewReader(&r)
 
-			var retry = false
+			retry := false
 			cmd.PwReader = func() ([]byte, error) {
 				if retry {
 					return []byte(password), nil
