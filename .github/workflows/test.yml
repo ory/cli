@@ -1,5 +1,6 @@
 name: Unit Tests
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -23,4 +24,4 @@ jobs:
           ./ory proxy https://httpbin.org/anything --quiet &
           npm run test
         env:
-          ORY_SDK_URL: https://admiring-tu-swczqlujc0.projects.oryapis.com/
+          ORY_SDK_URL: https://admiring-tu-swczqlujc0.projects.staging.oryapis.dev/
