@@ -24,4 +24,4 @@ jobs:
           ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app/anything --quiet &
           npm run test
         env:
-          ORY_SDK_URL: https://admiring-tu-swczqlujc0.projects.staging.oryapis.dev/
+          ORY_SDK_URL: https://admiring-tu-swczqlujc0.projects.oryapis.com/
