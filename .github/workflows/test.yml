@@ -21,7 +21,9 @@ jobs:
       - run: npm ci
       - run: go build -o ory .
       - run: |
-          ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app/anything --quiet &
+          ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app --quiet --rewrite-host &
           npm run test
         env:
-          ORY_SDK_URL: https://admiring-tu-swczqlujc0.projects.oryapis.com/
+          ORY_SDK_URL: https://affectionate-archimedes-s9mkjq77k0.projects.staging.oryapis.dev
+          ORY_CLOUD_CONSOLE_URL: https://console.staging.ory.dev
+          ORY_CLOUD_ORYAPIS_URL: https://staging.oryapis.dev
