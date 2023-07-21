@@ -85,9 +85,7 @@
           "override_return_to": false
         },
         "selfservice": {
-          "allowed_return_urls": [
-            
-          ],
+          "allowed_return_urls": [],
           "default_browser_return_url": "/ui/welcome",
           "flows": {
             "error": {

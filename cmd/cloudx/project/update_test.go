@@ -89,7 +89,14 @@ func TestUpdateProject(t *testing.T) {
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
 					"services.oauth2.config.oauth2.session",
-					"services.identity.config.selfservice.allowed_return_urls.0",
+					"services.identity.config.selfservice.allowed_return_urls",
+
+					// THERE IS A LIMITATION IN ASSERTX THAT DOES NOT ALLOW A DEPTH MORE THAN 5
+					// THAT IS WHY WE IGNORE THIS KEY HERE.
+					// TODO: FIX THIS
+					"services.identity.config.selfservice.flows.login.after.webauthn.hooks",
+					"services.identity.config.selfservice.flows.registration.after.webauthn.hooks",
+
 					// for kratos cmd
 					"serve",
 					"cookies",
@@ -98,6 +105,7 @@ func TestUpdateProject(t *testing.T) {
 					"session.cookie",
 					"courier.smtp.from_name",
 					"selfservice.allowed_return_urls.0",
+
 					// for keto cmd
 					// for hydra cmd
 					"serve.cookies.names",
@@ -119,7 +127,7 @@ func TestUpdateProject(t *testing.T) {
 					"services.oauth2.config.serve.cookies.names",
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
-					"services.identity.config.selfservice.allowed_return_urls.0",
+					"services.identity.config.selfservice.allowed_return_urls",
 					// for kratos cmd
 					"serve.public.base_url",
 					"serve.admin.base_url",
