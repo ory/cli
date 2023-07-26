@@ -6,7 +6,7 @@ package oauth2
 import (
 	"github.com/spf13/cobra"
 
-	hydra "github.com/ory/hydra/cmd"
+	hydra "github.com/ory/hydra/v2/cmd"
 )
 
 func NewPerformAuthorizationCode() *cobra.Command {
