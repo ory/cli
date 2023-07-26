@@ -334,7 +334,7 @@ func TestCommandHelper(t *testing.T) {
 				"project.services.identity.config.session.cookie.domain",
 				"project.services.identity.config.session.cookie.name",
 				"project.services.identity.config.cookies.domain",
-				"services.identity.config.selfservice.allowed_return_urls.0",
+				"project.services.identity.config.selfservice.allowed_return_urls.0",
 				"project.services.oauth2.config.urls.self",
 				"project.services.oauth2.config.serve.cookies.domain",
 				"project.services.oauth2.config.serve.cookies.names",

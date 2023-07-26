@@ -87,7 +87,7 @@
           },
           "selfservice": {
             "allowed_return_urls": [
-              "https://relaxed-lamport-met2u5ttjg.projects.oryapis.com"
+              
             ],
             "default_browser_return_url": "/ui/welcome",
             "flows": {
