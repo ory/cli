@@ -84,6 +84,7 @@ func TestUpdateProject(t *testing.T) {
 					"services.identity.config.identity.schemas",
 					"services.identity.config.session.cookie",
 					"services.identity.config.session.cookie",
+					"services.identity.config.selfservice.allowed_return_urls.0",
 					"services.oauth2.config.serve.cookies.names",
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
@@ -95,6 +96,7 @@ func TestUpdateProject(t *testing.T) {
 					"identity.schemas",
 					"session.cookie",
 					"courier.smtp.from_name",
+					"selfservice.allowed_return_urls.0",
 					// for keto cmd
 					// for hydra cmd
 					"serve.cookies.names",
@@ -112,6 +114,7 @@ func TestUpdateProject(t *testing.T) {
 					"services.identity.config.session.cookie.domain",
 					"services.identity.config.session.cookie.name",
 					"services.identity.config.cookies.domain",
+					"services.identity.config.selfservice.allowed_return_urls.0",
 					"services.oauth2.config.serve.cookies.names",
 					"services.oauth2.config.serve.cookies.domain",
 					"services.oauth2.config.urls.self",
@@ -122,6 +125,7 @@ func TestUpdateProject(t *testing.T) {
 					"session.cookie.name",
 					"cookies.domain",
 					"courier.smtp.from_name",
+					"selfservice.allowed_return_urls.0",
 					// for keto cmd
 					// for hydra cmd
 					"serve.cookies.names",

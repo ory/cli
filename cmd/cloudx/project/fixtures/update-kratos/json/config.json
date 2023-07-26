@@ -59,7 +59,6 @@
       }
     }
   },
-  "oauth2_provider": {},
   "feature_flags": {
     "cacheable_sessions": false
   },
@@ -80,12 +79,15 @@
       }
     ]
   },
+  "oauth2_provider": {
+    "override_return_to": false
+  },
   "selfservice": {
     "allowed_return_urls": [],
     "default_browser_return_url": "/ui/welcome",
     "flows": {
       "error": {
-        "ui_url": "/ui/custom-error"
+        "ui_url": "/ui/error"
       },
       "login": {
         "after": {
@@ -118,6 +120,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
+        "notify_unknown_recipients": false,
         "ui_url": "/ui/recovery",
         "use": "code"
       },
@@ -139,7 +142,11 @@
             ]
           },
           "webauthn": {
-            "hooks": []
+            "hooks": [
+              {
+                "hook": "session"
+              }
+            ]
           }
         },
         "before": {
@@ -176,6 +183,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
+        "notify_unknown_recipients": false,
         "ui_url": "/ui/verification",
         "use": "code"
       }
@@ -223,6 +231,7 @@
         "enabled": false
       },
       "webauthn": {
+        "enabled": false,
         "config": {
           "passwordless": false,
           "rp": {
@@ -230,20 +239,19 @@
             "id": "upbeat-mclean-xjvqxk4i7e.projects.oryapis",
             "origin": "https://upbeat-mclean-xjvqxk4i7e.projects.oryapis"
           }
-        },
-        "enabled": false
+        }
       }
     }
   },
   "serve": {
     "admin": {
-      "base_url": "https://upbeat-mclean-xjvqxk4i7e.projects.oryapis:8080/",
+      "base_url": "https://admiring-wing-iiinvex2gk.projects.staging.oryapis.dev/",
       "request_log": {
         "disable_for_health": true
       }
     },
     "public": {
-      "base_url": "https://upbeat-mclean-xjvqxk4i7e.projects.oryapis:8080/",
+      "base_url": "https://admiring-wing-iiinvex2gk.projects.staging.oryapis.dev/",
       "cors": {
         "enabled": false
       },
@@ -253,13 +261,13 @@
     }
   },
   "session": {
+    "lifespan": "72h0m0s",
     "cookie": {
       "domain": "upbeat-mclean-xjvqxk4i7e.projects.oryapis",
       "name": "ory_session_upbeatmcleanxjvqxk4i7e",
       "path": "/",
       "same_site": "Lax"
     },
-    "lifespan": "72h0m0s",
     "whoami": {
       "required_aal": "aal1"
     }

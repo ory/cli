@@ -13,6 +13,8 @@ import (
 	"github.com/ory/x/stringsx"
 )
 
+var RateLimitHeader = os.Getenv("ORY_RATE_LIMIT_HEADER")
+
 func CloudConsoleURL(prefix string) *url.URL {
 	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_CONSOLE_URL"), "https://console.ory.sh"))
 	if err != nil {
@@ -55,6 +57,9 @@ func NewKratosClient() (*cloud.APIClient, error) {
 	conf := cloud.NewConfiguration()
 	conf.Servers = cloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 10}
+	if RateLimitHeader != "" {
+		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
+	}
 
 	return cloud.NewAPIClient(conf), nil
 }
@@ -65,6 +70,9 @@ func newCloudClient(token string) (*cloud.APIClient, error) {
 	conf := cloud.NewConfiguration()
 	conf.Servers = cloud.ServerConfigurations{{URL: u}}
 	conf.HTTPClient = newBearerTokenClient(token)
+	if RateLimitHeader != "" {
+		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
+	}
 
 	return cloud.NewAPIClient(conf), nil
 }

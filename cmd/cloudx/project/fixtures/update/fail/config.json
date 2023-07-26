@@ -2,6 +2,8 @@
   "services": {
     "identity": {
       "config": {
+        "identity": {},
+        "selfservice": {},
         "courier": {
           "smtp": {
             "from_name": "Updated Project from JSON via Ory"

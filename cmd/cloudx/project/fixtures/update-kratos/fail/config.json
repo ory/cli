@@ -33,5 +33,7 @@
     "whoami": {
       "required_aal": "aal1"
     }
-  }
+  },
+  "identity": {},
+  "selfservice": {}
 }
