@@ -234,8 +234,14 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 
 		sess, _, err := client.FrontendApi.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
 		if err != nil {
+			if h.IsQuiet {
+				return nil, false, errors.WithStack(ErrNoConfigQuiet)
+			}
 			return nil, false, nil
 		} else if sess == nil {
+			if h.IsQuiet {
+				return nil, false, errors.WithStack(ErrNoConfigQuiet)
+			}
 			return nil, false, nil
 		}
 		return c, true, nil
