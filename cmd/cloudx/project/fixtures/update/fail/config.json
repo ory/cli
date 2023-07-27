@@ -2,6 +2,12 @@
   "services": {
     "identity": {
       "config": {
+        "identity": {
+          "schemas": []
+        },
+        "selfservice": {
+          "default_browser_return_url": "/"
+        },
         "courier": {
           "smtp": {
             "from_name": "Updated Project from JSON via Ory"

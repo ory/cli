@@ -76,13 +76,17 @@
       }
     ]
   },
-  "oauth2_provider": {},
+  "oauth2_provider": {
+    "override_return_to": false
+  },
   "selfservice": {
-    "allowed_return_urls": [],
+    "allowed_return_urls": [
+      
+    ],
     "default_browser_return_url": "/ui/welcome",
     "flows": {
       "error": {
-        "ui_url": "/ui/custom-error"
+        "ui_url": "/ui/error"
       },
       "login": {
         "after": {
@@ -115,6 +119,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
+        "notify_unknown_recipients": false,
         "ui_url": "/ui/recovery",
         "use": "code"
       },
@@ -136,7 +141,11 @@
             ]
           },
           "webauthn": {
-            "hooks": []
+            "hooks": [
+              {
+                "hook": "session"
+              }
+            ]
           }
         },
         "before": {
@@ -173,6 +182,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
+        "notify_unknown_recipients": false,
         "ui_url": "/ui/verification",
         "use": "code"
       }

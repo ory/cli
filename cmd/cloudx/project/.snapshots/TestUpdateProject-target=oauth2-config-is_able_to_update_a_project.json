@@ -12,6 +12,7 @@
     "client_credentials": {
       "default_grant_allowed_scope": false
     },
+    "exclude_not_before_claim": false,
     "expose_internal_errors": true,
     "grant": {
       "jwt": {
@@ -31,8 +32,7 @@
       "enforced_for_public_clients": true
     },
     "session": {
-      "encrypt_at_rest": true,
-      "exclude_not_before_claim": false
+      "encrypt_at_rest": true
     }
   },
   "oidc": {
@@ -144,6 +144,7 @@
     "consent": "/custom-consent",
     "error": "/custom-error",
     "login": "/custom-login",
+    "logout": "/custom-logout",
     "post_logout_redirect": "/custom-logout"
   },
   "webfinger": {

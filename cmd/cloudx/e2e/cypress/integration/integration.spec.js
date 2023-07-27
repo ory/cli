@@ -22,7 +22,7 @@ const loggedIn = (email) => {
     console.log({ body: res.body })
 
     if (!isTunnel) {
-      expect(res.body.headers["Authorization"]).to.not.be.empty
+      expect(res.body.headers["Authorization"] ?? "").to.not.be.empty
       cy.task(
         "verify",
         res.body.headers["Authorization"].replace(/bearer /gi, ""),

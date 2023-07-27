@@ -81,9 +81,13 @@
             }
           ]
         },
-        "oauth2_provider": {},
+        "oauth2_provider": {
+          "override_return_to": false
+        },
         "selfservice": {
-          "allowed_return_urls": [],
+          "allowed_return_urls": [
+            
+          ],
           "default_browser_return_url": "/ui/welcome",
           "flows": {
             "error": {
@@ -120,6 +124,7 @@
               },
               "enabled": true,
               "lifespan": "30m0s",
+              "notify_unknown_recipients": false,
               "ui_url": "/ui/recovery",
               "use": "code"
             },
@@ -141,7 +146,11 @@
                   ]
                 },
                 "webauthn": {
-                  "hooks": []
+                  "hooks": [
+                    {
+                      "hook": "session"
+                    }
+                  ]
                 }
               },
               "before": {
@@ -178,6 +187,7 @@
               },
               "enabled": true,
               "lifespan": "30m0s",
+              "notify_unknown_recipients": false,
               "ui_url": "/ui/custom-verification",
               "use": "code"
             }
@@ -280,6 +290,7 @@
           "client_credentials": {
             "default_grant_allowed_scope": false
           },
+          "exclude_not_before_claim": false,
           "expose_internal_errors": true,
           "grant": {
             "jwt": {
@@ -299,8 +310,7 @@
             "enforced_for_public_clients": false
           },
           "session": {
-            "encrypt_at_rest": true,
-            "exclude_not_before_claim": false
+            "encrypt_at_rest": true
           }
         },
         "oidc": {
@@ -412,6 +422,7 @@
           "consent": "/ui/consent",
           "error": "/ui/error",
           "login": "/ui/login",
+          "logout": "/ui/logout",
           "post_logout_redirect": "/oauth2/fallbacks/logout"
         },
         "webfinger": {
