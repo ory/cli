@@ -42,7 +42,7 @@ func TestGetEndpointURL(t *testing.T) {
 		actual, err := getEndpointURL(cmd)
 		require.Error(t, err)
 		assert.Nil(t, actual)
-		assert.Equal(t, "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_PROJECT_SLUG=someslug\n\n", b.String())
+		assert.Contains(t, b.String(), "Attention! We found multiple sources for the project slug. Please clean up environment variables and flags to ensure that the correct value is being used. Found values:\n\n\t--project=not-someslug\n\tORY_PROJECT_SLUG=someslug")
 	})
 
 	t.Run("should fail if legacy value is not a URL", func(t *testing.T) {

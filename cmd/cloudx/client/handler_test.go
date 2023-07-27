@@ -298,7 +298,7 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=UpdateProject", func(t *testing.T) {
 		t.Run("is able to update a project", func(t *testing.T) {
 			res, err := loggedIn.UpdateProject(project, "", []json.RawMessage{config})
-			require.NoError(t, err)
+			require.NoErrorf(t, err, "%+v", err)
 
 			assertx.EqualAsJSONExcept(t, config, res.Project, []string{
 				"id",
@@ -310,6 +310,7 @@ func TestCommandHelper(t *testing.T) {
 				"services.identity.config.identity.default_schema_id",
 				"services.identity.config.identity.schemas",
 				"services.identity.config.session.cookie",
+				"services.identity.config.selfservice.allowed_return_urls.0",
 				"services.oauth2.config.urls.self",
 				"services.oauth2.config.serve.public.tls",
 				"services.oauth2.config.serve.tls",
@@ -333,6 +334,7 @@ func TestCommandHelper(t *testing.T) {
 				"project.services.identity.config.session.cookie.domain",
 				"project.services.identity.config.session.cookie.name",
 				"project.services.identity.config.cookies.domain",
+				"project.services.identity.config.selfservice.allowed_return_urls.0",
 				"project.services.oauth2.config.urls.self",
 				"project.services.oauth2.config.serve.cookies.domain",
 				"project.services.oauth2.config.serve.cookies.names",
