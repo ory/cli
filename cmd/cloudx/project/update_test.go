@@ -42,14 +42,14 @@ func TestUpdateProject(t *testing.T) {
 			subcommand:      "project",
 			pathSuccess:     "fixtures/update/json/config.json",
 			pathFailure:     "fixtures/update/fail/config.json",
-			failureContains: "oneOf failed",
+			failureContains: "minimum 1 items allowed",
 			fixture:         fixtureProject,
 		},
 		{
 			subcommand:      "identity-config",
 			pathSuccess:     "fixtures/update-kratos/json/config.json",
 			pathFailure:     "fixtures/update-kratos/fail/config.json",
-			failureContains: "oneOf failed",
+			failureContains: "minimum 1 items allowed",
 			fixture:         fixtureKratosConfig,
 		},
 		{

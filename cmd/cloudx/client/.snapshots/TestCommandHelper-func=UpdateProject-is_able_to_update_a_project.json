@@ -1,6 +1,6 @@
 {
   "project": {
-    "name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON",
+    "name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-dse3sgq5tp08wjm0",
     "services": {
       "identity": {
         "config": {
@@ -10,7 +10,7 @@
           },
           "courier": {
             "smtp": {
-              "from_name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON via Ory"
+              "from_name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-dse3sgq5tp08wjm0 via Ory"
             },
             "templates": {
               "recovery": {

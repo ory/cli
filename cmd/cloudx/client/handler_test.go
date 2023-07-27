@@ -298,7 +298,7 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=UpdateProject", func(t *testing.T) {
 		t.Run("is able to update a project", func(t *testing.T) {
 			res, err := loggedIn.UpdateProject(project, "", []json.RawMessage{config})
-			require.NoError(t, err)
+			require.NoErrorf(t, err, "%+v", err)
 
 			assertx.EqualAsJSONExcept(t, config, res.Project, []string{
 				"id",
