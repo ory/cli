@@ -7,16 +7,22 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	stderrs "errors"
 	"fmt"
+	"html/template"
 	"io"
 	"io/fs"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/imdario/mergo"
@@ -24,12 +30,15 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/tidwall/gjson"
+	"golang.org/x/exp/slices"
+	"golang.org/x/oauth2"
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
+	"github.com/ory/x/randx"
 	"github.com/ory/x/stringsx"
 )
 
@@ -50,10 +59,11 @@ func RegisterYesFlag(f *pflag.FlagSet) {
 }
 
 type AuthContext struct {
-	Version         string       `json:"version"`
-	SessionToken    string       `json:"session_token"`
-	SelectedProject uuid.UUID    `json:"selected_project"`
-	IdentityTraits  AuthIdentity `json:"session_identity_traits"`
+	Version         string        `json:"version"`
+	SessionToken    string        `json:"session_token"`
+	SelectedProject uuid.UUID     `json:"selected_project"`
+	IdentityTraits  AuthIdentity  `json:"session_identity_traits"`
+	AccessToken     *oauth2.Token `json:"access_token"`
 }
 
 func (i *AuthContext) ID() string {
@@ -109,7 +119,6 @@ type CommandHelper struct {
 	ConfigLocation   string
 	NoConfirm        bool
 	IsQuiet          bool
-	APIDomain        *url.URL
 	Stdin            *bufio.Reader
 	PwReader         passwordReader
 }
@@ -272,164 +281,6 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 	return c, nil
 }
 
-func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, error) {
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(i); err != nil {
-		return nil, err
-	}
-	result := gjson.GetBytes(b.Bytes(), path)
-	return &result, nil
-}
-
-func (h *CommandHelper) signup(c *cloud.APIClient) (*AuthContext, error) {
-	flow, _, err := c.FrontendApi.CreateNativeRegistrationFlow(h.Ctx).Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	var isRetry bool
-retryRegistration:
-	if isRetry {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour account creation attempt failed. Please try again!\n\n")
-	}
-	isRetry = true
-
-	var form cloud.UpdateRegistrationFlowWithPasswordMethod
-	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
-		return nil, err
-	}
-
-	signup, _, err := c.FrontendApi.UpdateRegistrationFlow(h.Ctx).
-		Flow(flow.Id).UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{
-		UpdateRegistrationFlowWithPasswordMethod: &form,
-	}).Execute()
-	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *cloud.RegistrationFlow:
-				flow = m
-				goto retryRegistration
-			case cloud.RegistrationFlow:
-				flow = &m
-				goto retryRegistration
-			}
-		}
-
-		return nil, errors.WithStack(err)
-	}
-
-	sessionToken := *signup.SessionToken
-	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return h.sessionToContext(sess, sessionToken)
-}
-
-func (h *CommandHelper) signin(c *cloud.APIClient, sessionToken string) (*AuthContext, error) {
-	req := c.FrontendApi.CreateNativeLoginFlow(h.Ctx)
-	if len(sessionToken) > 0 {
-		req = req.XSessionToken(sessionToken).Aal("aal2")
-	}
-
-	flow, _, err := req.Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	var isRetry bool
-retryLogin:
-	if isRetry {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour sign in attempt failed. Please try again!\n\n")
-	}
-	isRetry = true
-
-	var form interface{} = &cloud.UpdateLoginFlowWithPasswordMethod{}
-	method := "password"
-	if len(sessionToken) > 0 {
-		var foundTOTP bool
-		var foundLookup bool
-		for _, n := range flow.Ui.Nodes {
-			if n.Group == "totp" {
-				foundTOTP = true
-			} else if n.Group == "lookup_secret" {
-				foundLookup = true
-			}
-		}
-		if !foundLookup && !foundTOTP {
-			return nil, errors.New("only TOTP and lookup secrets are supported for two-step verification in the CLI")
-		}
-
-		method = "lookup_secret"
-		if foundTOTP {
-			form = &cloud.UpdateLoginFlowWithTotpMethod{}
-			method = "totp"
-		}
-	}
-
-	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, method, form); err != nil {
-		return nil, err
-	}
-
-	var body cloud.UpdateLoginFlowBody
-	switch e := form.(type) {
-	case *cloud.UpdateLoginFlowWithTotpMethod:
-		body.UpdateLoginFlowWithTotpMethod = e
-	case *cloud.UpdateLoginFlowWithPasswordMethod:
-		body.UpdateLoginFlowWithPasswordMethod = e
-	default:
-		panic("unexpected type")
-	}
-
-	login, _, err := c.FrontendApi.UpdateLoginFlow(h.Ctx).XSessionToken(sessionToken).
-		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
-	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *cloud.LoginFlow:
-				flow = m
-				goto retryLogin
-			case cloud.LoginFlow:
-				flow = &m
-				goto retryLogin
-			}
-		}
-
-		return nil, errors.WithStack(err)
-	}
-
-	sessionToken = stringsx.Coalesce(*login.SessionToken, sessionToken)
-	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
-	if err == nil {
-		return h.sessionToContext(sess, sessionToken)
-	}
-
-	if e, ok := err.(*cloud.GenericOpenAPIError); ok {
-		switch gjson.GetBytes(e.Body(), "error.id").String() {
-		case "session_aal2_required":
-			return h.signin(c, sessionToken)
-		}
-	}
-	return nil, err
-}
-
-func (h *CommandHelper) sessionToContext(session *cloud.Session, token string) (*AuthContext, error) {
-	email, err := h.getField(session.Identity.Traits, "email")
-	if err != nil {
-		return nil, err
-	}
-
-	return &AuthContext{
-		Version:      Version,
-		SessionToken: token,
-		IdentityTraits: AuthIdentity{
-			Email: email.String(),
-			ID:    uuid.FromStringOrNil(session.Identity.Id),
-		},
-	}, nil
-}
-
 func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 	if h.IsQuiet {
 		return nil, errors.New("can not sign in or sign up when flag --quiet is set")
@@ -442,60 +293,184 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 		}
 	}
 
-	if len(ac.SessionToken) > 0 {
-		if !h.NoConfirm {
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("You are signed in as \"%s\" already. Do you wish to authenticate with another account?", ac.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
-			if err != nil {
+	if ac.AccessToken != nil {
+		// check existing token
+		t, err := oac.TokenSource(h.Ctx, ac.AccessToken).Token()
+		if err == nil {
+			// we're good
+			ac.AccessToken = t
+			if err := h.WriteConfig(ac); err != nil {
 				return nil, err
-			} else if !ok {
-				return ac, nil
 			}
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "Ok, signing you out!\n")
+			fmt.Fprintf(h.VerboseWriter, "You are already logged in.\n")
+			return ac, nil
 		}
-
-		if err := h.SignOut(); err != nil {
-			return nil, err
-		}
+		fmt.Fprintf(h.VerboseErrWriter, "must get new access token: %v\n", err)
 	}
 
-	c, err := NewKratosClient()
+	ac, err = h.loginOAuth2()
 	if err != nil {
 		return nil, err
-	}
-
-	signIn, err := cmdx.AskScannerForConfirmation("Do you want to sign in to an existing Ory Network account?", h.Stdin, h.VerboseErrWriter)
-	if err != nil {
-		return nil, err
-	}
-
-	if signIn {
-		ac, err = h.signin(c, "")
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you! Let's create a new Ory Network account. Select the Enter key to start the account creation wizard.")
-
-		ac, err = h.signup(c)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	if err := h.WriteConfig(ac); err != nil {
 		return nil, err
 	}
 
-	_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are now signed in as: %s\n", ac.IdentityTraits.Email)
-
-	if len(ac.SessionToken) == 0 {
-		return nil, errors.Errorf("unable to authenticate")
-	}
-
 	return ac, nil
 }
 
+var (
+	oac = oauth2.Config{
+		// ClientID: "a3d01c0c-bf2a-44aa-a6ff-0e27ed79c399",
+		ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
+		Endpoint: oauth2.Endpoint{
+			// AuthURL:   "https://project.console.ory:8080/oauth2/auth",
+			// TokenURL:  "https://project.console.ory:8080/oauth2/token",
+			AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
+			TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
+			AuthStyle: oauth2.AuthStyleInParams,
+		},
+		RedirectURL: "http://localhost:12345/callback",
+	}
+
+	tmpl = template.Must(template.New("").Parse(`<!DOCTYPE html> 
+<html>
+	<head><title>Ory Network CLI login</title></head>
+	<body>
+		<h1>{{ .Header }}</h1>
+		<p>{{ .Message }}</p>
+	</body>
+</html>`))
+)
+
+type data struct {
+	Header, Message string
+}
+
+func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
+	code, errs, outcome, stop := h.runOAuth2CallbackServer()
+	defer stop()
+
+	codeVerifier := randx.MustString(64, randx.AlphaNum)
+	sha := sha256.Sum256([]byte(codeVerifier))
+	codeChallege := base64.RawURLEncoding.EncodeToString(sha[:])
+	url := oac.AuthCodeURL(randx.MustString(32, randx.AlphaNum),
+		oauth2.SetAuthURLParam("scope", "offline_access"),
+		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+		oauth2.SetAuthURLParam("code_challenge", codeChallege),
+		oauth2.SetAuthURLParam("response_type", "code"),
+		oauth2.SetAuthURLParam("prompt", "consent"),
+	)
+
+	err := exec.Command("open", url).Run()
+	if err != nil {
+		return nil, fmt.Errorf("failed to open browser: %w", err)
+	}
+
+	fmt.Fprintf(h.VerboseErrWriter,
+		`A browser should have opened for you to complete your login to Ory Network.
+If no browser opened, visit the below page to continue:
+
+		%s
+
+
+`, url)
+
+	var authCode string
+	select {
+	case authCode = <-code:
+		// ok
+	case err := <-errs:
+		fmt.Fprintf(h.VerboseErrWriter, "An error occured logging into Ory Network: %v\n", err)
+		return nil, fmt.Errorf("failed OAuth2 authorization: %w", err)
+	}
+
+	token, err := oac.Exchange(
+		h.Ctx,
+		authCode,
+		oauth2.SetAuthURLParam("code_verifier", codeVerifier),
+	)
+	if err != nil {
+		outcome <- data{"Login failed", err.Error()}
+		fmt.Fprintf(h.VerboseErrWriter, "An error occured logging into Ory Network: %v\n", err)
+		return nil, fmt.Errorf("failed OAuth2 token exchange: %w", err)
+	}
+	outcome <- data{"Successfully logged into Ory Network.", "You may now close this browser tab and continue on with the Ory CLI."}
+
+	fmt.Fprintf(h.VerboseErrWriter, "Successfully logged into Ory Network.\n")
+
+	scope, _ := token.Extra("scope").(string)
+	if !slices.Contains(strings.Split(scope, " "), "offline_access") {
+		fmt.Fprintf(h.VerboseErrWriter,
+			"You have not granted the 'offline_access' permission during login and will have to authenticate again in %v.\n",
+			time.Until(token.Expiry).Round(time.Second),
+		)
+	}
+	for range code {
+		// drain/wait
+	}
+	// ok, response written to browser
+
+	return &AuthContext{AccessToken: token}, nil
+}
+
+func (h *CommandHelper) runOAuth2CallbackServer() (code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
+	l, err := net.Listen("tcp", ":12345")
+	if err != nil {
+		fmt.Fprintln(h.VerboseErrWriter, "Failed to allocate port for OAuth2 callback handler")
+		os.Exit(1)
+	}
+	_code, _errs, _outcome := make(chan string), make(chan error), make(chan data)
+	srv := http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer close(_code)
+			r.ParseForm()
+			code := r.Form.Get("code")
+			error, desc := r.Form.Get("error"), r.Form.Get("error_description")
+			if code == "" {
+				tmpl.Execute(w, &data{"Login failed", desc + ": " + error})
+				_errs <- fmt.Errorf("%s: %s", error, desc)
+				return
+			}
+			_code <- code
+			tmpl.Execute(w, <-_outcome)
+		}),
+	}
+	go srv.Serve(l)
+	return _code, _errs, _outcome, func() {
+		ctx, cancel := context.WithTimeout(h.Ctx, 3*time.Second)
+		defer cancel()
+		srv.Shutdown(ctx)
+	}
+}
+
 func (h *CommandHelper) SignOut() error {
+	ac, err := h.readConfig()
+	if err != nil {
+		return err
+	}
+	if ac.AccessToken == nil {
+		return h.WriteConfig(new(AuthContext))
+	}
+	revoke, err := url.Parse(oac.Endpoint.AuthURL)
+	if err != nil {
+		return err
+	}
+	revoke.Path = "/oauth2/revoke"
+	res, err := http.PostForm(revoke.String(), url.Values{
+		"client_id": []string{oac.ClientID},
+		"token":     []string{ac.AccessToken.RefreshToken}, // this also revokes the associated access token
+	})
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		body, _ := io.ReadAll(res.Body)
+		fmt.Fprintf(h.VerboseErrWriter, "/oauth2/revoke response: %v", string(body))
+		return fmt.Errorf("failed to revoke token")
+	}
 	return h.WriteConfig(new(AuthContext))
 }
 
