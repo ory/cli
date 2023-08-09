@@ -33,5 +33,11 @@
     "whoami": {
       "required_aal": "aal1"
     }
+  },
+  "identity": {
+    "schemas": []
+  },
+  "selfservice": {
+    "default_browser_return_url": "/"
   }
 }
