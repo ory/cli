@@ -6,12 +6,11 @@ package client
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"os"
-	"time"
 
 	cloud "github.com/ory/client-go"
+	"golang.org/x/oauth2"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
@@ -95,10 +94,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 		}
 
 		conf := hydra.NewConfiguration()
-		conf.HTTPClient = &http.Client{
-			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
-			Timeout:   time.Second * 10,
-		}
+		conf.HTTPClient = oac.Client(context.WithValue(context.Background(), oauth2.HTTPClient, c.StandardClient()), ac.AccessToken)
 
 		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
 		if err != nil {
@@ -117,14 +113,8 @@ func ContextWithClient(ctx context.Context) context.Context {
 
 		// We use the cloud console API because it works with ory cloud session tokens.
 		return &kratoscli.ClientContext{
-			Endpoint: makeCloudConsoleURL(p.Slug + ".projects"),
-			HTTPClient: &http.Client{
-				Transport: &bearerTokenTransporter{
-					RoundTripper: c.StandardClient().Transport,
-					bearerToken:  ac.SessionToken,
-				},
-				Timeout: time.Second * 10,
-			},
+			Endpoint:   makeCloudConsoleURL(p.Slug + ".projects"),
+			HTTPClient: oac.Client(context.WithValue(context.Background(), oauth2.HTTPClient, c.StandardClient()), ac.AccessToken),
 		}, nil
 	})
 	return ctx

@@ -23,5 +23,6 @@ func NewIntrospectCmd() *cobra.Command {
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterHTTPClientFlags(cmd.PersistentFlags())
 	cmdx.RegisterFormatFlags(cmd.PersistentFlags())
+	client.RegisterAuthHelpers(cmd)
 	return cmd
 }

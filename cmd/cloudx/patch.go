@@ -23,5 +23,6 @@ func NewPatchCmd() *cobra.Command {
 		project.NewPatchOAuth2ConfigCmd(),
 		project.NewUpdateNamespaceConfigCmd(),
 	)
+	client.RegisterAuthHelpers(cmd)
 	return cmd
 }

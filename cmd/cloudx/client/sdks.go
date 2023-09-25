@@ -9,6 +9,9 @@ import (
 	"os"
 	"time"
 
+	"golang.org/x/oauth2"
+
+	"github.com/ory/cli/buildinfo"
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/stringsx"
 )
@@ -64,15 +67,17 @@ func NewKratosClient() (*cloud.APIClient, error) {
 	return cloud.NewAPIClient(conf), nil
 }
 
-func newCloudClient(token string) (*cloud.APIClient, error) {
+func newCloudClient(t *oauth2.Token) *cloud.APIClient {
 	u := makeCloudConsoleURL("api")
 
 	conf := cloud.NewConfiguration()
 	conf.Servers = cloud.ServerConfigurations{{URL: u}}
-	conf.HTTPClient = newBearerTokenClient(token)
+	// conf.HTTPClient = oac.Client(context.Background(), t)
+	conf.UserAgent = "ory-cli/" + buildinfo.Version
 	if RateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
 	}
+	conf.Debug = true
 
-	return cloud.NewAPIClient(conf), nil
+	return cloud.NewAPIClient(conf)
 }

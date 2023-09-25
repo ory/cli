@@ -7,8 +7,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	stderrs "errors"
 	"fmt"
@@ -19,7 +17,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -30,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/tidwall/gjson"
+	"github.com/toqueteos/webbrowser"
 	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 	"golang.org/x/term"
@@ -63,21 +61,20 @@ type AuthContext struct {
 	SessionToken    string        `json:"session_token"`
 	SelectedProject uuid.UUID     `json:"selected_project"`
 	IdentityTraits  AuthIdentity  `json:"session_identity_traits"`
-	AccessToken     *oauth2.Token `json:"access_token"`
+	AccessToken     *oauth2.Token `json:"oauth_token"`
 }
 
 func (i *AuthContext) ID() string {
-	return i.IdentityTraits.ID.String()
+	return i.IdentityTraits.ID
 }
 
 func (*AuthContext) Header() []string {
-	return []string{"ID", "EMAIL", "SELECTED_PROJECT"}
+	return []string{"ID", "SELECTED_PROJECT"}
 }
 
 func (i *AuthContext) Columns() []string {
 	return []string{
 		i.ID(),
-		i.IdentityTraits.Email,
 		i.SelectedProject.String(),
 	}
 }
@@ -87,7 +84,7 @@ func (i *AuthContext) Interface() interface{} {
 }
 
 type AuthIdentity struct {
-	ID    uuid.UUID
+	ID    string
 	Email string `json:"email"`
 }
 
@@ -235,6 +232,10 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 		return nil, false, err
 	}
 
+	if c.AccessToken != nil {
+		return c, true, nil
+	}
+
 	if len(c.SessionToken) > 0 {
 		client, err := NewKratosClient()
 		if err != nil {
@@ -294,18 +295,8 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 	}
 
 	if ac.AccessToken != nil {
-		// check existing token
-		t, err := oac.TokenSource(h.Ctx, ac.AccessToken).Token()
-		if err == nil {
-			// we're good
-			ac.AccessToken = t
-			if err := h.WriteConfig(ac); err != nil {
-				return nil, err
-			}
-			fmt.Fprintf(h.VerboseWriter, "You are already logged in.\n")
-			return ac, nil
-		}
-		fmt.Fprintf(h.VerboseErrWriter, "must get new access token: %v\n", err)
+		fmt.Fprintf(h.VerboseWriter, "You are already logged in.\n")
+		return ac, nil
 	}
 
 	ac, err = h.loginOAuth2()
@@ -322,13 +313,12 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 
 var (
 	oac = oauth2.Config{
-		// ClientID: "a3d01c0c-bf2a-44aa-a6ff-0e27ed79c399",
-		ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
+		ClientID: "ory-cli",
 		Endpoint: oauth2.Endpoint{
-			// AuthURL:   "https://project.console.ory:8080/oauth2/auth",
-			// TokenURL:  "https://project.console.ory:8080/oauth2/token",
-			AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
-			TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
+			AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
+			TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
+			// AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
+			// TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 		RedirectURL: "http://localhost:12345/callback",
@@ -349,33 +339,29 @@ type data struct {
 }
 
 func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
-	code, errs, outcome, stop := h.runOAuth2CallbackServer()
+	state := randx.MustString(32, randx.AlphaNum)
+	code, errs, outcome, stop := h.runOAuth2CallbackServer(state)
 	defer stop()
 
-	codeVerifier := randx.MustString(64, randx.AlphaNum)
-	sha := sha256.Sum256([]byte(codeVerifier))
-	codeChallege := base64.RawURLEncoding.EncodeToString(sha[:])
-	url := oac.AuthCodeURL(randx.MustString(32, randx.AlphaNum),
-		oauth2.SetAuthURLParam("scope", "offline_access"),
-		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
-		oauth2.SetAuthURLParam("code_challenge", codeChallege),
+	codeVerifier := oauth2.GenerateVerifier()
+	url := oac.AuthCodeURL(state,
+		oauth2.SetAuthURLParam("scope", "offline_access profile email"),
+		oauth2.S256ChallengeOption(codeVerifier),
 		oauth2.SetAuthURLParam("response_type", "code"),
-		oauth2.SetAuthURLParam("prompt", "consent"),
+		oauth2.SetAuthURLParam("prompt", "login"),
+		oauth2.SetAuthURLParam("audience", makeCloudConsoleURL("api")+" "+makeCloudConsoleURL("*.projects")),
 	)
 
-	err := exec.Command("open", url).Run()
-	if err != nil {
-		return nil, fmt.Errorf("failed to open browser: %w", err)
-	}
+	println(url)
 
 	fmt.Fprintf(h.VerboseErrWriter,
 		`A browser should have opened for you to complete your login to Ory Network.
 If no browser opened, visit the below page to continue:
 
-		%s
-
+		%s 
 
 `, url)
+	_ = webbrowser.Open(url)
 
 	var authCode string
 	select {
@@ -389,7 +375,7 @@ If no browser opened, visit the below page to continue:
 	token, err := oac.Exchange(
 		h.Ctx,
 		authCode,
-		oauth2.SetAuthURLParam("code_verifier", codeVerifier),
+		oauth2.VerifierOption(codeVerifier),
 	)
 	if err != nil {
 		outcome <- data{"Login failed", err.Error()}
@@ -399,6 +385,11 @@ If no browser opened, visit the below page to continue:
 	outcome <- data{"Successfully logged into Ory Network.", "You may now close this browser tab and continue on with the Ory CLI."}
 
 	fmt.Fprintf(h.VerboseErrWriter, "Successfully logged into Ory Network.\n")
+
+	enc := json.NewEncoder(h.VerboseWriter)
+	enc.SetIndent("", "\t")
+	enc.SetEscapeHTML(false)
+	enc.Encode(token)
 
 	scope, _ := token.Extra("scope").(string)
 	if !slices.Contains(strings.Split(scope, " "), "offline_access") {
@@ -415,7 +406,7 @@ If no browser opened, visit the below page to continue:
 	return &AuthContext{AccessToken: token}, nil
 }
 
-func (h *CommandHelper) runOAuth2CallbackServer() (code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
+func (h *CommandHelper) runOAuth2CallbackServer(state string) (code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
 	l, err := net.Listen("tcp", ":12345")
 	if err != nil {
 		fmt.Fprintln(h.VerboseErrWriter, "Failed to allocate port for OAuth2 callback handler")
@@ -426,6 +417,11 @@ func (h *CommandHelper) runOAuth2CallbackServer() (code <-chan string, errs <-ch
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer close(_code)
 			r.ParseForm()
+			if s := r.Form.Get("state"); s != state {
+				tmpl.Execute(w, &data{"Login failed", ""})
+				_errs <- fmt.Errorf("state mismatch: expected %s, got %s", state, s)
+				return
+			}
 			code := r.Form.Get("code")
 			error, desc := r.Form.Get("error"), r.Form.Get("error_description")
 			if code == "" {
@@ -463,29 +459,21 @@ func (h *CommandHelper) SignOut() error {
 		"token":     []string{ac.AccessToken.RefreshToken}, // this also revokes the associated access token
 	})
 	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		body, _ := io.ReadAll(res.Body)
-		fmt.Fprintf(h.VerboseErrWriter, "/oauth2/revoke response: %v", string(body))
-		return fmt.Errorf("failed to revoke token")
+		fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", err)
+	} else {
+		defer res.Body.Close()
+		if res.StatusCode < 200 || res.StatusCode > 299 {
+			body, _ := io.ReadAll(res.Body)
+			fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", string(body))
+		}
 	}
 	return h.WriteConfig(new(AuthContext))
 }
 
 func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
-	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	projects, res, err := c.ProjectApi.ListProjects(ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -496,16 +484,6 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
 	if projectOrSlug == "" {
 		return nil, errors.Errorf("No project selected! Please see the help message on how to set one.")
-	}
-
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
 	}
 
 	id := uuid.FromStringOrNil(projectOrSlug)
@@ -530,7 +508,9 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		}
 	}
 
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	project, res, err := c.ProjectApi.GetProject(ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -539,17 +519,9 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 }
 
 func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
-	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	project, res, err := c.ProjectApi.CreateProject(ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -599,16 +571,6 @@ func toPatch(op string, values []string) (patches []cloud.JsonPatch, err error) 
 }
 
 func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, replace, del []string) (*cloud.SuccessfulProjectUpdate, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
 	var patches []cloud.JsonPatch
 	for _, r := range raw {
 		config, err := jsonx.EmbedSources(r, jsonx.WithIgnoreKeys("$id", "$schema"), jsonx.WithOnlySchemes("file"))
@@ -641,7 +603,9 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	res, _, err := c.ProjectApi.PatchProject(ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -650,16 +614,6 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 }
 
 func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*cloud.SuccessfulProjectUpdate, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
 	for k := range configs {
 		config, err := jsonx.EmbedSources(
 			configs[k],
@@ -702,10 +656,12 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` is required and can not be empty")
 	}
 
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+		res, _, err := c.ProjectApi.GetProject(ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -721,17 +677,9 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 }
 
 func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.ProjectApiKey, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
-	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	token, _, err := c.ProjectApi.CreateProjectApiKey(ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -740,17 +688,9 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 }
 
 func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return err
-	}
-
-	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
+	c := newCloudClient(nil)
+	if _, err := c.ProjectApi.DeleteProjectApiKey(ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 

@@ -33,5 +33,6 @@ func NewListCmd() *cobra.Command {
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterNoiseFlags(cmd.PersistentFlags())
 	cmdx.RegisterJSONFormatFlags(cmd.PersistentFlags())
+	client.RegisterAuthHelpers(cmd)
 	return cmd
 }

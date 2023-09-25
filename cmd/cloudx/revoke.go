@@ -6,6 +6,7 @@ package cloudx
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
 	"github.com/ory/x/cmdx"
 )
@@ -19,5 +20,6 @@ func NewRevokeCmd() *cobra.Command {
 
 	cmdx.RegisterHTTPClientFlags(cmd.PersistentFlags())
 	cmdx.RegisterFormatFlags(cmd.PersistentFlags())
+	client.RegisterAuthHelpers(cmd)
 	return cmd
 }
