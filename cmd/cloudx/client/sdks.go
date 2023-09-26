@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cloud "github.com/ory/client-go"
+	newCloud "github.com/ory/client-go/1.2"
 	"github.com/ory/x/stringsx"
 )
 
@@ -75,4 +76,17 @@ func newCloudClient(token string) (*cloud.APIClient, error) {
 	}
 
 	return cloud.NewAPIClient(conf), nil
+}
+
+func newNewCloudClient(token string) (*newCloud.APIClient, error) {
+	u := makeCloudConsoleURL("api")
+
+	conf := newCloud.NewConfiguration()
+	conf.Servers = newCloud.ServerConfigurations{{URL: u}}
+	conf.HTTPClient = newBearerTokenClient(token)
+	if RateLimitHeader != "" {
+		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
+	}
+
+	return newCloud.NewAPIClient(conf), nil
 }

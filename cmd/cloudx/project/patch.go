@@ -81,7 +81,7 @@ func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.Ra
 			return err
 		}
 
-		id, err := getSelectedProjectId(h, args)
+		id, err := selectedProjectID(h, args)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}

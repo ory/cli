@@ -6,6 +6,7 @@ replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
+	github.com/ory/client-go/1.2 => github.com/ory/client-go v1.2.10
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
@@ -38,6 +39,7 @@ require (
 	github.com/ory/keto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	github.com/ory/kratos v0.10.2-0.20221108163448-d3d148b3a589
 	github.com/ory/x v0.0.511-0.20221108105728-3fed9bc99daf
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rs/cors v1.8.2
@@ -49,8 +51,8 @@ require (
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
 	github.com/urfave/negroni v1.0.0
-	golang.org/x/term v0.3.0
-	golang.org/x/text v0.5.0
+	golang.org/x/term v0.12.0
+	golang.org/x/text v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -144,7 +146,7 @@ require (
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/btree v1.0.1 // indirect
 	github.com/google/certificate-transparency-go v1.1.2-0.20210511102531-373a877eec92 // indirect
 	github.com/google/go-github/v27 v27.0.1 // indirect
@@ -220,6 +222,7 @@ require (
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.5.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.1 // indirect
 	github.com/ory/analytics-go/v4 v4.0.3 // indirect
+	github.com/ory/client-go/1.2 v0.0.0-00010101000000-000000000000 // indirect
 	github.com/ory/dockertest/v3 v3.9.1 // indirect
 	github.com/ory/fosite v0.42.3-0.20220801115804-c557908b0db2 // indirect
 	github.com/ory/go-acc v0.2.8 // indirect
@@ -231,7 +234,6 @@ require (
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/philhofer/fwd v1.1.1 // indirect
-	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/profile v1.7.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
@@ -311,21 +313,21 @@ require (
 	go.uber.org/automaxprocs v1.3.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
-	golang.org/x/crypto v0.1.0 // indirect
+	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/net v0.4.0 // indirect
-	golang.org/x/oauth2 v0.3.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
+	golang.org/x/oauth2 v0.12.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
-	golang.org/x/tools v0.2.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221025140454-527a21cfbd71 // indirect
 	google.golang.org/grpc v1.50.1 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.43.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect

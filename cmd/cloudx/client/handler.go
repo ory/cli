@@ -27,6 +27,7 @@ import (
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
+	newCloud "github.com/ory/client-go/1.2"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
@@ -299,10 +300,11 @@ retryRegistration:
 		return nil, err
 	}
 
-	signup, _, err := c.FrontendApi.UpdateRegistrationFlow(h.Ctx).
-		Flow(flow.Id).UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{
-		UpdateRegistrationFlowWithPasswordMethod: &form,
-	}).Execute()
+	signup, _, err := c.FrontendApi.
+		UpdateRegistrationFlow(h.Ctx).
+		Flow(flow.Id).
+		UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
+		Execute()
 	if err != nil {
 		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
@@ -516,6 +518,90 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	}
 
 	return projects, nil
+}
+
+func (h *CommandHelper) ListOrganizations(projectID string) (*newCloud.ListOrganizationsResponse, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newNewCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organizations, res, err := c.ProjectApi.ListOrganizations(h.Ctx, projectID).Execute()
+	if err != nil {
+		return nil, handleError("unable to list organizations", res, err)
+	}
+
+	return organizations, nil
+}
+
+func (h *CommandHelper) CreateOrganization(projectID string, body newCloud.OrganizationBody) (*newCloud.Organization, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newNewCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organization, res, err := c.ProjectApi.
+		CreateOrganization(h.Ctx, projectID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to create organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body newCloud.OrganizationBody) (*newCloud.Organization, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newNewCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organization, res, err := c.ProjectApi.
+		UpdateOrganization(h.Ctx, projectID, orgID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to update organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return err
+	}
+
+	c, err := newNewCloudClient(ac.SessionToken)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.ProjectApi.
+		DeleteOrganization(h.Ctx, projectID, orgID).
+		Execute()
+	if err != nil {
+		return handleError("unable to create organization", res, err)
+	}
+
+	return nil
 }
 
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
