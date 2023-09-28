@@ -49,14 +49,7 @@ func TestAuthenticator(t *testing.T) {
 		name := testhelpers.FakeName()
 
 		// Create the account
-		var r bytes.Buffer
-		_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
-		_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
-		_, _ = r.WriteString(name + "\n")  // Name: FakeName()
-		_, _ = r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
-		_, _ = r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
-		_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
-
+		r := testhelpers.RegistrationBuffer(name, email, password)
 		stdout, stderr, err := cmd.Exec(&r, "auth")
 		require.NoError(t, err)
 
@@ -185,21 +178,19 @@ func TestAuthenticator(t *testing.T) {
 	t.Run("retry sign up on invalid data", func(t *testing.T) {
 		testhelpers.ClearConfig(t, configDir)
 
-		var r bytes.Buffer
-
-		_, _ = r.WriteString("n\n")                         // Do you want to sign in to an existing Ory Network account? [y/n]: n
-		_, _ = r.WriteString("not-an-email" + "\n")         // Email: FakeEmail()
-		_, _ = r.WriteString(testhelpers.FakeName() + "\n") // Name: FakeName()
-		_, _ = r.WriteString("n\n")                         // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
-		_, _ = r.WriteString("y\n")                         // I accept the Terms of Service [y/n]: y
+		r := testhelpers.RegistrationBuffer(testhelpers.FakeName(), "not-an-email", password)
 
 		// Redo the flow
 		email := testhelpers.FakeEmail()
 		name := testhelpers.FakeName()
-		_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
-		_, _ = r.WriteString(name + "\n")  // Name: FakeName()
-		_, _ = r.WriteString("y\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
-		_, _ = r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
+		_, _ = r.WriteString(email + "\n")    // Work email: FakeEmail()
+		_, _ = r.WriteString(password + "\n") // Password: FakePassword()
+		_, _ = r.WriteString(name + "\n")     // Name: FakeName()
+		_, _ = r.WriteString("n\n")           // Please inform me about platform and security updates:  [y/n]: n
+		_, _ = r.WriteString("y\n")           // I accept the Terms of Service https://www.ory.sh/ptos:  [y/n]: y
+		_, _ = r.WriteString("Ory\n")         // Company: Ory
+		_, _ = r.WriteString("12345\n")       // Phone: 12345
+		_, _ = r.WriteString("Dev\n")         // Job title/role: Dev
 
 		stdout, stderr, err := cmd.Exec(&r, "auth", "--"+client.ConfigFlag, configDir)
 		require.NoError(t, err)

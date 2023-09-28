@@ -760,13 +760,13 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	return res, nil
 }
 
-func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*cloud.SuccessfulProjectUpdate, error) {
+func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*newCloud.SuccessfulProjectUpdate, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := newCloudClient(ac.SessionToken)
+	c, err := newNewCloudClient(ac.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -800,7 +800,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
-	var payload cloud.SetProject
+	var payload newCloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
 		return nil, errors.WithStack(err)

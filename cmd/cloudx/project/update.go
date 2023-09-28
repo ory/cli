@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-	cloud "github.com/ory/client-go"
+	newCloud "github.com/ory/client-go/1.2"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 )
@@ -90,7 +90,7 @@ As an example an input could look like:
 	return cmd
 }
 
-func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *cloud.SuccessfulProjectUpdate)) func(*cobra.Command, []string) error {
+func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *newCloud.SuccessfulProjectUpdate)) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) (err error) {
 		h, err := client.NewCommandHelper(cmd)
 		if err != nil {
