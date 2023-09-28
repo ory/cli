@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	client "github.com/ory/client-go/1.2"
+	client "github.com/ory/client-go"
 )
 
 type (

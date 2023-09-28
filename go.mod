@@ -6,7 +6,7 @@ replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
-	github.com/ory/client-go/1.2 => github.com/ory/client-go v1.2.10
+	github.com/ory/client-go/114 => github.com/ory/client-go v1.1.4
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
 	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/ory/client-go v1.1.4
+	github.com/ory/client-go v1.2.10
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.3
 	github.com/ory/herodot v0.9.13
@@ -222,7 +222,7 @@ require (
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.5.0 // indirect
 	github.com/openzipkin/zipkin-go v0.4.1 // indirect
 	github.com/ory/analytics-go/v4 v4.0.3 // indirect
-	github.com/ory/client-go/1.2 v0.0.0-00010101000000-000000000000 // indirect
+	github.com/ory/client-go/114 v0.0.0-00010101000000-000000000000 // indirect
 	github.com/ory/dockertest/v3 v3.9.1 // indirect
 	github.com/ory/fosite v0.42.3-0.20220801115804-c557908b0db2 // indirect
 	github.com/ory/go-acc v0.2.8 // indirect

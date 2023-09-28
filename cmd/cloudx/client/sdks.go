@@ -10,7 +10,7 @@ import (
 	"time"
 
 	cloud "github.com/ory/client-go"
-	newCloud "github.com/ory/client-go/1.2"
+	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/stringsx"
 )
 
@@ -54,15 +54,15 @@ func makeCloudAPIsURL(prefix string) string {
 	return u.Scheme + "://" + u.Host
 }
 
-func NewKratosClient() (*cloud.APIClient, error) {
-	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
+func NewKratosClient() (*oldCloud.APIClient, error) {
+	conf := oldCloud.NewConfiguration()
+	conf.Servers = oldCloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 10}
 	if RateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
 	}
 
-	return cloud.NewAPIClient(conf), nil
+	return oldCloud.NewAPIClient(conf), nil
 }
 
 func newCloudClient(token string) (*cloud.APIClient, error) {
@@ -76,17 +76,4 @@ func newCloudClient(token string) (*cloud.APIClient, error) {
 	}
 
 	return cloud.NewAPIClient(conf), nil
-}
-
-func newNewCloudClient(token string) (*newCloud.APIClient, error) {
-	u := makeCloudConsoleURL("api")
-
-	conf := newCloud.NewConfiguration()
-	conf.Servers = newCloud.ServerConfigurations{{URL: u}}
-	conf.HTTPClient = newBearerTokenClient(token)
-	if RateLimitHeader != "" {
-		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
-	}
-
-	return newCloud.NewAPIClient(conf), nil
 }

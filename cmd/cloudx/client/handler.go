@@ -27,7 +27,7 @@ import (
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
-	newCloud "github.com/ory/client-go/1.2"
+	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
@@ -282,7 +282,7 @@ func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, err
 	return &result, nil
 }
 
-func (h *CommandHelper) signup(c *cloud.APIClient) (*AuthContext, error) {
+func (h *CommandHelper) signup(c *oldCloud.APIClient) (*AuthContext, error) {
 	flow, _, err := c.FrontendApi.CreateNativeRegistrationFlow(h.Ctx).Execute()
 	if err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ retryRegistration:
 	}
 	isRetry = true
 
-	var form cloud.UpdateRegistrationFlowWithPasswordMethod
+	var form oldCloud.UpdateRegistrationFlowWithPasswordMethod
 	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
 		return nil, err
 	}
@@ -303,15 +303,15 @@ retryRegistration:
 	signup, _, err := c.FrontendApi.
 		UpdateRegistrationFlow(h.Ctx).
 		Flow(flow.Id).
-		UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
+		UpdateRegistrationFlowBody(oldCloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
 		Execute()
 	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
+		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.RegistrationFlow:
+			case *oldCloud.RegistrationFlow:
 				flow = m
 				goto retryRegistration
-			case cloud.RegistrationFlow:
+			case oldCloud.RegistrationFlow:
 				flow = &m
 				goto retryRegistration
 			}
@@ -329,7 +329,7 @@ retryRegistration:
 	return h.sessionToContext(sess, sessionToken)
 }
 
-func (h *CommandHelper) signin(c *cloud.APIClient, sessionToken string) (*AuthContext, error) {
+func (h *CommandHelper) signin(c *oldCloud.APIClient, sessionToken string) (*AuthContext, error) {
 	req := c.FrontendApi.CreateNativeLoginFlow(h.Ctx)
 	if len(sessionToken) > 0 {
 		req = req.XSessionToken(sessionToken).Aal("aal2")
@@ -347,7 +347,7 @@ retryLogin:
 	}
 	isRetry = true
 
-	var form interface{} = &cloud.UpdateLoginFlowWithPasswordMethod{}
+	var form interface{} = &oldCloud.UpdateLoginFlowWithPasswordMethod{}
 	method := "password"
 	if len(sessionToken) > 0 {
 		var foundTOTP bool
@@ -365,7 +365,7 @@ retryLogin:
 
 		method = "lookup_secret"
 		if foundTOTP {
-			form = &cloud.UpdateLoginFlowWithTotpMethod{}
+			form = &oldCloud.UpdateLoginFlowWithTotpMethod{}
 			method = "totp"
 		}
 	}
@@ -374,11 +374,11 @@ retryLogin:
 		return nil, err
 	}
 
-	var body cloud.UpdateLoginFlowBody
+	var body oldCloud.UpdateLoginFlowBody
 	switch e := form.(type) {
-	case *cloud.UpdateLoginFlowWithTotpMethod:
+	case *oldCloud.UpdateLoginFlowWithTotpMethod:
 		body.UpdateLoginFlowWithTotpMethod = e
-	case *cloud.UpdateLoginFlowWithPasswordMethod:
+	case *oldCloud.UpdateLoginFlowWithPasswordMethod:
 		body.UpdateLoginFlowWithPasswordMethod = e
 	default:
 		panic("unexpected type")
@@ -387,12 +387,12 @@ retryLogin:
 	login, _, err := c.FrontendApi.UpdateLoginFlow(h.Ctx).XSessionToken(sessionToken).
 		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
 	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
+		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.LoginFlow:
+			case *oldCloud.LoginFlow:
 				flow = m
 				goto retryLogin
-			case cloud.LoginFlow:
+			case oldCloud.LoginFlow:
 				flow = &m
 				goto retryLogin
 			}
@@ -416,7 +416,7 @@ retryLogin:
 	return nil, err
 }
 
-func (h *CommandHelper) sessionToContext(session *cloud.Session, token string) (*AuthContext, error) {
+func (h *CommandHelper) sessionToContext(session *oldCloud.Session, token string) (*AuthContext, error) {
 	email, err := h.getField(session.Identity.Traits, "email")
 	if err != nil {
 		return nil, err
@@ -520,13 +520,13 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	return projects, nil
 }
 
-func (h *CommandHelper) ListOrganizations(projectID string) (*newCloud.ListOrganizationsResponse, error) {
+func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganizationsResponse, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := newNewCloudClient(ac.SessionToken)
+	c, err := newCloudClient(ac.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -539,13 +539,13 @@ func (h *CommandHelper) ListOrganizations(projectID string) (*newCloud.ListOrgan
 	return organizations, nil
 }
 
-func (h *CommandHelper) CreateOrganization(projectID string, body newCloud.OrganizationBody) (*newCloud.Organization, error) {
+func (h *CommandHelper) CreateOrganization(projectID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := newNewCloudClient(ac.SessionToken)
+	c, err := newCloudClient(ac.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -561,13 +561,13 @@ func (h *CommandHelper) CreateOrganization(projectID string, body newCloud.Organ
 	return organization, nil
 }
 
-func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body newCloud.OrganizationBody) (*newCloud.Organization, error) {
+func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := newNewCloudClient(ac.SessionToken)
+	c, err := newCloudClient(ac.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -589,7 +589,7 @@ func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
 		return err
 	}
 
-	c, err := newNewCloudClient(ac.SessionToken)
+	c, err := newCloudClient(ac.SessionToken)
 	if err != nil {
 		return err
 	}
@@ -760,13 +760,13 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	return res, nil
 }
 
-func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*newCloud.SuccessfulProjectUpdate, error) {
+func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*cloud.SuccessfulProjectUpdate, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
 		return nil, err
 	}
 
-	c, err := newNewCloudClient(ac.SessionToken)
+	c, err := newCloudClient(ac.SessionToken)
 	if err != nil {
 		return nil, err
 	}
@@ -800,7 +800,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
-	var payload newCloud.SetProject
+	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
 		return nil, errors.WithStack(err)

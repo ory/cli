@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-	cloud "github.com/ory/client-go/1.2"
+	cloud "github.com/ory/client-go"
 
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
