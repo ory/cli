@@ -71,7 +71,7 @@ func AssertConfig(t *testing.T, configDir string, email string, name string, new
 	c, err := client.NewKratosClient()
 	require.NoError(t, err)
 
-	res, _, err := c.FrontendApi.ToSession(context.Background()).XSessionToken(ac.SessionToken).Execute()
+	res, _, err := c.FrontendAPI.ToSession(context.Background()).XSessionToken(ac.SessionToken).Execute()
 	require.NoError(t, err)
 
 	traits, err := json.Marshal(res.Identity.Traits)

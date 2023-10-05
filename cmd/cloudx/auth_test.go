@@ -117,7 +117,7 @@ func TestAuthenticator(t *testing.T) {
 			c, err := client.NewKratosClient()
 			require.NoError(t, err)
 
-			flow, _, err := c.FrontendApi.CreateNativeSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Execute()
+			flow, _, err := c.FrontendAPI.CreateNativeSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Execute()
 			require.NoError(t, err)
 
 			var secret string
@@ -136,7 +136,7 @@ func TestAuthenticator(t *testing.T) {
 			code, err := totp.GenerateCode(secret, time.Now())
 			require.NoError(t, err)
 
-			_, _, err = c.FrontendApi.UpdateSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Flow(flow.Id).UpdateSettingsFlowBody(cloud.UpdateSettingsFlowBody{
+			_, _, err = c.FrontendAPI.UpdateSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Flow(flow.Id).UpdateSettingsFlowBody(cloud.UpdateSettingsFlowBody{
 				UpdateSettingsFlowWithTotpMethod: &cloud.UpdateSettingsFlowWithTotpMethod{
 					TotpCode: pointerx.String(code),
 					Method:   "totp",
