@@ -28,7 +28,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/ory/client-go v1.2.11-0.20231005135257-1cc2309b7e85
+	github.com/ory/client-go v1.3.0
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.3
 	github.com/ory/herodot v0.9.13
@@ -50,8 +50,8 @@ require (
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
 	github.com/urfave/negroni v1.0.0
-	golang.org/x/term v0.12.0
-	golang.org/x/text v0.13.0
+	golang.org/x/term v0.14.0
+	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -311,14 +311,14 @@ require (
 	go.uber.org/automaxprocs v1.3.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
-	golang.org/x/crypto v0.13.0 // indirect
+	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561 // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.15.0 // indirect
-	golang.org/x/oauth2 v0.12.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
+	golang.org/x/oauth2 v0.14.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect

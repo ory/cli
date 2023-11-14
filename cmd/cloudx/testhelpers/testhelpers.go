@@ -83,7 +83,8 @@ func AssertConfig(t *testing.T, configDir string, email string, name string, new
   "consent": {
     "newsletter": `+fmt.Sprintf("%v", newsletter)+`,
     "tos": ""
-  }
+  },
+  "details": {}
 }`), json.RawMessage(traits), []string{"consent.tos"})
 	assert.NotEmpty(t, gjson.GetBytes(traits, "consent.tos").String())
 }

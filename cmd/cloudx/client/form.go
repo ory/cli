@@ -61,6 +61,11 @@ func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, 
 				continue
 			}
 
+			// Skip details like Company, Phone, etc.
+			if strings.HasPrefix(attrs.Name, "traits.details") {
+				continue
+			}
+
 			if attrs.Name == "traits.consent.tos" {
 				for {
 					ok, err := cmdx.AskScannerForConfirmation(getLabel(attrs, &node), stdin, stderr)
