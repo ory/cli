@@ -7,8 +7,8 @@ toolchain go1.21.1
 replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
-	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
-	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
+	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.16
+	github.com/ory/keto/proto => github.com/ory/keto/proto v0.11.1-alpha.0.0.20231018141730-eda997f8d06d
 )
 
 require (
