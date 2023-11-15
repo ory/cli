@@ -19,6 +19,6 @@ func TestIsAllowedNoUnauthenticated(t *testing.T) {
 	cmd := testhelpers.ConfigAwareCmd(configDir)
 	_, _, err := cmd.Exec(nil,
 		"is", "allowed", "user", "relation", "namespace", "object",
-		"--quiet", "--project", project)
+		"--quiet", "--project", defaultProject)
 	require.ErrorIsf(t, err, client.ErrNoConfigQuiet, "got error: %v", err)
 }
