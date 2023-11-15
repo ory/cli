@@ -1,9 +1,20 @@
 {
+  "cors_admin": {
+    "enabled": false,
+    "origins": []
+  },
+  "cors_public": {
+    "enabled": false,
+    "origins": []
+  },
+  "id": "5a19c8c7-ba24-85b9-9101-08883de15032",
   "name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON",
+  "revision_id": "44ffba1c-d9de-4449-b6be-4f17e8cf8904",
   "services": {
     "identity": {
       "config": {
         "cookies": {
+          "domain": "epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev",
           "path": "/",
           "same_site": "Lax"
         },
@@ -12,6 +23,13 @@
             "from_name": "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-Updated Project from JSON via Ory"
           },
           "templates": {
+            "login_code": {
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
+            },
             "recovery": {
               "invalid": {
                 "email": {
@@ -30,6 +48,13 @@
                   "body": {}
                 }
               },
+              "valid": {
+                "email": {
+                  "body": {}
+                }
+              }
+            },
+            "registration_code": {
               "valid": {
                 "email": {
                   "body": {}
@@ -73,20 +98,25 @@
               "url": "base64://ewogICIkaWQiOiAiaHR0cHM6Ly9zY2hlbWFzLm9yeS5zaC9wcmVzZXRzL2tyYXRvcy9pZGVudGl0eS51c2VybmFtZS5zY2hlbWEuanNvbiIsCiAgIiRzY2hlbWEiOiAiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNy9zY2hlbWEjIiwKICAidGl0bGUiOiAiUGVyc29uIiwKICAidHlwZSI6ICJvYmplY3QiLAogICJwcm9wZXJ0aWVzIjogewogICAgInRyYWl0cyI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgInVzZXJuYW1lIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJ0aXRsZSI6ICJVc2VybmFtZSIsCiAgICAgICAgICAibWF4TGVuZ3RoIjogMTAwLAogICAgICAgICAgIm9yeS5zaC9rcmF0b3MiOiB7CiAgICAgICAgICAgICJjcmVkZW50aWFscyI6IHsKICAgICAgICAgICAgICAicGFzc3dvcmQiOiB7CiAgICAgICAgICAgICAgICAiaWRlbnRpZmllciI6IHRydWUKICAgICAgICAgICAgICB9LAogICAgICAgICAgICAgICJ3ZWJhdXRobiI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZQogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgInRvdHAiOiB7CiAgICAgICAgICAgICAgICAiYWNjb3VudF9uYW1lIjogdHJ1ZQogICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgICAgfQogICAgICAgIH0KICAgICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJ1c2VybmFtZSIKICAgICAgXSwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogZmFsc2UKICAgIH0KICB9Cn0K"
             },
             {
-              "id": "beb7e08859084ec71bc073694fff7c71eb0eb82593ca11b29068c1e02ad385c4fb8451cb3b58d8c9385ed955f31ab51b6d94e187ffea8d9ba817c12782ef5782"
+              "id": "beb7e08859084ec71bc073694fff7c71eb0eb82593ca11b29068c1e02ad385c4fb8451cb3b58d8c9385ed955f31ab51b6d94e187ffea8d9ba817c12782ef5782",
+              "url": "https://storage.googleapis.com/bac-gcs-staging/beb7e08859084ec71bc073694fff7c71eb0eb82593ca11b29068c1e02ad385c4fb8451cb3b58d8c9385ed955f31ab51b6d94e187ffea8d9ba817c12782ef5782.json"
             },
             {
               "id": "preset://email",
-              "url": "base64://ewogICIkaWQiOiAiaHR0cHM6Ly9zY2hlbWFzLm9yeS5zaC9wcmVzZXRzL2tyYXRvcy9pZGVudGl0eS5lbWFpbC5zY2hlbWEuanNvbiIsCiAgIiRzY2hlbWEiOiAiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNy9zY2hlbWEjIiwKICAidGl0bGUiOiAiUGVyc29uIiwKICAidHlwZSI6ICJvYmplY3QiLAogICJwcm9wZXJ0aWVzIjogewogICAgInRyYWl0cyI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgImVtYWlsIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJmb3JtYXQiOiAiZW1haWwiLAogICAgICAgICAgInRpdGxlIjogIkUtTWFpbCIsCiAgICAgICAgICAib3J5LnNoL2tyYXRvcyI6IHsKICAgICAgICAgICAgImNyZWRlbnRpYWxzIjogewogICAgICAgICAgICAgICJwYXNzd29yZCI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZQogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgIndlYmF1dGhuIjogewogICAgICAgICAgICAgICAgImlkZW50aWZpZXIiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAidG90cCI6IHsKICAgICAgICAgICAgICAgICJhY2NvdW50X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfQogICAgICAgICAgICB9LAogICAgICAgICAgICAicmVjb3ZlcnkiOiB7CiAgICAgICAgICAgICAgInZpYSI6ICJlbWFpbCIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgInZlcmlmaWNhdGlvbiI6IHsKICAgICAgICAgICAgICAidmlhIjogImVtYWlsIgogICAgICAgICAgICB9CiAgICAgICAgICB9LAogICAgICAgICAgIm1heExlbmd0aCI6IDMyMAogICAgICAgIH0KICAgICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJlbWFpbCIKICAgICAgXSwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogZmFsc2UKICAgIH0KICB9Cn0K"
+              "url": "base64://ewogICIkaWQiOiAiaHR0cHM6Ly9zY2hlbWFzLm9yeS5zaC9wcmVzZXRzL2tyYXRvcy9pZGVudGl0eS5lbWFpbC5zY2hlbWEuanNvbiIsCiAgIiRzY2hlbWEiOiAiaHR0cDovL2pzb24tc2NoZW1hLm9yZy9kcmFmdC0wNy9zY2hlbWEjIiwKICAidGl0bGUiOiAiUGVyc29uIiwKICAidHlwZSI6ICJvYmplY3QiLAogICJwcm9wZXJ0aWVzIjogewogICAgInRyYWl0cyI6IHsKICAgICAgInR5cGUiOiAib2JqZWN0IiwKICAgICAgInByb3BlcnRpZXMiOiB7CiAgICAgICAgImVtYWlsIjogewogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJmb3JtYXQiOiAiZW1haWwiLAogICAgICAgICAgInRpdGxlIjogIkUtTWFpbCIsCiAgICAgICAgICAib3J5LnNoL2tyYXRvcyI6IHsKICAgICAgICAgICAgImNyZWRlbnRpYWxzIjogewogICAgICAgICAgICAgICJwYXNzd29yZCI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZQogICAgICAgICAgICAgIH0sCiAgICAgICAgICAgICAgIndlYmF1dGhuIjogewogICAgICAgICAgICAgICAgImlkZW50aWZpZXIiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAidG90cCI6IHsKICAgICAgICAgICAgICAgICJhY2NvdW50X25hbWUiOiB0cnVlCiAgICAgICAgICAgICAgfSwKICAgICAgICAgICAgICAiY29kZSI6IHsKICAgICAgICAgICAgICAgICJpZGVudGlmaWVyIjogdHJ1ZSwKICAgICAgICAgICAgICAgICJ2aWEiOiAiZW1haWwiCiAgICAgICAgICAgICAgfQogICAgICAgICAgICB9LAogICAgICAgICAgICAicmVjb3ZlcnkiOiB7CiAgICAgICAgICAgICAgInZpYSI6ICJlbWFpbCIKICAgICAgICAgICAgfSwKICAgICAgICAgICAgInZlcmlmaWNhdGlvbiI6IHsKICAgICAgICAgICAgICAidmlhIjogImVtYWlsIgogICAgICAgICAgICB9CiAgICAgICAgICB9LAogICAgICAgICAgIm1heExlbmd0aCI6IDMyMAogICAgICAgIH0KICAgICAgfSwKICAgICAgInJlcXVpcmVkIjogWwogICAgICAgICJlbWFpbCIKICAgICAgXSwKICAgICAgImFkZGl0aW9uYWxQcm9wZXJ0aWVzIjogZmFsc2UKICAgIH0KICB9Cn0K"
             }
           ]
         },
         "oauth2_provider": {
           "override_return_to": false
         },
+        "organizations": [],
+        "preview": {
+          "default_read_consistency_level": "strong"
+        },
         "selfservice": {
           "allowed_return_urls": [
-            
+            "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev"
           ],
           "default_browser_return_url": "/ui/welcome",
           "flows": {
@@ -95,11 +125,20 @@
             },
             "login": {
               "after": {
+                "code": {
+                  "hooks": []
+                },
                 "hooks": [],
+                "lookup_secret": {
+                  "hooks": []
+                },
                 "oidc": {
                   "hooks": []
                 },
                 "password": {
+                  "hooks": []
+                },
+                "totp": {
                   "hooks": []
                 },
                 "webauthn": {
@@ -130,6 +169,9 @@
             },
             "registration": {
               "after": {
+                "code": {
+                  "hooks": []
+                },
                 "hooks": [],
                 "oidc": {
                   "hooks": [
@@ -158,15 +200,28 @@
               },
               "enabled": true,
               "lifespan": "30m0s",
+              "login_hints": true,
               "ui_url": "/ui/registration"
             },
             "settings": {
               "after": {
                 "hooks": [],
+                "lookup_secret": {
+                  "hooks": []
+                },
+                "oidc": {
+                  "hooks": []
+                },
                 "password": {
                   "hooks": []
                 },
                 "profile": {
+                  "hooks": []
+                },
+                "totp": {
+                  "hooks": []
+                },
+                "webauthn": {
                   "hooks": []
                 }
               },
@@ -197,7 +252,8 @@
               "config": {
                 "lifespan": "15m0s"
               },
-              "enabled": true
+              "enabled": true,
+              "passwordless_enabled": false
             },
             "link": {
               "config": {
@@ -240,7 +296,9 @@
                 "rp": {
                   "display_name": "afds",
                   "id": "upbeat-mclean-xjvqxk4i7e.projects.oryapis",
-                  "origin": "https://upbeat-mclean-xjvqxk4i7e.projects.oryapis"
+                  "origins": [
+                    "https://upbeat-mclean-xjvqxk4i7e.projects.oryapis"
+                  ]
                 }
               },
               "enabled": false
@@ -249,11 +307,13 @@
         },
         "serve": {
           "admin": {
+            "base_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/",
             "request_log": {
               "disable_for_health": true
             }
           },
           "public": {
+            "base_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/",
             "cors": {
               "enabled": false
             },
@@ -264,13 +324,18 @@
         },
         "session": {
           "cookie": {
+            "domain": "epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev",
+            "name": "ory_session_epictereshkova372r7kgjfc",
             "path": "/",
             "persistent": false,
             "same_site": "Lax"
           },
           "lifespan": "72h0m0s",
           "whoami": {
-            "required_aal": "aal1"
+            "required_aal": "aal1",
+            "tokenizer": {
+              "templates": {}
+            }
           }
         }
       }
@@ -360,6 +425,12 @@
             }
           },
           "cookies": {
+            "domain": "epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev",
+            "names": {
+              "consent_csrf": "ory_oauth2_consent_csrf_epictereshkova372r7kgjfc",
+              "login_csrf": "ory_oauth2_login_csrf_epictereshkova372r7kgjfc",
+              "session_csrf": "ory_oauth2_session_csrf_epictereshkova372r7kgjfc"
+            },
             "same_site_legacy_workaround": false,
             "same_site_mode": "Lax",
             "secure": true
@@ -423,19 +494,27 @@
           "error": "/ui/error",
           "login": "/ui/login",
           "logout": "/ui/logout",
-          "post_logout_redirect": "/oauth2/fallbacks/logout"
+          "post_logout_redirect": "/oauth2/fallbacks/logout",
+          "registration": "/ui/registration",
+          "self": {
+            "admin": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/admin",
+            "issuer": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev",
+            "public": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev"
+          }
         },
         "webfinger": {
           "jwks": {},
-          "oidc_discovery": {}
+          "oidc_discovery": {
+            "auth_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/oauth2/auth",
+            "jwks_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/.well-known/jwks.json",
+            "token_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/oauth2/token",
+            "userinfo_url": "https://epic-tereshkova-372r7kgjfc.projects.staging.oryapis.dev/userinfo"
+          }
         }
       }
     },
     "permission": {
       "config": {
-        "limit": {
-          "max_read_depth": 3
-        },
         "namespaces": [
           {
             "id": 1,
@@ -445,5 +524,7 @@
       }
     }
   },
-  "state": "running"
+  "slug": "epic-tereshkova-372r7kgjfc",
+  "state": "running",
+  "AdditionalProperties": {}
 }

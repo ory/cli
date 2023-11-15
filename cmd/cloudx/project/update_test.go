@@ -12,20 +12,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
-	"github.com/ory/x/assertx"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/snapshotx"
-)
-
-var (
-	//go:embed fixtures/update/json/config.json
-	fixtureProject json.RawMessage
-	//go:embed fixtures/update-kratos/json/config.json
-	fixtureKratosConfig json.RawMessage
-	//go:embed fixtures/update-keto/json/config.json
-	fixtureKetoConfig json.RawMessage
-	//go:embed fixtures/update-hydra/json/config.json
-	fixtureHydraConfig json.RawMessage
 )
 
 func TestUpdateProject(t *testing.T) {
@@ -43,28 +31,24 @@ func TestUpdateProject(t *testing.T) {
 			pathSuccess:     "fixtures/update/json/config.json",
 			pathFailure:     "fixtures/update/fail/config.json",
 			failureContains: "minimum 1 items allowed",
-			fixture:         fixtureProject,
 		},
 		{
 			subcommand:      "identity-config",
 			pathSuccess:     "fixtures/update-kratos/json/config.json",
 			pathFailure:     "fixtures/update-kratos/fail/config.json",
 			failureContains: "minimum 1 items allowed",
-			fixture:         fixtureKratosConfig,
 		},
 		{
 			subcommand:      "permission-config",
 			pathSuccess:     "fixtures/update-keto/json/config.json",
 			pathFailure:     "fixtures/update-keto/fail/config.json",
 			failureContains: "cannot unmarshal string into Go struct field",
-			fixture:         fixtureKetoConfig,
 		},
 		{
 			subcommand:      "oauth2-config",
 			pathSuccess:     "fixtures/update-hydra/json/config.json",
 			pathFailure:     "fixtures/update-hydra/fail/config.json",
 			failureContains: "cannot unmarshal number into Go struct field",
-			fixture:         fixtureHydraConfig,
 		},
 	} {
 		t.Run("target="+tc.subcommand, func(t *testing.T) {
@@ -72,7 +56,7 @@ func TestUpdateProject(t *testing.T) {
 				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project, "--format", "json", "--file", tc.pathSuccess)
 				require.NoError(t, err)
 
-				assertx.EqualAsJSONExcept(t, tc.fixture, json.RawMessage(stdout), []string{
+				snapshotx.SnapshotT(t, json.RawMessage(stdout), snapshotx.ExceptPaths(
 					// for project cmd
 					"id",
 					"revision_id",
@@ -95,35 +79,6 @@ func TestUpdateProject(t *testing.T) {
 					"identity.default_schema_id",
 					"identity.schemas",
 					"session.cookie",
-					"courier.smtp.from_name",
-					"selfservice.allowed_return_urls.0",
-					// for keto cmd
-					// for hydra cmd
-					"serve.cookies.names",
-					"serve.cookies.domain",
-					"urls.self",
-				})
-
-				snapshotx.SnapshotT(t, json.RawMessage(stdout), snapshotx.ExceptPaths(
-					// for project cmd
-					"id",
-					"revision_id",
-					"slug",
-					"services.identity.config.serve.public.base_url",
-					"services.identity.config.serve.admin.base_url",
-					"services.identity.config.session.cookie.domain",
-					"services.identity.config.session.cookie.name",
-					"services.identity.config.cookies.domain",
-					"services.identity.config.selfservice.allowed_return_urls.0",
-					"services.oauth2.config.serve.cookies.names",
-					"services.oauth2.config.serve.cookies.domain",
-					"services.oauth2.config.urls.self",
-					// for kratos cmd
-					"serve.public.base_url",
-					"serve.admin.base_url",
-					"session.cookie.domain",
-					"session.cookie.name",
-					"cookies.domain",
 					"courier.smtp.from_name",
 					"selfservice.allowed_return_urls.0",
 					// for keto cmd

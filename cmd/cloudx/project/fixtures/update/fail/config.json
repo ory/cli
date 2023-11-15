@@ -46,5 +46,13 @@
       }
     }
   },
+  "cors_public": {
+    "enabled": false,
+    "origins": []
+  },
+  "cors_admin": {
+    "enabled": false,
+    "origins": []
+  },
   "name": "Updated Project from JSON"
 }
