@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-	hydra "github.com/ory/hydra/cmd"
+	hydra "github.com/ory/hydra/v2/cmd"
 	"github.com/ory/x/cmdx"
 )
 
