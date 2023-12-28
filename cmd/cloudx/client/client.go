@@ -18,7 +18,7 @@ import (
 	flag "github.com/spf13/pflag"
 
 	hydra "github.com/ory/hydra-client-go"
-	hydracli "github.com/ory/hydra/cmd/cliclient"
+	hydracli "github.com/ory/hydra/v2/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
