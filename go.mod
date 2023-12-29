@@ -11,7 +11,6 @@ replace (
 	github.com/ory/client-go/114 => github.com/ory/client-go v1.1.4
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7
-// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 )
 
 require (
@@ -31,7 +30,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/imdario/mergo v0.3.16
 	github.com/jackc/pgx/v4 v4.18.1
-	github.com/ory/client-go v1.2.10
+	github.com/ory/client-go v1.4.7
 	github.com/ory/client-go/114 v0.0.0-00010101000000-000000000000
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
@@ -218,7 +217,7 @@ require (
 	github.com/ory/go-convenience v0.1.0 // indirect
 	github.com/ory/hydra-client-go/v2 v2.2.0-rc.3 // indirect
 	github.com/ory/keto/proto v0.11.1-alpha.0 // indirect
-	github.com/ory/kratos-client-go v0.13.1 // indirect
+	github.com/ory/kratos-client-go v1.0.0 // indirect
 	github.com/ory/mail/v3 v3.0.0 // indirect
 	github.com/ory/nosurf v1.2.7 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
@@ -285,8 +284,8 @@ require (
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/oauth2 v0.14.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/oauth2 v0.15.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/tools v0.15.0 // indirect

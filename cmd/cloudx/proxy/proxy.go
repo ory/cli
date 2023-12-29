@@ -129,11 +129,8 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 	slug := oryURLParts[0]
 	ak, err := h.CreateAPIKey(slug, "Ory CLI Proxy / Tunnel - Temporary API Key")
 	if err != nil {
-		if strings.Contains(err.Error(), "403 Forbidden") {
-			return "", noop, errNoApiKeyAvailable
-		}
-		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`?", slug)
-		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
+		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`? Continuing without API key.", slug)
+		return "", noop, errNoApiKeyAvailable
 	}
 
 	if !ak.HasValue() {
@@ -204,8 +201,8 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 			}, nil
 		},
 		proxy.WithReqMiddleware(func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
-			if r.In.URL.Host == conf.oryURL.Host {
-				r.Out.URL.Path = strings.TrimPrefix(r.In.URL.Path, conf.pathPrefix)
+			if r.Out.URL.Host == conf.oryURL.Host {
+				r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
 				r.Out.Host = conf.oryURL.Host
 			} else if conf.rewriteHost {
 				r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
@@ -388,7 +385,7 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 
 func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
 	target = urlx.Copy(target)
-	target.Path = filepath.Join(target.Path, "api", "kratos", "public", "sessions", "whoami")
+	target.Path = filepath.Join(target.Path, "sessions", "whoami")
 	req, err := retryablehttp.NewRequest("GET", target.String(), nil)
 	if err != nil {
 		return nil, errors.WithStack(herodot.ErrInternalServerError)
