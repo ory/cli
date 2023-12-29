@@ -129,6 +129,9 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 	slug := oryURLParts[0]
 	ak, err := h.CreateAPIKey(slug, "Ory CLI Proxy / Tunnel - Temporary API Key")
 	if err != nil {
+		if strings.Contains(err.Error(), "403 Forbidden") {
+			return "", noop, errNoApiKeyAvailable
+		}
 		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`?", slug)
 		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
 	}
