@@ -202,7 +202,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 		},
 		proxy.WithReqMiddleware(func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
 			if r.In.URL.Host == conf.oryURL.Host {
-				r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
+				r.Out.URL.Path = strings.TrimPrefix(r.In.URL.Path, conf.pathPrefix)
 				r.Out.Host = conf.oryURL.Host
 			} else if conf.rewriteHost {
 				r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
