@@ -800,6 +800,16 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
+	if _, found := interim["cors_admin"]; !found {
+		interim["cors_admin"] = map[string]interface{}{}
+	}
+	if _, found := interim["cors_public"]; !found {
+		interim["cors_public"] = map[string]interface{}{}
+	}
+	if _, found := interim["name"]; !found {
+		interim["name"] = ""
+	}
+
 	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
