@@ -150,9 +150,6 @@ func RegistrationBuffer(name string, email string, password string) bytes.Buffer
 	_, _ = r.WriteString(name + "\n")     // Name: FakeName()
 	_, _ = r.WriteString("n\n")           // Please inform me about platform and security updates:  [y/n]: n
 	_, _ = r.WriteString("y\n")           // I accept the Terms of Service https://www.ory.sh/ptos:  [y/n]: y
-	_, _ = r.WriteString("Ory\n")         // Company: Ory
-	_, _ = r.WriteString("12345\n")       // Phone: 12345
-	_, _ = r.WriteString("Dev\n")         // Job title/role: Dev
 
 	return r
 }
