@@ -7,7 +7,7 @@ toolchain go1.21.1
 replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
-	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
+	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.16
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7
 // Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
