@@ -9,9 +9,8 @@ replace (
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.9
 	github.com/ory/hydra-client-go => github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
-	github.com/ory/keto/proto => github.com/ory/keto/proto v0.10.0-alpha.0.0.20221026143738-31e323a91b68
-	// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
-	google.golang.org/grpc => google.golang.org/grpc v1.44.0
+	github.com/ory/keto/proto => github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7
+// Required because github.com/ory/kratos rewrites github.com/ory/kratos-client-go to
 )
 
 require (
@@ -21,6 +20,7 @@ require (
 	github.com/evanphx/json-patch v5.6.0+incompatible
 	github.com/getkin/kin-openapi v0.48.0
 	github.com/ghodss/yaml v1.0.0
+	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gobuffalo/fizz v1.14.4
 	github.com/gobuffalo/pop/v5 v5.3.4
@@ -33,19 +33,19 @@ require (
 	github.com/ory/client-go v1.1.4
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
-	github.com/ory/herodot v0.10.3-0.20230626083119-d7e5192f0d88
+	github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b
 	github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8
 	github.com/ory/hydra/v2 v2.2.0-rc.3.0.20231228130905-8e9492998d16
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
 	github.com/ory/kratos v1.0.1-0.20231228143708-ae8cbdc27ff1
-	github.com/ory/x v0.0.607
+	github.com/ory/x v0.0.608
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.4.0
 	github.com/rs/cors v1.10.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
 	github.com/tidwall/gjson v1.17.0
@@ -55,8 +55,6 @@ require (
 	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v2 v2.4.0
 )
-
-require github.com/go-jose/go-jose/v3 v3.0.1
 
 require (
 	cloud.google.com/go/compute v1.23.3 // indirect
@@ -268,8 +266,8 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.46.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
-	go.opentelemetry.io/contrib/propagators/b3 v1.20.0 // indirect
-	go.opentelemetry.io/contrib/propagators/jaeger v1.20.0 // indirect
+	go.opentelemetry.io/contrib/propagators/b3 v1.21.0 // indirect
+	go.opentelemetry.io/contrib/propagators/jaeger v1.21.1 // indirect
 	go.opentelemetry.io/contrib/samplers/jaegerremote v0.15.1 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
