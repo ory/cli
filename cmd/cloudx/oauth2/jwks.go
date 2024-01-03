@@ -4,8 +4,9 @@
 package oauth2
 
 import (
-	"github.com/ory/kratos/cmd/cliclient"
 	"github.com/spf13/cobra"
+
+	"github.com/ory/kratos/cmd/cliclient"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	hydra "github.com/ory/hydra/v2/cmd"
