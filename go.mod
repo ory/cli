@@ -39,7 +39,7 @@ require (
 	github.com/ory/hydra/v2 v2.2.0-rc.3.0.20231228130905-8e9492998d16
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
-	github.com/ory/kratos 435d97e85f5e50fff93c5e78787357061289407a
+	github.com/ory/kratos v1.0.1-0.20240103153653-435d97e85f5e
 	github.com/ory/x v0.0.608
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1

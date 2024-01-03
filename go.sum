@@ -906,8 +906,8 @@ github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f h1:yAsriF/AhB+
 github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f/go.mod h1:pZP9ao8GJ4r3dvNtoXZqXR1cZHSJa2x4VFKQaPH5myg=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7 h1:qHgWDFJ642DUYj7fMUs7pRTqr1oM7Hqw26qnxB9lvlk=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7/go.mod h1:6RagCXA7X1hhFSVjcy13ruIo8Dq/nj4J0mcN92qL+hY=
-github.com/ory/kratos v1.0.1-0.20240103152350-42b034d032e6 h1:lf0HTAi0XEkM9wyDrJ3DOpTV1O+cyW+GNK9Ni1AA+jA=
-github.com/ory/kratos v1.0.1-0.20240103152350-42b034d032e6/go.mod h1:8CnmDmBUkWeGSd9fB9MG+sH5Y8msJVVl+avY2TZgTDI=
+github.com/ory/kratos v1.0.1-0.20240103153653-435d97e85f5e h1:tqYHVTlQ2a4pFESq/miUEnkyFQwB83apJOhSrdcjaas=
+github.com/ory/kratos v1.0.1-0.20240103153653-435d97e85f5e/go.mod h1:8CnmDmBUkWeGSd9fB9MG+sH5Y8msJVVl+avY2TZgTDI=
 github.com/ory/kratos-client-go v1.0.0 h1:mm32FMJrt4pBv2KEuhuNtiewJApc8c1Kmz0+WFHhOMA=
 github.com/ory/kratos-client-go v1.0.0/go.mod h1:a2Tl4cgQAxsjR59w3EfnH5hengabjXUHiEVDzdqiZI0=
 github.com/ory/mail v2.3.1+incompatible/go.mod h1:87D9/1gB6ewElQoN0lXJ0ayfqcj3cW3qCTXh+5E9mfU=
