@@ -23,13 +23,13 @@ func TestListIdentities(t *testing.T) {
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigDir(t)
 		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project, "--page-size=5")
+		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project, "--page-size=5", "--consistency", "eventual")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s identities", proc), func(t *testing.T) {
-			stdout, stderr, err := defaultCmd.Exec(nil, proc, "identities", "--format", "json", "--project", project, "--page-size=5")
+			stdout, stderr, err := defaultCmd.Exec(nil, proc, "identities", "--format", "json", "--project", project, "--page-size=5", "--consistency", "eventual")
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.True(t, gjson.Valid(stdout))
@@ -40,7 +40,7 @@ func TestListIdentities(t *testing.T) {
 
 	t.Run("is able to list identities after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project, "--page-size=5")
+		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project, "--page-size=5", "--consistency", "eventual")
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)

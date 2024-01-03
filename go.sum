@@ -896,8 +896,6 @@ github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0 h1:VMUeLRfQD14fOMvh
 github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0/go.mod h1:hg2iCy+LCWOXahBZ+NQa4dk8J2govyQD79rrqrgMyY8=
 github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b h1:AEUyF55UrqTuhJh72I9azACdJrRrDBBjK/XWgVxuQvY=
 github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b/go.mod h1:MMNmY6MG1uB6fnXYFaHoqdV23DTWctlPsmRCeq/2+wc=
-github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8 h1:lxE11nBH6k0DvE1GMhWnZewGLAqVMSDj7cUhdHr9BHI=
-github.com/ory/hydra-client-go v1.11.9-0.20221102130300-f558e85344c8/go.mod h1:4YuBuwUEC4yiyDrnKjGYc1tB3gUXan4ZiUYMjXJbfxA=
 github.com/ory/hydra-client-go/v2 v2.2.0-rc.3 h1:0AT8RYiPhT/+brKMSIX/0guSlDK3tg1AcXZgrb5F/tw=
 github.com/ory/hydra-client-go/v2 v2.2.0-rc.3/go.mod h1:BS2mJTU+3d+Ii4JXLHlXcjS/BBSIu8OEH0AO71rAVt0=
 github.com/ory/hydra/v2 v2.2.0-rc.3.0.20231228130905-8e9492998d16 h1:/apGQeFxt/1UZHNdXmfv6Qb8Y0o9cadDr4rFXJqE8Hw=
@@ -908,8 +906,8 @@ github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f h1:yAsriF/AhB+
 github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f/go.mod h1:pZP9ao8GJ4r3dvNtoXZqXR1cZHSJa2x4VFKQaPH5myg=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7 h1:qHgWDFJ642DUYj7fMUs7pRTqr1oM7Hqw26qnxB9lvlk=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7/go.mod h1:6RagCXA7X1hhFSVjcy13ruIo8Dq/nj4J0mcN92qL+hY=
-github.com/ory/kratos v1.0.1-0.20231228143708-ae8cbdc27ff1 h1:pO3Qo0DIQDvT7QsC+EWb2kOetMrTfiJtMUKf7wj0UmA=
-github.com/ory/kratos v1.0.1-0.20231228143708-ae8cbdc27ff1/go.mod h1:8CnmDmBUkWeGSd9fB9MG+sH5Y8msJVVl+avY2TZgTDI=
+github.com/ory/kratos v1.0.1-0.20240103152350-42b034d032e6 h1:lf0HTAi0XEkM9wyDrJ3DOpTV1O+cyW+GNK9Ni1AA+jA=
+github.com/ory/kratos v1.0.1-0.20240103152350-42b034d032e6/go.mod h1:8CnmDmBUkWeGSd9fB9MG+sH5Y8msJVVl+avY2TZgTDI=
 github.com/ory/kratos-client-go v1.0.0 h1:mm32FMJrt4pBv2KEuhuNtiewJApc8c1Kmz0+WFHhOMA=
 github.com/ory/kratos-client-go v1.0.0/go.mod h1:a2Tl4cgQAxsjR59w3EfnH5hengabjXUHiEVDzdqiZI0=
 github.com/ory/mail v2.3.1+incompatible/go.mod h1:87D9/1gB6ewElQoN0lXJ0ayfqcj3cW3qCTXh+5E9mfU=
@@ -1373,7 +1371,6 @@ golang.org/x/oauth2 v0.0.0-20201208152858-08078c50e5b5/go.mod h1:KelEdhl1UZF7XfJ
 golang.org/x/oauth2 v0.0.0-20210218202405-ba52d332ba99/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20210313182246-cd4f82c27b84/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
-golang.org/x/oauth2 v0.0.0-20210323180902-22b0adad7558/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5/go.mod h1:KelEdhl1UZF7XfJ4dDtk6s++YSgaE7mD/BuKKDLBl4A=
 golang.org/x/oauth2 v0.15.0 h1:s8pnnxNVzjWyrvYdFUQq5llS1PX2zhPXmccZv99h7uQ=
