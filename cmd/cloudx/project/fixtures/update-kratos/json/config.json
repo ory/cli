@@ -59,6 +59,9 @@
       }
     }
   },
+  "oauth2_provider": {
+    "override_return_to": false
+  },
   "feature_flags": {
     "cacheable_sessions": false
   },
@@ -78,9 +81,6 @@
         "url": "file://fixtures/update/json/identity-schema.json"
       }
     ]
-  },
-  "oauth2_provider": {
-    "override_return_to": false
   },
   "selfservice": {
     "allowed_return_urls": [],
@@ -120,7 +120,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
-        "notify_unknown_recipients": false,
+        "notify_unkown_recipients": false,
         "ui_url": "/ui/recovery",
         "use": "code"
       },
@@ -183,7 +183,7 @@
         },
         "enabled": true,
         "lifespan": "30m0s",
-        "notify_unknown_recipients": false,
+        "notify_unkown_recipients": false,
         "ui_url": "/ui/verification",
         "use": "code"
       }

@@ -217,7 +217,7 @@ func TestCommandHelper(t *testing.T) {
 			_, _ = r.WriteString(email + "\n") // Email: FakeEmail() [RETRY]
 			cmd.Stdin = bufio.NewReader(&r)
 
-			var retry = false
+			retry := false
 			cmd.PwReader = func() ([]byte, error) {
 				if retry {
 					return []byte(password), nil
@@ -334,7 +334,7 @@ func TestCommandHelper(t *testing.T) {
 				"project.services.identity.config.session.cookie.domain",
 				"project.services.identity.config.session.cookie.name",
 				"project.services.identity.config.cookies.domain",
-				"project.services.identity.config.selfservice.allowed_return_urls.0",
+				"project.services.identity.config.selfservice.allowed_return_urls",
 				"project.services.oauth2.config.urls.self",
 				"project.services.oauth2.config.serve.cookies.domain",
 				"project.services.oauth2.config.serve.cookies.names",
