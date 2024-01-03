@@ -334,7 +334,7 @@ func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySe
 }
 
 func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*10))
+	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*30))
 
 	var publicKeys jose.JSONWebKeySet
 	for _, key := range keys.Keys {
