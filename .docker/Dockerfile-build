@@ -30,9 +30,6 @@ COPY --from=builder /usr/bin/ory /usr/bin/ory
 # exists, it will be automatically used as the configuration file).
 VOLUME /home/ory
 
-# Declare the standard ports used by Kratos (4433 for public service endpoint, 4434 for admin service endpoint)
-EXPOSE 4433 4434
-
 USER ory
 
 ENTRYPOINT ["ory"]
