@@ -33,8 +33,8 @@ func TestListIdentities(t *testing.T) {
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.True(t, gjson.Valid(stdout))
-			assert.Len(t, out.Array(), 1)
-			assert.Equal(t, userID, out.Array()[0].Get("id").String())
+			assert.Len(t, out.Get("identities").Array(), 1)
+			assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
 		})
 	}
 
@@ -44,7 +44,7 @@ func TestListIdentities(t *testing.T) {
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("id").String())
+		assert.Len(t, out.Get("identities").Array(), 1)
+		assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
 	})
 }
