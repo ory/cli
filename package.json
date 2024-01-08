@@ -23,7 +23,7 @@
     "binwrap": "^0.2.3"
   },
   "devDependencies": {
-    "cypress": "^8.7.0",
+    "cypress": "^13.6.2",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.5",
     "license-checker": "^25.0.1",
