@@ -266,15 +266,15 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	})
 
 	if conf.isTunnel {
-		_, _ = fmt.Fprintf(os.Stderr, `To access Ory's APIs, use URL
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), `To access Ory's APIs, use URL
 
-	%s
+	%[1]s
 
 and configure your SDKs to point to it, for example in JavaScript:
 
 	import { V0alpha2Api, Configuration } from '@ory/client'
 	const ory = new V0alpha2Api(new Configuration({
-	  basePath: 'http://localhost:4000',
+	  basePath: '%[1]s',
 	  baseOptions: {
 		withCredentials: true
 	  }
@@ -282,7 +282,7 @@ and configure your SDKs to point to it, for example in JavaScript:
 
 `, conf.publicURL.String())
 	} else {
-		_, _ = fmt.Fprintf(os.Stderr, `To access your application via the Ory Proxy, open:
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), `To access your application via the Ory Proxy, open:
 
 	%s
 `, conf.publicURL.String())
@@ -290,15 +290,15 @@ and configure your SDKs to point to it, for example in JavaScript:
 
 	if !conf.noOpen {
 		// #nosec G204 - this is ok
-		if err := exec.Command("open", conf.publicURL.String()).Run(); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
+		if err := exec.Command("open", fmt.Sprintf("%q", conf.publicURL.String())).Run(); err != nil {
+			_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "Unable to automatically open the proxy URL in your browser. Please open it manually!")
 		}
 	}
 
 	if err := graceful.Graceful(func() error {
 		return server.ListenAndServe()
 	}, func(ctx context.Context) error {
-		_, _ = fmt.Fprintf(os.Stderr, "http server was shutdown gracefully\n")
+		_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "http server was shutdown gracefully")
 		if err := server.Shutdown(ctx); err != nil {
 			return err
 		}

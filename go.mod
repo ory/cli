@@ -216,7 +216,7 @@ require (
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
 	github.com/ory/go-convenience v0.1.0 // indirect
 	github.com/ory/keto/proto v0.11.1-alpha.0 // indirect
-	github.com/ory/kratos-client-go v1.0.0 // indirect
+	github.com/ory/kratos-client-go v0.13.1 // indirect
 	github.com/ory/mail/v3 v3.0.0 // indirect
 	github.com/ory/nosurf v1.2.7 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
