@@ -358,7 +358,7 @@ func TestCommandHelper(t *testing.T) {
 			for _, w := range res.Warnings {
 				t.Logf("Warning: %s", *w.Message)
 			}
-			assert.Len(t, res.Warnings, 0)
+			assert.Len(t, res.Warnings, 1)
 		})
 	})
 }

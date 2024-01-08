@@ -6,8 +6,10 @@ package oauth2
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/kratos/cmd/cliclient"
+
 	"github.com/ory/cli/cmd/cloudx/client"
-	hydra "github.com/ory/hydra/cmd"
+	hydra "github.com/ory/hydra/v2/cmd"
 	"github.com/ory/x/cmdx"
 )
 
@@ -15,6 +17,7 @@ func wrapHydraCmd(newCmd func() *cobra.Command) *cobra.Command {
 	c := newCmd()
 	client.RegisterProjectFlag(c.Flags())
 	cmdx.RegisterFormatFlags(c.Flags())
+	cliclient.RegisterClientFlags(c.Flags())
 	return c
 }
 

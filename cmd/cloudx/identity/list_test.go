@@ -23,28 +23,28 @@ func TestListIdentities(t *testing.T) {
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigDir(t)
 		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project)
+		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project, "--consistency", "strong")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s identities", proc), func(t *testing.T) {
-			stdout, stderr, err := defaultCmd.Exec(nil, proc, "identities", "--format", "json", "--project", project)
+			stdout, stderr, err := defaultCmd.Exec(nil, proc, "identities", "--format", "json", "--project", project, "--consistency", "strong")
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout)
 			assert.True(t, gjson.Valid(stdout))
-			assert.Len(t, out.Array(), 1)
-			assert.Equal(t, userID, out.Array()[0].Get("id").String())
+			assert.Len(t, out.Get("identities").Array(), 1)
+			assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
 		})
 	}
 
 	t.Run("is able to list identities after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project)
+		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project, "--consistency", "strong")
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("id").String())
+		assert.Len(t, out.Get("identities").Array(), 1)
+		assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
 	})
 }

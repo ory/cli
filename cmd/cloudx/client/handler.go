@@ -512,7 +512,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 		return nil, err
 	}
 
-	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
+	projects, res, err := c.ProjectAPI.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -531,7 +531,7 @@ func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganiza
 		return nil, err
 	}
 
-	organizations, res, err := c.ProjectApi.ListOrganizations(h.Ctx, projectID).Execute()
+	organizations, res, err := c.ProjectAPI.ListOrganizations(h.Ctx, projectID).Execute()
 	if err != nil {
 		return nil, handleError("unable to list organizations", res, err)
 	}
@@ -550,7 +550,7 @@ func (h *CommandHelper) CreateOrganization(projectID string, body cloud.Organiza
 		return nil, err
 	}
 
-	organization, res, err := c.ProjectApi.
+	organization, res, err := c.ProjectAPI.
 		CreateOrganization(h.Ctx, projectID).
 		OrganizationBody(body).
 		Execute()
@@ -572,7 +572,7 @@ func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.O
 		return nil, err
 	}
 
-	organization, res, err := c.ProjectApi.
+	organization, res, err := c.ProjectAPI.
 		UpdateOrganization(h.Ctx, projectID, orgID).
 		OrganizationBody(body).
 		Execute()
@@ -594,7 +594,7 @@ func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
 		return err
 	}
 
-	res, err := c.ProjectApi.
+	res, err := c.ProjectAPI.
 		DeleteOrganization(h.Ctx, projectID, orgID).
 		Execute()
 	if err != nil {
@@ -641,7 +641,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		}
 	}
 
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
+	project, res, err := c.ProjectAPI.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -660,7 +660,7 @@ func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Proj
 		return nil, err
 	}
 
-	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	project, res, err := c.ProjectAPI.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -752,7 +752,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
+	res, _, err := c.ProjectAPI.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -800,6 +800,16 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
+	if _, found := interim["cors_admin"]; !found {
+		interim["cors_admin"] = map[string]interface{}{}
+	}
+	if _, found := interim["cors_public"]; !found {
+		interim["cors_public"] = map[string]interface{}{}
+	}
+	if _, found := interim["name"]; !found {
+		interim["name"] = ""
+	}
+
 	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
@@ -816,14 +826,14 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+		res, _, err := c.ProjectAPI.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		payload.Name = res.Name
 	}
 
-	res, _, err := c.ProjectApi.SetProject(h.Ctx, id).SetProject(payload).Execute()
+	res, _, err := c.ProjectAPI.SetProject(h.Ctx, id).SetProject(payload).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -842,7 +852,7 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 		return nil, err
 	}
 
-	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	token, _, err := c.ProjectAPI.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -861,7 +871,7 @@ func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
 		return err
 	}
 
-	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
+	if _, err := c.ProjectAPI.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 

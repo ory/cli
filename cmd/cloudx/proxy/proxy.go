@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,13 +20,13 @@ import (
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
 
+	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/gofrs/uuid/v3"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
 	"github.com/rs/cors"
 	"github.com/spf13/cobra"
-	"github.com/square/go-jose/v3"
-	"github.com/square/go-jose/v3/jwt"
 	"github.com/tidwall/gjson"
 	"github.com/urfave/negroni"
 
@@ -128,8 +129,8 @@ func getAPIKey(conf *config, l *logrusx.Logger, h *client.CommandHelper) (apiKey
 	slug := oryURLParts[0]
 	ak, err := h.CreateAPIKey(slug, "Ory CLI Proxy / Tunnel - Temporary API Key")
 	if err != nil {
-		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`?", slug)
-		return "", noop, errors.Wrapf(err, "unable to create API key for project %s", slug)
+		l.WithError(err).Errorf("Unable to create API key. Do you have the required permissions to use the Ory CLI with project `%s`? Continuing without API key.", slug)
+		return "", noop, errNoApiKeyAvailable
 	}
 
 	if !ak.HasValue() {
@@ -180,9 +181,9 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 	mw.UseFunc(checkOry(conf, l, writer, key, signer, conf.oryURL)) // This must be the last method before the handler
 
 	mw.UseHandler(proxy.New(
-		func(_ context.Context, r *http.Request) (*proxy.HostConfig, error) {
+		func(ctx context.Context, r *http.Request) (context.Context, *proxy.HostConfig, error) {
 			if conf.isTunnel || strings.HasPrefix(r.URL.Path, conf.pathPrefix) {
-				return &proxy.HostConfig{
+				return ctx, &proxy.HostConfig{
 					CookieDomain:   conf.cookieDomain,
 					UpstreamHost:   conf.oryURL.Host,
 					UpstreamScheme: conf.oryURL.Scheme,
@@ -191,7 +192,7 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				}, nil
 			}
 
-			return &proxy.HostConfig{
+			return ctx, &proxy.HostConfig{
 				CookieDomain:   conf.cookieDomain,
 				UpstreamHost:   upstream.Host,
 				UpstreamScheme: upstream.Scheme,
@@ -199,13 +200,13 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				PathPrefix:     "",
 			}, nil
 		},
-		proxy.WithReqMiddleware(func(r *http.Request, c *proxy.HostConfig, body []byte) ([]byte, error) {
-			if r.URL.Host == conf.oryURL.Host {
-				r.URL.Path = strings.TrimPrefix(r.URL.Path, conf.pathPrefix)
-				r.Host = conf.oryURL.Host
+		proxy.WithReqMiddleware(func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
+			if r.Out.URL.Host == conf.oryURL.Host {
+				r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
+				r.Out.Host = conf.oryURL.Host
 			} else if conf.rewriteHost {
-				r.Header.Set("X-Forwarded-Host", r.Host)
-				r.Host = c.UpstreamHost
+				r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
+				r.Out.Host = c.UpstreamHost
 			}
 
 			publicURL := conf.publicURL
@@ -213,10 +214,10 @@ func run(cmd *cobra.Command, conf *config, version string, name string) error {
 				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
 			}
 
-			r.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
-			r.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
+			r.Out.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
+			r.Out.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
 			if len(apiKey) > 0 {
-				r.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
 			}
 
 			return body, nil
@@ -333,7 +334,7 @@ func newSigner(l *logrusx.Logger, conf *config) (jose.Signer, *jose.JSONWebKeySe
 }
 
 func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose.JSONWebKeySet, sig jose.Signer, endpoint *url.URL) func(http.ResponseWriter, *http.Request, http.HandlerFunc) {
-	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*2))
+	hc := httpx.NewResilientClient(httpx.ResilientClientWithMaxRetry(5), httpx.ResilientClientWithMaxRetryWait(time.Millisecond*5), httpx.ResilientClientWithConnectionTimeout(time.Second*30))
 
 	var publicKeys jose.JSONWebKeySet
 	for _, key := range keys.Keys {
@@ -384,7 +385,7 @@ func checkOry(conf *config, _ *logrusx.Logger, writer herodot.Writer, keys *jose
 
 func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (json.RawMessage, error) {
 	target = urlx.Copy(target)
-	target.Path = filepath.Join(target.Path, "api", "kratos", "public", "sessions", "whoami")
+	target.Path = filepath.Join(target.Path, "sessions", "whoami")
 	req, err := retryablehttp.NewRequest("GET", target.String(), nil)
 	if err != nil {
 		return nil, errors.WithStack(herodot.ErrInternalServerError)

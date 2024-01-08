@@ -57,7 +57,7 @@ func makeCloudAPIsURL(prefix string) string {
 func NewKratosClient() (*oldCloud.APIClient, error) {
 	conf := oldCloud.NewConfiguration()
 	conf.Servers = oldCloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
-	conf.HTTPClient = &http.Client{Timeout: time.Second * 10}
+	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
 	if RateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
 	}

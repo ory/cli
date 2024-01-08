@@ -78,6 +78,10 @@ func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, 
 				continue
 			}
 
+			if strings.Contains(attrs.Name, "traits.details") {
+				continue
+			}
+
 			switch attrs.Type {
 			case "hidden":
 				continue
