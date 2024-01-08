@@ -8,6 +8,7 @@ import (
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
+	"github.com/ory/cli/cmd/cloudx/organizations"
 	"github.com/ory/cli/cmd/cloudx/project"
 	"github.com/ory/x/cmdx"
 )
@@ -24,6 +25,7 @@ func NewUpdateCmd() *cobra.Command {
 		project.NewUpdatePermissionConfigCmd(),
 		project.NewUpdateNamespaceConfigCmd(),
 		oauth2.NewUpdateOAuth2Client(),
+		organizations.NewUpdateOrganizationCmd(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

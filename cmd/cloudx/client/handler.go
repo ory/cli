@@ -27,6 +27,7 @@ import (
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
+	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
@@ -287,7 +288,7 @@ func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, err
 	return &result, nil
 }
 
-func (h *CommandHelper) signup(c *cloud.APIClient) (*AuthContext, error) {
+func (h *CommandHelper) signup(c *oldCloud.APIClient) (*AuthContext, error) {
 	flow, _, err := c.FrontendApi.CreateNativeRegistrationFlow(h.Ctx).Execute()
 	if err != nil {
 		return nil, err
@@ -300,22 +301,23 @@ retryRegistration:
 	}
 	isRetry = true
 
-	var form cloud.UpdateRegistrationFlowWithPasswordMethod
+	var form oldCloud.UpdateRegistrationFlowWithPasswordMethod
 	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
 		return nil, err
 	}
 
-	signup, _, err := c.FrontendApi.UpdateRegistrationFlow(h.Ctx).
-		Flow(flow.Id).UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{
-		UpdateRegistrationFlowWithPasswordMethod: &form,
-	}).Execute()
+	signup, _, err := c.FrontendApi.
+		UpdateRegistrationFlow(h.Ctx).
+		Flow(flow.Id).
+		UpdateRegistrationFlowBody(oldCloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
+		Execute()
 	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
+		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.RegistrationFlow:
+			case *oldCloud.RegistrationFlow:
 				flow = m
 				goto retryRegistration
-			case cloud.RegistrationFlow:
+			case oldCloud.RegistrationFlow:
 				flow = &m
 				goto retryRegistration
 			}
@@ -333,7 +335,7 @@ retryRegistration:
 	return h.sessionToContext(sess, sessionToken)
 }
 
-func (h *CommandHelper) signin(c *cloud.APIClient, sessionToken string) (*AuthContext, error) {
+func (h *CommandHelper) signin(c *oldCloud.APIClient, sessionToken string) (*AuthContext, error) {
 	req := c.FrontendApi.CreateNativeLoginFlow(h.Ctx)
 	if len(sessionToken) > 0 {
 		req = req.XSessionToken(sessionToken).Aal("aal2")
@@ -351,7 +353,7 @@ retryLogin:
 	}
 	isRetry = true
 
-	var form interface{} = &cloud.UpdateLoginFlowWithPasswordMethod{}
+	var form interface{} = &oldCloud.UpdateLoginFlowWithPasswordMethod{}
 	method := "password"
 	if len(sessionToken) > 0 {
 		var foundTOTP bool
@@ -369,7 +371,7 @@ retryLogin:
 
 		method = "lookup_secret"
 		if foundTOTP {
-			form = &cloud.UpdateLoginFlowWithTotpMethod{}
+			form = &oldCloud.UpdateLoginFlowWithTotpMethod{}
 			method = "totp"
 		}
 	}
@@ -378,11 +380,11 @@ retryLogin:
 		return nil, err
 	}
 
-	var body cloud.UpdateLoginFlowBody
+	var body oldCloud.UpdateLoginFlowBody
 	switch e := form.(type) {
-	case *cloud.UpdateLoginFlowWithTotpMethod:
+	case *oldCloud.UpdateLoginFlowWithTotpMethod:
 		body.UpdateLoginFlowWithTotpMethod = e
-	case *cloud.UpdateLoginFlowWithPasswordMethod:
+	case *oldCloud.UpdateLoginFlowWithPasswordMethod:
 		body.UpdateLoginFlowWithPasswordMethod = e
 	default:
 		panic("unexpected type")
@@ -391,12 +393,12 @@ retryLogin:
 	login, _, err := c.FrontendApi.UpdateLoginFlow(h.Ctx).XSessionToken(sessionToken).
 		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
 	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
+		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
 			switch m := e.Model().(type) {
-			case *cloud.LoginFlow:
+			case *oldCloud.LoginFlow:
 				flow = m
 				goto retryLogin
-			case cloud.LoginFlow:
+			case oldCloud.LoginFlow:
 				flow = &m
 				goto retryLogin
 			}
@@ -420,7 +422,7 @@ retryLogin:
 	return nil, err
 }
 
-func (h *CommandHelper) sessionToContext(session *cloud.Session, token string) (*AuthContext, error) {
+func (h *CommandHelper) sessionToContext(session *oldCloud.Session, token string) (*AuthContext, error) {
 	email, err := h.getField(session.Identity.Traits, "email")
 	if err != nil {
 		return nil, err
@@ -516,12 +518,96 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 		return nil, err
 	}
 
-	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
+	projects, res, err := c.ProjectAPI.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
 
 	return projects, nil
+}
+
+func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganizationsResponse, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organizations, res, err := c.ProjectAPI.ListOrganizations(h.Ctx, projectID).Execute()
+	if err != nil {
+		return nil, handleError("unable to list organizations", res, err)
+	}
+
+	return organizations, nil
+}
+
+func (h *CommandHelper) CreateOrganization(projectID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organization, res, err := c.ProjectAPI.
+		CreateOrganization(h.Ctx, projectID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to create organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	organization, res, err := c.ProjectAPI.
+		UpdateOrganization(h.Ctx, projectID, orgID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to update organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.ProjectAPI.
+		DeleteOrganization(h.Ctx, projectID, orgID).
+		Execute()
+	if err != nil {
+		return handleError("unable to create organization", res, err)
+	}
+
+	return nil
 }
 
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
@@ -561,7 +647,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		}
 	}
 
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
+	project, res, err := c.ProjectAPI.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -580,7 +666,7 @@ func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Proj
 		return nil, err
 	}
 
-	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	project, res, err := c.ProjectAPI.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -672,7 +758,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
+	res, _, err := c.ProjectAPI.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -720,6 +806,16 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
+	if _, found := interim["cors_admin"]; !found {
+		interim["cors_admin"] = map[string]interface{}{}
+	}
+	if _, found := interim["cors_public"]; !found {
+		interim["cors_public"] = map[string]interface{}{}
+	}
+	if _, found := interim["name"]; !found {
+		interim["name"] = ""
+	}
+
 	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
@@ -736,14 +832,14 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+		res, _, err := c.ProjectAPI.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		payload.Name = res.Name
 	}
 
-	res, _, err := c.ProjectApi.SetProject(h.Ctx, id).SetProject(payload).Execute()
+	res, _, err := c.ProjectAPI.SetProject(h.Ctx, id).SetProject(payload).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -762,7 +858,7 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 		return nil, err
 	}
 
-	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	token, _, err := c.ProjectAPI.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -781,7 +877,7 @@ func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
 		return err
 	}
 
-	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
+	if _, err := c.ProjectAPI.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 

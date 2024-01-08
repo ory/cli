@@ -97,7 +97,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 		conf := hydra.NewConfiguration()
 		conf.HTTPClient = &http.Client{
 			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
-			Timeout:   time.Second * 10,
+			Timeout:   time.Second * 30,
 		}
 
 		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
@@ -123,7 +123,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 					RoundTripper: c.StandardClient().Transport,
 					bearerToken:  ac.SessionToken,
 				},
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 30,
 			},
 		}, nil
 	})

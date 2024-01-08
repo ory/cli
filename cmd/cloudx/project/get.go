@@ -45,7 +45,7 @@ $ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 				return err
 			}
 
-			id, err := getSelectedProjectId(h, args)
+			id, err := selectedProjectID(h, args)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
