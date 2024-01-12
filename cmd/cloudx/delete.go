@@ -6,6 +6,7 @@ package cloudx
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/eventstreams"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
 	"github.com/ory/cli/cmd/cloudx/organizations"
 	"github.com/ory/cli/cmd/cloudx/relationtuples"
@@ -28,6 +29,7 @@ func NewDeleteCmd() *cobra.Command {
 		oauth2.NewDeleteAccessTokens(),
 		relationtuples.NewDeleteCmd(),
 		organizations.NewDeleteOrganizationCmd(),
+		eventstreams.NewDeleteEventStream(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

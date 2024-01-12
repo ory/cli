@@ -526,6 +526,82 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	return projects, nil
 }
 
+func (h *CommandHelper) CreateEventStream(projectID string, body cloud.CreateEventStreamBody) (*cloud.EventStream, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	stream, res, err := c.EventsAPI.CreateEventStream(h.Ctx, projectID).CreateEventStreamBody(body).Execute()
+	if err != nil {
+		return nil, handleError("unable to create event stream", res, err)
+	}
+
+	return stream, nil
+}
+
+func (h *CommandHelper) UpdateEventStream(projectID, streamID string, body cloud.SetEventStreamBody) (*cloud.EventStream, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	stream, res, err := c.EventsAPI.SetEventStream(h.Ctx, projectID, streamID).SetEventStreamBody(body).Execute()
+	if err != nil {
+		return nil, handleError("unable to update event stream", res, err)
+	}
+
+	return stream, nil
+}
+
+func (h *CommandHelper) DeleteEventStream(projectID, streamID string) error {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.EventsAPI.DeleteEventStream(h.Ctx, projectID, streamID).Execute()
+	if err != nil {
+		return handleError("unable to delete event stream", res, err)
+	}
+
+	return nil
+}
+
+func (h *CommandHelper) ListEventStreams(projectID string) (*cloud.ListEventStreams, error) {
+	ac, err := h.EnsureContext()
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := newCloudClient(ac.SessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	streams, res, err := c.EventsAPI.ListEventStreams(h.Ctx, projectID).Execute()
+	if err != nil {
+		return nil, handleError("unable to list event streams", res, err)
+	}
+
+	return streams, nil
+}
+
 func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganizationsResponse, error) {
 	ac, err := h.EnsureContext()
 	if err != nil {
