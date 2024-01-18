@@ -6,6 +6,7 @@ package cloudx
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/eventstreams"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
 	"github.com/ory/cli/cmd/cloudx/organizations"
 	"github.com/ory/cli/cmd/cloudx/relationtuples"
@@ -26,6 +27,7 @@ func NewCreateCmd() *cobra.Command {
 		relationtuples.NewCreateCmd(),
 		oauth2.NewCreateJWK(),
 		organizations.NewCreateOrganizationCmd(),
+		eventstreams.NewCreateEventStreamCmd(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
