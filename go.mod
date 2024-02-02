@@ -39,11 +39,11 @@ require (
 	github.com/ory/hydra/v2 v2.2.0-pre.1
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
-	github.com/ory/kratos v1.1.0-pre.0.0.20240202131839-a850b4e87fc4
+	github.com/ory/kratos daf83fac8c614686bf67e512eb60e9f98ac978b8
 	github.com/ory/x v0.0.613
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
-	github.com/pquerna/otp v1.4.0
+	github.com/pquerna/otp v1.4.0^
 	github.com/rs/cors v1.10.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/spf13/cobra v1.8.0
