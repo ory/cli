@@ -35,12 +35,12 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b
-	github.com/ory/hydra-client-go/v2 v2.2.0-rc.3
-	github.com/ory/hydra/v2 v2.2.0-rc.3.0.20240131115217-a2a900028a23
+	github.com/ory/hydra-client-go/v2 v2.2.0-rc.3.0.20240202131107-1c7b57df3bb0
+	github.com/ory/hydra/v2 v2.2.0-pre.1
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
-	github.com/ory/kratos v1.0.1-0.20240103153653-435d97e85f5e
-	github.com/ory/x v0.0.612-0.20240130132700-6275e3f1ad0d
+	github.com/ory/kratos v1.1.0-pre.0.0.20240202131839-a850b4e87fc4
+	github.com/ory/x v0.0.613
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.4.0
@@ -81,7 +81,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cockroachdb/cockroach-go/v2 v2.3.5 // indirect
 	github.com/containerd/continuity v0.4.1 // indirect
-	github.com/coreos/go-oidc v2.2.1+incompatible // indirect
+	github.com/coreos/go-oidc/v3 v3.9.0 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/cristalhq/jwt/v4 v4.0.2 // indirect
 	github.com/dave/jennifer v1.7.0 // indirect
@@ -183,10 +183,10 @@ require (
 	github.com/laher/mergefs v0.1.2-0.20230223191438-d16611b2f4e7 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
-	github.com/lestrrat-go/jwx v1.2.26 // indirect
+	github.com/lestrrat-go/jwx v1.2.28 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/luna-duclos/instrumentedsql v1.1.3 // indirect
@@ -227,7 +227,6 @@ require (
 	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5 // indirect
 	github.com/pkg/profile v1.7.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/pquerna/cachecontrol v0.1.0 // indirect
 	github.com/prometheus/client_golang v1.17.0 // indirect
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.44.0 // indirect
@@ -299,7 +298,6 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
