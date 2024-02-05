@@ -866,8 +866,8 @@ github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.1.0-rc5 h1:Ygwkfw9bpDvs+c9E34SdgGOj41dX/cbdlwvlWt0pnFI=
 github.com/opencontainers/image-spec v1.1.0-rc5/go.mod h1:X4pATf0uXsnn3g5aiGIsVnJBR4mxhKzfwmvK/B2NTm8=
-github.com/opencontainers/runc v1.1.9 h1:XR0VIHTGce5eWPkaPesqTBrhW2yAcaraWfsEalNwQLM=
-github.com/opencontainers/runc v1.1.9/go.mod h1:CbUumNnWCuTGFukNXahoo/RFBZvDAgRh/smNYNOhA50=
+github.com/opencontainers/runc v1.1.12 h1:BOIssBaW1La0/qbNZHXOOa71dZfZEQOzW7dqQf3phss=
+github.com/opencontainers/runc v1.1.12/go.mod h1:S+lQwSfncpBha7XTy/5lBwWgm5+y5Ma/O44Ekby9FK8=
 github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492/go.mod h1:Ngi6UdF0k5OKD5t5wlmGhe/EDKPoUM3BXZSSfIuJbis=
 github.com/opentracing/basictracer-go v1.0.0/go.mod h1:QfBfYuafItcjQuMwinw9GhYKwFXS9KnPs5lxoYwgW74=
 github.com/opentracing/opentracing-go v1.0.2/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
@@ -908,8 +908,8 @@ github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f h1:yAsriF/AhB+
 github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f/go.mod h1:pZP9ao8GJ4r3dvNtoXZqXR1cZHSJa2x4VFKQaPH5myg=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7 h1:qHgWDFJ642DUYj7fMUs7pRTqr1oM7Hqw26qnxB9lvlk=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7/go.mod h1:6RagCXA7X1hhFSVjcy13ruIo8Dq/nj4J0mcN92qL+hY=
-github.com/ory/kratos v1.1.0-pre.0.0.20240202131839-a850b4e87fc4 h1:HmbuuhTygzqFCZ1V95i+jP+v0sv0HexfbzdyAXmd2tA=
-github.com/ory/kratos v1.1.0-pre.0.0.20240202131839-a850b4e87fc4/go.mod h1:HmZPfL1IPOpSGZmPFoP/9KdGLARWpWTXpOICBCTrRsE=
+github.com/ory/kratos v1.1.0-pre.0.0.20240205165553-fd7995077307 h1:GM/UJdUQY+t42wmo/6gcrqqr/BwwZI/NpyAirQtcppQ=
+github.com/ory/kratos v1.1.0-pre.0.0.20240205165553-fd7995077307/go.mod h1:BbhvY3XuIE4MGoX31FoUqXT21JDY6KvEtRtY0jSbWUg=
 github.com/ory/kratos-client-go v0.13.1 h1:o+pFV9ZRMFSBa4QeNJYbJeLz036UWU4p+7yfKghK+0E=
 github.com/ory/kratos-client-go v0.13.1/go.mod h1:hkrFJuHSBQw+qN6Ks0faOAYhAKwtpjvhCZzsQ7g/Ufc=
 github.com/ory/mail v2.3.1+incompatible/go.mod h1:87D9/1gB6ewElQoN0lXJ0ayfqcj3cW3qCTXh+5E9mfU=
