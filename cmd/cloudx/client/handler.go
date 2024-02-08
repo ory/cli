@@ -413,7 +413,7 @@ retryLogin:
 		return h.sessionToContext(sess, sessionToken)
 	}
 
-	if e, ok := err.(*cloud.GenericOpenAPIError); ok {
+	if e, ok := err.(interface{ Body() []byte }); ok {
 		switch gjson.GetBytes(e.Body(), "error.id").String() {
 		case "session_aal2_required":
 			return h.signin(c, sessionToken)
