@@ -460,7 +460,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
     </table>
   </div>
 
-  
+
   <div
     class="r pr-16 pl-16"
     style="
@@ -494,7 +494,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
               text-align: left;
             "
           >
-            
+
             <div
               class="xc32 ogf m"
               style="
@@ -573,7 +573,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc16 ogf g mb-16"
               style="
@@ -607,7 +607,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc440 ogf m c"
               style="
@@ -663,7 +663,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
                             "
                             >Ory Kratos v0.1.0</span
                           >   <br>     <span style="font-size: 16px; font-weight: 400;">is here!</span><br>
-                          <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.sh/ory/kratos" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/ory/kratos" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/CHANGELOG.md" target="_blank">Changelog</a>&nbsp;|&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/UPGRADE.md" target="_blank">Upgrade Guide</a><br></span>
+                          <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.sh/ory/kratos" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/ory/kratos" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/CHANGELOG.md" target="_blank">Changelog</a><br></span>
 
                         </p>
                       </div>
@@ -2061,7 +2061,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc16 ogf g mb-16"
               style="
@@ -2095,7 +2095,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc32 ogf"
               style="
@@ -2174,14 +2174,14 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  
+
   <div
     class="r pr-16 pl-16"
     style="
@@ -2215,7 +2215,7 @@ Settled on 3 iterations.
               text-align: left;
             "
           >
-            
+
             <div
               class="xc32 ogf m"
               style="
@@ -2294,7 +2294,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc16 ogf g mb-16"
               style="
@@ -2328,7 +2328,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc440 ogf m c"
               style="
@@ -2503,7 +2503,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc16 ogf g mb-16"
               style="
@@ -2537,7 +2537,7 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
             <div
               class="xc32 ogf"
               style="
@@ -2616,14 +2616,14 @@ Settled on 3 iterations.
                 </tbody>
               </table>
             </div>
-            
+
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  
+
   <div
     class="r pr-16 pl-16"
     style="
@@ -2657,7 +2657,7 @@ Settled on 3 iterations.
               text-align: left;
             "
           >
-            
+
             <div
               class="pc100 ogf"
               style="
@@ -2669,7 +2669,7 @@ Settled on 3 iterations.
                 direction: ltr;
               "
             >
-              
+
               <div
                 class="pc100 ogf c"
                 style="
@@ -2779,7 +2779,7 @@ Settled on 3 iterations.
                             Want to change how you receive these emails?<br>
                             You can <a href="*|UPDATE_PROFILE|*">update your preferences</a> or <a href="*|UNSUB|*">unsubscribe from this list</a>.*|END:IF|*<br>
                             <br>*|IF:REWARDS|* *|HTML:REWARDS|* *|END:IF|*</span
-                            > 
+                            >
                           </p>
                           </p>
                           <p style="margin: 0">
@@ -2829,7 +2829,7 @@ Settled on 3 iterations.
                           word-break: break-word;
                         "
                       >
-                        
+
                         <table
                           align="left"
                           border="0"
@@ -2883,7 +2883,7 @@ Settled on 3 iterations.
                             </tr>
                           </tbody>
                         </table>
-                        
+
                         <table
                           align="left"
                           border="0"
@@ -2937,7 +2937,7 @@ Settled on 3 iterations.
                             </tr>
                           </tbody>
                         </table>
-                        
+
                         <table
                           align="left"
                           border="0"
@@ -2991,7 +2991,7 @@ Settled on 3 iterations.
                             </tr>
                           </tbody>
                         </table>
-                        
+
                         <table
                           align="left"
                           border="0"
@@ -3045,7 +3045,7 @@ Settled on 3 iterations.
                             </tr>
                           </tbody>
                         </table>
-                        
+
                         <table
                           align="left"
                           border="0"
@@ -3096,15 +3096,15 @@ Settled on 3 iterations.
                             </tr>
                           </tbody>
                         </table>
-                        
+
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              
+
             </div>
-            
+
           </td>
         </tr>
       </tbody>
