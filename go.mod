@@ -49,9 +49,10 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/sjson v1.2.5
+	github.com/toqueteos/webbrowser v1.2.0
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561
-	golang.org/x/oauth2 v0.12.1-0.20230912160149-2d9e4a2adf33
+	golang.org/x/oauth2 v0.19.0
 	golang.org/x/term v0.12.0
 	golang.org/x/text v0.13.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -265,7 +266,6 @@ require (
 	github.com/tinylib/msgp v1.1.6 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
-	github.com/toqueteos/webbrowser v1.2.0 // indirect
 	github.com/uber/jaeger-client-go v2.30.0+incompatible // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/urfave/cli v1.22.5 // indirect
@@ -322,7 +322,6 @@ require (
 	golang.org/x/time v0.1.0 // indirect
 	golang.org/x/tools v0.6.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20221025140454-527a21cfbd71 // indirect
 	google.golang.org/grpc v1.50.1 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect

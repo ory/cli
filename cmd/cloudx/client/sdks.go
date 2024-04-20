@@ -24,10 +24,6 @@ func CloudConsoleURL(prefix string) *url.URL {
 		u = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
 	u.Host = prefix + "." + u.Host
-	if u.Port() == "" {
-		u.Host = u.Host + ":443"
-	}
-
 	return u
 }
 
@@ -43,10 +39,6 @@ func CloudAPIsURL(prefix string) *url.URL {
 		u = &url.URL{Scheme: "https", Host: "oryapis.com"}
 	}
 	u.Host = prefix + "." + u.Host
-	if u.Port() == "" {
-		u.Host = u.Host + ":443"
-	}
-
 	return u
 }
 

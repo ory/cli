@@ -13,6 +13,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -313,15 +314,15 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 
 var (
 	oac = oauth2.Config{
-		ClientID: "ory-cli",
+		// ClientID: "ory-cli",
+		ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
 		Endpoint: oauth2.Endpoint{
-			AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
-			TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
-			// AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
-			// TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
+			// AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
+			// TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
+			AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
+			TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
-		RedirectURL: "http://localhost:12345/callback",
 	}
 
 	tmpl = template.Must(template.New("").Parse(`<!DOCTYPE html> 
@@ -340,20 +341,20 @@ type data struct {
 
 func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
 	state := randx.MustString(32, randx.AlphaNum)
-	code, errs, outcome, stop := h.runOAuth2CallbackServer(state)
+	callbackURL, code, errs, outcome, stop := h.runOAuth2CallbackServer(state)
 	defer stop()
 
-	codeVerifier := oauth2.GenerateVerifier()
+	oac.RedirectURL = callbackURL
+	pkceVerifier := oauth2.GenerateVerifier()
 	url := oac.AuthCodeURL(state,
-		oauth2.SetAuthURLParam("scope", "offline_access profile email"),
-		oauth2.S256ChallengeOption(codeVerifier),
+		oauth2.S256ChallengeOption(pkceVerifier),
+		oauth2.SetAuthURLParam("scope", "offline_access"),
 		oauth2.SetAuthURLParam("response_type", "code"),
-		oauth2.SetAuthURLParam("prompt", "login"),
-		oauth2.SetAuthURLParam("audience", makeCloudConsoleURL("api")+" "+makeCloudConsoleURL("*.projects")),
+		oauth2.SetAuthURLParam("prompt", "consent"),
+		oauth2.SetAuthURLParam("audience", makeCloudConsoleURL("api")),
 	)
 
-	println(url)
-
+	_ = webbrowser.Open(url)
 	fmt.Fprintf(h.VerboseErrWriter,
 		`A browser should have opened for you to complete your login to Ory Network.
 If no browser opened, visit the below page to continue:
@@ -361,7 +362,6 @@ If no browser opened, visit the below page to continue:
 		%s 
 
 `, url)
-	_ = webbrowser.Open(url)
 
 	var authCode string
 	select {
@@ -375,7 +375,7 @@ If no browser opened, visit the below page to continue:
 	token, err := oac.Exchange(
 		h.Ctx,
 		authCode,
-		oauth2.VerifierOption(codeVerifier),
+		oauth2.VerifierOption(pkceVerifier),
 	)
 	if err != nil {
 		outcome <- data{"Login failed", err.Error()}
@@ -406,9 +406,21 @@ If no browser opened, visit the below page to continue:
 	return &AuthContext{AccessToken: token}, nil
 }
 
-func (h *CommandHelper) runOAuth2CallbackServer(state string) (code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
-	l, err := net.Listen("tcp", ":12345")
-	if err != nil {
+func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL string, code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
+	var (
+		l     net.Listener
+		err   error
+		ports = []int{12345, 34525, 49763, 51238, 59724, 60582, 62125}
+	)
+	rand.Shuffle(len(ports), func(i, j int) { ports[i], ports[j] = ports[j], ports[i] })
+	for _, port := range ports {
+		l, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
+		if err == nil {
+			callbackURL = fmt.Sprintf("http://localhost:%d/callback", port)
+			break
+		}
+	}
+	if l == nil {
 		fmt.Fprintln(h.VerboseErrWriter, "Failed to allocate port for OAuth2 callback handler")
 		os.Exit(1)
 	}
@@ -434,7 +446,7 @@ func (h *CommandHelper) runOAuth2CallbackServer(state string) (code <-chan strin
 		}),
 	}
 	go srv.Serve(l)
-	return _code, _errs, _outcome, func() {
+	return callbackURL, _code, _errs, _outcome, func() {
 		ctx, cancel := context.WithTimeout(h.Ctx, 3*time.Second)
 		defer cancel()
 		srv.Shutdown(ctx)
