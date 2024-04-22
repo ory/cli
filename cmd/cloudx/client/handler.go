@@ -352,7 +352,7 @@ func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
 		oauth2.S256ChallengeOption(pkceVerifier),
 		oauth2.SetAuthURLParam("scope", "offline_access"),
 		oauth2.SetAuthURLParam("response_type", "code"),
-		oauth2.SetAuthURLParam("prompt", "consent"),
+		oauth2.SetAuthURLParam("prompt", "login consent"),
 		oauth2.SetAuthURLParam("audience", makeCloudConsoleURL("api")),
 	)
 
