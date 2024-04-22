@@ -314,13 +314,15 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 
 var (
 	oac = oauth2.Config{
-		// ClientID: "ory-cli",
-		ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
+		ClientID: "ory-cli",
+		// ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
 		Endpoint: oauth2.Endpoint{
-			// AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
-			// TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
-			AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
-			TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
+			AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
+			TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
+			// AuthURL:  "https://project.console.ory:8080/oauth2/auth",
+			// TokenURL: "https://project.console.ory:8080/oauth2/token",
+			// AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
+			// TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 	}
