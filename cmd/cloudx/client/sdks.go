@@ -23,7 +23,9 @@ func CloudConsoleURL(prefix string) *url.URL {
 	if err != nil {
 		u = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
+	if prefix != "" {
 	u.Host = prefix + "." + u.Host
+	}
 	return u
 }
 

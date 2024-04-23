@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	stderrs "errors"
 	"fmt"
-	"html/template"
 	"io"
 	"io/fs"
 	"math/rand"
@@ -312,33 +311,18 @@ func (h *CommandHelper) Authenticate() (*AuthContext, error) {
 	return ac, nil
 }
 
-var (
-	oac = oauth2.Config{
-		ClientID: "ory-cli",
-		// ClientID: "7b29dd0e-3e98-4bf9-a14f-c6efbb35d508",
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  makeCloudConsoleURL("project") + "/oauth2/auth",
-			TokenURL: makeCloudConsoleURL("project") + "/oauth2/token",
-			// AuthURL:  "https://project.console.ory:8080/oauth2/auth",
-			// TokenURL: "https://project.console.ory:8080/oauth2/token",
-			// AuthURL:   "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/auth",
-			// TokenURL:  "https://epic-swanson-8q30djkp63.projects.oryapis.com/oauth2/token",
-			AuthStyle: oauth2.AuthStyleInParams,
-		},
-	}
-
-	tmpl = template.Must(template.New("").Parse(`<!DOCTYPE html> 
-<html>
-	<head><title>Ory Network CLI login</title></head>
-	<body>
-		<h1>{{ .Header }}</h1>
-		<p>{{ .Message }}</p>
-	</body>
-</html>`))
-)
+var oac = oauth2.Config{
+	ClientID: "ory-cli",
+	Endpoint: oauth2.Endpoint{
+		AuthURL:   makeCloudConsoleURL("project") + "/oauth2/auth",
+		TokenURL:  makeCloudConsoleURL("project") + "/oauth2/token",
+		AuthStyle: oauth2.AuthStyleInParams,
+	},
+}
 
 type data struct {
-	Header, Message string
+	OK          bool
+	Error, Desc string
 }
 
 func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
@@ -380,11 +364,11 @@ If no browser opened, visit the below page to continue:
 		oauth2.VerifierOption(pkceVerifier),
 	)
 	if err != nil {
-		outcome <- data{"Login failed", err.Error()}
+		outcome <- data{OK: false, Error: "token exchange", Desc: "An error occured during the OAuth2 token exchange: " + err.Error()}
 		fmt.Fprintf(h.VerboseErrWriter, "An error occured logging into Ory Network: %v\n", err)
 		return nil, fmt.Errorf("failed OAuth2 token exchange: %w", err)
 	}
-	outcome <- data{"Successfully logged into Ory Network.", "You may now close this browser tab and continue on with the Ory CLI."}
+	outcome <- data{OK: true}
 
 	fmt.Fprintf(h.VerboseErrWriter, "Successfully logged into Ory Network.\n")
 
@@ -400,10 +384,6 @@ If no browser opened, visit the below page to continue:
 			time.Until(token.Expiry).Round(time.Second),
 		)
 	}
-	for range code {
-		// drain/wait
-	}
-	// ok, response written to browser
 
 	return &AuthContext{AccessToken: token}, nil
 }
@@ -430,21 +410,29 @@ func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL strin
 	srv := http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			defer close(_code)
-			r.ParseForm()
+			if err := r.ParseForm(); err != nil {
+				redirectErr(w, r, "parse form", "An error occured during CLI authentication. Please try again")
+				_errs <- err
+				return
+			}
 			if s := r.Form.Get("state"); s != state {
-				tmpl.Execute(w, &data{"Login failed", ""})
+				redirectErr(w, r, "state mismatch", "An error occured during CLI authentication. Please try again")
 				_errs <- fmt.Errorf("state mismatch: expected %s, got %s", state, s)
 				return
 			}
 			code := r.Form.Get("code")
-			error, desc := r.Form.Get("error"), r.Form.Get("error_description")
 			if code == "" {
-				tmpl.Execute(w, &data{"Login failed", desc + ": " + error})
+				error, desc := r.Form.Get("error"), r.Form.Get("error_description")
+				redirectErr(w, r, error, desc)
 				_errs <- fmt.Errorf("%s: %s", error, desc)
 				return
 			}
 			_code <- code
-			tmpl.Execute(w, <-_outcome)
+			if outcome := <-_outcome; !outcome.OK {
+				redirectErr(w, r, outcome.Error, outcome.Desc)
+				return
+			}
+			redirectOK(w, r)
 		}),
 	}
 	go srv.Serve(l)
@@ -453,6 +441,20 @@ func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL strin
 		defer cancel()
 		srv.Shutdown(ctx)
 	}
+}
+
+func redirectOK(w http.ResponseWriter, r *http.Request) {
+	location := CloudConsoleURL("")
+	location.Path = "/projects/current/dashboard"
+	location.RawQuery = url.Values{"cli_auth": []string{"success"}}.Encode()
+	http.Redirect(w, r, location.String(), http.StatusFound)
+}
+
+func redirectErr(w http.ResponseWriter, r *http.Request, err, desc string) {
+	location := CloudConsoleURL("")
+	location.Path = "/error"
+	location.RawQuery = url.Values{"error": []string{err}, "error_description": []string{desc}}.Encode()
+	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
 func (h *CommandHelper) SignOut() error {
