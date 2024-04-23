@@ -9,13 +9,14 @@ import (
 	"net/url"
 	"os"
 
-	cloud "github.com/ory/client-go"
 	"golang.org/x/oauth2"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 	flag "github.com/spf13/pflag"
 
+	"github.com/ory/cli/buildinfo"
+	cloud "github.com/ory/client-go"
 	hydra "github.com/ory/hydra-client-go"
 	hydracli "github.com/ory/hydra/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
@@ -88,20 +89,23 @@ func ContextWithClient(ctx context.Context) context.Context {
 	})
 
 	ctx = context.WithValue(ctx, hydracli.ClientContextKey, func(cmd *cobra.Command) (*hydra.APIClient, *url.URL, error) {
-		c, ac, p, err := Client(cmd)
+		_, ac, p, err := Client(cmd)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		conf := hydra.NewConfiguration()
-		conf.HTTPClient = oac.Client(context.WithValue(context.Background(), oauth2.HTTPClient, c.StandardClient()), ac.AccessToken)
-
+		// We use the cloud console API because it works with ory cloud session tokens.
 		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
 		if err != nil {
 			return nil, nil, err
 		}
-		// We use the cloud console API because it works with ory cloud session tokens.
-		conf.Servers = hydra.ServerConfigurations{{URL: consoleURL.String()}}
+		conf := hydra.NewConfiguration()
+		conf.Servers = hydra.ServerConfigurations{{URL: consoleURL.String(), Variables: make(map[string]hydra.ServerVariable)}}
+		conf.Debug = true
+		conf.UserAgent = "ory-cli/" + buildinfo.Version
+
+		cmd.SetContext(context.WithValue(cmd.Context(), hydra.ContextOAuth2, oac.TokenSource(cmd.Context(), ac.AccessToken)))
+
 		return hydra.NewAPIClient(conf), consoleURL, nil
 	})
 

@@ -1,13 +1,12 @@
 package client
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/oauth2"
-)
 
-var Token *oauth2.Token
+	cloud "github.com/ory/client-go"
+)
 
 func RegisterAuthHelpers(cmd *cobra.Command) {
 	var (
@@ -15,7 +14,6 @@ func RegisterAuthHelpers(cmd *cobra.Command) {
 		ac *AuthContext
 	)
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) (err error) {
-		fmt.Fprintf(cmd.OutOrStderr(), "RegisterAuthHelpers.PersistentPreRunE\n")
 		h, err = NewCommandHelper(cmd)
 		if err != nil {
 			return err
@@ -24,11 +22,11 @@ func RegisterAuthHelpers(cmd *cobra.Command) {
 		if err != nil {
 			return err
 		}
-		Token = ac.AccessToken
+		cmd.SetContext(context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, ac.AccessToken)))
+		h.Ctx = cmd.Context()
 		return nil
 	}
 	cmd.PersistentPostRunE = func(cmd *cobra.Command, args []string) error {
-		fmt.Fprintf(cmd.OutOrStderr(), "RegisterAuthHelpers.PersistentPostRunE\n")
 		return h.WriteConfig(ac)
 	}
 }

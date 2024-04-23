@@ -232,7 +232,14 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 		return nil, false, err
 	}
 
-	if c.AccessToken != nil {
+	if c.AccessToken == nil || !c.AccessToken.Valid() {
+		return nil, false, nil
+	}
+
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, c.AccessToken))
+	cl := newCloudClient()
+	_, _, err = cl.ProjectApi.GetActiveProjectInConsole(ctx).Execute()
+	if err == nil {
 		return c, true, nil
 	}
 
@@ -370,13 +377,6 @@ If no browser opened, visit the below page to continue:
 	}
 	outcome <- data{OK: true}
 
-	fmt.Fprintf(h.VerboseErrWriter, "Successfully logged into Ory Network.\n")
-
-	enc := json.NewEncoder(h.VerboseWriter)
-	enc.SetIndent("", "\t")
-	enc.SetEscapeHTML(false)
-	enc.Encode(token)
-
 	scope, _ := token.Extra("scope").(string)
 	if !slices.Contains(strings.Split(scope, " "), "offline_access") {
 		fmt.Fprintf(h.VerboseErrWriter,
@@ -385,7 +385,19 @@ If no browser opened, visit the below page to continue:
 		)
 	}
 
-	return &AuthContext{AccessToken: token}, nil
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, token))
+	c := newCloudClient()
+	activeProject, _, err := c.ProjectApi.GetActiveProjectInConsole(ctx).Execute()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active project: %w", err)
+	}
+
+	fmt.Fprintf(h.VerboseErrWriter, "Successfully logged into Ory Network.\n")
+
+	return &AuthContext{
+		AccessToken:     token,
+		SelectedProject: uuid.FromStringOrNil(activeProject.GetProjectId()),
+	}, nil
 }
 
 func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL string, code <-chan string, errs <-chan error, outcome chan<- data, cleanup func()) {
@@ -487,9 +499,8 @@ func (h *CommandHelper) SignOut() error {
 }
 
 func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	projects, res, err := c.ProjectApi.ListProjects(ctx).Execute()
+	c := newCloudClient()
+	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -524,9 +535,8 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		}
 	}
 
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	project, res, err := c.ProjectApi.GetProject(ctx, id.String()).Execute()
+	c := newCloudClient()
+	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -535,9 +545,8 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 }
 
 func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	project, res, err := c.ProjectApi.CreateProject(ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	c := newCloudClient()
+	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -619,9 +628,8 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	res, _, err := c.ProjectApi.PatchProject(ctx, id).JsonPatch(patches).Execute()
+	c := newCloudClient()
+	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -672,12 +680,11 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` is required and can not be empty")
 	}
 
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
+	c := newCloudClient()
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.ProjectApi.GetProject(ctx, id).Execute()
+		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -693,9 +700,8 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 }
 
 func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.ProjectApiKey, error) {
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	token, _, err := c.ProjectApi.CreateProjectApiKey(ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	c := newCloudClient()
+	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -704,9 +710,8 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 }
 
 func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, Token))
-	c := newCloudClient(nil)
-	if _, err := c.ProjectApi.DeleteProjectApiKey(ctx, projectIdOrSlug, id).Execute(); err != nil {
+	c := newCloudClient()
+	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 
