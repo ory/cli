@@ -12,14 +12,10 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"math/rand"
-	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/gofrs/uuid/v3"
 	"github.com/imdario/mergo"
@@ -27,8 +23,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/tidwall/gjson"
-	"github.com/toqueteos/webbrowser"
-	"golang.org/x/exp/slices"
 	"golang.org/x/oauth2"
 	"golang.org/x/term"
 
@@ -36,7 +30,6 @@ import (
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
-	"github.com/ory/x/randx"
 	"github.com/ory/x/stringsx"
 )
 
