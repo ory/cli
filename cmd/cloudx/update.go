@@ -7,7 +7,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/eventstreams"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
+	"github.com/ory/cli/cmd/cloudx/organizations"
 	"github.com/ory/cli/cmd/cloudx/project"
 	"github.com/ory/x/cmdx"
 )
@@ -24,6 +26,8 @@ func NewUpdateCmd() *cobra.Command {
 		project.NewUpdatePermissionConfigCmd(),
 		project.NewUpdateNamespaceConfigCmd(),
 		oauth2.NewUpdateOAuth2Client(),
+		organizations.NewUpdateOrganizationCmd(),
+		eventstreams.NewUpdateEventStreamCmd(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

@@ -7,12 +7,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
+
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
 func TestCreateProject(t *testing.T) {
@@ -79,19 +79,14 @@ func TestCreateProject(t *testing.T) {
 		name := testhelpers.TestProjectName()
 		password := testhelpers.FakePassword()
 		email := testhelpers.FakeEmail()
+
 		cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
 		// Create the account
-		var r bytes.Buffer
-		r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
-		r.WriteString(email + "\n") // Email fakeEmail()
-		r.WriteString(name + "\n")  // Name: fakeName()
-		r.WriteString("n\n")        // Subscribe to the Ory Security Newsletter to get platform and security updates? [y/n]: n
-		r.WriteString("n\n")        // I accept the Terms of Service [y/n]: n
-		r.WriteString("y\n")        // I accept the Terms of Service [y/n]: y
+		r := testhelpers.RegistrationBuffer(name, email, password)
 		stdout, stderr, err := cmd.Exec(&r, "create", "project", "--name", name, "--format", "json")
-		require.NoError(t, err)
 		t.Logf("stdout: %s", stdout)
 		t.Logf("stderr: %s", stderr)
+		require.NoError(t, err)
 		assertResult(t, configDir, stdout, name)
 	})
 }

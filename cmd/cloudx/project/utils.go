@@ -17,7 +17,7 @@ import (
 
 var defaultProjectNotSetError = errors.New("no project was specified")
 
-func getSelectedProjectId(h *client.CommandHelper, args []string) (string, error) {
+func selectedProjectID(h *client.CommandHelper, args []string) (string, error) {
 	if len(args) == 0 {
 		if id := h.GetDefaultProjectID(); id == "" {
 			return "", defaultProjectNotSetError

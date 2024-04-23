@@ -1,4 +1,6 @@
 {
-    "gopls": { "formatting.local": "github.com/ory" }
-  }
-  
+    "gopls": {
+        "formatting.local": "github.com/ory",
+    }
+}
+

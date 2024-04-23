@@ -11,6 +11,7 @@ import (
 
 	"github.com/ory/cli/buildinfo"
 	cloud "github.com/ory/client-go"
+	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/stringsx"
 )
 
@@ -48,15 +49,15 @@ func makeCloudAPIsURL(prefix string) string {
 	return u.Scheme + "://" + u.Host
 }
 
-func NewKratosClient() (*cloud.APIClient, error) {
-	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
-	conf.HTTPClient = &http.Client{Timeout: time.Second * 10}
+func NewKratosClient() (*oldCloud.APIClient, error) {
+	conf := oldCloud.NewConfiguration()
+	conf.Servers = oldCloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
+	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
 	if RateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
 	}
 
-	return cloud.NewAPIClient(conf), nil
+	return oldCloud.NewAPIClient(conf), nil
 }
 
 func newCloudClient() *cloud.APIClient {

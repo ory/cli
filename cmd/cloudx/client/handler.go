@@ -238,7 +238,7 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 
 	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, c.AccessToken))
 	cl := newCloudClient()
-	_, _, err = cl.ProjectApi.GetActiveProjectInConsole(ctx).Execute()
+	_, _, err = cl.ProjectAPI.GetActiveProjectInConsole(ctx).Execute()
 	if err == nil {
 		return c, true, nil
 	}
@@ -251,8 +251,14 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 
 		sess, _, err := client.FrontendApi.ToSession(h.Ctx).XSessionToken(c.SessionToken).Execute()
 		if err != nil {
+			if h.IsQuiet {
+				return nil, false, errors.WithStack(ErrNoConfigQuiet)
+			}
 			return nil, false, nil
 		} else if sess == nil {
+			if h.IsQuiet {
+				return nil, false, errors.WithStack(ErrNoConfigQuiet)
+			}
 			return nil, false, nil
 		}
 		return c, true, nil
@@ -387,7 +393,7 @@ If no browser opened, visit the below page to continue:
 
 	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, token))
 	c := newCloudClient()
-	activeProject, _, err := c.ProjectApi.GetActiveProjectInConsole(ctx).Execute()
+	activeProject, _, err := c.ProjectAPI.GetActiveProjectInConsole(ctx).Execute()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get active project: %w", err)
 	}
@@ -500,12 +506,100 @@ func (h *CommandHelper) SignOut() error {
 
 func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 	c := newCloudClient()
-	projects, res, err := c.ProjectApi.ListProjects(h.Ctx).Execute()
+	projects, res, err := c.ProjectAPI.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
 
 	return projects, nil
+}
+
+func (h *CommandHelper) CreateEventStream(projectID string, body cloud.CreateEventStreamBody) (*cloud.EventStream, error) {
+	c := newCloudClient()
+	stream, res, err := c.EventsAPI.CreateEventStream(h.Ctx, projectID).CreateEventStreamBody(body).Execute()
+	if err != nil {
+		return nil, handleError("unable to create event stream", res, err)
+	}
+
+	return stream, nil
+}
+
+func (h *CommandHelper) UpdateEventStream(projectID, streamID string, body cloud.SetEventStreamBody) (*cloud.EventStream, error) {
+	c := newCloudClient()
+	stream, res, err := c.EventsAPI.SetEventStream(h.Ctx, projectID, streamID).SetEventStreamBody(body).Execute()
+	if err != nil {
+		return nil, handleError("unable to update event stream", res, err)
+	}
+
+	return stream, nil
+}
+
+func (h *CommandHelper) DeleteEventStream(projectID, streamID string) error {
+	c := newCloudClient()
+	res, err := c.EventsAPI.DeleteEventStream(h.Ctx, projectID, streamID).Execute()
+	if err != nil {
+		return handleError("unable to delete event stream", res, err)
+	}
+
+	return nil
+}
+
+func (h *CommandHelper) ListEventStreams(projectID string) (*cloud.ListEventStreams, error) {
+	c := newCloudClient()
+	streams, res, err := c.EventsAPI.ListEventStreams(h.Ctx, projectID).Execute()
+	if err != nil {
+		return nil, handleError("unable to list event streams", res, err)
+	}
+
+	return streams, nil
+}
+
+func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganizationsResponse, error) {
+	c := newCloudClient()
+	organizations, res, err := c.ProjectAPI.ListOrganizations(h.Ctx, projectID).Execute()
+	if err != nil {
+		return nil, handleError("unable to list organizations", res, err)
+	}
+
+	return organizations, nil
+}
+
+func (h *CommandHelper) CreateOrganization(projectID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
+	c := newCloudClient()
+	organization, res, err := c.ProjectAPI.
+		CreateOrganization(h.Ctx, projectID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to create organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
+	c := newCloudClient()
+	organization, res, err := c.ProjectAPI.
+		UpdateOrganization(h.Ctx, projectID, orgID).
+		OrganizationBody(body).
+		Execute()
+	if err != nil {
+		return nil, handleError("unable to update organization", res, err)
+	}
+
+	return organization, nil
+}
+
+func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
+	c := newCloudClient()
+	res, err := c.ProjectAPI.
+		DeleteOrganization(h.Ctx, projectID, orgID).
+		Execute()
+	if err != nil {
+		return handleError("unable to create organization", res, err)
+	}
+
+	return nil
 }
 
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
@@ -536,7 +630,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 	}
 
 	c := newCloudClient()
-	project, res, err := c.ProjectApi.GetProject(h.Ctx, id.String()).Execute()
+	project, res, err := c.ProjectAPI.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
 	}
@@ -546,7 +640,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 
 func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
 	c := newCloudClient()
-	project, res, err := c.ProjectApi.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
+	project, res, err := c.ProjectAPI.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
 	}
@@ -629,7 +723,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 	}
 
 	c := newCloudClient()
-	res, _, err := c.ProjectApi.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
+	res, _, err := c.ProjectAPI.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -667,6 +761,16 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		}
 	}
 
+	if _, found := interim["cors_admin"]; !found {
+		interim["cors_admin"] = map[string]interface{}{}
+	}
+	if _, found := interim["cors_public"]; !found {
+		interim["cors_public"] = map[string]interface{}{}
+	}
+	if _, found := interim["name"]; !found {
+		interim["name"] = ""
+	}
+
 	var payload cloud.SetProject
 	var b bytes.Buffer
 	if err := json.NewEncoder(&b).Encode(interim); err != nil {
@@ -684,14 +788,14 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
-		res, _, err := c.ProjectApi.GetProject(h.Ctx, id).Execute()
+		res, _, err := c.ProjectAPI.GetProject(h.Ctx, id).Execute()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
 		payload.Name = res.Name
 	}
 
-	res, _, err := c.ProjectApi.SetProject(h.Ctx, id).SetProject(payload).Execute()
+	res, _, err := c.ProjectAPI.SetProject(h.Ctx, id).SetProject(payload).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -701,7 +805,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 
 func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.ProjectApiKey, error) {
 	c := newCloudClient()
-	token, _, err := c.ProjectApi.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	token, _, err := c.ProjectAPI.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -711,7 +815,7 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 
 func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
 	c := newCloudClient()
-	if _, err := c.ProjectApi.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
+	if _, err := c.ProjectAPI.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
 

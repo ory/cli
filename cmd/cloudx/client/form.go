@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	cloud "github.com/ory/client-go"
+	oldCloud "github.com/ory/client-go/114"
 
 	"github.com/pkg/errors"
 	"github.com/tidwall/sjson"
@@ -20,7 +20,7 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func getLabel(attrs *cloud.UiNodeInputAttributes, node *cloud.UiNode) string {
+func getLabel(attrs *oldCloud.UiNodeInputAttributes, node *oldCloud.UiNode) string {
 	if attrs.Name == "identifier" {
 		return fmt.Sprintf("%s: ", "Email")
 	} else if node.Meta.Label != nil {
@@ -33,7 +33,7 @@ func getLabel(attrs *cloud.UiNodeInputAttributes, node *cloud.UiNode) string {
 
 type passwordReader = func() ([]byte, error)
 
-func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, ui cloud.UiContainer, method string, out interface{}) (err error) {
+func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, ui oldCloud.UiContainer, method string, out interface{}) (err error) {
 	for _, message := range ui.Messages {
 		_, _ = fmt.Fprintf(stderr, "%s\n", message.Text)
 	}
@@ -75,6 +75,10 @@ func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, 
 				if err != nil {
 					return err
 				}
+				continue
+			}
+
+			if strings.Contains(attrs.Name, "traits.details") {
 				continue
 			}
 
