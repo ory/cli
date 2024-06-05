@@ -206,9 +206,7 @@ func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL strin
 	}
 	go srv.Serve(l)
 	return callbackURL, _code, _errs, _outcome, func() {
-		ctx, cancel := context.WithTimeout(h.Ctx, 3*time.Second)
-		defer cancel()
-		srv.Shutdown(ctx)
+		_ = srv.Close()
 	}
 }
 
