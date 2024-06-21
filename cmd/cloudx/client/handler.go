@@ -57,6 +57,10 @@ type AuthContext struct {
 	AccessToken     *oauth2.Token `json:"oauth_token"`
 }
 
+func (i *AuthContext) TokenSource() oauth2.TokenSource {
+	return oac.TokenSource(context.Background(), i.AccessToken)
+}
+
 func (i *AuthContext) ID() string {
 	return i.IdentityTraits.ID
 }
@@ -229,7 +233,7 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 		return nil, false, nil
 	}
 
-	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, c.AccessToken))
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, c.TokenSource())
 	cl := newCloudClient()
 	_, _, err = cl.ProjectAPI.GetActiveProjectInConsole(ctx).Execute()
 	if err == nil {

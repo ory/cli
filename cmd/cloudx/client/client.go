@@ -84,7 +84,6 @@ func ContextWithClient(ctx context.Context) context.Context {
 			return nil
 		}
 
-		// We use the cloud console API because it works with ory cloud session tokens.
 		return apiURL
 	})
 
@@ -94,19 +93,18 @@ func ContextWithClient(ctx context.Context) context.Context {
 			return nil, nil, err
 		}
 
-		// We use the cloud console API because it works with ory cloud session tokens.
-		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
+		apiURL, err := url.ParseRequestURI(makeCloudAPIsURL(p.Slug + ".projects"))
 		if err != nil {
 			return nil, nil, err
 		}
 		conf := hydra.NewConfiguration()
-		conf.Servers = hydra.ServerConfigurations{{URL: consoleURL.String(), Variables: make(map[string]hydra.ServerVariable)}}
+		conf.Servers = hydra.ServerConfigurations{{URL: apiURL.String(), Variables: make(map[string]hydra.ServerVariable)}}
 		conf.Debug = true
 		conf.UserAgent = "ory-cli/" + buildinfo.Version
 
-		cmd.SetContext(context.WithValue(cmd.Context(), hydra.ContextOAuth2, oac.TokenSource(cmd.Context(), ac.AccessToken)))
+		cmd.SetContext(context.WithValue(cmd.Context(), hydra.ContextOAuth2, ac.TokenSource()))
 
-		return hydra.NewAPIClient(conf), consoleURL, nil
+		return hydra.NewAPIClient(conf), apiURL, nil
 	})
 
 	ctx = context.WithValue(ctx, kratoscli.ClientContextKey, func(cmd *cobra.Command) (*kratoscli.ClientContext, error) {
@@ -115,9 +113,8 @@ func ContextWithClient(ctx context.Context) context.Context {
 			return nil, err
 		}
 
-		// We use the cloud console API because it works with ory cloud session tokens.
 		return &kratoscli.ClientContext{
-			Endpoint:   makeCloudConsoleURL(p.Slug + ".projects"),
+			Endpoint:   makeCloudAPIsURL(p.Slug + ".projects"),
 			HTTPClient: oac.Client(context.WithValue(context.Background(), oauth2.HTTPClient, c.StandardClient()), ac.AccessToken),
 		}, nil
 	})

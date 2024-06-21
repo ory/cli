@@ -26,6 +26,7 @@ func NewPerformCmd() *cobra.Command {
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterNoiseFlags(cmd.PersistentFlags())
+	client.RegisterAuthHelpers(cmd)
 
 	return cmd
 }

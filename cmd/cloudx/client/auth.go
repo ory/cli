@@ -37,7 +37,7 @@ func RegisterAuthHelpers(cmd *cobra.Command) {
 		if err != nil {
 			return err
 		}
-		cmd.SetContext(context.WithValue(h.Ctx, cloud.ContextOAuth2, oac.TokenSource(h.Ctx, ac.AccessToken)))
+		cmd.SetContext(context.WithValue(h.Ctx, cloud.ContextOAuth2, ac.TokenSource()))
 		h.Ctx = cmd.Context()
 		return nil
 	}

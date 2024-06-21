@@ -17,6 +17,7 @@ func wrapHydraCmd(newCmd func() *cobra.Command) *cobra.Command {
 	client.RegisterProjectFlag(c.Flags())
 	cmdx.RegisterFormatFlags(c.Flags())
 	cliclient.RegisterClientFlags(c.Flags())
+	client.RegisterAuthHelpers(c)
 	return c
 }
 
