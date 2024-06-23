@@ -23,6 +23,8 @@
     "binwrap": "^0.2.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.44.1",
+    "@types/node": "^20.14.8",
     "cypress": "^8.7.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.5",
