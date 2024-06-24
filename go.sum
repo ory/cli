@@ -902,6 +902,8 @@ github.com/ory/hydra/v2 v2.2.0-pre.1 h1:+VzGZ6AtiajgTq0I5m2nYvEX0l+I/nIci5kTuVA/
 github.com/ory/hydra/v2 v2.2.0-pre.1/go.mod h1:yQRtYAxtGOD41QakuLLI9GVO9BUQzL5ShAxikGZPQbA=
 github.com/ory/jsonschema/v3 v3.0.8 h1:Ssdb3eJ4lDZ/+XnGkvQS/te0p+EkolqwTsDOCxr/FmU=
 github.com/ory/jsonschema/v3 v3.0.8/go.mod h1:ZPzqjDkwd3QTnb2Z6PAS+OTvBE2x5i6m25wCGx54W/0=
+github.com/ory/keto v0.13.0-alpha.0.0.20240624092507-567ceb9144b0 h1:lsBYI6FsW+DQSzTld2fiC4bC8ELOfGrbARqguomWIqk=
+github.com/ory/keto v0.13.0-alpha.0.0.20240624092507-567ceb9144b0/go.mod h1:NXGcNJ65ocZG5mvUCtoDHW53tA2MNoK2iQL7L0UDaGs=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7 h1:qHgWDFJ642DUYj7fMUs7pRTqr1oM7Hqw26qnxB9lvlk=
 github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7/go.mod h1:6RagCXA7X1hhFSVjcy13ruIo8Dq/nj4J0mcN92qL+hY=
 github.com/ory/kratos v1.1.0-pre.0.0.20240205165553-fd7995077307 h1:GM/UJdUQY+t42wmo/6gcrqqr/BwwZI/NpyAirQtcppQ=

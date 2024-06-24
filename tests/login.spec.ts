@@ -3,6 +3,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process"
 import { randomBytes } from "crypto"
 import { unlink } from "fs/promises"
 import readline from "node:readline/promises"
+import * as sdk from "@ory/client"
 
 function generateRandomFileName(extension: string): string {
   const randomString = randomBytes(16).toString("hex")
@@ -10,12 +11,40 @@ function generateRandomFileName(extension: string): string {
 }
 
 test.describe("should be able to login with the CLI", () => {
+  const email = `${randomBytes(16).toString("hex")}@example.com`
+  const password = randomBytes(16).toString("hex")
   const config = generateRandomFileName(".cli-config.json")
   let url: string = ""
-  let child: ChildProcessWithoutNullStreams
+  let child: ChildProcessWithoutNullStreams | undefined
   let rl: readline.Interface
 
   test.beforeAll(async () => {
+    const ory = new sdk.FrontendApi(
+      new sdk.Configuration({
+        basePath: "https://project.console.ory:8080",
+      }),
+    )
+
+    const {
+      data: { id: flowID },
+    } = await ory.createNativeRegistrationFlow()
+    const res = await ory.updateRegistrationFlow({
+      flow: flowID,
+      updateRegistrationFlowBody: {
+        method: "password",
+        password,
+        traits: {
+          email,
+          name: "John Doe",
+          consent: {
+            newsletter: false,
+            tos: new Date().toISOString(),
+          },
+        },
+      },
+    })
+    expect(res.status).toBe(200)
+
     child = spawn("./cli", ["auth"], {
       env: {
         HOME: "/dev/null",
@@ -44,8 +73,8 @@ test.describe("should be able to login with the CLI", () => {
   })
 
   test.afterAll(async () => {
-    child.kill()
-    await unlink(config)
+    child?.kill()
+    await unlink(config).catch(() => {})
   })
 
   test("with email and password", async ({ page }) => {
@@ -53,11 +82,11 @@ test.describe("should be able to login with the CLI", () => {
     const emailInput = await page.locator(
       `[data-testid="node/input/identifier"] input`,
     )
-    await emailInput.fill("<email>")
+    await emailInput.fill(email)
     const passwordInput = await page.locator(
       `[data-testid="node/input/password"] input`,
     )
-    await passwordInput.fill("<password>")
+    await passwordInput.fill(password)
     const submit = page.locator(
       '[type="submit"][name="method"][value="password"]',
     )

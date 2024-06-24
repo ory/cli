@@ -37,7 +37,7 @@ require (
 	github.com/ory/hydra-client-go/v2 v2.2.0-rc.3.0.20240202131107-1c7b57df3bb0
 	github.com/ory/hydra/v2 v2.2.0-pre.1
 	github.com/ory/jsonschema/v3 v3.0.8
-	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
+	github.com/ory/keto v0.13.0-alpha.0.0.20240624092507-567ceb9144b0
 	github.com/ory/kratos v1.1.0-pre.0.0.20240205165553-fd7995077307
 	github.com/ory/x v0.0.613
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8

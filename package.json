@@ -20,6 +20,7 @@
   },
   "prettier": "ory-prettier-styles",
   "dependencies": {
+    "@ory/client": "^1.11.11",
     "binwrap": "^0.2.3"
   },
   "devDependencies": {
