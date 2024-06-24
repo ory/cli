@@ -4,14 +4,16 @@
 package relationtuples
 
 import (
+	"context"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/credentials/oauth"
 
 	ketoClient "github.com/ory/keto/cmd/client"
 	"github.com/ory/keto/cmd/relationtuple"
-	"github.com/ory/x/randx"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 )
@@ -57,25 +59,18 @@ func NewParseCmd() *cobra.Command {
 func forwardConnectionInfo(cmd *cobra.Command) {
 	originalRunE := cmd.RunE
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		_, _, project, err := client.Client(cmd)
+		_, ac, project, err := client.Client(cmd)
 		if err != nil {
 			return err
 		}
 
-		h, err := client.NewCommandHelper(cmd)
-		if err != nil {
-			return err
+		dial := func(ctx context.Context, remote string) (*grpc.ClientConn, error) {
+			return grpc.DialContext(ctx, client.CloudAPIsURL(project.Slug+".projects").Host,
+				grpc.WithTransportCredentials(credentials.NewTLS(nil)),
+				grpc.WithBlock(),
+				grpc.WithPerRPCCredentials(oauth.TokenSource{ac.TokenSource()}))
 		}
-
-		key, err := h.CreateAPIKey(project.Slug, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
-		if err != nil {
-			return err
-		}
-		defer func() { _ = h.DeleteAPIKey(project.Slug, key.Id) }()
-
-		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
-		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		cmd.SetContext(context.WithValue(cmd.Context(), ketoClient.ContextKeyDialFunc, dial))
 
 		return originalRunE(cmd, args)
 	}
@@ -120,7 +115,7 @@ func hideKetoFlags(cmd *cobra.Command) {
 	}
 }
 
-// wrapForOryCLI wraps the Keto command to be used in the ORY CLI.
+// wrapForOryCLI wraps the Keto command to be used in the Ory CLI.
 func wrapForOryCLI(cmd *cobra.Command) {
 	cmd.Use = "relationships"
 	cmd.Aliases = []string{"relation-tuples", "relationship", "relation-tuple"}

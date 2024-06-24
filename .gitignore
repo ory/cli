@@ -12,3 +12,7 @@ unpacked_bin/
 cypress/screenshots
 cypress/videos
 cli
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

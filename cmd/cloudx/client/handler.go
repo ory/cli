@@ -13,7 +13,6 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,10 +23,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/tidwall/gjson"
+	"golang.org/x/oauth2"
 	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
-	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
@@ -51,24 +50,28 @@ func RegisterYesFlag(f *pflag.FlagSet) {
 }
 
 type AuthContext struct {
-	Version         string       `json:"version"`
-	SessionToken    string       `json:"session_token"`
-	SelectedProject uuid.UUID    `json:"selected_project"`
-	IdentityTraits  AuthIdentity `json:"session_identity_traits"`
+	Version         string        `json:"version"`
+	SessionToken    string        `json:"session_token"`
+	SelectedProject uuid.UUID     `json:"selected_project"`
+	IdentityTraits  AuthIdentity  `json:"session_identity_traits"`
+	AccessToken     *oauth2.Token `json:"oauth_token"`
+}
+
+func (i *AuthContext) TokenSource() oauth2.TokenSource {
+	return oac.TokenSource(context.Background(), i.AccessToken)
 }
 
 func (i *AuthContext) ID() string {
-	return i.IdentityTraits.ID.String()
+	return i.IdentityTraits.ID
 }
 
 func (*AuthContext) Header() []string {
-	return []string{"ID", "EMAIL", "SELECTED_PROJECT"}
+	return []string{"ID", "SELECTED_PROJECT"}
 }
 
 func (i *AuthContext) Columns() []string {
 	return []string{
 		i.ID(),
-		i.IdentityTraits.Email,
 		i.SelectedProject.String(),
 	}
 }
@@ -78,7 +81,7 @@ func (i *AuthContext) Interface() interface{} {
 }
 
 type AuthIdentity struct {
-	ID    uuid.UUID
+	ID    string
 	Email string `json:"email"`
 }
 
@@ -110,7 +113,6 @@ type CommandHelper struct {
 	ConfigLocation   string
 	NoConfirm        bool
 	IsQuiet          bool
-	APIDomain        *url.URL
 	Stdin            *bufio.Reader
 	PwReader         passwordReader
 }
@@ -227,6 +229,17 @@ func (h *CommandHelper) HasValidContext() (*AuthContext, bool, error) {
 		return nil, false, err
 	}
 
+	if c.AccessToken == nil || !c.AccessToken.Valid() {
+		return nil, false, nil
+	}
+
+	ctx := context.WithValue(h.Ctx, cloud.ContextOAuth2, c.TokenSource())
+	cl := newCloudClient()
+	_, _, err = cl.ProjectAPI.GetActiveProjectInConsole(ctx).Execute()
+	if err == nil {
+		return c, true, nil
+	}
+
 	if len(c.SessionToken) > 0 {
 		client, err := NewKratosClient()
 		if err != nil {
@@ -279,245 +292,8 @@ func (h *CommandHelper) EnsureContext() (*AuthContext, error) {
 	return c, nil
 }
 
-func (h *CommandHelper) getField(i interface{}, path string) (*gjson.Result, error) {
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(i); err != nil {
-		return nil, err
-	}
-	result := gjson.GetBytes(b.Bytes(), path)
-	return &result, nil
-}
-
-func (h *CommandHelper) signup(c *oldCloud.APIClient) (*AuthContext, error) {
-	flow, _, err := c.FrontendApi.CreateNativeRegistrationFlow(h.Ctx).Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	var isRetry bool
-retryRegistration:
-	if isRetry {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour account creation attempt failed. Please try again!\n\n")
-	}
-	isRetry = true
-
-	var form oldCloud.UpdateRegistrationFlowWithPasswordMethod
-	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
-		return nil, err
-	}
-
-	signup, _, err := c.FrontendApi.
-		UpdateRegistrationFlow(h.Ctx).
-		Flow(flow.Id).
-		UpdateRegistrationFlowBody(oldCloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
-		Execute()
-	if err != nil {
-		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *oldCloud.RegistrationFlow:
-				flow = m
-				goto retryRegistration
-			case oldCloud.RegistrationFlow:
-				flow = &m
-				goto retryRegistration
-			}
-		}
-
-		return nil, errors.WithStack(err)
-	}
-
-	sessionToken := *signup.SessionToken
-	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return h.sessionToContext(sess, sessionToken)
-}
-
-func (h *CommandHelper) signin(c *oldCloud.APIClient, sessionToken string) (*AuthContext, error) {
-	req := c.FrontendApi.CreateNativeLoginFlow(h.Ctx)
-	if len(sessionToken) > 0 {
-		req = req.XSessionToken(sessionToken).Aal("aal2")
-	}
-
-	flow, _, err := req.Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	var isRetry bool
-retryLogin:
-	if isRetry {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour sign in attempt failed. Please try again!\n\n")
-	}
-	isRetry = true
-
-	var form interface{} = &oldCloud.UpdateLoginFlowWithPasswordMethod{}
-	method := "password"
-	if len(sessionToken) > 0 {
-		var foundTOTP bool
-		var foundLookup bool
-		for _, n := range flow.Ui.Nodes {
-			if n.Group == "totp" {
-				foundTOTP = true
-			} else if n.Group == "lookup_secret" {
-				foundLookup = true
-			}
-		}
-		if !foundLookup && !foundTOTP {
-			return nil, errors.New("only TOTP and lookup secrets are supported for two-step verification in the CLI")
-		}
-
-		method = "lookup_secret"
-		if foundTOTP {
-			form = &oldCloud.UpdateLoginFlowWithTotpMethod{}
-			method = "totp"
-		}
-	}
-
-	if err := renderForm(h.Stdin, h.PwReader, h.VerboseErrWriter, flow.Ui, method, form); err != nil {
-		return nil, err
-	}
-
-	var body oldCloud.UpdateLoginFlowBody
-	switch e := form.(type) {
-	case *oldCloud.UpdateLoginFlowWithTotpMethod:
-		body.UpdateLoginFlowWithTotpMethod = e
-	case *oldCloud.UpdateLoginFlowWithPasswordMethod:
-		body.UpdateLoginFlowWithPasswordMethod = e
-	default:
-		panic("unexpected type")
-	}
-
-	login, _, err := c.FrontendApi.UpdateLoginFlow(h.Ctx).XSessionToken(sessionToken).
-		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
-	if err != nil {
-		if e, ok := err.(*oldCloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *oldCloud.LoginFlow:
-				flow = m
-				goto retryLogin
-			case oldCloud.LoginFlow:
-				flow = &m
-				goto retryLogin
-			}
-		}
-
-		return nil, errors.WithStack(err)
-	}
-
-	sessionToken = stringsx.Coalesce(*login.SessionToken, sessionToken)
-	sess, _, err := c.FrontendApi.ToSession(h.Ctx).XSessionToken(sessionToken).Execute()
-	if err == nil {
-		return h.sessionToContext(sess, sessionToken)
-	}
-
-	if e, ok := err.(interface{ Body() []byte }); ok {
-		switch gjson.GetBytes(e.Body(), "error.id").String() {
-		case "session_aal2_required":
-			return h.signin(c, sessionToken)
-		}
-	}
-	return nil, err
-}
-
-func (h *CommandHelper) sessionToContext(session *oldCloud.Session, token string) (*AuthContext, error) {
-	email, err := h.getField(session.Identity.Traits, "email")
-	if err != nil {
-		return nil, err
-	}
-
-	return &AuthContext{
-		Version:      Version,
-		SessionToken: token,
-		IdentityTraits: AuthIdentity{
-			Email: email.String(),
-			ID:    uuid.FromStringOrNil(session.Identity.Id),
-		},
-	}, nil
-}
-
-func (h *CommandHelper) Authenticate() (*AuthContext, error) {
-	if h.IsQuiet {
-		return nil, errors.New("can not sign in or sign up when flag --quiet is set")
-	}
-
-	ac, err := h.readConfig()
-	if err != nil {
-		if !errors.Is(err, ErrNoConfig) {
-			return nil, err
-		}
-	}
-
-	if len(ac.SessionToken) > 0 {
-		if !h.NoConfirm {
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("You are signed in as \"%s\" already. Do you wish to authenticate with another account?", ac.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
-			if err != nil {
-				return nil, err
-			} else if !ok {
-				return ac, nil
-			}
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "Ok, signing you out!\n")
-		}
-
-		if err := h.SignOut(); err != nil {
-			return nil, err
-		}
-	}
-
-	c, err := NewKratosClient()
-	if err != nil {
-		return nil, err
-	}
-
-	signIn, err := cmdx.AskScannerForConfirmation("Do you want to sign in to an existing Ory Network account?", h.Stdin, h.VerboseErrWriter)
-	if err != nil {
-		return nil, err
-	}
-
-	if signIn {
-		ac, err = h.signin(c, "")
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you! Let's create a new Ory Network account. Select the Enter key to start the account creation wizard.")
-
-		ac, err = h.signup(c)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if err := h.WriteConfig(ac); err != nil {
-		return nil, err
-	}
-
-	_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are now signed in as: %s\n", ac.IdentityTraits.Email)
-
-	if len(ac.SessionToken) == 0 {
-		return nil, errors.Errorf("unable to authenticate")
-	}
-
-	return ac, nil
-}
-
-func (h *CommandHelper) SignOut() error {
-	return h.WriteConfig(new(AuthContext))
-}
-
 func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	projects, res, err := c.ProjectAPI.ListProjects(h.Ctx).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
@@ -527,16 +303,7 @@ func (h *CommandHelper) ListProjects() ([]cloud.ProjectMetadata, error) {
 }
 
 func (h *CommandHelper) CreateEventStream(projectID string, body cloud.CreateEventStreamBody) (*cloud.EventStream, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	stream, res, err := c.EventsAPI.CreateEventStream(h.Ctx, projectID).CreateEventStreamBody(body).Execute()
 	if err != nil {
 		return nil, handleError("unable to create event stream", res, err)
@@ -546,16 +313,7 @@ func (h *CommandHelper) CreateEventStream(projectID string, body cloud.CreateEve
 }
 
 func (h *CommandHelper) UpdateEventStream(projectID, streamID string, body cloud.SetEventStreamBody) (*cloud.EventStream, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	stream, res, err := c.EventsAPI.SetEventStream(h.Ctx, projectID, streamID).SetEventStreamBody(body).Execute()
 	if err != nil {
 		return nil, handleError("unable to update event stream", res, err)
@@ -565,16 +323,7 @@ func (h *CommandHelper) UpdateEventStream(projectID, streamID string, body cloud
 }
 
 func (h *CommandHelper) DeleteEventStream(projectID, streamID string) error {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return err
-	}
-
+	c := newCloudClient()
 	res, err := c.EventsAPI.DeleteEventStream(h.Ctx, projectID, streamID).Execute()
 	if err != nil {
 		return handleError("unable to delete event stream", res, err)
@@ -584,16 +333,7 @@ func (h *CommandHelper) DeleteEventStream(projectID, streamID string) error {
 }
 
 func (h *CommandHelper) ListEventStreams(projectID string) (*cloud.ListEventStreams, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	streams, res, err := c.EventsAPI.ListEventStreams(h.Ctx, projectID).Execute()
 	if err != nil {
 		return nil, handleError("unable to list event streams", res, err)
@@ -603,16 +343,7 @@ func (h *CommandHelper) ListEventStreams(projectID string) (*cloud.ListEventStre
 }
 
 func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganizationsResponse, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	organizations, res, err := c.ProjectAPI.ListOrganizations(h.Ctx, projectID).Execute()
 	if err != nil {
 		return nil, handleError("unable to list organizations", res, err)
@@ -622,16 +353,7 @@ func (h *CommandHelper) ListOrganizations(projectID string) (*cloud.ListOrganiza
 }
 
 func (h *CommandHelper) CreateOrganization(projectID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	organization, res, err := c.ProjectAPI.
 		CreateOrganization(h.Ctx, projectID).
 		OrganizationBody(body).
@@ -644,16 +366,7 @@ func (h *CommandHelper) CreateOrganization(projectID string, body cloud.Organiza
 }
 
 func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	organization, res, err := c.ProjectAPI.
 		UpdateOrganization(h.Ctx, projectID, orgID).
 		OrganizationBody(body).
@@ -666,16 +379,7 @@ func (h *CommandHelper) UpdateOrganization(projectID, orgID string, body cloud.O
 }
 
 func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return err
-	}
-
+	c := newCloudClient()
 	res, err := c.ProjectAPI.
 		DeleteOrganization(h.Ctx, projectID, orgID).
 		Execute()
@@ -689,16 +393,6 @@ func (h *CommandHelper) DeleteOrganization(projectID, orgID string) error {
 func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error) {
 	if projectOrSlug == "" {
 		return nil, errors.Errorf("No project selected! Please see the help message on how to set one.")
-	}
-
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
 	}
 
 	id := uuid.FromStringOrNil(projectOrSlug)
@@ -723,6 +417,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 		}
 	}
 
+	c := newCloudClient()
 	project, res, err := c.ProjectAPI.GetProject(h.Ctx, id.String()).Execute()
 	if err != nil {
 		return nil, handleError("unable to get project", res, err)
@@ -732,16 +427,7 @@ func (h *CommandHelper) GetProject(projectOrSlug string) (*cloud.Project, error)
 }
 
 func (h *CommandHelper) CreateProject(name string, setDefault bool) (*cloud.Project, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	project, res, err := c.ProjectAPI.CreateProject(h.Ctx).CreateProjectBody(*cloud.NewCreateProjectBody(strings.TrimSpace(name))).Execute()
 	if err != nil {
 		return nil, handleError("unable to list projects", res, err)
@@ -792,16 +478,6 @@ func toPatch(op string, values []string) (patches []cloud.JsonPatch, err error) 
 }
 
 func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, replace, del []string) (*cloud.SuccessfulProjectUpdate, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
 	var patches []cloud.JsonPatch
 	for _, r := range raw {
 		config, err := jsonx.EmbedSources(r, jsonx.WithIgnoreKeys("$id", "$schema"), jsonx.WithOnlySchemes("file"))
@@ -834,6 +510,7 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 		patches = append(patches, cloud.JsonPatch{Op: "remove", Path: del})
 	}
 
+	c := newCloudClient()
 	res, _, err := c.ProjectAPI.PatchProject(h.Ctx, id).JsonPatch(patches).Execute()
 	if err != nil {
 		return nil, err
@@ -843,16 +520,6 @@ func (h *CommandHelper) PatchProject(id string, raw []json.RawMessage, add, repl
 }
 
 func (h *CommandHelper) UpdateProject(id string, name string, configs []json.RawMessage) (*cloud.SuccessfulProjectUpdate, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
 	for k := range configs {
 		config, err := jsonx.EmbedSources(
 			configs[k],
@@ -905,6 +572,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` is required and can not be empty")
 	}
 
+	c := newCloudClient()
 	if name != "" {
 		payload.Name = name
 	} else if payload.Name == "" {
@@ -924,16 +592,7 @@ func (h *CommandHelper) UpdateProject(id string, name string, configs []json.Raw
 }
 
 func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.ProjectApiKey, error) {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return nil, err
-	}
-
+	c := newCloudClient()
 	token, _, err := c.ProjectAPI.CreateProjectApiKey(h.Ctx, projectIdOrSlug).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
 		return nil, err
@@ -943,16 +602,7 @@ func (h *CommandHelper) CreateAPIKey(projectIdOrSlug, name string) (*cloud.Proje
 }
 
 func (h *CommandHelper) DeleteAPIKey(projectIdOrSlug, id string) error {
-	ac, err := h.EnsureContext()
-	if err != nil {
-		return err
-	}
-
-	c, err := newCloudClient(ac.SessionToken)
-	if err != nil {
-		return err
-	}
-
+	c := newCloudClient()
 	if _, err := c.ProjectAPI.DeleteProjectApiKey(h.Ctx, projectIdOrSlug, id).Execute(); err != nil {
 		return err
 	}
