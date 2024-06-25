@@ -22,8 +22,8 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	c.AddCommand(
-		proxy.NewProxyCommand("", ""),
-		proxy.NewTunnelCommand("", ""),
+		proxy.NewProxyCommand(),
+		proxy.NewTunnelCommand(),
 	)
 
 	return c

@@ -14,22 +14,22 @@ import (
 
 func NewDeleteOrganizationCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "organization id [--project=PROJECT_ID]",
+		Use:   "organization <id> [--project=PROJECT_ID]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Delete the organization with the given ID",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			projectID, err := client.ProjectOrDefault(cmd, h)
+			projectID, err := h.ProjectID()
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 			orgID := args[0]
 
-			err = h.DeleteOrganization(projectID, orgID)
+			err = h.DeleteOrganization(cmd.Context(), projectID, orgID)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -40,5 +40,6 @@ func NewDeleteOrganizationCmd() *cobra.Command {
 	}
 
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

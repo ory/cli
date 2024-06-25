@@ -6,6 +6,8 @@ package cloudx
 import (
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/workspace"
+
 	"github.com/ory/cli/cmd/cloudx/eventstreams"
 	"github.com/ory/cli/cmd/cloudx/identity"
 	"github.com/ory/cli/cmd/cloudx/oauth2"
@@ -31,6 +33,7 @@ func NewListCmd() *cobra.Command {
 		oauth2.NewListOAuth2Clients(),
 		relationtuples.NewListCmd(),
 		eventstreams.NewListEventStreamsCmd(),
+		workspace.NewListCmd(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())

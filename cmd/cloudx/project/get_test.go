@@ -26,7 +26,7 @@ func TestGetServiceConfig(t *testing.T) {
 			stdout, _, err := exec(nil, "get", "kratos-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "selfservice.flows.error.ui_url").Exists())
-		}, WithDefaultProject, WithPositionalProject)
+		}, WithDefaultProject, WithFlagProject)
 	})
 
 	t.Run("service=keto", func(t *testing.T) {
@@ -34,7 +34,7 @@ func TestGetServiceConfig(t *testing.T) {
 			stdout, _, err := exec(nil, "get", "keto-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
-		}, WithDefaultProject, WithPositionalProject)
+		}, WithDefaultProject, WithFlagProject)
 	})
 
 	t.Run("service=hydra", func(t *testing.T) {
@@ -42,6 +42,6 @@ func TestGetServiceConfig(t *testing.T) {
 			stdout, _, err := exec(nil, "get", "oauth2-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "oauth2").Exists(), stdout)
-		}, WithDefaultProject, WithPositionalProject)
+		}, WithDefaultProject, WithFlagProject)
 	})
 }

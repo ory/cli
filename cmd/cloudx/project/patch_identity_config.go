@@ -12,11 +12,11 @@ import (
 
 func NewPatchKratosConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "identity-config [project-id]",
+		Use:     "identity-config",
 		Aliases: []string{"ic", "kratos-config"},
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.NoArgs,
 		Short:   "Patch the Ory Identities configuration of the defined Ory Network project.",
-		Example: `$ ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Example: `$ ory patch identity-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/courier/smtp={"from_name":"My new email name"}' \
 	--replace '/selfservice/methods/password/enabled=false' \
 	--remove '/selfservice/methods/totp/enabled' \
@@ -33,10 +33,10 @@ func NewPatchKratosConfigCmd() *cobra.Command {
 		Long: `Patch the Ory Identities configuration of the defined Ory Network project. Only values specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 Compared to the ` + "`patch project`" + ` command, this command updates only the Ory Identities configuration
-and returns the configuration as a result. This command is useful when you want to import configuration from 
+and returns the configuration as a result. This command is useful when you want to import configuration from
 self-hosted Ory Kratos to Ory Network. Using this command allows for shorter paths when specifying the flags:
 
-	ory patch identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+	ory patch identity-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 		--replace '/selfservice/methods/password/enabled=false'
 
 when compared to the ` + "`patch project`" + ` command:
@@ -60,6 +60,8 @@ The format of the patch is a JSON-Patch document. For more details please check:
 	cmd.Flags().StringArray("add", nil, "Add a specific key to the configuration")
 	cmd.Flags().StringArray("remove", nil, "Remove a specific key from the configuration")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

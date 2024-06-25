@@ -13,11 +13,11 @@ import (
 
 func NewPatchOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "oauth2-config [project-id]",
+		Use:     "oauth2-config",
 		Aliases: []string{"oc", "hydra-config"},
-		Args:    cobra.MaximumNArgs(1),
-		Short:   "Patch the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project.",
-		Example: `$ ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Args:    cobra.NoArgs,
+		Short:   "Patch the Ory OAuth2 & OpenID Connect configuration of an Ory Network project.",
+		Example: `$ ory patch oauth2-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--replace '/strategies/access_token="jwt"' \
 	--add '/ttl/login_consent_request="1h"' \
 	--remove '/strategies/scope' \
@@ -40,11 +40,11 @@ func NewPatchOAuth2ConfigCmd() *cobra.Command {
   // ...
 }
 `,
-		Long: `Patch the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project. Only values
+		Long: `Patch the Ory OAuth2 & OpenID Connect configuration of an Ory Network project. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
-Compared to the ` + "`patch project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect 
-configuration and returns configuration as a result. This command is useful when you want to import configuration 
+Compared to the ` + "`patch project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect
+configuration and returns configuration as a result. This command is useful when you want to import configuration
 from self-hosted Ory Hydra to Ory Network. Using this command allows for shorter paths when specifying the flags:
 
 	ory patch oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
@@ -71,6 +71,8 @@ The format of the patch is a JSON-Patch document. For more details please check:
 	cmd.Flags().StringArray("add", nil, "Add a specific key to the configuration")
 	cmd.Flags().StringArray("remove", nil, "Remove a specific key from the configuration")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

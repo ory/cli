@@ -12,28 +12,28 @@ import (
 	cloud "github.com/ory/client-go"
 
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/flagx"
 )
 
 func NewCreateOrganizationCmd() *cobra.Command {
+	var domains []string
+
 	cmd := &cobra.Command{
-		Use:   "organization label [--project=PROJECT_ID] [--domains=a.example.com,b.example.com]",
+		Use:   "organization <label> [--project=PROJECT_ID] [--domains=a.example.com,b.example.com]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Create a new Ory Network organization",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			projectID, err := client.ProjectOrDefault(cmd, h)
+			projectID, err := h.ProjectID()
 			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
+				return err
 			}
 			label := args[0]
-			domains := flagx.MustGetStringSlice(cmd, "domains")
 
-			organization, err := h.CreateOrganization(projectID, cloud.OrganizationBody{
+			organization, err := h.CreateOrganization(cmd.Context(), projectID, cloud.OrganizationBody{
 				Label:   &label,
 				Domains: domains,
 			})
@@ -48,8 +48,9 @@ func NewCreateOrganizationCmd() *cobra.Command {
 	}
 
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
-	cmd.Flags().StringSliceP("domains", "d", []string{}, "A list of domains that will be used for this organization.")
+	cmd.Flags().StringSliceVarP(&domains, "domains", "d", []string{}, "A list of domains that will be used for this organization.")
 
 	return cmd
 }

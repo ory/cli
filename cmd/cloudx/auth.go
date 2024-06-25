@@ -15,14 +15,16 @@ func NewAuthCmd() *cobra.Command {
 		Use:   "auth",
 		Short: "Create a new Ory Network account or sign in to an existing account.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
-			ac, err := h.Authenticate()
+
+			ac, err := h.GetAuthenticatedConfig(cmd.Context())
 			if err != nil {
 				return err
 			}
+
 			cmdx.PrintRow(cmd, ac)
 			return nil
 		},

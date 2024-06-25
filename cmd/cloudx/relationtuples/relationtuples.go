@@ -57,25 +57,26 @@ func NewParseCmd() *cobra.Command {
 func forwardConnectionInfo(cmd *cobra.Command) {
 	originalRunE := cmd.RunE
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
-		_, _, project, err := client.Client(cmd)
+		ctx := cmd.Context()
+		h, err := client.NewCobraCommandHelper(cmd)
 		if err != nil {
 			return err
 		}
 
-		h, err := client.NewCommandHelper(cmd)
+		project, err := h.GetSelectedProject(ctx)
 		if err != nil {
 			return err
 		}
 
-		key, err := h.CreateAPIKey(project.Slug, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
+		key, err := h.CreateAPIKey(ctx, project.Id, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
 		if err != nil {
 			return err
 		}
-		defer func() { _ = h.DeleteAPIKey(project.Slug, key.Id) }()
+		defer func() { _ = h.DeleteAPIKey(ctx, project.Id, key.Id) }()
 
 		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
-		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug).Host)
+		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug).Host)
 
 		return originalRunE(cmd, args)
 	}
@@ -125,6 +126,7 @@ func wrapForOryCLI(cmd *cobra.Command) {
 	cmd.Use = "relationships"
 	cmd.Aliases = []string{"relation-tuples", "relationship", "relation-tuple"}
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	forwardConnectionInfo(cmd)
 	hideKetoFlags(cmd)
 }

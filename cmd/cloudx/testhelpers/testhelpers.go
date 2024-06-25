@@ -8,9 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	cloud "github.com/ory/client-go"
 
 	"github.com/ory/cli/cmd"
 
@@ -28,7 +32,7 @@ import (
 const testProjectPattern = "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-"
 const testAccountPrefix = "dev+orycye2eda2f162daf6142dd"
 
-func TestProjectName() string {
+func TestName() string {
 	return testProjectPattern + randx.MustString(16, randx.AlphaLowerNum)
 }
 
@@ -41,37 +45,39 @@ func FakePassword() string {
 }
 
 func FakeName() string {
-	return randx.MustString(16, randx.AlphaLowerNum)
+	return randx.MustString(1, randx.AlphaUpper) + randx.MustString(5, randx.AlphaLower)
 }
 
-func NewConfigDir(t require.TestingT) string {
-	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
-	require.NoError(t, err)
-	return filepath.Join(homeDir, "config.json")
+func FakeAccount() (email string, password string, name string) {
+	return FakeEmail(), FakePassword(), FakeName()
 }
 
-func ReadConfig(t require.TestingT, configDir string) *client.AuthContext {
+func NewConfigFile(t testing.TB) string {
+	return filepath.Join(t.TempDir(), "config.json")
+}
+
+func ReadConfig(t testing.TB, configDir string) *client.Config {
 	f, err := os.ReadFile(configDir)
 	require.NoError(t, err)
-	var ac client.AuthContext
+	var ac client.Config
 	require.NoError(t, json.Unmarshal(f, &ac))
 	return &ac
 }
 
-func ClearConfig(t require.TestingT, configDir string) {
+func ClearConfig(t testing.TB, configDir string) {
 	require.NoError(t, os.RemoveAll(configDir))
 }
 
-func AssertConfig(t *testing.T, configDir string, email string, name string, newsletter bool) {
+func AssertConfig(t testing.TB, configDir string, email string, name string) {
 	ac := ReadConfig(t, configDir)
 	assert.Equal(t, email, ac.IdentityTraits.Email)
-	assert.Equal(t, client.Version, ac.Version)
+	assert.Equal(t, client.ConfigVersion, ac.Version)
 	assert.NotEmpty(t, ac.SessionToken)
 
-	c, err := client.NewKratosClient()
+	c, err := client.NewOryProjectClient()
 	require.NoError(t, err)
 
-	res, _, err := c.FrontendApi.ToSession(context.Background()).XSessionToken(ac.SessionToken).Execute()
+	res, _, err := c.FrontendAPI.ToSession(context.Background()).XSessionToken(ac.SessionToken).Execute()
 	require.NoError(t, err)
 
 	traits, err := json.Marshal(res.Identity.Traits)
@@ -79,35 +85,28 @@ func AssertConfig(t *testing.T, configDir string, email string, name string, new
 
 	assertx.EqualAsJSONExcept(t, json.RawMessage(`{
   "email": "`+email+`",
-  "name": "`+name+`",
-  "consent": {
-    "newsletter": `+fmt.Sprintf("%v", newsletter)+`,
-    "tos": ""
-  }
-}`), json.RawMessage(traits), []string{"consent.tos", "consent.newsletter", "details", "name"})
+  "name": "`+name+`"
+}`), json.RawMessage(traits), []string{"consent", "details"})
 	assert.NotEmpty(t, gjson.GetBytes(traits, "consent.tos").String())
 }
 
-func ConfigAwareCmd(configDir string) *cmdx.CommandExecuter {
+func CmdWithConfig(configDir string) *cmdx.CommandExecuter {
 	return &cmdx.CommandExecuter{
 		New:            cmd.NewRootCmd,
 		Ctx:            client.ContextWithClient(context.Background()),
-		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},
+		PersistentArgs: []string{"--" + client.FlagConfig, configDir},
 	}
 }
 
-func ConfigPasswordAwareCmd(configDir, password string) *cmdx.CommandExecuter {
-	ctx := client.ContextWithClient(context.WithValue(context.Background(), client.PasswordReader{}, func() ([]byte, error) {
+func CmdWithConfigPassword(configPath, password string) *cmdx.CommandExecuter {
+	c := CmdWithConfig(configPath)
+	c.Ctx = client.ContextWithOptions(c.Ctx, client.WithPasswordReader(func() ([]byte, error) {
 		return []byte(password), nil
 	}))
-	return &cmdx.CommandExecuter{
-		New:            cmd.NewRootCmd,
-		Ctx:            ctx,
-		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},
-	}
+	return c
 }
 
-func ChangeAccessToken(t require.TestingT, configDir string) {
+func ChangeAccessToken(t testing.TB, configDir string) {
 	ac := ReadConfig(t, configDir)
 	ac.SessionToken = "12341234"
 	data, err := json.Marshal(ac)
@@ -115,99 +114,70 @@ func ChangeAccessToken(t require.TestingT, configDir string) {
 	require.NoError(t, os.WriteFile(configDir, data, 0644))
 }
 
-func RegisterAccount(t require.TestingT, configDir string) (email, password string) {
-	password = FakePassword()
-	email = FakeEmail()
-	name := FakeName()
+func RegisterAccount(t testing.TB, configPath string) (email, password, name string) {
+	email, password, name = FakeAccount()
 
-	// Create the account
-	r := RegistrationBuffer(name, email, password)
-
-	exec := cmdx.CommandExecuter{
-		New: cmd.NewRootCmd,
-		Ctx: context.WithValue(context.Background(), client.PasswordReader{}, func() ([]byte, error) {
-			return []byte(password), nil
-		}),
-		PersistentArgs: []string{"--" + client.ConfigFlag, configDir},
-	}
-
-	stdout, stderr, err := exec.Exec(&r, "auth")
+	stdout, stderr, err := CmdWithConfigPassword(configPath, password).Exec(RegistrationBuffer(name, email), "auth")
 	require.NoError(t, err)
+	require.Contains(t, stderr, "You are now signed in as: "+email, stdout)
 
-	assert.Contains(t, stderr, "You are now signed in as: "+email, stdout)
-	if t, ok := t.(*testing.T); ok {
-		AssertConfig(t, configDir, email, name, false)
+	AssertConfig(t, configPath, email, name)
+
+	return email, password, name
+}
+
+func RegistrationBuffer(name string, email string) *bytes.Buffer {
+	var r bytes.Buffer
+	_, _ = r.WriteString("n\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: n
+	_, _ = r.WriteString(email + "\n") // Work email: FakeEmail()
+	// Password is read through the password reader
+	_, _ = r.WriteString(name + "\n") // Name: FakeName()
+	_, _ = r.WriteString("n\n")       // Please inform me about platform and security updates:  [y/n]: n
+	_, _ = r.WriteString("y\n")       // I accept the Terms of Service https://www.ory.sh/ptos:  [y/n]: y
+	return &r
+}
+
+func LoginBuffer(email string) io.Reader {
+	var r bytes.Buffer
+	_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
+	_, _ = r.WriteString(email + "\n") // Email FakeEmail()
+	return &r
+}
+
+func WithReAuth(t testing.TB, email, password string) (*cmdx.CommandExecuter, io.Reader) {
+	return CmdWithConfigPassword(NewConfigFile(t), password), LoginBuffer(email)
+}
+
+func CreateProject(t testing.TB, configDir string, workspace *string) *cloud.Project {
+	args := []string{"create", "project", "--name", TestName(), "--format", "json"}
+	if workspace != nil {
+		args = append(args, "--workspace", *workspace)
 	}
-
-	return email, password
+	stdout, stderr, err := CmdWithConfig(configDir).Exec(nil, args...)
+	require.NoError(t, err, stderr)
+	p := cloud.Project{}
+	require.NoError(t, json.Unmarshal([]byte(stdout), &p), stdout)
+	if ap, ok := p.AdditionalProperties["AdditionalProperties"]; ok {
+		// the SDK types are weird sometimes...
+		p.AdditionalProperties = ap.(map[string]interface{})
+	}
+	return &p
 }
 
-func RegistrationBuffer(name string, email string, password string) bytes.Buffer {
-	var r bytes.Buffer
-	_, _ = r.WriteString("n\n")           // Do you want to sign in to an existing Ory Network account? [y/n]: n
-	_, _ = r.WriteString(email + "\n")    // Work email: FakeEmail()
-	_, _ = r.WriteString(password + "\n") // Password: FakePassword()
-	_, _ = r.WriteString(name + "\n")     // Name: FakeName()
-	_, _ = r.WriteString("n\n")           // Please inform me about platform and security updates:  [y/n]: n
-	_, _ = r.WriteString("y\n")           // I accept the Terms of Service https://www.ory.sh/ptos:  [y/n]: y
-
-	return r
+func CreateWorkspace(t testing.TB, configDir string) string {
+	return strings.TrimSpace(CmdWithConfig(configDir).ExecNoErr(t, "create", "workspace", "--name", TestName(), "--quiet"))
 }
 
-func WithReAuth(t require.TestingT, email, password string) (*cmdx.CommandExecuter, *bytes.Buffer) {
-	configDir := NewConfigDir(t)
-	cmd := ConfigPasswordAwareCmd(configDir, password)
-	// Create the account
-	var r bytes.Buffer
-	r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
-	r.WriteString(email + "\n") // Email FakeEmail()
-	return cmd, &r
+func SetDefaultProject(t testing.TB, configPath string, projectID string) {
+	require.Equal(t, projectID, strings.TrimSpace(CmdWithConfig(configPath).ExecNoErr(t, "use", "project", projectID, "--quiet")))
 }
 
-func CreateProject(t require.TestingT, configDir string) string {
-	cmd := ConfigAwareCmd(configDir)
-	name := TestProjectName()
-	stdout, stderr, err := cmd.Exec(nil, "create", "project", "--name", name, "--format", "json")
-	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
-	id := gjson.Get(stdout, "id").String()
-	return id
+func GetDefaultProjectID(t testing.TB, configDir string) string {
+	return strings.TrimSpace(CmdWithConfig(configDir).ExecNoErr(t, "use", "project", "--quiet"))
 }
 
-func CreateAndUseProject(t require.TestingT, configDir string) string {
-	cmd := ConfigAwareCmd(configDir)
-	name := TestProjectName()
-	stdout, stderr, err := cmd.Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
-	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
-	ac := ReadConfig(t, configDir)
-	id := gjson.Get(stdout, "id").String()
-	assert.Equal(t, ac.SelectedProject.String(), id)
-	return id
-}
-
-func SetDefaultProject(t require.TestingT, configDir string, projectId string) {
-	cmd := ConfigAwareCmd(configDir)
-	stdout, stderr, err := cmd.Exec(nil, "use", "project", projectId, "--format", "json")
-	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
-	ac := ReadConfig(t, configDir)
-	id := gjson.Get(stdout, "id").String()
-	assert.Equal(t, ac.SelectedProject.String(), id)
-	assert.Equal(t, projectId, id)
-}
-
-func GetDefaultProject(t require.TestingT, configDir string) string {
-	cmd := ConfigAwareCmd(configDir)
-	stdout, stderr, err := cmd.Exec(nil, "use", "project", "--format", "json")
-	require.NoError(t, err, "stdout: %s\nstderr: %s", stderr)
-	ac := ReadConfig(t, configDir)
-	id := gjson.Get(stdout, "id").String()
-	assert.Equal(t, ac.SelectedProject.String(), id)
-	return id
-}
-
-func MakeRandomIdentity(t require.TestingT, email string) string {
-	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
-	require.NoError(t, err)
-	path := filepath.Join(homeDir, "import.json")
+func MakeRandomIdentity(t testing.TB, email string) string {
+	path := filepath.Join(t.TempDir(), "import.json")
 	require.NoError(t, os.WriteFile(path, []byte(`{
   "schema_id": "preset://username",
   "traits": {
@@ -217,7 +187,7 @@ func MakeRandomIdentity(t require.TestingT, email string) string {
 	return path
 }
 
-func MakeRandomClient(t require.TestingT, name string) string {
+func MakeRandomClient(t testing.TB, name string) string {
 	homeDir, err := os.MkdirTemp(os.TempDir(), "cloudx-*")
 	require.NoError(t, err)
 	path := filepath.Join(homeDir, "import.json")
@@ -229,7 +199,7 @@ func MakeRandomClient(t require.TestingT, name string) string {
 	return path
 }
 
-func ImportIdentity(t require.TestingT, cmd *cmdx.CommandExecuter, project string, stdin *bytes.Buffer) string {
+func ImportIdentity(t testing.TB, cmd *cmdx.CommandExecuter, project string, stdin io.Reader) string {
 	email := FakeEmail()
 	stdout, stderr, err := cmd.Exec(stdin, "import", "identities", "--format", "json", "--project", project, MakeRandomIdentity(t, email))
 	require.NoError(t, err, stderr)
@@ -239,7 +209,7 @@ func ImportIdentity(t require.TestingT, cmd *cmdx.CommandExecuter, project strin
 	return out.Get("id").String()
 }
 
-func CreateClient(t require.TestingT, cmd *cmdx.CommandExecuter, project string) gjson.Result {
+func CreateClient(t testing.TB, cmd *cmdx.CommandExecuter, project string) gjson.Result {
 	stdout, stderr, err := cmd.Exec(nil, "create", "client", "--format", "json", "--project", project)
 	require.NoError(t, err, stderr)
 	return gjson.Parse(stdout)

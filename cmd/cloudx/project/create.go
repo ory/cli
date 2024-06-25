@@ -10,39 +10,48 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
+	"github.com/ory/x/stringsx"
 )
 
-const useProjectFlag = "use-project"
+const (
+	nameFlag        = "name"
+	environmentFlag = "environment"
+	useProjectFlag  = "use-project"
+)
 
 func NewCreateProjectCmd() *cobra.Command {
+	name := ""
+	environment := environmentValue("dev")
+	useProject := false
+
 	cmd := &cobra.Command{
 		Use:   "project",
 		Short: "Create a new Ory Network project",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			ctx := cmd.Context()
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			name := flagx.MustGetString(cmd, "name")
-			if len(name) == 0 && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
-				return errors.New("you must specify the --name flag when using --quiet")
+			if (len(name) == 0 || len(environment) == 0) && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
+				return errors.New("you must specify the --name and --environment flags when using --quiet")
 			}
 
-			stdin := h.Stdin
 			for name == "" {
 				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "Enter a name for your project: ")
-				name, err = stdin.ReadString('\n')
+				name, err = h.Stdin.ReadString('\n')
 				if err != nil {
 					return errors.Wrap(err, "failed to read from stdin")
 				}
 			}
 
-			use := flagx.MustGetBool(cmd, useProjectFlag)
-			p, err := h.CreateProject(name, use)
+			p, err := h.CreateProject(ctx, name, string(environment), h.WorkspaceID(), useProject)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -53,8 +62,70 @@ func NewCreateProjectCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("name", "n", "", "The name of the project, required when quiet mode is used")
-	cmd.Flags().Bool(useProjectFlag, false, "Set the created project as the default.")
+	cmd.Flags().StringVarP(&name, nameFlag, "n", "", "The name of the project, required when quiet mode is used")
+	cmd.Flags().VarP(&environment, environmentFlag, "e", "The environment of the project. Valid values are: prod, stage, dev")
+	cmd.Flags().BoolVar(&useProject, useProjectFlag, false, "Set the created project as the default.")
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
+}
+
+type environmentValue string
+
+const (
+	EnvironmentProduction  environmentValue = "prod"
+	EnvironmentStaging     environmentValue = "stage"
+	EnvironmentDevelopment environmentValue = "dev"
+)
+
+var _ pflag.Value = (*environmentValue)(nil)
+
+func (e *environmentValue) normalize() {
+	if e == nil {
+		return
+	}
+	switch *e {
+	case "production", "p":
+		*e = EnvironmentProduction
+	case "staging", "s":
+		*e = EnvironmentStaging
+	case "development", "d":
+		*e = EnvironmentDevelopment
+	}
+}
+
+func (e *environmentValue) valid() error {
+	if e == nil {
+		return errors.Errorf("environment value is nil")
+	}
+	switch c := stringsx.SwitchExact(string(*e)); {
+	case c.AddCase(string(EnvironmentProduction)),
+		c.AddCase(string(EnvironmentStaging)),
+		c.AddCase(string(EnvironmentDevelopment)):
+		return nil
+	default:
+		return c.ToUnknownCaseErr()
+	}
+}
+
+func (e *environmentValue) String() string {
+	if e == nil {
+		return ""
+	}
+	return string(*e)
+}
+
+func (e *environmentValue) Set(s string) error {
+	se := environmentValue(s)
+	se.normalize()
+	if err := se.valid(); err != nil {
+		return err
+	}
+
+	*e = se
+	return nil
+}
+
+func (e *environmentValue) Type() string {
+	return "environment"
 }

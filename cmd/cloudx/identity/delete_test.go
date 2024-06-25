@@ -16,16 +16,16 @@ import (
 
 func TestDeleteIdentity(t *testing.T) {
 	t.Run("is not able to delete identities if not authenticated and quiet flag", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject, userID)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
+
+		cmd := testhelpers.CmdWithConfig(testhelpers.NewConfigFile(t))
+		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to delete identities", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
-		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "identity", "--format", "json", "--project", defaultProject, userID)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
+		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "identity", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -33,9 +33,9 @@ func TestDeleteIdentity(t *testing.T) {
 	})
 
 	t.Run("is able to delete identities after authenticating", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject, nil)
+		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "delete", "identity", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := cmd.Exec(r, "delete", "identity", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)

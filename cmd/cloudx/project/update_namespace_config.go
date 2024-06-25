@@ -11,31 +11,30 @@ import (
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/flagx"
 	"github.com/ory/x/osx"
 )
 
 func NewUpdateNamespaceConfigCmd() *cobra.Command {
+	var file string
+
 	cmd := &cobra.Command{
-		Use: "opl <project-id>",
+		Use: "opl",
 		Aliases: []string{
 			"namespaces-config",
 		},
 		Args:  cobra.NoArgs,
 		Short: "Update the Ory Permission Language file in Ory Network",
-		Example: `$ {{ .CommandPath }} ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
-	--file /path/to/namespace_config.ts
+		Example: `$ {{ .CommandPath }} --file /path/to/namespace_config.ts
 
 class Example implements Namespace {}
 `,
 		Long: "Update the Ory Permission Language file in Ory Network. Legacy namespace definitions will be overwritten.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			ctx := cmd.Context()
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
-
-			file := flagx.MustGetString(cmd, "file")
 
 			data, err := osx.ReadFileFromAllSources(file)
 			if err != nil {
@@ -44,16 +43,12 @@ class Example implements Namespace {}
 			patch := fmt.Sprintf(`/services/permission/config/namespaces={"location": "base64://%s"}`,
 				base64.StdEncoding.EncodeToString(data))
 
-			projectOrSlug, err := client.ProjectOrDefault(cmd, h)
+			projectID, err := h.ProjectID()
 			if err != nil {
-				return err
-			}
-			project, err := h.GetProject(projectOrSlug)
-			if err != nil {
-				return err
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			p, err := h.PatchProject(project.Id, nil, nil, []string{patch}, nil)
+			p, err := h.PatchProject(ctx, projectID, nil, nil, []string{patch}, nil)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -64,11 +59,12 @@ class Example implements Namespace {}
 		},
 	}
 
-	cmd.Flags().StringP("file", "f", "",
+	cmd.Flags().StringVarP(&file, "file", "f", "",
 		"Configuration file (file://namespace_config.ts, https://example.org/namespace_config.ts, ...) to update the Ory Permission Language config")
 	client.RegisterYesFlag(cmd.Flags())
-	cmdx.RegisterFormatFlags(cmd.Flags())
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
+	cmdx.RegisterFormatFlags(cmd.Flags())
 
 	return cmd
 }

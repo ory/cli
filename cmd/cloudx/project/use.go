@@ -4,8 +4,6 @@
 package project
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -27,23 +25,22 @@ $ ory use project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
   "id": "ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
 }`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			opts := make([]client.CommandHelperOption, 0, 1)
+			if len(args) == 1 {
+				opts = append(opts, client.WithProjectOverride(args[0]))
+			}
+			h, err := client.NewCobraCommandHelper(cmd, opts...)
 			if err != nil {
 				return err
 			}
 
-			var id string
-			if len(args) == 0 {
-				if id = h.GetDefaultProjectID(); id == "" {
-					_, _ = fmt.Println("No default project selected")
-					return nil
-				}
-			} else {
-				id = args[0]
-				err = h.SetDefaultProject(id)
-				if err != nil {
-					return cmdx.PrintOpenAPIError(cmd, err)
-				}
+			id, err := h.ProjectID()
+			if err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
+			}
+
+			if err := h.SelectProject(id); err != nil {
+				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
 			cmdx.PrintRow(cmd, &selectedProject{ID: id})

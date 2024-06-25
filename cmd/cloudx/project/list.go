@@ -15,12 +15,12 @@ func NewListProjectsCmd() *cobra.Command {
 		Use:   "projects",
 		Short: "List your Ory Network projects.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			projects, err := h.ListProjects()
+			projects, err := h.ListProjects(cmd.Context(), h.WorkspaceID())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

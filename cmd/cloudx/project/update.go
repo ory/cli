@@ -86,13 +86,19 @@ As an example an input could look like:
 	cmd.Flags().StringP("name", "n", "", "The new name of the project.")
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the project")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }
 
 func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *cloud.SuccessfulProjectUpdate)) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, args []string) (err error) {
-		h, err := client.NewCommandHelper(cmd)
+		opts := make([]client.CommandHelperOption, 0, 1)
+		if len(args) == 1 {
+			opts = append(opts, client.WithProjectOverride(args[0]))
+		}
+		h, err := client.NewCobraCommandHelper(cmd, opts...)
 		if err != nil {
 			return err
 		}
@@ -106,7 +112,7 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 			}
 			configs = []json.RawMessage{content}
 		} else {
-			configs, err = client.ReadConfigFiles(files)
+			configs, err = client.ReadAndParseFiles(files)
 			if err != nil {
 				return err
 			}
@@ -121,11 +127,11 @@ func runUpdate(filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), 
 		if n := cmd.Flags().Lookup("name"); n != nil {
 			name = n.Value.String()
 		}
-		id, err := selectedProjectID(h, args)
+		id, err := h.ProjectID()
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}
-		p, err := h.UpdateProject(id, name, configs)
+		p, err := h.UpdateProject(cmd.Context(), id, name, configs)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}

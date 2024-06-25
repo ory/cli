@@ -40,16 +40,16 @@ $ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
   }
 }`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			opts := make([]client.CommandHelperOption, 0, 1)
+			if len(args) == 1 {
+				opts = append(opts, client.WithProjectOverride(args[0]))
+			}
+			h, err := client.NewCobraCommandHelper(cmd, opts...)
 			if err != nil {
 				return err
 			}
 
-			id, err := selectedProjectID(h, args)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-			project, err := h.GetProject(id)
+			project, err := h.GetSelectedProject(cmd.Context())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -60,5 +60,6 @@ $ ory get project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 	}
 
 	cmdx.RegisterFormatFlags(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

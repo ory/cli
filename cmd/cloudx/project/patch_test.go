@@ -56,7 +56,7 @@ func TestPatchProject(t *testing.T) {
 		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
 			stdout, _, err := exec(nil, "patch", "project", "--format", "json")
 			require.Error(t, err, stdout)
-		}, WithDefaultProject, WithPositionalProject, WithFlagProject)
+		}, WithDefaultProject, WithPositionalProject)
 	})
 
 	t.Run("is able to update several keys", func(t *testing.T) {
