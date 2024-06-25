@@ -219,6 +219,7 @@ func TestCommandHelper(t *testing.T) {
 				client.WithStdin(&r),
 				client.WithPasswordReader(pwReader),
 			)
+			require.NoError(t, err)
 
 			require.NoError(t, h.Authenticate(ctx))
 
@@ -243,6 +244,7 @@ func TestCommandHelper(t *testing.T) {
 				client.WithStdin(&r),
 				client.WithPasswordReader(func() ([]byte, error) { return []byte(password), nil }),
 			)
+			require.NoError(t, err)
 
 			require.NoError(t, h.Authenticate(ctx))
 
