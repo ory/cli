@@ -19,7 +19,8 @@ jobs:
         with:
           node-version: "16"
       - run: |
-          go run . tunnel http://localhost:4001 --quiet &
+          go build -o ory .
+          ./ory tunnel http://localhost:4001 --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
           ORY_PROJECT_SLUG: admiring-tu-swczqlujc0
@@ -58,7 +59,8 @@ jobs:
         with:
           node-version: "16"
       - run: |
-          go run . proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app/anything --rewrite-host --quiet &
+          go build -o ory .
+          ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app/anything --rewrite-host --quiet &
         env:
           ORY_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
           ORY_PROJECT_SLUG: admiring-tu-swczqlujc0

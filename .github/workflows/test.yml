@@ -20,7 +20,8 @@ jobs:
           node-version: "16"
       - run: npm ci
       - run: |
-          go run . proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app --quiet --rewrite-host &
+          go build -o ory .
+          ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app --quiet --rewrite-host &
           npm run test
         env:
           ORY_PROJECT_SLUG: affectionate-archimedes-s9mkjq77k0
