@@ -6,8 +6,13 @@ package testhelpers
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"testing"
+
+	"github.com/ory/cli/cmd/cloudx/client"
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/randx"
 
 	"github.com/ory/x/cmdx"
 )
@@ -21,21 +26,21 @@ func setEnvIfUnset(key, value string) {
 }
 
 func UseStaging() {
-	setEnvIfUnset("ORY_CLOUD_CONSOLE_URL", "https://console.staging.ory.dev:443")
-	setEnvIfUnset("ORY_CLOUD_ORYAPIS_URL", "https://staging.oryapis.dev:443")
+	setEnvIfUnset(client.ConsoleURLKey, "https://console.staging.ory.dev:443")
+	setEnvIfUnset(client.OryAPIsURLKey, "https://projects.staging.oryapis.dev:443")
 }
 
-func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject string, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
 	t := testingT{}
 
-	defaultConfig = NewConfigDir(t)
+	defaultConfig = NewConfigFile(t)
 
-	defaultEmail, defaultPassword = RegisterAccount(t, defaultConfig)
-	extraProject = CreateProject(t, defaultConfig)
-	defaultProject = CreateProject(t, defaultConfig)
-	defaultCmd = ConfigAwareCmd(defaultConfig)
+	defaultEmail, defaultPassword, _ = RegisterAccount(t, defaultConfig)
+	extraProject = CreateProject(t, defaultConfig, nil)
+	defaultProject = CreateProject(t, defaultConfig, nil)
+	defaultCmd = CmdWithConfig(defaultConfig)
 	return
 }
 
@@ -44,7 +49,9 @@ func RunAgainstStaging(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-type testingT struct{}
+type testingT struct {
+	testing.TB
+}
 
 func (testingT) Errorf(format string, args ...interface{}) {
 	fmt.Printf(format, args...)
@@ -54,4 +61,18 @@ func (testingT) Errorf(format string, args ...interface{}) {
 
 func (testingT) FailNow() {
 	os.Exit(1)
+}
+
+func (testingT) TempDir() string {
+	dirname := filepath.Join(os.TempDir(), randx.MustString(6, randx.AlphaLowerNum))
+	if err := os.MkdirAll(dirname, 0700); err != nil {
+		panic(err)
+	}
+	return dirname
+}
+
+func (testingT) Helper() {}
+
+func (testingT) Name() string {
+	return "TestMain"
 }

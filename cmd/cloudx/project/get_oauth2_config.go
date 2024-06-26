@@ -12,14 +12,14 @@ import (
 
 func NewGetOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "oauth2-config [project-id]",
-		Aliases: []string{"oc", "oauth2-config"},
-		Args:    cobra.MaximumNArgs(1),
+		Use:     "oauth2-config",
+		Aliases: []string{"oc", "hydra-config"},
+		Args:    cobra.NoArgs,
 		Short:   "Get Ory OAuth2 & OpenID Connect configuration.",
-		Long:    "Get the Ory OAuth2 & OpenID Connect configuration for the specified Ory Network project.",
-		Example: `$ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > oauth2-config.yaml
+		Long:    "Get the Ory OAuth2 & OpenID Connect configuration for an Ory Network project.",
+		Example: `$ ory get oauth2-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > oauth2-config.yaml
 
-$ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
+$ ory get oauth2-config --format json   # uses currently selected project
 
 {
   "oauth2": {
@@ -37,17 +37,13 @@ $ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
   },
   // ...
 }`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			id, err := selectedProjectID(h, args)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-			project, err := h.GetProject(id)
+			project, err := h.GetSelectedProject(cmd.Context())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -58,5 +54,7 @@ $ ory get oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 	}
 
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

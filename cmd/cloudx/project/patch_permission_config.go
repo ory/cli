@@ -12,11 +12,11 @@ import (
 
 func NewPatchKetoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "permission-config [project-id]",
+		Use:     "permission-config",
 		Aliases: []string{"pc", "keto-config"},
-		Args:    cobra.MaximumNArgs(1),
-		Short:   "Patch the Ory Permissions configuration of the specified Ory Network project.",
-		Example: `$ ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Args:    cobra.NoArgs,
+		Short:   "Patch the Ory Permissions configuration of an Ory Network project.",
+		Example: `$ ory patch permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--add '/namespaces=[{"name":"files", "id": 2}]' \
 	--replace '/namespaces/2/name="directories"' \
 	--remove '/limit/max_read_depth' \
@@ -35,14 +35,14 @@ func NewPatchKetoConfigCmd() *cobra.Command {
     // ...
   ]
 }`,
-		Long: `Patch the Ory Permissions configuration of the specified Ory Network project. Only values
+		Long: `Patch the Ory Permissions configuration of an Ory Network project. Only values
 specified in the patch will be overwritten. To replace the config use the ` + "`update`" + ` command instead.
 
 Compared to the ` + "`patch project`" + ` command, this command updates only the Ory Permissions configuration
-and returns the configuration as a result. This command is useful when you want to import configuration from 
+and returns the configuration as a result. This command is useful when you want to import configuration from
 self-hosted Ory Keto to Ory Network. Using this command allows for shorter paths when specifying the flags:
 
-	ory patch permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+	ory patch permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 		--replace '/limit/max_read_depth=5'
 
 when compared to the ` + "`patch project`" + ` command:
@@ -66,6 +66,8 @@ The format of the patch is a JSON-Patch document. For more details please check:
 	cmd.Flags().StringArray("add", nil, "Add a specific key to the configuration")
 	cmd.Flags().StringArray("remove", nil, "Remove a specific key from the configuration")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

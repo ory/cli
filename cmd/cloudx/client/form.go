@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	oldCloud "github.com/ory/client-go/114"
+	cloud "github.com/ory/client-go"
 
 	"github.com/pkg/errors"
 	"github.com/tidwall/sjson"
@@ -20,7 +20,7 @@ import (
 	"github.com/ory/x/cmdx"
 )
 
-func getLabel(attrs *oldCloud.UiNodeInputAttributes, node *oldCloud.UiNode) string {
+func getLabel(attrs *cloud.UiNodeInputAttributes, node *cloud.UiNode) string {
 	if attrs.Name == "identifier" {
 		return fmt.Sprintf("%s: ", "Email")
 	} else if node.Meta.Label != nil {
@@ -33,7 +33,7 @@ func getLabel(attrs *oldCloud.UiNodeInputAttributes, node *oldCloud.UiNode) stri
 
 type passwordReader = func() ([]byte, error)
 
-func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, ui oldCloud.UiContainer, method string, out interface{}) (err error) {
+func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, ui cloud.UiContainer, method string, out interface{}) (err error) {
 	for _, message := range ui.Messages {
 		_, _ = fmt.Fprintf(stderr, "%s\n", message.Text)
 	}
@@ -54,12 +54,6 @@ func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, 
 		switch node.Type {
 		case "input":
 			attrs := node.Attributes.UiNodeInputAttributes
-			switch attrs.Type {
-			case "button":
-				continue
-			case "submit":
-				continue
-			}
 
 			if attrs.Name == "traits.consent.tos" {
 				for {
@@ -79,11 +73,12 @@ func renderForm(stdin *bufio.Reader, pwReader passwordReader, stderr io.Writer, 
 			}
 
 			if strings.Contains(attrs.Name, "traits.details") {
+				// TODO ask for details
 				continue
 			}
 
 			switch attrs.Type {
-			case "hidden":
+			case "button", "submit", "hidden":
 				continue
 			case "checkbox":
 				result, err := cmdx.AskScannerForConfirmation(getLabel(attrs, &node), stdin, stderr)

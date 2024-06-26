@@ -16,11 +16,11 @@ func NewLogoutCmd() *cobra.Command {
 		Use:   "logout",
 		Short: "Signs you out of your account on this computer.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
-			if err := h.SignOut(); err != nil {
+			if err := h.ClearConfig(); err != nil {
 				return err
 			}
 			fmt.Println("You signed out successfully.")

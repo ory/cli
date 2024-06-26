@@ -5,65 +5,59 @@ package accountexperience
 
 import (
 	"fmt"
-	"os"
-
-	"os/exec"
+	"path"
 
 	"github.com/pkg/browser"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	client "github.com/ory/cli/cmd/cloudx/client"
-	cloud "github.com/ory/client-go"
+	"github.com/ory/x/flagx"
+	"github.com/ory/x/stringsx"
+
+	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
 )
 
 func NewAccountExperienceOpenCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "account-experience [project-id]",
-		Args:  cobra.MaximumNArgs(1),
+		Use:     "account-experience <login|registration|recovery|verification|settings>",
+		Aliases: []string{"ax", "ui"},
+		Args: func(cmd *cobra.Command, args []string) error {
+			if err := cobra.ExactArgs(1)(cmd, args); err != nil {
+				return err
+			}
+			switch f := stringsx.SwitchExact(args[0]); {
+			case f.AddCase("login", "registration", "recovery", "verification", "settings"):
+				return nil
+			default:
+				return errors.Wrap(f.ToUnknownCaseErr(), "unknown flow type")
+			}
+		},
 		Short: "Open Ory Account Experience Pages",
-	}
-	var pages = [5]string{"login", "registration", "recovery", "verification", "settings"}
-	for _, p := range pages {
-		cmd.AddCommand(NewAxCmd(p))
-	}
-
-	return cmd
-}
-
-func NewAxCmd(cmd string) *cobra.Command {
-	return &cobra.Command{
-		Use:   cmd,
-		Short: "Open " + cmd + " page",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
-			id, err := getSelectedProjectId(h, args)
+
+			project, err := h.GetSelectedProject(cmd.Context())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
-			project, err := h.GetProject(id)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
+
+			url := client.CloudAPIsURL(project.Slug)
+			url.Path = path.Join(url.Path, "ui", args[0])
+			if flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", url)
+				return nil
 			}
-			return AxWrapper(cmd, project)
-
-		}}
-}
-
-func AxWrapper(cmd *cobra.Command, p *cloud.Project) error {
-	url := fmt.Sprintf("https://%s.projects.oryapis.com/ui/%s", p.GetSlug(), cmd.CalledAs())
-
-	err := browser.OpenURL(url)
-	if err != nil {
-
-		// #nosec G204 - this is ok
-		if err := exec.Command("open", url); err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "Unable to automatically open the %s page in your browser. Please open it manually!", cmd.CalledAs())
-		}
+			if err := browser.OpenURL(url.String()); err != nil {
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "%s\n\nUnable to automatically open %s in your browser. Please open it manually!\n", err, url)
+				return cmdx.FailSilently(cmd)
+			}
+			return nil
+		},
 	}
-
-	return nil
+	cmdx.RegisterNoiseFlags(cmd.Flags())
+	return cmd
 }

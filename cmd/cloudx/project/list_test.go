@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"testing"
 
+	cloud "github.com/ory/client-go"
+
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 
@@ -16,21 +18,23 @@ import (
 )
 
 func TestListProject(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
-	email, password := testhelpers.RegisterAccount(t, configDir)
+	configDir := testhelpers.NewConfigFile(t)
+	cmd := testhelpers.CmdWithConfig(configDir)
+	email, password, _ := testhelpers.RegisterAccount(t, configDir)
 
-	projects := make([]string, 3)
+	projects := make([]*cloud.Project, 3)
+	projectIDs := make([]string, len(projects))
 	for k := range projects {
-		projects[k] = testhelpers.CreateProject(t, configDir)
+		projects[k] = testhelpers.CreateProject(t, configDir, nil)
+		projectIDs[k] = projects[k].Id
 	}
-	t.Logf("Creating projects %v", projects)
+	t.Logf("Created projects %+v", projects)
 
 	assertHasProjects := func(t *testing.T, stdout string) {
 		out := gjson.Parse(stdout)
-		assert.Len(t, out.Array(), len(projects))
+		assert.EqualValues(t, out.Get("#").Int(), len(projects))
 		out.ForEach(func(_, project gjson.Result) bool {
-			assert.Contains(t, projects, project.Get("id").String())
+			assert.Contains(t, projectIDs, project.Get("id").String())
 			return true
 		})
 	}
@@ -44,8 +48,8 @@ func TestListProject(t *testing.T) {
 	}
 
 	t.Run("is not able to list projects if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
 		_, _, err := cmd.Exec(nil, "list", "projects", "--quiet")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

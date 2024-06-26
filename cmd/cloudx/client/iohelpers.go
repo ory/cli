@@ -6,44 +6,45 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 
 	"github.com/ghodss/yaml"
-	"github.com/pkg/errors"
 
 	"github.com/ory/x/osx"
 	"github.com/ory/x/stringsx"
 )
 
-func ReadConfigFiles(files []string) ([]json.RawMessage, error) {
-	var configs []json.RawMessage
+// ReadAndParseFiles reads and parses JSON/YAML files from the given sources.
+func ReadAndParseFiles(files []string) ([]json.RawMessage, error) {
+	var fileContents []json.RawMessage
 	for _, source := range files {
-		config, err := readConfigFile(source)
+		config, err := readAndParseFile(source)
 		if err != nil {
 			return nil, err
 		}
-		configs = append(configs, config)
+		fileContents = append(fileContents, config)
 	}
-	return configs, nil
+	return fileContents, nil
 }
 
-func readConfigFile(source string) (json.RawMessage, error) {
+func readAndParseFile(source string) (json.RawMessage, error) {
 	contents, err := osx.ReadFileFromAllSources(source, osx.WithEnabledBase64Loader(), osx.WithEnabledHTTPLoader(), osx.WithEnabledFileLoader())
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read file: %s", source)
+		return nil, fmt.Errorf("failed to read file %q: %w", source, err)
 	}
 
 	switch f := stringsx.SwitchExact(filepath.Ext(source)); {
 	case f.AddCase(".yaml"), f.AddCase(".yml"):
 		var config json.RawMessage
 		if err := yaml.Unmarshal(contents, &config); err != nil {
-			return nil, errors.Wrapf(err, "failed to parse YAML file: %s", source)
+			return nil, fmt.Errorf("failed to parse YAML file %q: %w", source, err)
 		}
 		return config, nil
 	case f.AddCase(".json"):
 		var config json.RawMessage
 		if err := json.NewDecoder(bytes.NewReader(contents)).Decode(&config); err != nil {
-			return nil, errors.Wrapf(err, "failed to parse file `%s` from JSON", source)
+			return nil, fmt.Errorf("failed to parse JSON file %q: %w", source, err)
 		}
 		return config, nil
 	default:

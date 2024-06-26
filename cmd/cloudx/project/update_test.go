@@ -29,10 +29,11 @@ var (
 )
 
 func TestUpdateProject(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig)
+	project := testhelpers.CreateProject(t, defaultConfig, nil)
 
 	for _, tc := range []struct {
 		subcommand,
+		projectFlag,
 		pathSuccess,
 		pathFailure,
 		failureContains string
@@ -47,6 +48,7 @@ func TestUpdateProject(t *testing.T) {
 		},
 		{
 			subcommand:      "identity-config",
+			projectFlag:     "--project",
 			pathSuccess:     "fixtures/update-kratos/json/config.json",
 			pathFailure:     "fixtures/update-kratos/fail/config.json",
 			failureContains: "minimum 1 items allowed",
@@ -54,6 +56,7 @@ func TestUpdateProject(t *testing.T) {
 		},
 		{
 			subcommand:      "permission-config",
+			projectFlag:     "--project",
 			pathSuccess:     "fixtures/update-keto/json/config.json",
 			pathFailure:     "fixtures/update-keto/fail/config.json",
 			failureContains: "cannot unmarshal string into Go struct field",
@@ -61,6 +64,7 @@ func TestUpdateProject(t *testing.T) {
 		},
 		{
 			subcommand:      "oauth2-config",
+			projectFlag:     "--project",
 			pathSuccess:     "fixtures/update-hydra/json/config.json",
 			pathFailure:     "fixtures/update-hydra/fail/config.json",
 			failureContains: "cannot unmarshal number into Go struct field",
@@ -71,7 +75,7 @@ func TestUpdateProject(t *testing.T) {
 			t.Run("is able to update a project", func(t *testing.T) {
 				t.Skip("TODO")
 
-				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project, "--format", "json", "--file", tc.pathSuccess)
+				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project.Id, "--format", "json", "--file", tc.pathSuccess)
 				require.NoError(t, err)
 
 				assertx.EqualAsJSONExcept(t, tc.fixture, json.RawMessage(stdout), []string{
@@ -140,7 +144,12 @@ func TestUpdateProject(t *testing.T) {
 			})
 
 			t.Run("prints good error messages for failing schemas", func(t *testing.T) {
-				stdout, stderr, err := defaultCmd.Exec(nil, "update", tc.subcommand, project, "--format", "json", "--file", tc.pathFailure)
+				args := []string{"update", tc.subcommand, "--format", "json", "--file", tc.pathFailure}
+				if tc.projectFlag != "" {
+					args = append(args, tc.projectFlag)
+				}
+				args = append(args, project.Id)
+				stdout, stderr, err := defaultCmd.Exec(nil, args...)
 				require.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
 
 				t.Run("stdout", func(t *testing.T) {

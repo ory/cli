@@ -15,10 +15,10 @@ import (
 func TestIsAllowedNoUnauthenticated(t *testing.T) {
 	t.Parallel()
 
-	configDir := testhelpers.NewConfigDir(t)
-	cmd := testhelpers.ConfigAwareCmd(configDir)
+	configDir := testhelpers.NewConfigFile(t)
+	cmd := testhelpers.CmdWithConfig(configDir)
 	_, _, err := cmd.Exec(nil,
 		"is", "allowed", "user", "relation", "namespace", "object",
-		"--quiet", "--project", project)
+		"--quiet", "--project", project.Id)
 	require.ErrorIsf(t, err, client.ErrNoConfigQuiet, "got error: %v", err)
 }

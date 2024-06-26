@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
-	"github.com/ory/cli/buildinfo"
 	"github.com/ory/cli/cmd/cloudx"
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/proxy"
@@ -22,7 +21,7 @@ import (
 func NewRootCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "ory",
-		Short: "The ORY CLI",
+		Short: "The Ory CLI",
 	}
 
 	c.AddCommand(devCommands...)
@@ -40,8 +39,8 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewPatchCmd(),
 		cloudx.NewParseCmd(),
 		cloudx.NewPerformCmd(),
-		proxy.NewProxyCommand("ory", buildinfo.Version),
-		proxy.NewTunnelCommand("ory", buildinfo.Version),
+		proxy.NewProxyCommand(),
+		proxy.NewTunnelCommand(),
 		cloudx.NewUpdateCmd(),
 		cloudx.NewValidateCmd(),
 		cloudx.NewRevokeCmd(),

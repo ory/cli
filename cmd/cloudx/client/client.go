@@ -15,77 +15,48 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
-	flag "github.com/spf13/pflag"
 
 	hydra "github.com/ory/hydra-client-go/v2"
 	hydracli "github.com/ory/hydra/v2/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/flagx"
 )
 
-const projectFlag = "project"
-
-func RegisterProjectFlag(f *flag.FlagSet) {
-	f.String(projectFlag, "", "The project to use, either project ID or a (partial) slug.")
-}
-
-// ProjectOrDefault returns the slug or ID the user set with the `--project` flag, or the default project, or prints a warning and returns an error
-// if none was set.
-func ProjectOrDefault(cmd *cobra.Command, h *CommandHelper) (string, error) {
-	if flag := flagx.MustGetString(cmd, projectFlag); flag == "" {
-		if id := h.GetDefaultProjectID(); id != "" {
-			return id, nil
-		} else {
-			_, _ = fmt.Fprintf(os.Stderr, "No project selected! Please use the flag --%s to specify one.\n", projectFlag)
-			return "", cmdx.FailSilently(cmd)
-		}
-	} else {
-		return flag, nil
-	}
-}
-
-func Client(cmd *cobra.Command) (*retryablehttp.Client, *AuthContext, *cloud.Project, error) {
-	sc, err := NewCommandHelper(cmd)
+func Client(cmd *cobra.Command) (*retryablehttp.Client, *Config, *cloud.Project, error) {
+	ctx := cmd.Context()
+	sc, err := NewCobraCommandHelper(cmd)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Failed to initialize HTTP Client: %s\n", err)
 		return nil, nil, nil, cmdx.FailSilently(cmd)
 	}
 
-	ac, err := sc.EnsureContext()
+	ac, err := sc.GetAuthenticatedConfig(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	projectOrSlug, err := ProjectOrDefault(cmd, sc)
-	if err != nil {
-		return nil, nil, nil, cmdx.FailSilently(cmd)
-	}
-
-	p, err := sc.GetProject(projectOrSlug)
+	project, err := sc.GetSelectedProject(ctx)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
 	c := retryablehttp.NewClient()
 	c.Logger = nil
-	return c, ac, p, nil
+	return c, ac, project, nil
 }
 
 func ContextWithClient(ctx context.Context) context.Context {
 	ctx = context.WithValue(ctx, hydracli.OAuth2URLOverrideContextKey, func(cmd *cobra.Command) *url.URL {
-		_, _, p, err := Client(cmd)
+		h, err := NewCobraCommandHelper(cmd)
+		if err != nil {
+			return nil
+		}
+		project, err := h.GetSelectedProject(cmd.Context())
 		if err != nil {
 			return nil
 		}
 
-		apiURL, err := url.ParseRequestURI(makeCloudAPIsURL(p.Slug + ".projects"))
-		if err != nil {
-			return nil
-		}
-
-		// We use the cloud console API because it works with ory cloud session tokens.
-		return apiURL
+		return CloudAPIsURL(project.Slug)
 	})
 
 	ctx = context.WithValue(ctx, hydracli.ClientContextKey, func(cmd *cobra.Command) (*hydra.APIClient, *url.URL, error) {
@@ -100,13 +71,10 @@ func ContextWithClient(ctx context.Context) context.Context {
 			Timeout:   time.Second * 30,
 		}
 
-		consoleURL, err := url.ParseRequestURI(makeCloudConsoleURL(p.Slug + ".projects"))
-		if err != nil {
-			return nil, nil, err
-		}
+		consoleProjectURL := cloudConsoleURL(p.Slug + ".projects")
 		// We use the cloud console API because it works with ory cloud session tokens.
-		conf.Servers = hydra.ServerConfigurations{{URL: consoleURL.String()}}
-		return hydra.NewAPIClient(conf), consoleURL, nil
+		conf.Servers = hydra.ServerConfigurations{{URL: consoleProjectURL.String()}}
+		return hydra.NewAPIClient(conf), consoleProjectURL, nil
 	})
 
 	ctx = context.WithValue(ctx, kratoscli.ClientContextKey, func(cmd *cobra.Command) (*kratoscli.ClientContext, error) {
@@ -117,7 +85,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 
 		// We use the cloud console API because it works with ory cloud session tokens.
 		return &kratoscli.ClientContext{
-			Endpoint: makeCloudConsoleURL(p.Slug + ".projects"),
+			Endpoint: cloudConsoleURL(p.Slug + ".projects").String(),
 			HTTPClient: &http.Client{
 				Transport: &bearerTokenTransporter{
 					RoundTripper: c.StandardClient().Transport,

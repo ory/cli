@@ -6,6 +6,8 @@ package organizations_test
 import (
 	"testing"
 
+	cloud "github.com/ory/client-go"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -15,12 +17,12 @@ import (
 )
 
 var (
-	project, defaultEmail, defaultPassword string
-	defaultCmd                             *cmdx.CommandExecuter
+	project    *cloud.Project
+	defaultCmd *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	_, defaultEmail, defaultPassword, _, project, defaultCmd = testhelpers.CreateDefaultAssets()
+	_, _, _, _, project, defaultCmd = testhelpers.CreateDefaultAssets()
 	testhelpers.RunAgainstStaging(m)
 }
 
@@ -39,9 +41,9 @@ func TestNoUnauthenticated(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run("verb="+tc.verb, func(t *testing.T) {
-			configDir := testhelpers.NewConfigDir(t)
-			cmd := testhelpers.ConfigAwareCmd(configDir)
-			args := []string{tc.verb, tc.noun, "--quiet", "--project", project}
+			configDir := testhelpers.NewConfigFile(t)
+			cmd := testhelpers.CmdWithConfig(configDir)
+			args := []string{tc.verb, tc.noun, "--quiet", "--project", project.Id}
 			if tc.arg != "" {
 				args = append(args, tc.arg)
 			}
@@ -54,7 +56,7 @@ func TestNoUnauthenticated(t *testing.T) {
 func TestCRUD(t *testing.T) {
 	t.Parallel()
 
-	defaultCmd.ExecNoErr(t, "use", project)
+	defaultCmd.ExecNoErr(t, "use", project.Id)
 
 	// List organizations: Empty
 	out := defaultCmd.ExecNoErr(t, "list", "organizations", "--format=json")

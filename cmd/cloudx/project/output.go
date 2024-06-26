@@ -6,6 +6,8 @@ package project
 import (
 	"fmt"
 
+	"github.com/ory/x/cmdx"
+
 	cloud "github.com/ory/client-go"
 )
 
@@ -26,15 +28,17 @@ func (i *outputProject) ID() string {
 }
 
 func (*outputProject) Header() []string {
-	return []string{"ID", "SLUG", "STATE", "NAME"}
+	return []string{"ID", "NAME", "ENVIRONMENT", "WORKSPACE", "SLUG", "STATE"}
 }
 
 func (i *outputProject) Columns() []string {
 	return []string{
 		i.Id,
+		i.Name,
+		i.Environment,
+		nullableStringOrNone(i.WorkspaceId.Get()),
 		i.Slug,
 		i.State,
-		i.Name,
 	}
 }
 
@@ -43,7 +47,7 @@ func (i *outputProject) Interface() interface{} {
 }
 
 func (*outputProjectCollection) Header() []string {
-	return []string{"ID", "SLUG", "STATE", "NAME"}
+	return []string{"ID", "NAME", "ENVIRONMENT", "WORKSPACE", "SLUG", "STATE"}
 }
 
 func (c *outputProjectCollection) Table() [][]string {
@@ -51,14 +55,11 @@ func (c *outputProjectCollection) Table() [][]string {
 	for i, ident := range c.projects {
 		rows[i] = []string{
 			ident.Id,
-			func() string {
-				if ident.Slug != nil {
-					return *ident.Slug
-				}
-				return "<none>"
-			}(),
-			ident.State,
 			ident.Name,
+			ident.Environment,
+			nullableStringOrNone(ident.WorkspaceId.Get()),
+			ident.Slug,
+			ident.State,
 		}
 	}
 	return rows
@@ -96,4 +97,11 @@ func (i *selectedProject) Columns() []string {
 
 func (i *selectedProject) Interface() interface{} {
 	return i
+}
+
+func nullableStringOrNone(s *string) string {
+	if s == nil {
+		return cmdx.None
+	}
+	return *s
 }

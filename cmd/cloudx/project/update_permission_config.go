@@ -12,14 +12,14 @@ import (
 
 func NewUpdatePermissionConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "permission-config [project-id]",
+		Use: "permission-config",
 		Aliases: []string{
 			"pc",
 			"keto-config",
 		},
-		Args:  cobra.MaximumNArgs(1),
-		Short: "Update Ory Permissions configuration of the specified Ory Network project.",
-		Example: `$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Args:  cobra.NoArgs,
+		Short: "Update Ory Permissions configuration of an Ory Network project.",
+		Example: `$ ory update permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
 	--file https://example.org/config.yaml \
@@ -36,18 +36,18 @@ func NewUpdatePermissionConfigCmd() *cobra.Command {
   ]
 }
 
-$ ory update permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+$ ory update permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/keto-config.yaml \
     --format yaml
 
 namespaces:
   - name: files
     # ...`,
-		Long: `Update Ory Permissions configuration of the specified Ory Network project. All values
+		Long: `Update Ory Permissions configuration of an Ory Network project. All values
 of the permission service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command updates only the Ory Permissions configuration
-and returns the configuration as a result. This command is useful when you want to import configuration from 
+and returns the configuration as a result. This command is useful when you want to import configuration from
 self-hosted Ory Keto to Ory Network.
 
 The full configuration payload can be found at:
@@ -71,6 +71,8 @@ This command expects the contents of the ` + "`/services/permission/config`" + `
 
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the permission config")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
 	return cmd

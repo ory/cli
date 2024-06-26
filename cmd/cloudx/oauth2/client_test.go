@@ -19,14 +19,14 @@ import (
 
 func TestCreateClient(t *testing.T) {
 	t.Run("is not able to create client if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "create", "client", "--quiet", "--project", defaultProject)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "create", "client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to create client", func(t *testing.T) {
-		stdout, stderr, err := defaultCmd.Exec(nil, "create", "client", "--format", "json", "--project", defaultProject)
+		stdout, stderr, err := defaultCmd.Exec(nil, "create", "client", "--format", "json", "--project", defaultProject.Id)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -37,16 +37,16 @@ func TestCreateClient(t *testing.T) {
 
 func TestDeleteClient(t *testing.T) {
 	t.Run("is not able to delete oauth2 client if not authenticated and quiet flag", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject).Get("client_id").String()
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "delete", "oauth2-client", "--quiet", "--project", defaultProject, userID)
+		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "delete", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to delete oauth2 client", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject).Get("client_id").String()
-		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
+		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -54,9 +54,9 @@ func TestDeleteClient(t *testing.T) {
 	})
 
 	t.Run("is able to delete oauth2 client after authenticating", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject).Get("client_id").String()
+		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "delete", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := cmd.Exec(r, "delete", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
@@ -65,17 +65,17 @@ func TestDeleteClient(t *testing.T) {
 }
 
 func TestGetClient(t *testing.T) {
-	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject).Get("client_id").String()
+	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
 
 	t.Run("is not able to get oauth2 if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "get", "oauth2-client", "--quiet", "--project", defaultProject, userID)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "get", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to get oauth2", func(t *testing.T) {
-		stdout, stderr, err := defaultCmd.Exec(nil, "get", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := defaultCmd.Exec(nil, "get", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -85,7 +85,7 @@ func TestGetClient(t *testing.T) {
 
 	t.Run("is able to get oauth2 after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "get", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := cmd.Exec(r, "get", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
@@ -96,15 +96,15 @@ func TestGetClient(t *testing.T) {
 
 func TestImportClient(t *testing.T) {
 	t.Run("is not able to import oauth2-client if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "import", "oauth2-client", "--quiet", "--project", defaultProject)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "import", "oauth2-client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to import oauth2-client", func(t *testing.T) {
 		name := uuid.Must(uuid.NewV4()).String()
-		stdout, stderr, err := defaultCmd.Exec(nil, "import", "oauth2-client", "--format", "json", "--project", defaultProject, testhelpers.MakeRandomClient(t, name))
+		stdout, stderr, err := defaultCmd.Exec(nil, "import", "oauth2-client", "--format", "json", "--project", defaultProject.Id, testhelpers.MakeRandomClient(t, name))
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -114,7 +114,7 @@ func TestImportClient(t *testing.T) {
 	t.Run("is able to import oauth2-client after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
 		name := uuid.Must(uuid.NewV4()).String()
-		stdout, stderr, err := cmd.Exec(r, "import", "oauth2-client", "--format", "json", "--project", defaultProject, testhelpers.MakeRandomClient(t, name))
+		stdout, stderr, err := cmd.Exec(r, "import", "oauth2-client", "--format", "json", "--project", defaultProject.Id, testhelpers.MakeRandomClient(t, name))
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -123,20 +123,20 @@ func TestImportClient(t *testing.T) {
 }
 
 func TestListClients(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig)
+	project := testhelpers.CreateProject(t, defaultConfig, nil)
 
-	userID := testhelpers.CreateClient(t, defaultCmd, project).Get("client_id").String()
+	userID := testhelpers.CreateClient(t, defaultCmd, project.Id).Get("client_id").String()
 
 	t.Run("is not able to list oauth2 clients if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "list", "oauth2-clients", "--quiet", "--project", project)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "list", "oauth2-clients", "--quiet", "--project", project.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s oauth2 clients", proc), func(t *testing.T) {
-			stdout, stderr, err := defaultCmd.Exec(nil, proc, "oauth2-clients", "--format", "json", "--project", project)
+			stdout, stderr, err := defaultCmd.Exec(nil, proc, "oauth2-clients", "--format", "json", "--project", project.Id)
 			require.NoError(t, err, stderr)
 			out := gjson.Parse(stdout).Get("items")
 			assert.True(t, gjson.Valid(stdout))
@@ -147,7 +147,7 @@ func TestListClients(t *testing.T) {
 
 	t.Run("is able to list oauth2 clients after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "ls", "oauth2-clients", "--format", "json", "--project", project)
+		stdout, stderr, err := cmd.Exec(r, "ls", "oauth2-clients", "--format", "json", "--project", project.Id)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout).Get("items")
@@ -157,17 +157,17 @@ func TestListClients(t *testing.T) {
 }
 
 func TestUpdateOAuth2(t *testing.T) {
-	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject).Get("client_id").String()
+	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
 
 	t.Run("is not able to update oauth2 if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigDir(t)
-		cmd := testhelpers.ConfigAwareCmd(configDir)
-		_, _, err := cmd.Exec(nil, "update", "oauth2-client", "--quiet", "--project", defaultProject, userID)
+		configDir := testhelpers.NewConfigFile(t)
+		cmd := testhelpers.CmdWithConfig(configDir)
+		_, _, err := cmd.Exec(nil, "update", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
 	t.Run("is able to update oauth2", func(t *testing.T) {
-		stdout, stderr, err := defaultCmd.Exec(nil, "update", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := defaultCmd.Exec(nil, "update", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
@@ -177,7 +177,7 @@ func TestUpdateOAuth2(t *testing.T) {
 
 	t.Run("is able to update oauth2 after authenticating", func(t *testing.T) {
 		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "update", "oauth2-client", "--format", "json", "--project", defaultProject, userID)
+		stdout, stderr, err := cmd.Exec(r, "update", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)

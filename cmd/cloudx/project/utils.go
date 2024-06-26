@@ -6,28 +6,12 @@ package project
 import (
 	"encoding/json"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/sjson"
 
-	"github.com/ory/cli/cmd/cloudx/client"
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 )
-
-var defaultProjectNotSetError = errors.New("no project was specified")
-
-func selectedProjectID(h *client.CommandHelper, args []string) (string, error) {
-	if len(args) == 0 {
-		if id := h.GetDefaultProjectID(); id == "" {
-			return "", defaultProjectNotSetError
-		} else {
-			return id, nil
-		}
-	} else {
-		return args[0], nil
-	}
-}
 
 func prefixConfig(prefix string, s []string) []string {
 	for k := range s {

@@ -14,22 +14,22 @@ import (
 
 func NewDeleteEventStream() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "event-stream id [--project=PROJECT_ID]",
+		Use:   "event-stream <id> [--project=PROJECT_ID]",
 		Args:  cobra.ExactArgs(1),
 		Short: "Delete the event stream with the given ID",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			projectID, err := client.ProjectOrDefault(cmd, h)
+			projectID, err := h.ProjectID()
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 			streamID := args[0]
 
-			err = h.DeleteEventStream(projectID, streamID)
+			err = h.DeleteEventStream(cmd.Context(), projectID, streamID)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -40,5 +40,6 @@ func NewDeleteEventStream() *cobra.Command {
 	}
 
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

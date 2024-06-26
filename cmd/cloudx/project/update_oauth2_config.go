@@ -13,14 +13,14 @@ import (
 
 func NewUpdateOAuth2ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "oauth2-config [project-id]",
+		Use: "oauth2-config",
 		Aliases: []string{
 			"oc",
 			"hydra-config",
 		},
-		Args:  cobra.MaximumNArgs(1),
-		Short: "Update the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project.",
-		Example: `$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Args:  cobra.NoArgs,
+		Short: "Update the Ory OAuth2 & OpenID Connect configuration of an Ory Network project.",
+		Example: `$ ory update oauth2-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
 	--file https://example.org/config.yaml \
@@ -36,7 +36,7 @@ func NewUpdateOAuth2ConfigCmd() *cobra.Command {
   // ...
 }
 
-$ ory update oauth2-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+$ ory update oauth2-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/keto-config.yaml \
     --format yaml
 
@@ -44,11 +44,11 @@ oauth2:
   pkce:
     enabled: true
 # ...`,
-		Long: `Update the Ory OAuth2 & OpenID Connect configuration of the specified Ory Network project. All values
+		Long: `Update the Ory OAuth2 & OpenID Connect configuration of an Ory Network project. All values
 of the OAuth2 service will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
-Compared to the ` + "`update project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect 
-configuration and returns the configuration as a result. This command is useful when you want to import configuration 
+Compared to the ` + "`update project`" + ` command, this command updates only the Ory OAuth2 & OpenID Connect
+configuration and returns the configuration as a result. This command is useful when you want to import configuration
 from self-hosted Ory Hydra to Ory Network.
 
 The full configuration payload can be found at:
@@ -72,6 +72,8 @@ This command expects the contents of the ` + "`/services/oauth2/config`" + ` key
 
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the oAuth2 config")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
 	return cmd

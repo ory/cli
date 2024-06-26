@@ -17,7 +17,7 @@ import (
 
 func NewProjectsPatchCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "project [id]",
+		Use:   "project",
 		Args:  cobra.MaximumNArgs(1),
 		Short: "Patch the Ory Network project configuration.",
 		Example: `ory patch project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
@@ -51,13 +51,20 @@ The format of the patch is a JSON-Patch document. For more details please check:
 	cmd.Flags().StringArray("add", nil, "Add a specific key to the configuration")
 	cmd.Flags().StringArray("remove", nil, "Remove a specific key from the configuration")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }
 
 func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.RawMessage) ([]json.RawMessage, error), outputter func(*cobra.Command, *cloud.SuccessfulProjectUpdate)) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		h, err := client.NewCommandHelper(cmd)
+		ctx := cmd.Context()
+		opts := make([]client.CommandHelperOption, 0, 1)
+		if len(args) == 1 {
+			opts = append(opts, client.WithProjectOverride(args[0]))
+		}
+		h, err := client.NewCobraCommandHelper(cmd, opts...)
 		if err != nil {
 			return err
 		}
@@ -71,7 +78,7 @@ func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.Ra
 			return errors.New("at least one of --file, --add, --replace, or --remove must be set")
 		}
 
-		configs, err := client.ReadConfigFiles(files)
+		configs, err := client.ReadAndParseFiles(files)
 		if err != nil {
 			return err
 		}
@@ -81,11 +88,11 @@ func runPatch(patchPrefixer func([]string) []string, filePrefixer func([]json.Ra
 			return err
 		}
 
-		id, err := selectedProjectID(h, args)
+		id, err := h.ProjectID()
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}
-		p, err := h.PatchProject(id, configs, add, replace, remove)
+		p, err := h.PatchProject(ctx, id, configs, add, replace, remove)
 		if err != nil {
 			return cmdx.PrintOpenAPIError(cmd, err)
 		}

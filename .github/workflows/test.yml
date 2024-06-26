@@ -14,17 +14,18 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: "^1.21"
+          go-version: "1.22"
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
       - run: npm ci
-      - run: go build -o ory .
       - run: |
+          go build -o ory .
           ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app --quiet --rewrite-host &
           npm run test
         env:
-          ORY_SDK_URL: https://affectionate-archimedes-s9mkjq77k0.projects.staging.oryapis.dev
-          ORY_CLOUD_CONSOLE_URL: https://console.staging.ory.dev
-          ORY_CLOUD_ORYAPIS_URL: https://staging.oryapis.dev
+          ORY_API_KEY: nokey
+          ORY_PROJECT_SLUG: affectionate-archimedes-s9mkjq77k0
+          ORY_CONSOLE_URL: https://console.staging.ory.dev
+          ORY_ORYAPIS_URL: https://projects.staging.oryapis.dev
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}

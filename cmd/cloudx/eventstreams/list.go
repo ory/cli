@@ -16,17 +16,17 @@ func NewListEventStreamsCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Short: "List your event streams",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			id, err := client.ProjectOrDefault(cmd, h)
+			projectID, err := h.ProjectID()
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			streams, err := h.ListEventStreams(id)
+			streams, err := h.ListEventStreams(cmd.Context(), projectID)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -37,6 +37,7 @@ func NewListEventStreamsCmd() *cobra.Command {
 	}
 
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

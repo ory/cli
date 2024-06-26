@@ -4,28 +4,28 @@
 package project_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/tidwall/gjson"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
 func TestUseProject(t *testing.T) {
 	t.Run("is able to use project", func(t *testing.T) {
-		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
+		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject.Id)
 
-		stdout, _, err := defaultCmd.Exec(nil, "use", "project", extraProject, "--format", "json")
+		stdout, _, err := defaultCmd.Exec(nil, "use", "project", extraProject.Id, "--quiet")
 		require.NoError(t, err)
-		assert.Equal(t, extraProject, gjson.Get(stdout, "id").String())
+		assert.Equal(t, extraProject.Id, strings.TrimSpace(stdout))
 	})
 	t.Run("is able to print default project", func(t *testing.T) {
-		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject)
+		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject.Id)
 
-		stdout, _, err := defaultCmd.Exec(nil, "use", "project", "--format", "json")
+		stdout, _, err := defaultCmd.Exec(nil, "use", "project", "--quiet")
 		require.NoError(t, err)
-		assert.Equal(t, defaultProject, gjson.Get(stdout, "id").String())
+		assert.Equal(t, defaultProject.Id, strings.TrimSpace(stdout))
 	})
 }

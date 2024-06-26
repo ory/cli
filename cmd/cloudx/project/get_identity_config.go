@@ -12,14 +12,14 @@ import (
 
 func NewGetKratosConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "identity-config [project-id]",
+		Use:     "identity-config",
 		Aliases: []string{"ic", "kratos-config"},
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.NoArgs,
 		Short:   "Get Ory Identities configuration.",
-		Long:    "Get the Ory Identities configuration for the specified Ory Network project.",
-		Example: `$ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > identity-config.yaml
+		Long:    "Get the Ory Identities configuration for an Ory Network project.",
+		Example: `$ ory get identity-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > identity-config.yaml
 
-$ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
+$ ory get identity-config --format json   # uses currently selected project
 
 {
   "selfservice": {
@@ -29,17 +29,13 @@ $ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 	// ...
   }
 }`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			id, err := selectedProjectID(h, args)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-			project, err := h.GetProject(id)
+			project, err := h.GetSelectedProject(cmd.Context())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -50,5 +46,7 @@ $ ory get identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 	}
 
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

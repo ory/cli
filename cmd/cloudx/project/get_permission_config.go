@@ -12,14 +12,14 @@ import (
 
 func NewGetKetoConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "permission-config [project-id]",
+		Use:     "permission-config",
 		Aliases: []string{"pc", "keto-config"},
-		Args:    cobra.MaximumNArgs(1),
+		Args:    cobra.NoArgs,
 		Short:   "Get Ory Permissions configuration.",
-		Long:    "Get the Ory Permissions configuration for the specified Ory Network project.",
-		Example: `$ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > permission-config.yaml
+		Long:    "Get the Ory Permissions configuration for an Ory Network project.",
+		Example: `$ ory get permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > permission-config.yaml
 
-$ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
+$ ory get permission-config --format json   # uses currently selected project
 
 {
   "namespaces": [
@@ -30,17 +30,13 @@ $ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
     // ...
   ]
 }`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCommandHelper(cmd)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
 			}
 
-			id, err := selectedProjectID(h, args)
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
-			}
-			project, err := h.GetProject(id)
+			project, err := h.GetSelectedProject(cmd.Context())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -51,5 +47,7 @@ $ ory get permission-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 	}
 
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

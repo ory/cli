@@ -16,6 +16,7 @@ import (
 func wrapHydraCmd(newCmd func() *cobra.Command) *cobra.Command {
 	c := newCmd()
 	client.RegisterProjectFlag(c.Flags())
+	client.RegisterWorkspaceFlag(c.Flags())
 	cmdx.RegisterFormatFlags(c.Flags())
 	cliclient.RegisterClientFlags(c.Flags())
 	return c

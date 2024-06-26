@@ -12,14 +12,14 @@ import (
 
 func NewUpdateIdentityConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "identity-config [project-id]",
+		Use: "identity-config",
 		Aliases: []string{
 			"ic",
 			"kratos-config",
 		},
-		Args:  cobra.MaximumNArgs(1),
-		Short: "Update the Ory Identities configuration of the specified Ory Network project.",
-		Example: `$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+		Args:  cobra.NoArgs,
+		Short: "Update the Ory Identities configuration of an Ory Network project.",
+		Example: `$ ory update identity-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/config.json \
 	--file /path/to/config.yml \
 	--file https://example.org/config.yaml \
@@ -35,18 +35,18 @@ func NewUpdateIdentityConfigCmd() *cobra.Command {
   }
 }
 
-$ ory update identity-config ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
+$ ory update identity-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 \
 	--file /path/to/kratos-config.yaml \
     --format yaml
 
 courier:
   smtp:
     # ...`,
-		Long: `Update the Ory Identities configuration of the specified Ory Network project. All values
+		Long: `Update the Ory Identities configuration of an Ory Network project. All values
 will be overwritten. To update individual settings use the ` + "`patch`" + ` command instead.
 
 Compared to the ` + "`update project`" + ` command, this command updates only the Ory Identities configuration
-and returns the configuration as a result. This command is useful when you want to import configuration from 
+and returns the configuration as a result. This command is useful when you want to import configuration from
 self-hosted Ory Kratos to Ory Network.
 
 The full configuration payload can be found at:
@@ -69,6 +69,8 @@ This command expects the contents of the ` + "`/services/identity/config`" + ` k
 
 	cmd.Flags().StringSliceP("file", "f", nil, "Configuration file(s) (file://config.json, https://example.org/config.yaml, ...) to update the identity config")
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 	cmdx.RegisterJSONFormatFlags(cmd.Flags())
 	return cmd

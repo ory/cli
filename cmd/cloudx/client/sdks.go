@@ -4,75 +4,75 @@
 package client
 
 import (
+	"context"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
 	cloud "github.com/ory/client-go"
-	oldCloud "github.com/ory/client-go/114"
 	"github.com/ory/x/stringsx"
 )
 
-var RateLimitHeader = os.Getenv("ORY_RATE_LIMIT_HEADER")
+const (
+	RateLimitHeaderKey = "ORY_RATE_LIMIT_HEADER"
+	ConsoleURLKey      = "ORY_CONSOLE_URL"
+	OryAPIsURLKey      = "ORY_ORYAPIS_URL"
+)
 
-func CloudConsoleURL(prefix string) *url.URL {
-	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_CONSOLE_URL"), "https://console.ory.sh"))
+var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
+
+func cloudConsoleURL(prefix string) *url.URL {
+	// we load the URL from the env here instead of init() because the tests might want to change this
+	consoleURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(ConsoleURLKey), "https://console.ory.sh"))
 	if err != nil {
-		u = &url.URL{Scheme: "https", Host: "console.ory.sh"}
+		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
-	u.Host = prefix + "." + u.Host
-	if u.Port() == "" {
-		u.Host = u.Host + ":443"
+	consoleURL.Host = prefix + "." + consoleURL.Host
+	if consoleURL.Port() == "" {
+		consoleURL.Host = consoleURL.Host + ":443"
 	}
 
-	return u
+	return consoleURL
 }
 
-func makeCloudConsoleURL(prefix string) string {
-	u := CloudConsoleURL(prefix)
-
-	return u.Scheme + "://" + u.Host
-}
-
-func CloudAPIsURL(prefix string) *url.URL {
-	u, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv("ORY_CLOUD_ORYAPIS_URL"), "https://oryapis.com"))
+func CloudAPIsURL(slug string) *url.URL {
+	// we load the URL from the env here instead of init() because the tests might want to change this
+	oryAPIsURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(OryAPIsURLKey), "https://projects.oryapis.com"))
 	if err != nil {
-		u = &url.URL{Scheme: "https", Host: "oryapis.com"}
+		oryAPIsURL = &url.URL{Scheme: "https", Host: "projects.oryapis.com"}
 	}
-	u.Host = prefix + "." + u.Host
-	if u.Port() == "" {
-		u.Host = u.Host + ":443"
+	oryAPIsURL.Host = slug + "." + oryAPIsURL.Host
+	if oryAPIsURL.Port() == "" {
+		oryAPIsURL.Host = oryAPIsURL.Host + ":443"
 	}
 
-	return u
+	return oryAPIsURL
 }
 
-func makeCloudAPIsURL(prefix string) string {
-	u := CloudAPIsURL(prefix)
-
-	return u.Scheme + "://" + u.Host
-}
-
-func NewKratosClient() (*oldCloud.APIClient, error) {
-	conf := oldCloud.NewConfiguration()
-	conf.Servers = oldCloud.ServerConfigurations{{URL: makeCloudConsoleURL("project")}}
+func NewOryProjectClient() (*cloud.APIClient, error) {
+	conf := cloud.NewConfiguration()
+	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("project").String()}}
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
-	if RateLimitHeader != "" {
-		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
+	if rateLimitHeader != "" {
+		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
 	}
 
-	return oldCloud.NewAPIClient(conf), nil
+	return cloud.NewAPIClient(conf), nil
 }
 
-func newCloudClient(token string) (*cloud.APIClient, error) {
-	u := makeCloudConsoleURL("api")
+func (h *CommandHelper) newCloudClient(ctx context.Context) (*cloud.APIClient, error) {
+	config, err := h.GetAuthenticatedConfig(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: u}}
-	conf.HTTPClient = newBearerTokenClient(token)
-	if RateLimitHeader != "" {
-		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
+	conf.OperationServers = nil
+	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("api").String()}}
+	conf.HTTPClient = newBearerTokenClient(config.SessionToken)
+	if rateLimitHeader != "" {
+		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
 	}
 
 	return cloud.NewAPIClient(conf), nil

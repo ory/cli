@@ -13,7 +13,7 @@ import (
 )
 
 func TestReadConfigFiles(t *testing.T) {
-	configs, err := ReadConfigFiles([]string{
+	configs, err := ReadAndParseFiles([]string{
 		"fixtures/iohelpers/a.yaml",
 		"fixtures/iohelpers/b.yml",
 		"fixtures/iohelpers/c.json",

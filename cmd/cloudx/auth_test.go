@@ -6,16 +6,17 @@ package cloudx_test
 import (
 	"bytes"
 	"context"
+	"io"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/ory/cli/cmd"
-	oldCloud "github.com/ory/client-go/114"
-
 	"github.com/pquerna/otp/totp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/ory/cli/cmd"
+	cloud "github.com/ory/client-go"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
@@ -23,16 +24,16 @@ import (
 )
 
 func TestAuthenticator(t *testing.T) {
-	configDir := testhelpers.NewConfigDir(t)
+	configDir := testhelpers.NewConfigFile(t)
 
 	t.Run("errors without config and --quiet flag", func(t *testing.T) {
 		c := cmd.NewRootCmd()
-		c.SetArgs([]string{"auth", "--" + client.ConfigFlag, configDir, "--quiet"})
+		c.SetArgs([]string{"auth", "--" + client.FlagConfig, configDir, "--quiet"})
 		require.Error(t, c.Execute())
 	})
 
 	password := testhelpers.FakePassword()
-	cmd := testhelpers.ConfigPasswordAwareCmd(configDir, password)
+	cmd := testhelpers.CmdWithConfigPassword(configDir, password)
 
 	signIn := func(t *testing.T, email string) (string, string, error) {
 		testhelpers.ClearConfig(t, configDir)
@@ -49,13 +50,13 @@ func TestAuthenticator(t *testing.T) {
 		name := testhelpers.FakeName()
 
 		// Create the account
-		r := testhelpers.RegistrationBuffer(name, email, password)
-		stdout, stderr, err := cmd.Exec(&r, "auth")
+		r := testhelpers.RegistrationBuffer(name, email)
+		stdout, stderr, err := cmd.Exec(r, "auth")
 		require.NoError(t, err)
 
 		assert.Contains(t, stderr, "You are now signed in as: "+email, "Expected to be signed in but response was:\n\t%s\n\tstderr: %s", stdout, stderr)
 		assert.Contains(t, stdout, email)
-		testhelpers.AssertConfig(t, configDir, email, name, false)
+		testhelpers.AssertConfig(t, configDir, email, name)
 		testhelpers.ClearConfig(t, configDir)
 
 		expectSignInSuccess := func(t *testing.T) {
@@ -63,7 +64,7 @@ func TestAuthenticator(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Contains(t, stderr, "You are now signed in as: ", email, stdout)
-			testhelpers.AssertConfig(t, configDir, email, name, false)
+			testhelpers.AssertConfig(t, configDir, email, name)
 		}
 
 		t.Run("sign in with valid data", func(t *testing.T) {
@@ -71,7 +72,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("forced to reauthenticate on session expiration", func(t *testing.T) {
-			cmd := testhelpers.ConfigAwareCmd(configDir)
+			cmd := testhelpers.CmdWithConfig(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
@@ -82,7 +83,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("user is able to reauthenticate on session expiration", func(t *testing.T) {
-			cmd := testhelpers.ConfigAwareCmd(configDir)
+			cmd := testhelpers.CmdWithConfig(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
@@ -94,7 +95,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("expired session with quiet flag returns error", func(t *testing.T) {
-			cmd := testhelpers.ConfigAwareCmd(configDir)
+			cmd := testhelpers.CmdWithConfig(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			_, stderr, err := cmd.Exec(nil, "list", "projects", "-q")
@@ -107,10 +108,10 @@ func TestAuthenticator(t *testing.T) {
 			expectSignInSuccess(t)
 			ac := testhelpers.ReadConfig(t, configDir)
 
-			c, err := client.NewKratosClient()
+			c, err := client.NewOryProjectClient()
 			require.NoError(t, err)
 
-			flow, _, err := c.FrontendApi.CreateNativeSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Execute()
+			flow, _, err := c.FrontendAPI.CreateNativeSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Execute()
 			require.NoError(t, err)
 
 			var secret string
@@ -129,9 +130,9 @@ func TestAuthenticator(t *testing.T) {
 			code, err := totp.GenerateCode(secret, time.Now())
 			require.NoError(t, err)
 
-			_, _, err = c.FrontendApi.UpdateSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Flow(flow.Id).UpdateSettingsFlowBody(oldCloud.UpdateSettingsFlowBody{
-				UpdateSettingsFlowWithTotpMethod: &oldCloud.UpdateSettingsFlowWithTotpMethod{
-					TotpCode: pointerx.String(code),
+			_, _, err = c.FrontendAPI.UpdateSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Flow(flow.Id).UpdateSettingsFlowBody(cloud.UpdateSettingsFlowBody{
+				UpdateSettingsFlowWithTotpMethod: &cloud.UpdateSettingsFlowWithTotpMethod{
+					TotpCode: pointerx.Ptr(code),
 					Method:   "totp",
 				},
 			}).Execute()
@@ -174,7 +175,7 @@ func TestAuthenticator(t *testing.T) {
 
 				assert.Contains(t, stderr, "Please complete the second authentication challenge", stdout)
 				assert.Contains(t, stderr, "You are now signed in as: ", email, stdout)
-				testhelpers.AssertConfig(t, configDir, email, name, false)
+				testhelpers.AssertConfig(t, configDir, email, name)
 			})
 		})
 	})
@@ -182,26 +183,21 @@ func TestAuthenticator(t *testing.T) {
 	t.Run("retry sign up on invalid data", func(t *testing.T) {
 		testhelpers.ClearConfig(t, configDir)
 
-		r := testhelpers.RegistrationBuffer(testhelpers.FakeName(), "not-an-email", password)
+		r0 := testhelpers.RegistrationBuffer(testhelpers.FakeName(), "not-an-email")
 
 		// Redo the flow
 		email := testhelpers.FakeEmail()
 		name := testhelpers.FakeName()
-		_, _ = r.WriteString(email + "\n")    // Work email: FakeEmail()
-		_, _ = r.WriteString(password + "\n") // Password: FakePassword()
-		_, _ = r.WriteString(name + "\n")     // Name: FakeName()
-		_, _ = r.WriteString("n\n")           // Please inform me about platform and security updates:  [y/n]: n
-		_, _ = r.WriteString("y\n")           // I accept the Terms of Service https://www.ory.sh/ptos:  [y/n]: y
-		_, _ = r.WriteString("Ory\n")         // Company: Ory
-		_, _ = r.WriteString("12345\n")       // Phone: 12345
-		_, _ = r.WriteString("Dev\n")         // Job title/role: Dev
+		r1 := testhelpers.RegistrationBuffer(name, email)
+		// on retry, we need to skip "Do you want to sign in to an existing Ory Network account? [y/n]: "
+		_, _ = r1.ReadString('\n')
 
-		stdout, stderr, err := cmd.Exec(&r, "auth", "--"+client.ConfigFlag, configDir)
+		stdout, stderr, err := cmd.Exec(io.MultiReader(r0, r1), "auth", "--"+client.FlagConfig, configDir)
 		require.NoError(t, err)
 
 		assert.Contains(t, stderr, "Your account creation attempt failed. Please try again!", stdout) // First try fails
 		assert.Contains(t, stderr, "You are now signed in as: "+email, stdout)                        // Second try succeeds
-		testhelpers.AssertConfig(t, configDir, email, name, true)
+		testhelpers.AssertConfig(t, configDir, email, name)
 	})
 
 	t.Run("sign in with invalid data", func(t *testing.T) {

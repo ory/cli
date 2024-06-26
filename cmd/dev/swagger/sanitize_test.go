@@ -8,13 +8,13 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestSanitize(t *testing.T) {
-	fp := filepath.Join(os.TempDir(), uuid.New().String()+".json")
+	fp := filepath.Join(os.TempDir(), uuid.Must(uuid.NewV4()).String()+".json")
 
 	require.NoError(t, sanitize("stub/in.json", fp))
 

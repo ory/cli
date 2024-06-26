@@ -6,16 +6,19 @@ package project_test
 import (
 	"testing"
 
+	cloud "github.com/ory/client-go"
+
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/ory/x/cmdx"
 )
 
 var (
-	extraProject, defaultProject, defaultConfig, defaultEmail, defaultPassword string
-	defaultCmd                                                                 *cmdx.CommandExecuter
+	defaultProject, extraProject *cloud.Project
+	defaultConfig                string
+	defaultCmd                   *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	defaultConfig, defaultEmail, defaultPassword, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	defaultConfig, _, _, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 	testhelpers.RunAgainstStaging(m)
 }
