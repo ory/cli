@@ -22,7 +22,7 @@ func NewProxyCommand() *cobra.Command {
 		Use:   "proxy <application-url> [<publish-url>]",
 		Short: "Run your app and Ory on the same domain using a reverse proxy",
 		Args:  cobra.RangeArgs(1, 2),
-		Example: `{{.CommandPath}} proxy http://localhost:3000 --dev
+		Example: `{{.CommandPath}} http://localhost:3000 --dev
 {{.CommandPath}} proxy http://localhost:3000 https://app.example.com \
 	--allowed-cors-origins https://www.example.org \
 	--allowed-cors-origins https://api.example.org \
@@ -33,21 +33,21 @@ func NewProxyCommand() *cobra.Command {
 The first argument ` + "`<application-url>`" + ` points to the location of your application. The Ory Proxy
 will pass all traffic through to this URL.
 
-    $ {{.CommandPath}} proxy --project <project-id-or-slug> https://www.example.org
+    $ {{.CommandPath}} --project <project-id-or-slug> https://www.example.org
     $ ORY_PROJECT=<project-id-or-slug> {{.CommandPath}} proxy http://localhost:3000
 
 ### Connecting to Ory
 
 Before you start, you need to have an Ory Network project. You can create one with the following command:
 
-	$ {{.CommandPath}} create project --name "Command Line Project" --use
-	$ {{.CommandPath}} proxy ...
+	$ {{.Root.Name}} create project --name "Command Line Project" --use
+	$ {{.CommandPath}} ...
 
 ### Developing Locally
 
 When developing locally we recommend to use the ` + "`--dev`" + ` flag, which uses a lax security setting:
 
-	$ {{.CommandPath}} proxy --dev \
+	$ {{.CommandPath}} --dev \
 		--project <project-id-or-slug> \
 		http://localhost:3000
 
@@ -67,7 +67,7 @@ To go to production set up a custom domain (CNAME) for Ory.
 
 You must set the ` + "`<publish-url>`" + ` if you are using the Ory Proxy behind a gateway:
 
-	$ {{.CommandPath}} proxy \
+	$ {{.CommandPath}} \
 		--project <project-id-or-slug> \
 		http://localhost:3000 \
 		https://gateway.local:5000
@@ -79,7 +79,7 @@ Please note that you can not set a path in the ` + "`<publish-url>`" + `!
 Per default, the proxy listens on port 4000. If you want to listen on another port, use the
 port flag:
 
-	$ {{.CommandPath}} proxy --port 8080 --project <project-id-or-slug> \
+	$ {{.CommandPath}} --port 8080 --project <project-id-or-slug> \
 		http://localhost:3000
 
 ### Multiple Domains
@@ -88,7 +88,7 @@ If the proxy runs on a subdomain, and you want Ory's cookies (e.g. the session c
 be available on all of your domain, you can use the ` + "`--cookie-domain`" + ` flag to customize the cookie
 domain. You will also need to allow your subdomains in the CORS headers:
 
-	$ {{.CommandPath}} proxy --project <project-id-or-slug> \
+	$ {{.CommandPath}} --project <project-id-or-slug> \
 		--cookie-domain gateway.local \
 		--allowed-cors-origins https://www.gateway.local \
 		--allowed-cors-origins https://api.gateway.local \
@@ -182,5 +182,6 @@ An example payload of the JSON Web Token is:
 	client.RegisterYesFlag(flags)
 	cmdx.RegisterNoiseFlags(flags)
 
+	proxyCmd.Root().Name()
 	return proxyCmd
 }
