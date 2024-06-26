@@ -16,6 +16,8 @@ import (
 func NewTunnelCommand() *cobra.Command {
 	conf := config{
 		isTunnel: true,
+		noJWT:    true,
+		open:     false,
 	}
 
 	cmd := &cobra.Command{
@@ -118,6 +120,14 @@ To use a different default redirect URL, use the `+"`--default-redirect-url`"+` 
 				return err
 			}
 			conf.publicURL = selfURL
+
+			appURL, err := url.ParseRequestURI(args[0])
+			if err != nil {
+				return err
+			}
+			if conf.defaultRedirectTo.String() == "" {
+				conf.defaultRedirectTo.URL = *appURL
+			}
 
 			return runReverseProxy(cmd.Context(), h, cmd.ErrOrStderr(), &conf, "tunnel")
 		},

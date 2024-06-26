@@ -164,6 +164,10 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
+			if conf.defaultRedirectTo.String() == "" {
+				conf.defaultRedirectTo.URL = *conf.publicURL
+			}
+
 			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err
@@ -175,6 +179,7 @@ An example payload of the JSON Web Token is:
 
 	flags := proxyCmd.Flags()
 	registerConfigFlags(&conf, flags)
+	registerProxyConfigFlags(&conf, flags)
 
 	client.RegisterConfigFlag(flags)
 	client.RegisterProjectFlag(flags)

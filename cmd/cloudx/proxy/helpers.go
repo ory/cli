@@ -74,11 +74,14 @@ type config struct {
 	rewriteHost bool
 }
 
-func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
+func registerProxyConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.BoolVar(&conf.open, OpenFlag, false, "Open the browser when the proxy starts.")
+	flags.BoolVar(&conf.noJWT, WithoutJWTFlag, false, "Do not create a JWT from the Ory Session. Useful if you need fast start up times of the Ory Proxy.")
+}
+
+func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.StringVar(&conf.cookieDomain, CookieDomainFlag, "", "Set a dedicated cookie domain.")
 	flags.IntVar(&conf.port, PortFlag, portFromEnv(), "The port the proxy should listen on.")
-	flags.BoolVar(&conf.noJWT, WithoutJWTFlag, false, "Do not create a JWT from the Ory Session. Useful if you need fast start up times of the Ory Proxy.")
 	flags.Var(&conf.defaultRedirectTo, DefaultRedirectURLFlag, "Set the URL to redirect to per default after e.g. login or account creation.")
 	flags.StringSliceVar(&conf.corsOrigins, CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
 	flags.BoolVar(&conf.isDev, DevFlag, false, "Use this flag when developing locally.")
@@ -134,9 +137,14 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		mw.UseFunc(sessionToJWTMiddleware(conf, writer, key, signer, oryURL)) // This must be the last method before the handler
 	}
 
-	upstream, err := url.ParseRequestURI(conf.upstream)
-	if err != nil {
-		return errors.Wrap(err, "unable to parse upstream URL")
+	var upstream *url.URL
+	if conf.isTunnel {
+		upstream = oryURL
+	} else {
+		upstream, err = url.ParseRequestURI(conf.upstream)
+		if err != nil {
+			return errors.Wrap(err, "unable to parse upstream URL")
+		}
 	}
 
 	mw.UseHandler(proxy.New(
@@ -205,9 +213,13 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		}
 	}
 
+	corsOrigins, err := corsx.NormalizeOriginStrings(append(conf.corsOrigins, conf.publicURL.String()))
+	if err != nil {
+		return err
+	}
 	addr := fmt.Sprintf(":%d", conf.port)
 	ch := cors.New(cors.Options{
-		AllowedOrigins:         conf.corsOrigins,
+		AllowedOrigins:         corsOrigins,
 		AllowOriginRequestFunc: originFunc,
 		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
 		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
