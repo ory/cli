@@ -113,11 +113,16 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		}
 	}()
 
-	project, err := h.GetSelectedProject(ctx)
-	if err != nil {
-		return err
+	// TODO: we probably don't want to support this in the future, but it requires to be authenticated
+	slug := os.Getenv("ORY_PROJECT_SLUG")
+	if slug == "" {
+		project, err := h.GetSelectedProject(ctx)
+		if err != nil {
+			return err
+		}
+		slug = project.Slug
 	}
-	oryURL := client.CloudAPIsURL(project.Slug)
+	oryURL := client.CloudAPIsURL(slug)
 
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use on localhost.

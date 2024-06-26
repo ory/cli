@@ -164,14 +164,6 @@ An example payload of the JSON Web Token is:
 				return err
 			}
 
-			//			oryURL, err := getEndpointURL(cmd)
-			if err != nil {
-				return err
-			}
-
-			if err != nil {
-				return err
-			}
 			h, err := client.NewCobraCommandHelper(cmd)
 			if err != nil {
 				return err

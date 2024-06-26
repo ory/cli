@@ -112,6 +112,8 @@ To use a different default redirect URL, use the `+"`--default-redirect-url`"+` 
 	registerConfigFlags(&conf, cmd.Flags())
 	client.RegisterConfigFlag(cmd.Flags())
 	client.RegisterYesFlag(cmd.Flags())
+	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 
 	cmdx.EnableUsageTemplating(cmd)
