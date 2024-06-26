@@ -12,13 +12,13 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/pkg/browser"
 	"github.com/spf13/pflag"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -50,7 +50,6 @@ const (
 	WithoutJWTFlag         = "no-jwt"
 	CookieDomainFlag       = "cookie-domain"
 	DefaultRedirectURLFlag = "default-redirect-url"
-	ProjectFlag            = "project"
 	CORSFlag               = "allowed-cors-origins"
 	RewriteHostFlag        = "rewrite-host"
 )
@@ -259,8 +258,7 @@ and configure your SDKs to point to it, for example in JavaScript:
 	}
 
 	if conf.open {
-		// #nosec G204 - this is ok
-		if err := exec.Command("open", fmt.Sprintf("%q", conf.publicURL.String())).Run(); err != nil {
+		if err := browser.OpenURL(conf.publicURL.String()); err != nil {
 			_, _ = fmt.Fprintln(stdErr, "Unable to automatically open the proxy URL in your browser. Please open it manually!")
 		}
 	}
