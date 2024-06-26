@@ -134,9 +134,14 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		mw.UseFunc(sessionToJWTMiddleware(conf, writer, key, signer, oryURL)) // This must be the last method before the handler
 	}
 
-	upstream, err := url.ParseRequestURI(conf.upstream)
-	if err != nil {
-		return errors.Wrap(err, "unable to parse upstream URL")
+	var upstream *url.URL
+	if conf.upstream != "" {
+		upstream, err = url.ParseRequestURI(conf.upstream)
+		if err != nil {
+			return errors.Wrap(err, "unable to parse upstream URL")
+		}
+	} else {
+		upstream = oryURL
 	}
 
 	mw.UseHandler(proxy.New(
