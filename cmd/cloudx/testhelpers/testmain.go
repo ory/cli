@@ -27,7 +27,7 @@ func setEnvIfUnset(key, value string) {
 
 func UseStaging() {
 	setEnvIfUnset(client.ConsoleURLKey, "https://console.staging.ory.dev:443")
-	setEnvIfUnset(client.OryAPIsURLKey, "https://staging.oryapis.dev:443")
+	setEnvIfUnset(client.OryAPIsURLKey, "https://projects.staging.oryapis.dev:443")
 }
 
 func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
