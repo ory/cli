@@ -42,7 +42,7 @@ func CloudAPIsURL(slug string) *url.URL {
 	if err != nil {
 		oryAPIsURL = &url.URL{Scheme: "https", Host: "projects.oryapis.com"}
 	}
-	oryAPIsURL.Host = slug + ".projects." + oryAPIsURL.Host
+	oryAPIsURL.Host = slug + "." + oryAPIsURL.Host
 	if oryAPIsURL.Port() == "" {
 		oryAPIsURL.Host = oryAPIsURL.Host + ":443"
 	}

@@ -134,14 +134,9 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		mw.UseFunc(sessionToJWTMiddleware(conf, writer, key, signer, oryURL)) // This must be the last method before the handler
 	}
 
-	var upstream *url.URL
-	if conf.upstream != "" {
-		upstream, err = url.ParseRequestURI(conf.upstream)
-		if err != nil {
-			return errors.Wrap(err, "unable to parse upstream URL")
-		}
-	} else {
-		upstream = oryURL
+	upstream, err := url.ParseRequestURI(conf.upstream)
+	if err != nil {
+		return errors.Wrap(err, "unable to parse upstream URL")
 	}
 
 	mw.UseHandler(proxy.New(
@@ -245,10 +240,10 @@ and configure your SDKs to point to it, for example in JavaScript:
 
 `, conf.publicURL.String())
 	} else {
-		_, _ = fmt.Fprintf(stdErr, `To access your application via the Ory %s, open:
+		_, _ = fmt.Fprintf(stdErr, `To access your application via the Ory Proxy, open:
 
 	%s
-`, strings.ToUpper(name[:1])+name[1:], conf.publicURL.String())
+`, conf.publicURL.String())
 	}
 
 	if conf.open {

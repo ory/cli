@@ -14,7 +14,9 @@ import (
 )
 
 func NewTunnelCommand() *cobra.Command {
-	conf := config{}
+	conf := config{
+		isTunnel: true,
+	}
 
 	cmd := &cobra.Command{
 		Use:   "tunnel <application-url> [<tunnel-url>]",
