@@ -96,10 +96,17 @@ func portFromEnv() int {
 	return port
 }
 
-func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Writer, conf *config, name string) error {
-	writer := herodot.NewJSONWriter(&errorLogger{Writer: stdErr})
-	mw := negroni.New()
+type responseStatusCatcher struct {
+	http.ResponseWriter
+	status int
+}
 
+func (r *responseStatusCatcher) WriteHeader(status int) {
+	r.status = status
+	r.ResponseWriter.WriteHeader(status)
+}
+
+func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Writer, conf *config, name string) error {
 	signer, key, err := newJWTSigner()
 	if err != nil {
 		return err
@@ -125,6 +132,18 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		slug = project.Slug
 	}
 	oryURL := client.CloudAPIsURL(slug)
+	oryURL.Host = strings.TrimSuffix(oryURL.Host, ":443")
+
+	writer := herodot.NewJSONWriter(&errorLogger{Writer: stdErr})
+	mw := negroni.New()
+
+	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
+		start := time.Now()
+		_, _ = fmt.Fprintf(stdErr, "%s [%s]\n", r.Method, r.URL)
+		statusCatcher := &responseStatusCatcher{ResponseWriter: w}
+		n(statusCatcher, r)
+		_, _ = fmt.Fprintf(stdErr, "=> %d %s [%s] took %s\n", statusCatcher.status, r.Method, r.URL, time.Since(start))
+	})
 
 	mw.UseFunc(func(w http.ResponseWriter, r *http.Request, n http.HandlerFunc) {
 		// Disable HSTS because it is very annoying to use on localhost.
@@ -254,6 +273,7 @@ and configure your SDKs to point to it, for example in JavaScript:
 		_, _ = fmt.Fprintf(stdErr, `To access your application via the Ory Proxy, open:
 
 	%s
+
 `, conf.publicURL.String())
 	}
 
