@@ -5,6 +5,7 @@ package proxy
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
@@ -105,7 +106,18 @@ To use a different default redirect URL, use the `+"`--default-redirect-url`"+` 
 			if err != nil {
 				return err
 			}
-			return runReverseProxy(cmd.Context(), h, cmd.ErrOrStderr(), &conf, "cloud")
+			selfURLString := fmt.Sprintf("http://localhost:%d", conf.port)
+			if len(args) == 2 {
+				selfURLString = args[1]
+			}
+
+			selfURL, err := url.ParseRequestURI(selfURLString)
+			if err != nil {
+				return err
+			}
+			conf.publicURL = selfURL
+
+			return runReverseProxy(cmd.Context(), h, cmd.ErrOrStderr(), &conf, "tunnel")
 		},
 	}
 

@@ -245,10 +245,10 @@ and configure your SDKs to point to it, for example in JavaScript:
 
 `, conf.publicURL.String())
 	} else {
-		_, _ = fmt.Fprintf(stdErr, `To access your application via the Ory Proxy, open:
+		_, _ = fmt.Fprintf(stdErr, `To access your application via the Ory %s, open:
 
 	%s
-`, conf.publicURL.String())
+`, strings.ToUpper(name[:1])+name[1:], conf.publicURL.String())
 	}
 
 	if conf.open {
