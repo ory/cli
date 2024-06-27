@@ -106,7 +106,8 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 		return nil
 	}
 
-	if err := h.loginOAuth2(ctx); err != nil {
+	config, err = h.loginOAuth2(ctx)
+	if err != nil {
 		return err
 	}
 
@@ -129,11 +130,11 @@ func oauth2ClientConfig() *oauth2.Config {
 	}
 }
 
-func (h *CommandHelper) loginOAuth2(ctx context.Context) error {
+func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 	client := oauth2ClientConfig()
 	token, err := h.oAuth2DanceWithServer(ctx, client)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	scope, _ := token.Extra("scope").(string)
@@ -143,29 +144,29 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) error {
 			time.Until(token.Expiry).Round(time.Second),
 		)
 	}
-	cl, err := NewOryProjectClient(func(c *cloud.Configuration) {
-		c.HTTPClient = newOAuth2TokenClient(client.TokenSource(ctx, token))
-	})
-	if err != nil {
-		return err
-	}
-	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(ctx).Execute()
-	if err != nil {
-		return err
-	}
+
 	config := &Config{
 		AccessToken: token,
 	}
+	cl, err := NewOryProjectClient()
+	if err != nil {
+		return nil, err
+	}
+	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
+	if err != nil {
+		return nil, err
+	}
+
 	if err := config.fromUserinfo(userInfo); err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := h.UpdateConfig(config); err != nil {
-		return err
+		return nil, err
 	}
 
 	_, _ = fmt.Fprintln(h.VerboseErrWriter, "Successfully logged into Ory Network.")
-	return nil
+	return config, nil
 }
 
 func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth2.Config) (token *oauth2.Token, err error) {
