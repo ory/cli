@@ -4,9 +4,11 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/oauth2"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -30,7 +32,7 @@ const (
 	ConfigFileName = ".ory-cloud.json"
 	FlagConfig     = "config"
 	ConfigPathKey  = "ORY_CONFIG_PATH"
-	ConfigVersion  = "v0alpha0"
+	ConfigVersion  = "v1"
 )
 
 func RegisterConfigFlag(f *pflag.FlagSet) {
@@ -117,11 +119,11 @@ func (h *CommandHelper) SelectProject(id string) error {
 }
 
 type Config struct {
-	Version           string    `json:"version"`
-	SessionToken      string    `json:"session_token"`
-	SelectedProject   uuid.UUID `json:"selected_project"`
-	SelectedWorkspace uuid.UUID `json:"selected_workspace"`
-	IdentityTraits    Identity  `json:"session_identity_traits"`
+	Version           string        `json:"version"`
+	AccessToken       *oauth2.Token `json:"access_token"`
+	SelectedProject   uuid.UUID     `json:"selected_project"`
+	SelectedWorkspace uuid.UUID     `json:"selected_workspace"`
+	IdentityTraits    Identity      `json:"session_identity_traits"`
 
 	// isAuthenticated is a flag that we set once the session was checked and is valid.
 	// Because this is not stored to the config file, it means that every command execution does at most one session check.
@@ -160,4 +162,8 @@ type Identity struct {
 	ID    uuid.UUID
 	Email string `json:"email"`
 	Name  string `json:"name"`
+}
+
+func (c *Config) TokenSource(ctx context.Context) oauth2.TokenSource {
+	return oauth2ClientConfig().TokenSource(ctx, c.AccessToken)
 }
