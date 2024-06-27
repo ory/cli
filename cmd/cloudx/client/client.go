@@ -99,7 +99,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 		}
 		conf := hydra.NewConfiguration()
 		conf.Servers = hydra.ServerConfigurations{{URL: apiURL.String(), Variables: make(map[string]hydra.ServerVariable)}}
-		conf.Debug = true
+		// conf.Debug = true
 		conf.UserAgent = "ory-cli/" + buildinfo.Version
 
 		cmd.SetContext(context.WithValue(cmd.Context(), hydra.ContextOAuth2, ac.TokenSource()))

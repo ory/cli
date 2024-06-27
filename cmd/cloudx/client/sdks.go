@@ -69,6 +69,6 @@ func newCloudClient() *cloud.APIClient {
 	if RateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", RateLimitHeader)
 	}
-	conf.Debug = true
+	// conf.Debug = true
 	return cloud.NewAPIClient(conf)
 }

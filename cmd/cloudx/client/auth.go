@@ -98,7 +98,7 @@ func (h *CommandHelper) loginOAuth2() (*AuthContext, error) {
 	pkceVerifier := oauth2.GenerateVerifier()
 	url := oac.AuthCodeURL(state,
 		oauth2.S256ChallengeOption(pkceVerifier),
-		oauth2.SetAuthURLParam("scope", "offline_access"),
+		oauth2.SetAuthURLParam("scope", "offline_access full_access"),
 		oauth2.SetAuthURLParam("response_type", "code"),
 		oauth2.SetAuthURLParam("prompt", "login consent"),
 		oauth2.SetAuthURLParam("audience", makeCloudConsoleURL("api")),
@@ -165,7 +165,7 @@ func (h *CommandHelper) runOAuth2CallbackServer(state string) (callbackURL strin
 	)
 	rand.Shuffle(len(ports), func(i, j int) { ports[i], ports[j] = ports[j], ports[i] })
 	for _, port := range ports {
-		l, err = net.Listen("tcp", fmt.Sprintf(":%d", port))
+		l, err = net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 		if err == nil {
 			callbackURL = fmt.Sprintf("http://localhost:%d/callback", port)
 			break
