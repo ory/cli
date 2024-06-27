@@ -11,15 +11,14 @@ import (
 	"os"
 	"time"
 
-	cloud "github.com/ory/client-go"
-
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/spf13/cobra"
-
+	cloud "github.com/ory/client-go"
 	hydra "github.com/ory/hydra-client-go/v2"
 	hydracli "github.com/ory/hydra/v2/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
 	"github.com/ory/x/cmdx"
+	"github.com/spf13/cobra"
+	"golang.org/x/oauth2"
 )
 
 func Client(cmd *cobra.Command) (*retryablehttp.Client, *Config, *cloud.Project, error) {
@@ -60,6 +59,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 	})
 
 	ctx = context.WithValue(ctx, hydracli.ClientContextKey, func(cmd *cobra.Command) (*hydra.APIClient, *url.URL, error) {
+		ctx := cmd.Context()
 		c, ac, p, err := Client(cmd)
 		if err != nil {
 			return nil, nil, err
@@ -67,8 +67,11 @@ func ContextWithClient(ctx context.Context) context.Context {
 
 		conf := hydra.NewConfiguration()
 		conf.HTTPClient = &http.Client{
-			Transport: &bearerTokenTransporter{RoundTripper: c.StandardClient().Transport, bearerToken: ac.SessionToken},
-			Timeout:   time.Second * 30,
+			Transport: &oauth2.Transport{
+				Base:   c.StandardClient().Transport,
+				Source: ac.TokenSource(ctx),
+			},
+			Timeout: time.Second * 30,
 		}
 
 		consoleProjectURL := cloudConsoleURL(p.Slug + ".projects")
@@ -78,6 +81,7 @@ func ContextWithClient(ctx context.Context) context.Context {
 	})
 
 	ctx = context.WithValue(ctx, kratoscli.ClientContextKey, func(cmd *cobra.Command) (*kratoscli.ClientContext, error) {
+		ctx := cmd.Context()
 		c, ac, p, err := Client(cmd)
 		if err != nil {
 			return nil, err
@@ -87,9 +91,9 @@ func ContextWithClient(ctx context.Context) context.Context {
 		return &kratoscli.ClientContext{
 			Endpoint: cloudConsoleURL(p.Slug + ".projects").String(),
 			HTTPClient: &http.Client{
-				Transport: &bearerTokenTransporter{
-					RoundTripper: c.StandardClient().Transport,
-					bearerToken:  ac.SessionToken,
+				Transport: &oauth2.Transport{
+					Base:   c.StandardClient().Transport,
+					Source: ac.TokenSource(ctx),
 				},
 				Timeout: time.Second * 30,
 			},

@@ -4,21 +4,27 @@
 package client
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	stderrors "errors"
 	"fmt"
-
 	"github.com/gofrs/uuid"
-	"github.com/tidwall/gjson"
-
 	cloud "github.com/ory/client-go"
-	"github.com/ory/x/cmdx"
-	"github.com/ory/x/stringsx"
+	"github.com/ory/x/randx"
+	"github.com/ory/x/urlx"
+	"github.com/pkg/browser"
+	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
+	"math/rand/v2"
+	"net"
+	"net/http"
+	"net/url"
+	"slices"
+	"strings"
+	"time"
 )
 
-func (h *CommandHelper) checkSession(ctx context.Context) error {
+func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
 	c, err := h.getConfig()
 	if err != nil {
 		return err
@@ -26,26 +32,17 @@ func (h *CommandHelper) checkSession(ctx context.Context) error {
 	if c.isAuthenticated {
 		return nil
 	}
-	if c.SessionToken == "" {
+	if c.AccessToken == nil {
 		return ErrNotAuthenticated
 	}
-
-	client, err := NewOryProjectClient()
-	if err != nil {
-		return err
+	if c.AccessToken.Expiry.Before(time.Now()) {
+		return ErrReauthenticate
 	}
-
-	sess, _, err := client.FrontendAPI.ToSession(ctx).XSessionToken(c.SessionToken).Execute()
-	if err != nil || sess == nil {
-		return stderrors.Join(err, ErrReauthenticate)
-	}
-	c.isAuthenticated = true
-
 	return nil
 }
 
 func (h *CommandHelper) GetAuthenticatedConfig(ctx context.Context) (*Config, error) {
-	if err := h.checkSession(ctx); err == nil {
+	if err := h.checkAuthenticated(ctx); err == nil {
 		return h.getConfig()
 	} else if stderrors.Is(err, ErrReauthenticate) {
 		if h.isQuiet {
@@ -68,156 +65,26 @@ func (h *CommandHelper) GetAuthenticatedConfig(ctx context.Context) (*Config, er
 	return h.getConfig()
 }
 
-func (h *CommandHelper) signup(ctx context.Context, c *cloud.APIClient) error {
-	flow, _, err := c.FrontendAPI.CreateNativeRegistrationFlow(ctx).Execute()
-	if err != nil {
-		return err
+func (c *Config) fromUserinfo(info *cloud.OidcUserInfo) error {
+	c.IdentityTraits = Identity{}
+	if info.Email != nil {
+		c.IdentityTraits.Email = *info.Email
+	} else {
+		return fmt.Errorf("userinfo response did not contain email")
 	}
-
-doRegistration:
-	var form cloud.UpdateRegistrationFlowWithPasswordMethod
-	if err := renderForm(h.Stdin, h.pwReader, h.VerboseErrWriter, flow.Ui, "password", &form); err != nil {
-		return err
+	if info.Name != nil {
+		c.IdentityTraits.Name = *info.Name
+	} else {
+		return fmt.Errorf("userinfo response did not contain name")
 	}
-
-	signup, _, err := c.FrontendAPI.
-		UpdateRegistrationFlow(ctx).
-		Flow(flow.Id).
-		UpdateRegistrationFlowBody(cloud.UpdateRegistrationFlowBody{UpdateRegistrationFlowWithPasswordMethod: &form}).
-		Execute()
-	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *cloud.RegistrationFlow:
-				flow = m
-			case cloud.RegistrationFlow:
-				flow = &m
-			}
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour account creation attempt failed. Please try again!\n\n")
-			goto doRegistration
+	if info.Sub != nil {
+		var err error
+		c.IdentityTraits.ID, err = uuid.FromString(*info.Sub)
+		if err != nil {
+			return err
 		}
-
-		return err
-	}
-
-	sessionToken := *signup.SessionToken
-	sess, _, err := c.FrontendAPI.ToSession(ctx).XSessionToken(sessionToken).Execute()
-	if err != nil {
-		return err
-	}
-
-	config := new(Config)
-	if err := config.fromSession(sess, sessionToken); err != nil {
-		return err
-	}
-	return h.UpdateConfig(config)
-}
-
-func (h *CommandHelper) signin(ctx context.Context, c *cloud.APIClient, sessionToken string) error {
-	req := c.FrontendAPI.CreateNativeLoginFlow(ctx)
-	if len(sessionToken) > 0 {
-		req = req.XSessionToken(sessionToken).Aal("aal2")
-	}
-	flow, _, err := req.Execute()
-	if err != nil {
-		return err
-	}
-
-doLogin:
-	var form interface{} = &cloud.UpdateLoginFlowWithPasswordMethod{}
-	method := "password"
-	if len(sessionToken) > 0 {
-		var foundTOTP, foundLookup bool
-		for _, n := range flow.Ui.Nodes {
-			foundTOTP = foundTOTP || n.Group == "totp"
-			foundLookup = foundLookup || n.Group == "lookup_secret"
-		}
-		if !foundLookup && !foundTOTP {
-			return stderrors.New("only TOTP and lookup secrets are supported for two-step verification in the CLI")
-		}
-
-		method = "lookup_secret"
-		if foundTOTP {
-			form = &cloud.UpdateLoginFlowWithTotpMethod{}
-			method = "totp"
-		}
-	}
-
-	if err := renderForm(h.Stdin, h.pwReader, h.VerboseErrWriter, flow.Ui, method, form); err != nil {
-		return err
-	}
-
-	var body cloud.UpdateLoginFlowBody
-	switch e := form.(type) {
-	case *cloud.UpdateLoginFlowWithTotpMethod:
-		body.UpdateLoginFlowWithTotpMethod = e
-	case *cloud.UpdateLoginFlowWithPasswordMethod:
-		body.UpdateLoginFlowWithPasswordMethod = e
-	default:
-		panic("unexpected type")
-	}
-
-	login, _, err := c.FrontendAPI.UpdateLoginFlow(ctx).XSessionToken(sessionToken).
-		Flow(flow.Id).UpdateLoginFlowBody(body).Execute()
-	if err != nil {
-		if e, ok := err.(*cloud.GenericOpenAPIError); ok {
-			switch m := e.Model().(type) {
-			case *cloud.LoginFlow:
-				flow = m
-			case cloud.LoginFlow:
-				flow = &m
-			}
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "\nYour sign in attempt failed. Please try again!\n\n")
-			goto doLogin
-		}
-
-		return err
-	}
-
-	sessionToken = stringsx.Coalesce(*login.SessionToken, sessionToken)
-	sess, _, err := c.FrontendAPI.ToSession(ctx).XSessionToken(sessionToken).Execute()
-	if err != nil {
-		if e, ok := err.(interface{ Body() []byte }); ok {
-			switch gjson.GetBytes(e.Body(), "error.id").String() {
-			case "session_aal2_required":
-				return h.signin(ctx, c, sessionToken)
-			}
-		}
-		return err
-	}
-	config := new(Config)
-	if err := config.fromSession(sess, sessionToken); err != nil {
-		return err
-	}
-	return h.UpdateConfig(config)
-
-}
-
-func getField(i interface{}, path string) (*gjson.Result, error) {
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(i); err != nil {
-		return nil, err
-	}
-	result := gjson.GetBytes(b.Bytes(), path)
-	return &result, nil
-}
-
-func (c *Config) fromSession(session *cloud.Session, token string) error {
-	email, err := getField(session.Identity.Traits, "email")
-	if err != nil {
-		return err
-	}
-	name, err := getField(session.Identity.Traits, "name")
-	if err != nil {
-		return err
-	}
-
-	c.Version = ConfigVersion
-	c.SessionToken = token
-	c.IdentityTraits = Identity{
-		Email: email.String(),
-		Name:  name.String(),
-		ID:    uuid.FromStringOrNil(session.Identity.Id),
+	} else {
+		return fmt.Errorf("userinfo response did not contain sub")
 	}
 	return nil
 }
@@ -234,49 +101,13 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 		return err
 	}
 
-	if len(config.SessionToken) > 0 {
-		if !h.noConfirm {
-			ok, err := cmdx.AskScannerForConfirmation(fmt.Sprintf("You are signed in as %q already. Do you wish to authenticate with another account?", config.IdentityTraits.Email), h.Stdin, h.VerboseErrWriter)
-			if err != nil {
-				return err
-			} else if !ok {
-				return nil
-			}
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "Ok, signing you out!\n")
-		}
-
-		if err := h.ClearConfig(); err != nil {
-			return err
-		}
+	if config.AccessToken != nil {
+		_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are already logged in. Use the logout command to log out.\n")
+		return nil
 	}
 
-	c, err := NewOryProjectClient()
-	if err != nil {
+	if err := h.loginOAuth2(ctx); err != nil {
 		return err
-	}
-
-	signIn, err := cmdx.AskScannerForConfirmation("Do you want to sign in to an existing Ory Network account?", h.Stdin, h.VerboseErrWriter)
-	if err != nil {
-		return err
-	}
-
-	if signIn {
-		if err := h.signin(ctx, c, ""); err != nil {
-			return err
-		}
-	} else {
-		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Great to have you! Let's create a new Ory Network account.")
-		if err := h.signup(ctx, c); err != nil {
-			return err
-		}
-	}
-
-	config, err = h.getConfig()
-	if err != nil {
-		return err
-	}
-	if len(config.SessionToken) == 0 {
-		return fmt.Errorf("unable to authenticate")
 	}
 
 	_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are now signed in as: %s\n", config.IdentityTraits.Email)
@@ -286,3 +117,205 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 func (h *CommandHelper) ClearConfig() error {
 	return h.UpdateConfig(new(Config))
 }
+
+func oauth2ClientConfig() *oauth2.Config {
+	return &oauth2.Config{
+		ClientID: "ory-cli",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:   urlx.AppendPaths(cloudConsoleURL("project"), "/oauth2/auth").String(),
+			TokenURL:  urlx.AppendPaths(cloudConsoleURL("project"), "/oauth2/token").String(),
+			AuthStyle: oauth2.AuthStyleInParams,
+		},
+	}
+}
+
+func (h *CommandHelper) loginOAuth2(ctx context.Context) error {
+	client := oauth2ClientConfig()
+	token, err := h.oAuth2DanceWithServer(ctx, client)
+	if err != nil {
+		return err
+	}
+
+	scope, _ := token.Extra("scope").(string)
+	if !slices.Contains(strings.Split(scope, " "), "offline_access") {
+		_, _ = fmt.Fprintf(h.VerboseErrWriter,
+			"You have not granted the 'offline_access' permission during login and will have to authenticate again in %s.\n",
+			time.Until(token.Expiry).Round(time.Second),
+		)
+	}
+	cl, err := NewOryProjectClient(func(c *cloud.Configuration) {
+		c.HTTPClient = newOAuth2TokenClient(client.TokenSource(ctx, token))
+	})
+	if err != nil {
+		return err
+	}
+	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(ctx).Execute()
+	if err != nil {
+		return err
+	}
+	config := &Config{
+		AccessToken: token,
+	}
+	if err := config.fromUserinfo(userInfo); err != nil {
+		return err
+	}
+
+	if err := h.UpdateConfig(config); err != nil {
+		return err
+	}
+
+	_, _ = fmt.Fprintln(h.VerboseErrWriter, "Successfully logged into Ory Network.")
+	return nil
+}
+
+func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth2.Config) (token *oauth2.Token, err error) {
+	var (
+		l            net.Listener
+		state        = randx.MustString(32, randx.AlphaNum)
+		pkceVerifier = oauth2.GenerateVerifier()
+		ports        = []int{12345, 34525, 49763, 51238, 59724, 60582, 62125}
+	)
+	rand.Shuffle(len(ports), func(i, j int) { ports[i], ports[j] = ports[j], ports[i] })
+	for _, port := range ports {
+		l, err = net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
+		if err == nil {
+			client.RedirectURL = fmt.Sprintf("http://localhost:%d/callback", port)
+			break
+		}
+	}
+	if l == nil {
+		return nil, fmt.Errorf("failed to allocate port for OAuth2 callback handler, try again later: last error: %w", err)
+	}
+
+	var (
+		serverErr   = make(chan error)
+		serverToken = make(chan *oauth2.Token)
+	)
+	srv := http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// for retries the user has to start from the beginning
+			defer close(serverErr)
+			defer close(serverToken)
+
+			ctx := r.Context()
+			if err := r.ParseForm(); err != nil {
+				redirectErr(w, r, "parse form", "An error occurred during CLI authentication. Please try again")
+				serverErr <- fmt.Errorf("failed to parse form: %w", err)
+				return
+			}
+			if s := r.Form.Get("state"); s != state {
+				redirectErr(w, r, "state mismatch", "An error occurred during CLI authentication. Please try again")
+				serverErr <- fmt.Errorf("state mismatch: expected %q, got %q", state, s)
+				return
+			}
+			if r.Form.Has("error") {
+				e, d := r.Form.Get("error"), r.Form.Get("error_description")
+				redirectErr(w, r, e, d)
+				serverErr <- fmt.Errorf("upsteam error: %s: %s", e, d)
+				return
+			}
+			code := r.Form.Get("code")
+			if code == "" {
+				redirectErr(w, r, "missing code", "An error occurred during CLI authentication. Please try again")
+				serverErr <- fmt.Errorf("missing code")
+				return
+			}
+			t, err := client.Exchange(
+				ctx,
+				code,
+				oauth2.VerifierOption(pkceVerifier),
+			)
+			if err != nil {
+				redirectErr(w, r, "token exchange", "An error occurred during the OAuth2 token exchange")
+				serverErr <- fmt.Errorf("failed OAuth2 token exchange: %w", err)
+				return
+			}
+			serverToken <- t
+			redirectOK(w, r)
+		}),
+	}
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() (err error) {
+		if err := srv.Serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			return fmt.Errorf("failed to serve OAuth2 callback handler: %w", err)
+		}
+		return nil
+	})
+	eg.Go(func() (err error) {
+		select {
+		case <-ctx.Done():
+			err = ctx.Err()
+		case token = <-serverToken:
+		case err = <-serverErr:
+		}
+		ctx, cancel := context.WithDeadline(context.WithoutCancel(ctx), time.Now().Add(2*time.Second))
+		defer cancel()
+		return stderrors.Join(err, srv.Shutdown(ctx))
+	})
+
+	u := client.AuthCodeURL(state,
+		oauth2.S256ChallengeOption(pkceVerifier),
+		oauth2.SetAuthURLParam("scope", "offline_access"),
+		oauth2.SetAuthURLParam("response_type", "code"),
+		oauth2.SetAuthURLParam("prompt", "login consent"),
+		oauth2.SetAuthURLParam("audience", cloudConsoleURL("api").String()),
+	)
+	_ = browser.OpenURL(u)
+	_, _ = fmt.Fprintf(h.VerboseErrWriter,
+		`A browser should have opened for you to complete your login to Ory Network.
+If no browser opened, visit the below page to continue:
+
+		%s
+
+`, u)
+
+	if err := eg.Wait(); err != nil {
+		return nil, fmt.Errorf("failed to authenticate, please try again: %w", err)
+	}
+	return token, nil
+}
+
+func redirectOK(w http.ResponseWriter, r *http.Request) {
+	location := cloudConsoleURL("")
+	location.Path = "/projects/current/dashboard"
+	location.RawQuery = url.Values{"cli_auth": []string{"success"}}.Encode()
+	http.Redirect(w, r, location.String(), http.StatusFound)
+}
+
+func redirectErr(w http.ResponseWriter, r *http.Request, err, desc string) {
+	location := cloudConsoleURL("")
+	location.Path = "/error"
+	location.RawQuery = url.Values{"error": []string{err}, "error_description": []string{desc}}.Encode()
+	http.Redirect(w, r, location.String(), http.StatusFound)
+}
+
+/*
+func (h *CommandHelper) SignOut() error {
+	ac, err := h.readConfig()
+	if err != nil {
+		return err
+	}
+	if ac.AccessToken == nil {
+		return h.WriteConfig(new(AuthContext))
+	}
+	revoke, err := url.Parse(oac.Endpoint.AuthURL)
+	if err != nil {
+		return err
+	}
+	revoke.Path = "/oauth2/revoke"
+	res, err := http.PostForm(revoke.String(), url.Values{
+		"client_id": []string{oac.ClientID},
+		"token":     []string{ac.AccessToken.RefreshToken}, // this also revokes the associated access token
+	})
+	if err != nil {
+		fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", err)
+	} else {
+		defer res.Body.Close()
+		if res.StatusCode < 200 || res.StatusCode > 299 {
+			body, _ := io.ReadAll(res.Body)
+			fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", string(body))
+		}
+	}
+	return h.WriteConfig(new(AuthContext))
+}
+*/

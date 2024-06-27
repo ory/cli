@@ -28,7 +28,9 @@ func cloudConsoleURL(prefix string) *url.URL {
 	if err != nil {
 		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
-	consoleURL.Host = prefix + "." + consoleURL.Host
+	if prefix != "" {
+		consoleURL.Host = prefix + "." + consoleURL.Host
+	}
 	if consoleURL.Port() == "" {
 		consoleURL.Host = consoleURL.Host + ":443"
 	}
@@ -50,10 +52,13 @@ func CloudAPIsURL(slug string) *url.URL {
 	return oryAPIsURL
 }
 
-func NewOryProjectClient() (*cloud.APIClient, error) {
+func NewOryProjectClient(opts ...func(*cloud.Configuration)) (*cloud.APIClient, error) {
 	conf := cloud.NewConfiguration()
 	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("project").String()}}
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
+	for _, o := range opts {
+		o(conf)
+	}
 	if rateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
 	}
@@ -70,7 +75,7 @@ func (h *CommandHelper) newCloudClient(ctx context.Context) (*cloud.APIClient, e
 	conf := cloud.NewConfiguration()
 	conf.OperationServers = nil
 	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("api").String()}}
-	conf.HTTPClient = newBearerTokenClient(config.SessionToken)
+	conf.HTTPClient = newOAuth2TokenClient(config.TokenSource(ctx))
 	if rateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
 	}
