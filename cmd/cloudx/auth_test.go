@@ -72,7 +72,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("forced to reauthenticate on session expiration", func(t *testing.T) {
-			cmd := testhelpers.CmdWithConfig(configDir)
+			cmd := testhelpers.Cmd(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
@@ -83,7 +83,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("user is able to reauthenticate on session expiration", func(t *testing.T) {
-			cmd := testhelpers.CmdWithConfig(configDir)
+			cmd := testhelpers.Cmd(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			var r bytes.Buffer
@@ -95,7 +95,7 @@ func TestAuthenticator(t *testing.T) {
 		})
 
 		t.Run("expired session with quiet flag returns error", func(t *testing.T) {
-			cmd := testhelpers.CmdWithConfig(configDir)
+			cmd := testhelpers.Cmd(configDir)
 			expectSignInSuccess(t)
 			testhelpers.ChangeAccessToken(t, configDir)
 			_, stderr, err := cmd.Exec(nil, "list", "projects", "-q")
@@ -108,7 +108,7 @@ func TestAuthenticator(t *testing.T) {
 			expectSignInSuccess(t)
 			ac := testhelpers.ReadConfig(t, configDir)
 
-			c, err := client.NewOryProjectClient()
+			c, err := client.NewPublicOryProjectClient()
 			require.NoError(t, err)
 
 			flow, _, err := c.FrontendAPI.CreateNativeSettingsFlow(context.Background()).XSessionToken(ac.SessionToken).Execute()

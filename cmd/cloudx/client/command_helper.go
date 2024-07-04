@@ -13,6 +13,9 @@ import (
 	"os"
 	"os/user"
 	"strings"
+	"testing"
+
+	"github.com/pkg/browser"
 
 	"github.com/ory/x/pointerx"
 
@@ -20,7 +23,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
-	"golang.org/x/term"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
@@ -31,21 +33,26 @@ import (
 const (
 	WorkspaceKey = "ORY_WORKSPACE"
 	ProjectKey   = "ORY_PROJECT"
+
+	WorkspaceAPIKey = "ORY_WORKSPACE_API_KEY"
+	ProjectAPIKey   = "ORY_PROJECT_API_KEY"
 )
 
 var ErrProjectNotSet = fmt.Errorf("no project was specified")
 
 type (
 	CommandHelper struct {
-		config           *Config
-		projectID        *string
-		workspaceID      *string
-		configLocation   string
-		noConfirm        bool
-		isQuiet          bool
-		VerboseErrWriter io.Writer
-		Stdin            *bufio.Reader
-		pwReader         passwordReader
+		config            *Config
+		projectOverride   *string
+		workspaceOverride *string
+		configLocation    string
+		noConfirm         bool
+		isQuiet           bool
+		VerboseErrWriter  io.Writer
+		Stdin             *bufio.Reader
+		openBrowserHook   func(string) error
+		projectAPIKey     *string
+		workspaceAPIKey   *string
 	}
 	helperOptionsContextKey struct{}
 	CommandHelperOption     func(*CommandHelper)
@@ -53,7 +60,10 @@ type (
 
 func ContextWithOptions(ctx context.Context, opts ...CommandHelperOption) context.Context {
 	baseOpts, _ := ctx.Value(helperOptionsContextKey{}).([]CommandHelperOption)
-	return context.WithValue(ctx, helperOptionsContextKey{}, append(baseOpts[:], opts...))
+	newOpts := make([]CommandHelperOption, len(baseOpts)+len(opts))
+	copy(newOpts, baseOpts)
+	copy(newOpts[len(baseOpts):], opts)
+	return context.WithValue(ctx, helperOptionsContextKey{}, newOpts)
 }
 
 func WithConfigLocation(location string) CommandHelperOption {
@@ -86,21 +96,40 @@ func WithStdin(r io.Reader) CommandHelperOption {
 	}
 }
 
-func WithPasswordReader(p passwordReader) CommandHelperOption {
-	return func(h *CommandHelper) {
-		h.pwReader = p
-	}
-}
-
 func WithProjectOverride(project string) CommandHelperOption {
 	return func(h *CommandHelper) {
-		h.projectID = &project
+		h.projectOverride = &project
 	}
 }
 
 func WithWorkspaceOverride(workspace string) CommandHelperOption {
 	return func(h *CommandHelper) {
-		h.workspaceID = pointerx.Ptr(workspace)
+		h.workspaceOverride = pointerx.Ptr(workspace)
+	}
+}
+
+func WithProjectAPIKey(apiKey string) CommandHelperOption {
+	return func(h *CommandHelper) {
+		h.projectAPIKey = &apiKey
+	}
+}
+
+func WithWorkspaceAPIKey(apiKey string) CommandHelperOption {
+	return func(h *CommandHelper) {
+		h.workspaceAPIKey = &apiKey
+	}
+}
+
+func WithSessionToken(_ testing.TB, sessionToken string) CommandHelperOption {
+	return func(h *CommandHelper) {
+		h.workspaceAPIKey = &sessionToken
+		h.projectAPIKey = &sessionToken
+	}
+}
+
+func WithOpenBrowserHook(openBrowser func(string) error) CommandHelperOption {
+	return func(h *CommandHelper) {
+		h.openBrowserHook = openBrowser
 	}
 }
 
@@ -142,29 +171,42 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 		noConfirm:        false,
 		VerboseErrWriter: io.Discard,
 		Stdin:            bufio.NewReader(os.Stdin),
-		pwReader: func() ([]byte, error) {
-			return term.ReadPassword(int(os.Stdin.Fd()))
+		openBrowserHook: func(uri string) error {
+			// we ignore the error in this case, as we also log the URL and we cannot recover in any way
+			_ = browser.OpenURL(uri)
+			return nil
 		},
 	}
 	if ctxOpts, ok := ctx.Value(helperOptionsContextKey{}).([]CommandHelperOption); ok {
-		opts = append(opts, ctxOpts...)
+		for _, o := range ctxOpts {
+			o(h)
+		}
 	}
 	for _, o := range opts {
 		o(h)
 	}
-	config, err := h.getConfig()
-	if errors.Is(err, ErrNoConfig) {
-		// this might happen initially, we don't want to error in this case
-		config = &Config{}
-	} else if err != nil {
+	config, err := h.getOrCreateConfig()
+	if err != nil {
 		return nil, err
 	}
+
+	getAPIKey := func(envKey string, override *string) *string {
+		if override != nil {
+			return override
+		}
+		if key, ok := os.LookupEnv(envKey); ok {
+			return &key
+		}
+		return nil
+	}
+	h.workspaceAPIKey = getAPIKey(WorkspaceAPIKey, h.workspaceAPIKey)
+	h.projectAPIKey = getAPIKey(ProjectAPIKey, h.projectAPIKey)
 
 	{
 		// determine current workspace from all possible sources
 		workspace := ""
-		if h.workspaceID != nil {
-			workspace = *h.workspaceID
+		if h.workspaceOverride != nil {
+			workspace = *h.workspaceOverride
 		} else if ws, ok := os.LookupEnv(WorkspaceKey); ok {
 			workspace = ws
 		} else {
@@ -175,22 +217,22 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 		workspace = strings.TrimSpace(workspace)
 
 		if id, err := uuid.FromString(workspace); err == nil {
-			h.workspaceID = pointerx.Ptr(id.String())
+			h.workspaceOverride = pointerx.Ptr(id.String())
 		} else if workspace != "" {
 			ws, err := h.findWorkspace(ctx, workspace)
 			if err != nil {
 				return nil, err
 			}
 			if ws != nil {
-				h.workspaceID = pointerx.Ptr(ws.Id)
+				h.workspaceOverride = pointerx.Ptr(ws.Id)
 			}
 		}
 	}
 	{
 		// determine current project from all possible sources
 		project := ""
-		if h.projectID != nil {
-			project = *h.projectID
+		if h.projectOverride != nil {
+			project = *h.projectOverride
 		} else if pj, ok := os.LookupEnv(ProjectKey); ok {
 			project = pj
 		} else if config.SelectedProject != uuid.Nil {
@@ -199,14 +241,14 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 		project = strings.TrimSpace(project)
 
 		if id, err := uuid.FromString(project); err == nil {
-			h.projectID = pointerx.Ptr(id.String())
+			h.projectOverride = pointerx.Ptr(id.String())
 		} else if project != "" {
-			pj, err := h.findProject(ctx, project, h.workspaceID)
+			pj, err := h.findProject(ctx, project, h.workspaceOverride)
 			if err != nil {
 				return nil, err
 			}
 			if pj != nil {
-				h.projectID = pointerx.Ptr(pj.Id)
+				h.projectOverride = pointerx.Ptr(pj.Id)
 			}
 		}
 	}
@@ -215,14 +257,14 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 }
 
 func (h *CommandHelper) ProjectID() (string, error) {
-	if h.projectID == nil {
+	if h.projectOverride == nil {
 		return "", ErrProjectNotSet
 	}
-	return *h.projectID, nil
+	return *h.projectOverride, nil
 }
 
 func (h *CommandHelper) WorkspaceID() *string {
-	return h.workspaceID
+	return h.workspaceOverride
 }
 
 func (h *CommandHelper) UserName(ctx context.Context) string {
@@ -238,6 +280,10 @@ func (h *CommandHelper) UserName(ctx context.Context) string {
 		return u.Name
 	}
 	return u.Username
+}
+
+func (h *CommandHelper) OpenURL(uri string) error {
+	return h.openBrowserHook(uri)
 }
 
 func handleError(message string, res *http.Response, err error) error {

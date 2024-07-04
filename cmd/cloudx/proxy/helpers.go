@@ -131,7 +131,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		}
 		slug = project.Slug
 	}
-	oryURL := client.CloudAPIsURL(slug)
+	oryURL := client.CloudAPIsURL(slug + ".projects")
 	oryURL.Host = strings.TrimSuffix(oryURL.Host, ":443")
 
 	writer := herodot.NewJSONWriter(&errorLogger{Writer: stdErr})

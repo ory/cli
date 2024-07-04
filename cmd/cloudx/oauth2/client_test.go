@@ -20,7 +20,7 @@ import (
 func TestCreateClient(t *testing.T) {
 	t.Run("is not able to create client if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "create", "client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
@@ -39,7 +39,7 @@ func TestDeleteClient(t *testing.T) {
 	t.Run("is not able to delete oauth2 client if not authenticated and quiet flag", func(t *testing.T) {
 		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "delete", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
@@ -69,7 +69,7 @@ func TestGetClient(t *testing.T) {
 
 	t.Run("is not able to get oauth2 if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "get", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
@@ -97,7 +97,7 @@ func TestGetClient(t *testing.T) {
 func TestImportClient(t *testing.T) {
 	t.Run("is not able to import oauth2-client if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "import", "oauth2-client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
@@ -129,7 +129,7 @@ func TestListClients(t *testing.T) {
 
 	t.Run("is not able to list oauth2 clients if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "list", "oauth2-clients", "--quiet", "--project", project.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
@@ -161,7 +161,7 @@ func TestUpdateOAuth2(t *testing.T) {
 
 	t.Run("is not able to update oauth2 if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "update", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

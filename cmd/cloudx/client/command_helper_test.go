@@ -4,14 +4,21 @@
 package client_test
 
 import (
-	"bytes"
 	"context"
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"io"
+	"os"
 	"testing"
 
-	"github.com/containerd/continuity/fs"
+	"github.com/pkg/errors"
+	"github.com/playwright-community/playwright-go"
+
+	"github.com/ory/x/cmdx"
+	. "github.com/ory/x/pointerx"
+	"github.com/ory/x/randx"
+	"github.com/ory/x/stringslice"
 
 	"github.com/ory/x/assertx"
 	"github.com/ory/x/snapshotx"
@@ -28,64 +35,92 @@ import (
 var updatedProjectConfig json.RawMessage
 
 func TestMain(m *testing.M) {
-	testhelpers.RunAgainstStaging(m)
+	if err := playwright.Install(&playwright.RunOptions{
+		Browsers: []string{"chromium"},
+	}); err != nil {
+		panic(err)
+	}
+	os.Exit(m.Run())
+	//testhelpers.RunAgainstStaging(m)
 }
 
 func TestCommandHelper(t *testing.T) {
-	ctx := context.Background()
-	configPath := testhelpers.NewConfigFile(t)
-	email, password, name := testhelpers.RegisterAccount(t, configPath)
-	project := testhelpers.CreateProject(t, configPath, nil)
+	ctx := client.ContextWithOptions(
+		context.Background(),
+		client.WithNoConfirm(true),
+		client.WithQuiet(true),
+		client.WithVerboseErrWriter(io.Discard),
+		client.WithOpenBrowserHook(func(uri string) error {
+			return errors.WithStack(fmt.Errorf("open browser hook not expected: %s", uri))
+		}))
 
-	defaultOpts := func() []client.CommandHelperOption {
-		return []client.CommandHelperOption{
-			client.WithNoConfirm(true),
-			client.WithQuiet(true),
-			client.WithVerboseErrWriter(io.Discard),
-		}
-	}
-
-	loggedIn, err := client.NewCommandHelper(
-		ctx,
-		append(defaultOpts(), client.WithConfigLocation(configPath))...,
-	)
+	email, password, name, sessionToken := testhelpers.RegisterAccount(ctx, t)
+	defaultConfigFile := testhelpers.NewConfigFile(t)
+	authenticated, err := client.NewCommandHelper(ctx, client.WithConfigLocation(defaultConfigFile), client.WithSessionToken(t, sessionToken))
 	require.NoError(t, err)
+
+	defaultWorkspace, err := authenticated.CreateWorkspace(ctx, randx.MustString(6, randx.AlphaNum))
+	require.NoError(t, err)
+
+	defaultWorkspaceAPIKey, err := authenticated.CreateWorkspaceAPIKey(ctx, defaultWorkspace.Id, randx.MustString(6, randx.AlphaNum))
+	require.NoError(t, err)
+	_ = defaultWorkspaceAPIKey
+
+	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", nil, true)
+	require.NoError(t, err)
+	defaultWorkspaceProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", &defaultWorkspace.Id, false)
+	require.NoError(t, err)
+
 	assertValidProject := func(t *testing.T, actual *cloud.Project) {
 		assert.NotZero(t, actual.Slug)
 		assert.NotZero(t, actual.Services.Identity.Config)
 		assert.NotZero(t, actual.Services.Permission.Config)
 	}
 
-	t.Run("func=SelectProject", func(t *testing.T) {
+	t.Run("func=SelectProjectWorkspace", func(t *testing.T) {
 		t.Parallel()
-		configDir := testhelpers.NewConfigFile(t)
-		testhelpers.RegisterAccount(t, configDir)
-		firstProject := testhelpers.CreateProject(t, configDir, nil)
-		secondProject := testhelpers.CreateProject(t, configDir, nil)
-		testhelpers.SetDefaultProject(t, configDir, secondProject.Id)
+		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
+		require.NoError(t, err)
+		otherProject, err := h.CreateProject(ctx, "other project", "dev", &defaultWorkspace.Id, false)
+		require.NoError(t, err)
 
-		t.Run("can change the selected project", func(t *testing.T) {
-			h, err := client.NewCommandHelper(ctx, append(defaultOpts(), client.WithConfigLocation(configDir))...)
+		t.Run("can change the selected project and workspace", func(t *testing.T) {
+			// create new helper to ensure clean internal state
+			h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
 			require.NoError(t, err)
 
 			current, err := h.ProjectID()
 			require.NoError(t, err)
-			require.Equal(t, current, secondProject.Id)
+			require.Equal(t, current, defaultProject.Id)
 
-			require.NoError(t, h.SelectProject(firstProject.Id))
+			require.NoError(t, h.SelectProject(otherProject.Id))
+			require.NoError(t, h.SelectWorkspace(defaultWorkspace.Id))
 
-			selected, err := h.ProjectID()
+			actualProject, err := h.ProjectID()
 			require.NoError(t, err)
-			assert.Equal(t, selected, firstProject.Id)
+			assert.Equal(t, otherProject.Id, actualProject)
+
+			actualWorkspace := h.WorkspaceID()
+			require.NotNil(t, actualWorkspace)
+			assert.Equal(t, defaultWorkspace.Id, *actualWorkspace)
+
+			// check if persistent across instances
+			h, err = client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
+			require.NoError(t, err)
+
+			current, err = h.ProjectID()
+			require.NoError(t, err)
+			assert.Equal(t, current, otherProject.Id)
 		})
 	})
 
 	t.Run("func=ListProjects", func(t *testing.T) {
 		t.Parallel()
-		configFile := testhelpers.NewConfigFile(t)
-		testhelpers.RegisterAccount(t, configFile)
 
-		h, err := client.NewCommandHelper(ctx, append(defaultOpts(), client.WithConfigLocation(configFile))...)
+		configFile := testhelpers.NewConfigFile(t)
+		_, _, _, sessionToken := testhelpers.RegisterAccount(ctx, t)
+
+		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(configFile))
 		require.NoError(t, err)
 
 		t.Run("empty list", func(t *testing.T) {
@@ -96,22 +131,29 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("list of projects", func(t *testing.T) {
-			p0, p1 := testhelpers.CreateProject(t, configFile, nil), testhelpers.CreateProject(t, configFile, nil)
+			p0, err := h.CreateProject(ctx, "p0", "dev", nil, false)
+			require.NoError(t, err)
+			p1, err := h.CreateProject(ctx, "p1", "dev", nil, false)
+			require.NoError(t, err)
 
 			projects, err := h.ListProjects(ctx, nil)
-
 			require.NoError(t, err)
+
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
 		})
 
 		t.Run("list of workspace projects", func(t *testing.T) {
-			workspace := testhelpers.CreateWorkspace(t, configFile)
-			p0, p1 := testhelpers.CreateProject(t, configFile, &workspace), testhelpers.CreateProject(t, configFile, &workspace)
-
-			projects, err := h.ListProjects(ctx, &workspace)
-
+			workspace, err := h.CreateWorkspace(ctx, t.Name())
 			require.NoError(t, err)
+			p0, err := h.CreateProject(ctx, "p0", "dev", &workspace.Id, false)
+			require.NoError(t, err)
+			p1, err := h.CreateProject(ctx, "p1", "dev", &workspace.Id, false)
+			require.NoError(t, err)
+
+			projects, err := h.ListProjects(ctx, &workspace.Id)
+			require.NoError(t, err)
+
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
 		})
@@ -120,196 +162,159 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=CreateProject", func(t *testing.T) {
 		t.Parallel()
 		configPath := testhelpers.NewConfigFile(t)
-		testhelpers.RegisterAccount(t, configPath)
 
-		h, err := client.NewCommandHelper(ctx, append(defaultOpts(), client.WithConfigLocation(configPath))...)
+		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(configPath))
+		require.NoError(t, err)
+		workspace, err := h.CreateWorkspace(ctx, t.Name())
 		require.NoError(t, err)
 
-		t.Run("creates project and sets default project", func(t *testing.T) {
-			newName := "new project name"
+		name0 := "new project name0"
+		name1 := "new project name1"
+		name2 := "new project name2"
 
-			project, err := h.CreateProject(ctx, newName, "dev", nil, true)
-			require.NoError(t, err)
-			assert.Equal(t, project.Name, newName)
+		project0, err := h.CreateProject(ctx, name0, "dev", &workspace.Id, true)
+		require.NoError(t, err)
+		project1, err := h.CreateProject(ctx, name1, "dev", nil, false)
+		require.NoError(t, err)
+		project2, err := h.CreateProject(ctx, name2, "dev", nil, false)
+		require.NoError(t, err)
 
-			defaultID, err := h.ProjectID()
-			require.NoError(t, err)
-			assert.Equal(t, project.Id, defaultID)
-		})
+		assert.Len(t, stringslice.Unique([]string{project0.Id, project1.Id, project2.Id}), 3)
+		assert.Len(t, stringslice.Unique([]string{project0.Slug, project1.Slug, project2.Slug}), 3)
+		assert.Equal(t, []string{name0, name1, name2}, []string{project0.Name, project1.Name, project2.Name})
 
-		t.Run("creates two projects with different names", func(t *testing.T) {
-			name1 := "new project name1"
-			name2 := "new project name2"
+		assert.Equal(t, &workspace.Id, project0.WorkspaceId.Get())
+		assert.Nil(t, project1.WorkspaceId.Get())
+		assert.Nil(t, project2.WorkspaceId.Get())
 
-			project1, err := h.CreateProject(ctx, name1, "dev", nil, true)
-			require.NoError(t, err)
-
-			project2, err := h.CreateProject(ctx, name2, "dev", nil, false)
-			require.NoError(t, err)
-
-			assert.NotEqual(t, project1.Id, project2.Id)
-			assert.NotEqual(t, project1.Name, project2.Name)
-			assert.NotEqual(t, project1.Slug, project2.Slug)
-
-			selectedID, err := h.ProjectID()
-			require.NoError(t, err)
-			assert.Equal(t, project1.Id, selectedID)
-		})
+		selectedID, err := h.ProjectID()
+		require.NoError(t, err)
+		assert.Equal(t, project0.Id, selectedID)
+		assert.Equal(t, &workspace.Id, h.WorkspaceID())
 	})
 
 	t.Run("func=Authenticate", func(t *testing.T) {
 		t.Parallel()
+
+		// setup playwright for the browser login part
+		pw, err := playwright.Run()
+		require.NoError(t, err)
+		browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
+			Headless:  Ptr(true),
+			TracesDir: Ptr("./playwright-traces"),
+		})
+		require.NoError(t, err)
+		page, err := browser.NewPage(playwright.BrowserNewPageOptions{
+			BaseURL: Ptr(client.CloudConsoleURL("").String()),
+		})
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			t.Logf("page close error: %+v", page.Close())
+			t.Logf("browser close error: %+v", browser.Close())
+			t.Logf("playwright stop error: %+v", pw.Stop())
+		})
+
+		// ensure the browser has a valid session cookie
+		testhelpers.BrowserLogin(t, page, email, password)
+
+		// set up the command helper
 		configPath := testhelpers.NewConfigFile(t)
-		email2, password2, name2 := testhelpers.FakeAccount()
+		h, err := client.NewCommandHelper(ctx,
+			client.WithConfigLocation(configPath),
+			client.WithQuiet(false),
+			client.WithOpenBrowserHook(func(uri string) error {
+				_, err := page.Goto(uri)
+				require.NoError(t, err)
 
-		t.Run("create new account", func(t *testing.T) {
-			h, err := client.NewCommandHelper(ctx,
-				client.WithConfigLocation(configPath),
-				client.WithStdin(testhelpers.RegistrationBuffer(name2, email2)),
-				client.WithPasswordReader(func() ([]byte, error) { return []byte(password2), nil }),
-			)
-			require.NoError(t, err)
+				// reconfirm password
+				require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
+				require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+				require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
 
-			require.NoError(t, h.Authenticate(ctx))
+				return nil
+			}),
+		)
+		require.NoError(t, err)
 
-			config, err := h.GetAuthenticatedConfig(ctx)
-			require.NoError(t, err)
-			require.NotNil(t, config)
-			assert.Equal(t, email2, config.IdentityTraits.Email)
-			assert.Equal(t, name2, config.IdentityTraits.Name)
-		})
+		// authenticate
+		require.NoError(t, h.Authenticate(ctx))
 
-		t.Run("log into existing account", func(t *testing.T) {
-			var r bytes.Buffer
-			_, _ = r.WriteString("y\n")         // Do you want to sign in to an existing Ory Network account? [y/n]: y
-			_, _ = r.WriteString(email2 + "\n") // Email: FakeEmail()
-			h, err := client.NewCommandHelper(ctx,
-				client.WithConfigLocation(testhelpers.NewConfigFile(t)),
-				client.WithStdin(&r),
-				client.WithPasswordReader(func() ([]byte, error) { return []byte(password2), nil }),
-			)
-			require.NoError(t, err)
+		// assert success
+		config, err := h.GetAuthenticatedConfig(ctx)
+		require.NoError(t, err)
+		require.NotNil(t, config)
+		assert.Equal(t, email, config.IdentityTraits.Email)
+		assert.Equal(t, name, config.IdentityTraits.Name)
+		require.NotNil(t, config.AccessToken)
+		assert.NotEmpty(t, config.AccessToken.AccessToken)
 
-			require.NoError(t, h.Authenticate(ctx))
-
-			config, err := h.GetAuthenticatedConfig(ctx)
-			require.NoError(t, err)
-			require.NotNil(t, config)
-			assert.Equal(t, email2, config.IdentityTraits.Email)
-			assert.Equal(t, name2, config.IdentityTraits.Name)
-		})
-
-		t.Run("retry login after wrong password", func(t *testing.T) {
-			var r bytes.Buffer
-			_, _ = r.WriteString("y\n")         // Do you want to sign in to an existing Ory Network account? [y/n]: y
-			_, _ = r.WriteString(email2 + "\n") // Email: FakeEmail()
-			_, _ = r.WriteString(email2 + "\n") // Email: FakeEmail() [RETRY]
-
-			retry := false
-			pwReader := func() ([]byte, error) {
-				if retry {
-					return []byte(password2), nil
-				}
-				retry = true
-				return []byte("wrong"), nil
-			}
-
-			h, err := client.NewCommandHelper(ctx,
-				client.WithConfigLocation(testhelpers.NewConfigFile(t)),
-				client.WithStdin(&r),
-				client.WithPasswordReader(pwReader),
-			)
-			require.NoError(t, err)
-
-			require.NoError(t, h.Authenticate(ctx))
-
-			config, err := h.GetAuthenticatedConfig(ctx)
-			require.NoError(t, err)
-			require.NotNil(t, config)
-			assert.Equal(t, email2, config.IdentityTraits.Email)
-			assert.Equal(t, name2, config.IdentityTraits.Name)
-		})
-
-		t.Run("switch logged in account", func(t *testing.T) {
-			newConfigPath := testhelpers.NewConfigFile(t)
-			require.NoError(t, fs.CopyFile(newConfigPath, configPath))
-
-			var r bytes.Buffer
-			_, _ = r.WriteString("y\n")        // You are signed in as \"%s\" already. Do you wish to authenticate with another account?: y
-			_, _ = r.WriteString("y\n")        // Do you want to sign in to an existing Ory Network account? [y/n]: y
-			_, _ = r.WriteString(email + "\n") // Email: FakeEmail()
-
-			h, err := client.NewCommandHelper(ctx,
-				client.WithConfigLocation(newConfigPath),
-				client.WithStdin(&r),
-				client.WithPasswordReader(func() ([]byte, error) { return []byte(password), nil }),
-			)
-			require.NoError(t, err)
-
-			require.NoError(t, h.Authenticate(ctx))
-
-			config, err := h.GetAuthenticatedConfig(ctx)
-			require.NoError(t, err)
-			require.NotNil(t, config)
-			assert.Equal(t, config.IdentityTraits.Email, email)
-			assert.Equal(t, config.IdentityTraits.Name, name)
-		})
+		// simple check to see if the token is valid and gets used
+		p, err := h.GetProject(ctx, defaultProject.Id, nil)
+		require.NoError(t, err)
+		assert.Equal(t, defaultProject.Id, p.Id)
 	})
 
-	t.Run("func=CreateAPIKey and DeleteApiKey", func(t *testing.T) {
-		t.Run("is able to get project", func(t *testing.T) {
-			name := "a test key"
-			token, err := loggedIn.CreateAPIKey(ctx, project.Id, name)
-			require.NoError(t, err)
-			assert.Equal(t, name, token.Name)
-			assert.NotEmpty(t, name, token.Value)
+	t.Run("func=CreateProjectAPIKey and DeleteApiKey", func(t *testing.T) {
+		t.Parallel()
 
-			require.NoError(t, loggedIn.DeleteAPIKey(ctx, project.Id, token.Id))
-		})
+		keyName := "a test key"
+
+		key, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, keyName)
+		require.NoError(t, err)
+		assert.Equal(t, keyName, key.Name)
+		assert.NotNil(t, keyName, key.Value)
+
+		// check that the key works
+		ctxWithKey := client.ContextWithOptions(ctx,
+			client.WithWorkspaceAPIKey(sessionToken), // TODO this key should not be required, currently it is though to look up the slug
+			client.WithProjectAPIKey(*key.Value))
+		list := testhelpers.ListIdentities(ctxWithKey, t, defaultProject.Id)
+		assert.True(t, list.Get("identities").Exists(), list.Raw)
+		assert.True(t, list.Get("identities").IsArray(), list.Raw)
+
+		require.NoError(t, authenticated.DeleteProjectAPIKey(ctx, defaultProject.Id, key.Id))
+
+		_, stdErr, err := testhelpers.Cmd(ctxWithKey).Exec(nil, "list", "identities", "--project", defaultProject.Id)
+		assert.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
+		assert.Contains(t, stdErr, "Access credentials are invalid")
 	})
 
 	t.Run("func=GetProject", func(t *testing.T) {
-		t.Run("is able to get project", func(t *testing.T) {
-			p, err := loggedIn.GetProject(ctx, project.Id, nil)
-			require.NoError(t, err)
-			assert.Equal(t, project.Id, p.Id)
-			assertValidProject(t, p)
+		for name, p := range map[string]*cloud.Project{
+			"without workspace": defaultProject,
+			"with workspace":    defaultWorkspaceProject,
+		} {
+			t.Run("is able to get project "+name, func(t *testing.T) {
+				t.Parallel()
 
-			actual, err := loggedIn.GetProject(ctx, p.Slug[0:4], nil)
-			require.NoError(t, err)
-			assert.Equal(t, p, actual)
-		})
+				actual, err := authenticated.GetProject(ctx, p.Id, p.WorkspaceId.Get())
+				require.NoError(t, err)
+				assert.Equal(t, p.Id, actual.Id)
+				assertValidProject(t, p)
 
-		t.Run("is able to get workspace project", func(t *testing.T) {
-			workspace := testhelpers.CreateWorkspace(t, configPath)
-			project := testhelpers.CreateProject(t, configPath, &workspace)
-			p, err := loggedIn.GetProject(ctx, project.Id, &workspace)
-			require.NoError(t, err)
-			assert.Equal(t, project, p)
-			assertValidProject(t, p)
+				actual, err = authenticated.GetProject(ctx, p.Slug[0:4], p.WorkspaceId.Get())
+				require.NoError(t, err)
+				assert.Equal(t, p.Id, actual.Id)
+			})
 
-			actual, err := loggedIn.GetProject(ctx, p.Slug[0:4], &workspace)
-			require.NoError(t, err)
-			assert.Equal(t, project, actual)
-		})
+			t.Run("is not able to get project if not authenticated and quiet flag "+name, func(t *testing.T) {
+				t.Parallel()
 
-		t.Run("is not able to get project if not authenticated and quiet flag", func(t *testing.T) {
-			h, err := client.NewCommandHelper(ctx, append(
-				defaultOpts(),
-				client.WithConfigLocation(testhelpers.NewConfigFile(t)),
-				client.WithQuiet(true),
-			)...)
-			require.NoError(t, err)
-			_, err = h.GetProject(ctx, project.Id, nil)
-			assert.ErrorIs(t, err, client.ErrNoConfigQuiet)
-		})
+				h, err := client.NewCommandHelper(ctx, client.WithQuiet(true))
+				require.NoError(t, err)
+				_, err = h.GetProject(ctx, p.Id, p.WorkspaceId.Get())
+				assert.ErrorIs(t, err, client.ErrNoConfigQuiet)
+			})
+		}
 	})
 
 	t.Run("func=UpdateProject", func(t *testing.T) {
+		t.Parallel()
+
 		t.Run("is able to update a project", func(t *testing.T) {
 			t.Skip("TODO")
 
-			res, err := loggedIn.UpdateProject(ctx, project.Id, "", []json.RawMessage{updatedProjectConfig})
+			res, err := authenticated.UpdateProject(ctx, defaultProject.Id, "", []json.RawMessage{updatedProjectConfig})
 			require.NoErrorf(t, err, "%+v", err)
 
 			assertx.EqualAsJSONExcept(t, updatedProjectConfig, res.Project, []string{
@@ -356,7 +361,7 @@ func TestCommandHelper(t *testing.T) {
 
 		t.Run("is able to update a projects name", func(t *testing.T) {
 			name := testhelpers.FakeName()
-			res, err := loggedIn.UpdateProject(ctx, project.Id, name, []json.RawMessage{updatedProjectConfig})
+			res, err := authenticated.UpdateProject(ctx, defaultProject.Id, name, []json.RawMessage{updatedProjectConfig})
 			require.NoError(t, err)
 			assert.Equal(t, name, res.Project.Name)
 		})

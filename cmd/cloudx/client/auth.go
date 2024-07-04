@@ -7,14 +7,6 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
-	"github.com/gofrs/uuid"
-	cloud "github.com/ory/client-go"
-	"github.com/ory/x/randx"
-	"github.com/ory/x/urlx"
-	"github.com/pkg/browser"
-	"github.com/pkg/errors"
-	"golang.org/x/oauth2"
-	"golang.org/x/sync/errgroup"
 	"math/rand/v2"
 	"net"
 	"net/http"
@@ -22,6 +14,15 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	"golang.org/x/oauth2"
+	"golang.org/x/sync/errgroup"
+
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/randx"
+	"github.com/ory/x/urlx"
 )
 
 func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
@@ -123,8 +124,8 @@ func oauth2ClientConfig() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID: "ory-cli",
 		Endpoint: oauth2.Endpoint{
-			AuthURL:   urlx.AppendPaths(cloudConsoleURL("project"), "/oauth2/auth").String(),
-			TokenURL:  urlx.AppendPaths(cloudConsoleURL("project"), "/oauth2/token").String(),
+			AuthURL:   urlx.AppendPaths(CloudConsoleURL("project"), "/oauth2/auth").String(),
+			TokenURL:  urlx.AppendPaths(CloudConsoleURL("project"), "/oauth2/token").String(),
 			AuthStyle: oauth2.AuthStyleInParams,
 		},
 	}
@@ -148,10 +149,7 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 	config := &Config{
 		AccessToken: token,
 	}
-	cl, err := NewOryProjectClient()
-	if err != nil {
-		return nil, err
-	}
+	cl := NewPublicOryProjectClient()
 	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
 	if err != nil {
 		return nil, err
@@ -235,6 +233,9 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 			redirectOK(w, r)
 		}),
 	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() (err error) {
 		if err := srv.Serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -259,9 +260,11 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 		oauth2.SetAuthURLParam("scope", "offline_access"),
 		oauth2.SetAuthURLParam("response_type", "code"),
 		oauth2.SetAuthURLParam("prompt", "login consent"),
-		oauth2.SetAuthURLParam("audience", cloudConsoleURL("api").String()),
+		oauth2.SetAuthURLParam("audience", CloudConsoleURL("api").String()),
 	)
-	_ = browser.OpenURL(u)
+	if err := h.openBrowserHook(u); err != nil {
+		return nil, err
+	}
 	_, _ = fmt.Fprintf(h.VerboseErrWriter,
 		`A browser should have opened for you to complete your login to Ory Network.
 If no browser opened, visit the below page to continue:
@@ -277,14 +280,13 @@ If no browser opened, visit the below page to continue:
 }
 
 func redirectOK(w http.ResponseWriter, r *http.Request) {
-	location := cloudConsoleURL("")
-	location.Path = "/projects/current/dashboard"
-	location.RawQuery = url.Values{"cli_auth": []string{"success"}}.Encode()
+	location := CloudConsoleURL("")
+	location.Path = "/cli-auth-success"
 	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
 func redirectErr(w http.ResponseWriter, r *http.Request, err, desc string) {
-	location := cloudConsoleURL("")
+	location := CloudConsoleURL("")
 	location.Path = "/error"
 	location.RawQuery = url.Values{"error": []string{err}, "error_description": []string{desc}}.Encode()
 	http.Redirect(w, r, location.String(), http.StatusFound)

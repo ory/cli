@@ -16,7 +16,7 @@ func TestIsAllowedNoUnauthenticated(t *testing.T) {
 	t.Parallel()
 
 	configDir := testhelpers.NewConfigFile(t)
-	cmd := testhelpers.CmdWithConfig(configDir)
+	cmd := testhelpers.Cmd(configDir)
 	_, _, err := cmd.Exec(nil,
 		"is", "allowed", "user", "relation", "namespace", "object",
 		"--quiet", "--project", project.Id)

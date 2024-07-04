@@ -4,6 +4,7 @@
 package project_test
 
 import (
+	"context"
 	"testing"
 
 	cloud "github.com/ory/client-go"
@@ -13,12 +14,13 @@ import (
 )
 
 var (
+	ctx                          context.Context
 	defaultProject, extraProject *cloud.Project
 	defaultConfig                string
 	defaultCmd                   *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	defaultConfig, _, _, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	ctx, defaultConfig, _, _, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
 	testhelpers.RunAgainstStaging(m)
 }

@@ -29,6 +29,7 @@ func NewListProjectsCmd() *cobra.Command {
 			return nil
 		},
 	}
+	client.RegisterWorkspaceFlag(cmd.Flags())
 
 	return cmd
 }

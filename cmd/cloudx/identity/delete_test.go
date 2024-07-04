@@ -18,7 +18,7 @@ func TestDeleteIdentity(t *testing.T) {
 	t.Run("is not able to delete identities if not authenticated and quiet flag", func(t *testing.T) {
 		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
 
-		cmd := testhelpers.CmdWithConfig(testhelpers.NewConfigFile(t))
+		cmd := testhelpers.Cmd(testhelpers.NewConfigFile(t))
 		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

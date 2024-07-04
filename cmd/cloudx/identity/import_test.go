@@ -16,7 +16,7 @@ import (
 func TestImportIdentity(t *testing.T) {
 	t.Run("is not able to import identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "import", "identities", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

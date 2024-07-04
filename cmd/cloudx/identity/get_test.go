@@ -19,7 +19,7 @@ func TestGetIdentity(t *testing.T) {
 
 	t.Run("is not able to get identity if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "get", "identity", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

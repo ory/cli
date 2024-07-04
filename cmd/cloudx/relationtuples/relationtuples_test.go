@@ -46,7 +46,7 @@ func TestNoUnauthenticated(t *testing.T) {
 	for _, tc := range cases {
 		t.Run("verb="+tc.verb, func(t *testing.T) {
 			configDir := testhelpers.NewConfigFile(t)
-			cmd := testhelpers.CmdWithConfig(configDir)
+			cmd := testhelpers.Cmd(configDir)
 			args := append([]string{tc.verb, "relationships", "--quiet", "--project", project.Id},
 				tc.extraArgs...)
 			_, _, err := cmd.Exec(nil, args...)

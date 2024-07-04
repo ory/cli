@@ -10,7 +10,7 @@ import (
 )
 
 func (h *CommandHelper) ListOrganizations(ctx context.Context, projectID string) (*cloud.ListOrganizationsResponse, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (h *CommandHelper) ListOrganizations(ctx context.Context, projectID string)
 }
 
 func (h *CommandHelper) CreateOrganization(ctx context.Context, projectID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (h *CommandHelper) CreateOrganization(ctx context.Context, projectID string
 }
 
 func (h *CommandHelper) UpdateOrganization(ctx context.Context, projectID, orgID string, body cloud.OrganizationBody) (*cloud.Organization, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (h *CommandHelper) UpdateOrganization(ctx context.Context, projectID, orgID
 }
 
 func (h *CommandHelper) DeleteOrganization(ctx context.Context, projectID, orgID string) error {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return err
 	}

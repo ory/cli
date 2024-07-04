@@ -4,7 +4,8 @@
 package project_test
 
 import (
-	"bytes"
+	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,77 +17,85 @@ import (
 )
 
 func TestCreateProject(t *testing.T) {
+	t.Parallel()
+
 	parseOutput := func(stdout string) (id string, slug string, name string) {
 		id = gjson.Get(stdout, "id").String()
 		slug = gjson.Get(stdout, "slug").String()
 		name = gjson.Get(stdout, "name").String()
 		return
 	}
-	assertResult := func(t *testing.T, configDir string, stdout string, expectedName string) {
-		_, slug, name := parseOutput(stdout)
+	assertResult := func(t *testing.T, configDir string, stdout string, expectedName string) (id, slug, name string) {
+		id, slug, name = parseOutput(stdout)
+		assert.NotEmpty(t, id, stdout)
 		assert.NotEmpty(t, slug, stdout)
 		assert.Equal(t, expectedName, name, stdout)
+		return
 	}
 
 	t.Run("is able to create a project", func(t *testing.T) {
-		testhelpers.SetDefaultProject(t, defaultConfig, defaultProject.Id)
+		t.Parallel()
+
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
 
 		name := testhelpers.TestName()
-		stdout, _, err := defaultCmd.Exec(nil, "create", "project", "--name", name, "--format", "json")
+		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--format", "json")
 		require.NoError(t, err)
 		assertResult(t, defaultConfig, stdout, name)
 
-		assert.Equal(t, defaultProject.Id, testhelpers.GetDefaultProjectID(t, defaultConfig))
+		assert.Equal(t, defaultProject.Id, testhelpers.GetDefaultProjectID(ctx, t))
 	})
 
 	t.Run("is able to create a project and use the project as default", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+
 		name := testhelpers.TestName()
-
-		stdout, _, err := defaultCmd.Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
+		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
 		require.NoError(t, err)
-		assertResult(t, defaultConfig, stdout, name)
+		id, _, _ := assertResult(t, defaultConfig, stdout, name)
 
-		id, _, _ := parseOutput(stdout)
-		assert.Equal(t, id, testhelpers.GetDefaultProjectID(t, defaultConfig))
+		assert.Equal(t, id, testhelpers.GetDefaultProjectID(ctx, t))
 	})
 
 	t.Run("is able to create a project and use name from stdin", func(t *testing.T) {
+		t.Parallel()
+
 		name := testhelpers.TestName()
-		stdin := bytes.NewBufferString(name + "\n")
+		stdin := strings.NewReader(name + "\n")
 		stdout, _, err := defaultCmd.Exec(stdin, "create", "project", "--format", "json")
 		require.NoError(t, err)
 		assertResult(t, defaultConfig, stdout, name)
 	})
 
 	t.Run("is not able to create a project if no name flag and quiet flag", func(t *testing.T) {
+		t.Parallel()
+
 		name := testhelpers.TestName()
-		stdin := bytes.NewBufferString(name)
+		stdin := strings.NewReader(name)
 		_, stderr, err := defaultCmd.Exec(stdin, "create", "project", "--quiet")
 		require.Error(t, err)
 		assert.Contains(t, stderr, "you must specify the --name and --environment flags when using --quiet")
 	})
 
 	t.Run("is not able to create a project if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
+		t.Parallel()
+
+		ctx := client.ContextWithOptions(context.Background(), client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+
 		name := testhelpers.TestName()
-		cmd := testhelpers.CmdWithConfig(configDir)
-		_, _, err := cmd.Exec(nil, "create", "project", "--name", name, "--format", "json", "--quiet")
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--quiet")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
-	t.Run("is able to create a project after authenticating", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		name := testhelpers.TestName()
-		password := testhelpers.FakePassword()
-		email := testhelpers.FakeEmail()
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		t.Parallel()
 
-		cmd := testhelpers.CmdWithConfigPassword(configDir, password)
-		// Create the account
-		r := testhelpers.RegistrationBuffer(name, email)
-		stdout, stderr, err := cmd.Exec(r, "create", "project", "--name", name, "--format", "json")
-		t.Logf("stdout: %s", stdout)
-		t.Logf("stderr: %s", stderr)
-		require.NoError(t, err)
-		assertResult(t, configDir, stdout, name)
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", testhelpers.TestName(), "--format", "json")
+		assert.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 }

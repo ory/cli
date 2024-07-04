@@ -10,7 +10,7 @@ import (
 )
 
 func (h *CommandHelper) CreateEventStream(ctx context.Context, projectID string, body cloud.CreateEventStreamBody) (*cloud.EventStream, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (h *CommandHelper) CreateEventStream(ctx context.Context, projectID string,
 }
 
 func (h *CommandHelper) UpdateEventStream(ctx context.Context, projectID, streamID string, body cloud.SetEventStreamBody) (*cloud.EventStream, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (h *CommandHelper) UpdateEventStream(ctx context.Context, projectID, stream
 }
 
 func (h *CommandHelper) DeleteEventStream(ctx context.Context, projectID, streamID string) error {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (h *CommandHelper) DeleteEventStream(ctx context.Context, projectID, stream
 }
 
 func (h *CommandHelper) ListEventStreams(ctx context.Context, projectID string) (*cloud.ListEventStreams, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}

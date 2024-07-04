@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/pkg/browser"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
@@ -45,13 +44,13 @@ func NewAccountExperienceOpenCmd() *cobra.Command {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			url := client.CloudAPIsURL(project.Slug)
+			url := client.CloudAPIsURL(project.Slug + ".projects")
 			url.Path = path.Join(url.Path, "ui", args[0])
 			if flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
 				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", url)
 				return nil
 			}
-			if err := browser.OpenURL(url.String()); err != nil {
+			if err := h.OpenURL(url.String()); err != nil {
 				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "%s\n\nUnable to automatically open %s in your browser. Please open it manually!\n", err, url)
 				return cmdx.FailSilently(cmd)
 			}

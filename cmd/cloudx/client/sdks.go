@@ -5,10 +5,14 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
+	"golang.org/x/oauth2"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/stringsx"
@@ -22,10 +26,11 @@ const (
 
 var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
 
-func cloudConsoleURL(prefix string) *url.URL {
+func CloudConsoleURL(prefix string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
 	consoleURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(ConsoleURLKey), "https://console.ory.sh"))
 	if err != nil {
+		fmt.Printf("error parsing console url: %s\n", err)
 		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.sh"}
 	}
 	if prefix != "" {
@@ -40,9 +45,10 @@ func cloudConsoleURL(prefix string) *url.URL {
 
 func CloudAPIsURL(slug string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
-	oryAPIsURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(OryAPIsURLKey), "https://projects.oryapis.com"))
+	oryAPIsURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(OryAPIsURLKey), "https://oryapis.com"))
 	if err != nil {
-		oryAPIsURL = &url.URL{Scheme: "https", Host: "projects.oryapis.com"}
+		fmt.Printf("error parsing oryapis url: %s\n", err)
+		oryAPIsURL = &url.URL{Scheme: "https", Host: "oryapis.com"}
 	}
 	oryAPIsURL.Host = slug + "." + oryAPIsURL.Host
 	if oryAPIsURL.Port() == "" {
@@ -52,33 +58,74 @@ func CloudAPIsURL(slug string) *url.URL {
 	return oryAPIsURL
 }
 
-func NewOryProjectClient(opts ...func(*cloud.Configuration)) (*cloud.APIClient, error) {
+func newSDKConfiguration(uri string) *cloud.Configuration {
 	conf := cloud.NewConfiguration()
-	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("project").String()}}
+	conf.Servers = cloud.ServerConfigurations{{URL: uri}}
+	conf.OperationServers = nil
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
-	for _, o := range opts {
-		o(conf)
-	}
 	if rateLimitHeader != "" {
 		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
 	}
+	return conf
+}
 
+func NewPublicOryProjectClient() *cloud.APIClient {
+	conf := newSDKConfiguration(CloudConsoleURL("project").String())
+	return cloud.NewAPIClient(conf)
+}
+
+func NewConsoleAPIClient(sessionToken string) *cloud.APIClient {
+	conf := newSDKConfiguration(CloudConsoleURL("api").String())
+	conf.HTTPClient = newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: sessionToken}))
+	return cloud.NewAPIClient(conf)
+}
+
+func (h *CommandHelper) newConsoleAPIClient(ctx context.Context) (_ *cloud.APIClient, err error) {
+	conf := newSDKConfiguration(CloudConsoleURL("api").String())
+	conf.HTTPClient, err = h.newConsoleHTTPClient(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return cloud.NewAPIClient(conf), nil
 }
 
-func (h *CommandHelper) newCloudClient(ctx context.Context) (*cloud.APIClient, error) {
+func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client, error) {
+	// use the workspace API key if set
+	if h.workspaceAPIKey != nil {
+		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.workspaceAPIKey})), nil
+	}
+
+	// fall back to interactive OAuth2 flow
 	config, err := h.GetAuthenticatedConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	conf := cloud.NewConfiguration()
-	conf.OperationServers = nil
-	conf.Servers = cloud.ServerConfigurations{{URL: cloudConsoleURL("api").String()}}
-	conf.HTTPClient = newOAuth2TokenClient(config.TokenSource(ctx))
-	if rateLimitHeader != "" {
-		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
+	return newOAuth2TokenClient(config.TokenSource(ctx)), nil
+}
+
+func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client, func(string) *url.URL, error) {
+	var tokenSource oauth2.TokenSource
+	var baseURL func(string) *url.URL
+	if h.projectAPIKey != nil {
+		tokenSource = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey})
+		baseURL = CloudAPIsURL
+	} else {
+		config, err := h.GetAuthenticatedConfig(ctx)
+		if err != nil {
+			return nil, nil, err
+		}
+		tokenSource = config.TokenSource(ctx)
+		baseURL = CloudConsoleURL
 	}
 
-	return cloud.NewAPIClient(conf), nil
+	retryable := retryablehttp.NewClient()
+	retryable.Logger = nil
+	c := retryable.StandardClient()
+	c.Transport = &oauth2.Transport{
+		Base:   c.Transport,
+		Source: tokenSource,
+	}
+
+	return c, baseURL, nil
 }

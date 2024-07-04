@@ -22,7 +22,7 @@ func TestListIdentities(t *testing.T) {
 
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
 		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		cmd := testhelpers.Cmd(configDir)
 		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project.Id, "--consistency", "strong")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

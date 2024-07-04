@@ -68,15 +68,15 @@ func forwardConnectionInfo(cmd *cobra.Command) {
 			return err
 		}
 
-		key, err := h.CreateAPIKey(ctx, project.Id, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
+		key, err := h.CreateProjectAPIKey(ctx, project.Id, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
 		if err != nil {
 			return err
 		}
-		defer func() { _ = h.DeleteAPIKey(ctx, project.Id, key.Id) }()
+		defer func() { _ = h.DeleteProjectAPIKey(ctx, project.Id, key.Id) }()
 
 		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug).Host)
-		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug).Host)
+		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
 
 		return originalRunE(cmd, args)
 	}

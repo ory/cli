@@ -4,9 +4,10 @@
 package client
 
 import (
-	"golang.org/x/oauth2"
 	"net/http"
 	"time"
+
+	"golang.org/x/oauth2"
 )
 
 func newOAuth2TokenClient(token oauth2.TokenSource) *http.Client {
