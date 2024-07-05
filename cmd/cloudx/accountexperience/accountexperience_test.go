@@ -17,7 +17,8 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	testhelpers.RunAgainstStaging(m)
+	testhelpers.UseStaging()
+	m.Run()
 }
 
 func TestOpenAXPages(t *testing.T) {

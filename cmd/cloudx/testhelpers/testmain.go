@@ -49,11 +49,6 @@ func CreateDefaultAssets() (ctx context.Context, defaultConfig string, extraProj
 	return
 }
 
-func RunAgainstStaging(m *testing.M) {
-	UseStaging()
-	os.Exit(m.Run())
-}
-
 type MockTestingTForMain struct {
 	testing.TB
 }

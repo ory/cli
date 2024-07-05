@@ -24,7 +24,7 @@ var (
 
 func TestMain(m *testing.M) {
 	_, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
-	testhelpers.RunAgainstStaging(m)
+	m.Run()
 }
 
 func TestNoUnauthenticated(t *testing.T) {

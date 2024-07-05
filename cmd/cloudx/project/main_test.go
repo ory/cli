@@ -22,5 +22,5 @@ var (
 
 func TestMain(m *testing.M) {
 	ctx, defaultConfig, extraProject, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
-	testhelpers.RunAgainstStaging(m)
+	m.Run()
 }

@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -40,8 +39,8 @@ func TestMain(m *testing.M) {
 	}); err != nil {
 		panic(err)
 	}
-	os.Exit(m.Run())
-	//testhelpers.RunAgainstStaging(m)
+	testhelpers.UseStaging()
+	m.Run()
 }
 
 func TestCommandHelper(t *testing.T) {
