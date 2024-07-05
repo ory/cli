@@ -27,8 +27,8 @@ jobs:
       - run: go test ./...
         env:
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}
-          ORY_CLOUD_CONSOLE_URL: https://console.staging.ory.dev
-          ORY_CLOUD_ORYAPIS_URL: https://staging.oryapis.dev
+          ORY_CONSOLE_URL: https://console.staging.ory.dev
+          ORY_ORYAPIS_URL: https://staging.oryapis.dev
 
   docs:
     name: Generate docs
