@@ -125,7 +125,7 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 	}
 
 	retryable := retryablehttp.NewClient()
-	// TODO retryable.Logger = nil
+	retryable.Logger = nil
 	c := retryable.StandardClient()
 	c.Transport = &oauth2.Transport{
 		Base:   c.Transport,
