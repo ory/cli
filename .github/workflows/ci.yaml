@@ -13,16 +13,18 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: abhi1693/setup-browser@v0.3.4
-        with:
-          browser: chrome
-          version: latest
       - uses: ory/ci/checkout@master
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - run: |
-          make test
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-playwright-
+      - run: go run github.com/playwright-community/playwright-go/cmd/playwright install chromium --with-deps
+      - run: go test ./...
         env:
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}
           ORY_CLOUD_CONSOLE_URL: https://console.staging.ory.dev
