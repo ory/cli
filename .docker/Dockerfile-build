@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine3.19 AS builder
+FROM golang:1.22-alpine3.20 AS builder
 
 RUN apk -U --no-cache add build-base git gcc bash
 
@@ -16,7 +16,7 @@ ADD . .
 
 RUN CGO_CFLAGS="-D_LARGEFILE64_SOURCE" go build -tags sqlite,json1 -o /usr/bin/ory
 
-FROM alpine:3.19
+FROM alpine:3.20
 
 RUN addgroup -S ory; \
     adduser -S ory -G ory -D  -h /home/ory -s /bin/nologin; \
