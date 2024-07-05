@@ -229,6 +229,7 @@ func TestCommandHelper(t *testing.T) {
 				// reconfirm password
 				require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
 				require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+				// accept consent
 				require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
 
 				return nil

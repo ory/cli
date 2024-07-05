@@ -93,6 +93,8 @@ func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client,
 	// use the workspace API key if set
 	if h.workspaceAPIKey != nil {
 		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.workspaceAPIKey})), nil
+	} else if h.sessionToken != nil {
+		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken})), nil
 	}
 
 	// fall back to interactive OAuth2 flow
@@ -110,6 +112,9 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 	if h.projectAPIKey != nil {
 		tokenSource = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey})
 		baseURL = CloudAPIsURL
+	} else if h.sessionToken != nil {
+		tokenSource = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken})
+		baseURL = CloudConsoleURL
 	} else {
 		config, err := h.GetAuthenticatedConfig(ctx)
 		if err != nil {
@@ -120,7 +125,7 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 	}
 
 	retryable := retryablehttp.NewClient()
-	retryable.Logger = nil
+	// TODO retryable.Logger = nil
 	c := retryable.StandardClient()
 	c.Transport = &oauth2.Transport{
 		Base:   c.Transport,

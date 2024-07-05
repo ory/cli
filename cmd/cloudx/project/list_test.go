@@ -57,7 +57,7 @@ func TestListProject(t *testing.T) {
 	t.Run("is not able to list projects if not authenticated and quiet flag", func(t *testing.T) {
 		t.Parallel()
 
-		cmd := testhelpers.Cmd(client.ContextWithOptions(context.Background(), client.WithConfigLocation(testhelpers.NewConfigFile(t))))
+		cmd := testhelpers.Cmd(testhelpers.WithCleanConfigFile(context.Background(), t))
 		_, _, err := cmd.Exec(nil, "list", "projects", "--quiet")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})

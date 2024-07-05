@@ -53,6 +53,7 @@ type (
 		openBrowserHook   func(string) error
 		projectAPIKey     *string
 		workspaceAPIKey   *string
+		sessionToken      *string
 	}
 	helperOptionsContextKey struct{}
 	CommandHelperOption     func(*CommandHelper)
@@ -122,8 +123,7 @@ func WithWorkspaceAPIKey(apiKey string) CommandHelperOption {
 
 func WithSessionToken(_ testing.TB, sessionToken string) CommandHelperOption {
 	return func(h *CommandHelper) {
-		h.workspaceAPIKey = &sessionToken
-		h.projectAPIKey = &sessionToken
+		h.sessionToken = &sessionToken
 	}
 }
 

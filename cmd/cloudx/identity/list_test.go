@@ -4,6 +4,7 @@
 package identity_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -16,15 +17,21 @@ import (
 )
 
 func TestListIdentities(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig, nil)
+	t.Parallel()
 
-	userID := testhelpers.ImportIdentity(t, defaultCmd, project.Id, nil)
+	project := testhelpers.CreateProject(ctx, t, nil)
+	userID := testhelpers.ImportIdentity(ctx, t, project.Id, nil)
 
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "list", "identities", "--quiet", "--project", project.Id, "--consistency", "strong")
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "list", "identities", "--quiet", "--project", project.Id, "--consistency", "strong")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
+	})
+
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "list", "identities", "--project", project.Id, "--consistency", "strong")
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
 	for _, proc := range []string{"list", "ls"} {
@@ -37,14 +44,4 @@ func TestListIdentities(t *testing.T) {
 			assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
 		})
 	}
-
-	t.Run("is able to list identities after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "ls", "identities", "--format", "json", "--project", project.Id, "--consistency", "strong")
-		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
-		out := gjson.Parse(stdout)
-		assert.Len(t, out.Get("identities").Array(), 1)
-		assert.Equal(t, userID, out.Get("identities").Array()[0].Get("id").String(), out.Raw)
-	})
 }

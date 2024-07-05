@@ -83,7 +83,7 @@ func TestCreateProject(t *testing.T) {
 	t.Run("is not able to create a project if not authenticated and quiet flag", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := client.ContextWithOptions(context.Background(), client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
 
 		name := testhelpers.TestName()
 		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--quiet")

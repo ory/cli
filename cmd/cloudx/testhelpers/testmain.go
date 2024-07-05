@@ -31,14 +31,14 @@ func UseStaging() {
 	setEnvIfUnset(client.OryAPIsURLKey, "https://projects.staging.oryapis.dev:443")
 }
 
-func CreateDefaultAssets() (ctx context.Context, defaultConfig, defaultEmail, defaultPassword string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssets() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
 	t := MockTestingTForMain{}
 
 	defaultConfig = NewConfigFile(t)
 
-	defaultEmail, defaultPassword, _, sessionToken := RegisterAccount(context.Background(), t)
+	_, _, _, sessionToken := RegisterAccount(context.Background(), t)
 	ctx = client.ContextWithOptions(context.Background(),
 		client.WithConfigLocation(defaultConfig),
 		client.WithSessionToken(t, sessionToken))

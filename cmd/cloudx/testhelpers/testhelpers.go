@@ -75,6 +75,10 @@ func WithEmitAuthFlowTriggeredErr(ctx context.Context, t testing.TB) context.Con
 	)
 }
 
+func WithCleanConfigFile(ctx context.Context, t testing.TB) context.Context {
+	return client.ContextWithOptions(ctx, client.WithConfigLocation(NewConfigFile(t)))
+}
+
 func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) context.Context {
 	dst, err := os.Create(NewConfigFile(t))
 	require.NoError(t, err)

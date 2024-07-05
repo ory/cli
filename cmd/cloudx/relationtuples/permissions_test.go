@@ -4,6 +4,7 @@
 package relationtuples_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,10 +16,17 @@ import (
 func TestIsAllowedNoUnauthenticated(t *testing.T) {
 	t.Parallel()
 
-	configDir := testhelpers.NewConfigFile(t)
-	cmd := testhelpers.Cmd(configDir)
+	cmd := testhelpers.Cmd(testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t))
+
+	// with quiet flag
 	_, _, err := cmd.Exec(nil,
 		"is", "allowed", "user", "relation", "namespace", "object",
-		"--quiet", "--project", project.Id)
+		"--quiet", "--project", defaultProject.Id)
 	require.ErrorIsf(t, err, client.ErrNoConfigQuiet, "got error: %v", err)
+
+	// without quiet flag
+	_, _, err = cmd.Exec(nil,
+		"is", "allowed", "user", "relation", "namespace", "object",
+		"--project", defaultProject.Id)
+	require.ErrorIsf(t, err, testhelpers.ErrAuthFlowTriggered, "got error: %v", err)
 }

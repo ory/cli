@@ -4,25 +4,46 @@
 package oauth2_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid/v3"
-
-	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
+
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
+
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
+var (
+	ctx            context.Context
+	defaultProject *cloud.Project
+	defaultCmd     *cmdx.CommandExecuter
+)
+
+func TestMain(m *testing.M) {
+	ctx, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	testhelpers.RunAgainstStaging(m)
+}
+
 func TestCreateClient(t *testing.T) {
+	t.Parallel()
+
 	t.Run("is not able to create client if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "create", "client", "--quiet", "--project", defaultProject.Id)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
+	})
+
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "client", "--project", defaultProject.Id)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
 	t.Run("is able to create client", func(t *testing.T) {
@@ -36,70 +57,74 @@ func TestCreateClient(t *testing.T) {
 }
 
 func TestDeleteClient(t *testing.T) {
+	t.Parallel()
+
 	t.Run("is not able to delete oauth2 client if not authenticated and quiet flag", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "delete", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
+		userID := testhelpers.CreateClient(ctx, t, defaultProject.Id).Get("client_id").String()
+
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "delete", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
-	t.Run("is able to delete oauth2 client", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
-		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
-		require.NoError(t, err, stderr)
-		out := gjson.Parse(stdout)
-		assert.True(t, gjson.Valid(stdout))
-		assert.Equal(t, userID, out.String(), "stdout: %s", stdout)
+	t.Run("triggers auth flow if not authenticated", func(t *testing.T) {
+		userID := testhelpers.CreateClient(ctx, t, defaultProject.Id).Get("client_id").String()
+
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "delete", "oauth2-client", "--project", defaultProject.Id, userID)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
-	t.Run("is able to delete oauth2 client after authenticating", func(t *testing.T) {
-		userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "delete", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
+	t.Run("is able to delete oauth2 client", func(t *testing.T) {
+		clientID := testhelpers.CreateClient(ctx, t, defaultProject.Id).Get("client_id").String()
+		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "oauth2-client", "--format", "json", "--project", defaultProject.Id, clientID)
 		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
-		assert.Equal(t, userID, out.String(), stdout)
+		assert.True(t, gjson.Valid(stdout))
+		assert.Equal(t, clientID, out.String(), "stdout: %s", stdout)
 	})
 }
 
 func TestGetClient(t *testing.T) {
-	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
+	t.Parallel()
+
+	clientID := testhelpers.CreateClient(ctx, t, defaultProject.Id).Get("client_id").String()
 
 	t.Run("is not able to get oauth2 if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "get", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "get", "oauth2-client", "--quiet", "--project", defaultProject.Id, clientID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
-	t.Run("is able to get oauth2", func(t *testing.T) {
-		stdout, stderr, err := defaultCmd.Exec(nil, "get", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
-		require.NoError(t, err, stderr)
-		out := gjson.Parse(stdout)
-		assert.True(t, gjson.Valid(stdout))
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("client_id").String())
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "get", "oauth2-client", "--project", defaultProject.Id, clientID)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
-	t.Run("is able to get oauth2 after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "get", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
+	t.Run("is able to get oauth2", func(t *testing.T) {
+		stdout, stderr, err := defaultCmd.Exec(nil, "get", "oauth2-client", "--format", "json", "--project", defaultProject.Id, clientID)
 		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
+		assert.True(t, gjson.Valid(stdout))
 		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("client_id").String())
+		assert.Equal(t, clientID, out.Array()[0].Get("client_id").String())
 	})
 }
 
 func TestImportClient(t *testing.T) {
+	t.Parallel()
+
 	t.Run("is not able to import oauth2-client if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "import", "oauth2-client", "--quiet", "--project", defaultProject.Id)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "import", "oauth2-client", "--quiet", "--project", defaultProject.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
+	})
+
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "import", "oauth2-client", "--project", defaultProject.Id)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
 	t.Run("is able to import oauth2-client", func(t *testing.T) {
@@ -110,28 +135,24 @@ func TestImportClient(t *testing.T) {
 		assert.True(t, gjson.Valid(stdout))
 		assert.Equal(t, name, out.Get("client_name").String())
 	})
-
-	t.Run("is able to import oauth2-client after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		name := uuid.Must(uuid.NewV4()).String()
-		stdout, stderr, err := cmd.Exec(r, "import", "oauth2-client", "--format", "json", "--project", defaultProject.Id, testhelpers.MakeRandomClient(t, name))
-		require.NoError(t, err, stderr)
-		out := gjson.Parse(stdout)
-		assert.True(t, gjson.Valid(stdout))
-		assert.Equal(t, name, out.Get("client_name").String())
-	})
 }
 
 func TestListClients(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig, nil)
+	t.Parallel()
 
-	userID := testhelpers.CreateClient(t, defaultCmd, project.Id).Get("client_id").String()
+	project := testhelpers.CreateProject(ctx, t, nil)
+	clientID := testhelpers.CreateClient(ctx, t, project.Id).Get("client_id").String()
 
 	t.Run("is not able to list oauth2 clients if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "list", "oauth2-clients", "--quiet", "--project", project.Id)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "list", "oauth2-clients", "--quiet", "--project", project.Id)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
+	})
+
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "list", "oauth2-clients", "--project", project.Id)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
 	for _, proc := range []string{"list", "ls"} {
@@ -141,47 +162,34 @@ func TestListClients(t *testing.T) {
 			out := gjson.Parse(stdout).Get("items")
 			assert.True(t, gjson.Valid(stdout))
 			assert.Len(t, out.Array(), 1)
-			assert.Equal(t, userID, out.Array()[0].Get("client_id").String(), "%s", out)
+			assert.Equal(t, clientID, out.Get("0.client_id").String(), "%s", out)
 		})
 	}
-
-	t.Run("is able to list oauth2 clients after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "ls", "oauth2-clients", "--format", "json", "--project", project.Id)
-		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
-		out := gjson.Parse(stdout).Get("items")
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("client_id").String(), "%s", out)
-	})
 }
 
 func TestUpdateOAuth2(t *testing.T) {
-	userID := testhelpers.CreateClient(t, defaultCmd, defaultProject.Id).Get("client_id").String()
+	t.Parallel()
+
+	clientID := testhelpers.CreateClient(ctx, t, defaultProject.Id).Get("client_id").String()
 
 	t.Run("is not able to update oauth2 if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.Cmd(configDir)
-		_, _, err := cmd.Exec(nil, "update", "oauth2-client", "--quiet", "--project", defaultProject.Id, userID)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "update", "oauth2-client", "--quiet", "--project", defaultProject.Id, clientID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
-	t.Run("is able to update oauth2", func(t *testing.T) {
-		stdout, stderr, err := defaultCmd.Exec(nil, "update", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
-		require.NoError(t, err, stderr)
-		out := gjson.Parse(stdout)
-		assert.True(t, gjson.Valid(stdout))
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("client_id").String())
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "update", "oauth2-client", "--project", defaultProject.Id, clientID)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
-	t.Run("is able to update oauth2 after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "update", "oauth2-client", "--format", "json", "--project", defaultProject.Id, userID)
+	t.Run("is able to update oauth2", func(t *testing.T) {
+		stdout, stderr, err := defaultCmd.Exec(nil, "update", "oauth2-client", "--format", "json", "--project", defaultProject.Id, clientID)
 		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
 		out := gjson.Parse(stdout)
+		assert.True(t, gjson.Valid(stdout))
 		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("client_id").String())
+		assert.Equal(t, clientID, out.Array()[0].Get("client_id").String())
 	})
 }
