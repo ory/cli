@@ -74,9 +74,14 @@ func forwardConnectionInfo(cmd *cobra.Command) {
 		}
 		defer func() { _ = h.DeleteProjectAPIKey(ctx, project.Id, key.Id) }()
 
+		upstream := client.CloudAPIsURL(project.Slug + ".projects")
+		if upstream.Port() == "" {
+			upstream.Host = upstream.Host + ":443"
+		}
+
 		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
-		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug+".projects").Host)
+		_ = os.Setenv(ketoClient.EnvReadRemote, upstream.Host)
+		_ = os.Setenv(ketoClient.EnvWriteRemote, upstream.Host)
 
 		return originalRunE(cmd, args)
 	}

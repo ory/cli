@@ -36,9 +36,6 @@ func CloudConsoleURL(prefix string) *url.URL {
 	if prefix != "" {
 		consoleURL.Host = prefix + "." + consoleURL.Host
 	}
-	if consoleURL.Port() == "" {
-		consoleURL.Host = consoleURL.Host + ":443"
-	}
 
 	return consoleURL
 }
@@ -51,9 +48,6 @@ func CloudAPIsURL(slug string) *url.URL {
 		oryAPIsURL = &url.URL{Scheme: "https", Host: "oryapis.com"}
 	}
 	oryAPIsURL.Host = slug + "." + oryAPIsURL.Host
-	if oryAPIsURL.Port() == "" {
-		oryAPIsURL.Host = oryAPIsURL.Host + ":443"
-	}
 
 	return oryAPIsURL
 }
