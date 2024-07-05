@@ -21,7 +21,7 @@ jobs:
         with:
           path: |
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-playwright-${{ hashFiles('go.sum') }}
           restore-keys: ${{ runner.os }}-playwright-
       - run: go run github.com/playwright-community/playwright-go/cmd/playwright install chromium --with-deps
       - run: go test ./...
