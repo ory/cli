@@ -5,11 +5,11 @@ package project_test
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )

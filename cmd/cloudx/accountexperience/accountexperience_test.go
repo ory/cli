@@ -5,7 +5,6 @@ package accountexperience_test
 
 import (
 	"context"
-	"github.com/ory/cli/cmd/cloudx/client"
 	"strings"
 	"testing"
 
@@ -13,6 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 

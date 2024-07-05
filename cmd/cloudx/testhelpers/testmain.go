@@ -6,15 +6,16 @@ package testhelpers
 import (
 	"context"
 	"fmt"
-	cloud "github.com/ory/client-go"
-	"github.com/ory/x/cmdx"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/client"
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
 	"github.com/ory/x/randx"
+
+	"github.com/ory/cli/cmd/cloudx/client"
 )
 
 func setEnvIfUnset(key, value string) {
