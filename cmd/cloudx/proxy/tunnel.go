@@ -140,6 +140,5 @@ To use a different default redirect URL, use the `+"`--default-redirect-url`"+` 
 	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterNoiseFlags(cmd.Flags())
 
-	cmdx.EnableUsageTemplating(cmd)
 	return cmd
 }
