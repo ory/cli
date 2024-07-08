@@ -46,6 +46,7 @@ func TestMain(m *testing.M) {
 func TestCommandHelper(t *testing.T) {
 	ctx := client.ContextWithOptions(
 		context.Background(),
+		client.WithConfigLocation(testhelpers.NewConfigFile(t)),
 		client.WithNoConfirm(true),
 		client.WithQuiet(true),
 		client.WithVerboseErrWriter(io.Discard),
