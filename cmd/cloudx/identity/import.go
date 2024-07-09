@@ -13,5 +13,6 @@ import (
 func NewImportIdentityCmd() *cobra.Command {
 	cmd := identities.NewImportIdentitiesCmd()
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	return cmd
 }

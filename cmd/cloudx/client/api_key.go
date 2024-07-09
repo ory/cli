@@ -51,7 +51,8 @@ func (h *CommandHelper) CreateWorkspaceAPIKey(ctx context.Context, workspaceID, 
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodPost,
 		fmt.Sprintf("%s/workspaces/%s/tokens", baseURL.String(), workspaceID),
 		strings.NewReader(fmt.Sprintf(`{"name":"%s"}`, name)),
@@ -64,6 +65,7 @@ func (h *CommandHelper) CreateWorkspaceAPIKey(ctx context.Context, workspaceID, 
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 	if res.StatusCode != http.StatusCreated {
 		resBody, err := io.ReadAll(res.Body)
 		if err != nil {
@@ -85,7 +87,12 @@ func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, 
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/workspaces/%s/tokens/%s", baseURL.String(), workspaceID, keyID), nil)
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodDelete,
+		fmt.Sprintf("%s/workspaces/%s/tokens/%s", baseURL.String(), workspaceID, keyID),
+		nil,
+	)
 	if err != nil {
 		return err
 	}
@@ -93,6 +100,7 @@ func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, 
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 	if res.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("expected status code %d but got %d", http.StatusNoContent, res.StatusCode)
 	}

@@ -14,6 +14,7 @@ import (
 func NewGetIdentityCmd() *cobra.Command {
 	cmd := identities.NewGetIdentityCmd()
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

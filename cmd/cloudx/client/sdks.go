@@ -115,7 +115,7 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 			return nil, nil, err
 		}
 		tokenSource = config.TokenSource(ctx)
-		baseURL = CloudConsoleURL
+		baseURL = CloudAPIsURL
 	}
 
 	retryable := retryablehttp.NewClient()
