@@ -22,7 +22,8 @@ RUN addgroup -S ory; \
     adduser -S ory -G ory -D  -h /home/ory -s /bin/nologin; \
     chown -R ory:ory /home/ory
 
-RUN apk add -U --no-cache ca-certificates libssl3 libcrypto3
+RUN apk add -U --no-cache ca-certificates
+RUN apk upgrade --no-cache libssl3 libcrypto3
 
 COPY --from=builder /usr/bin/ory /usr/bin/ory
 
