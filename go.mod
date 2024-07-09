@@ -38,7 +38,7 @@ require (
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.11.1-alpha.0.0.20231228131228-b2c3464bdc4f
 	github.com/ory/kratos v1.1.0-pre.0.0.20240205165553-fd7995077307
-	github.com/ory/x v0.0.642-0.20240709102417-07331e8ed969
+	github.com/ory/x v0.0.642
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/playwright-community/playwright-go v0.4401.1
