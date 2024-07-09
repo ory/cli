@@ -15,7 +15,8 @@ func TestPatchPermissionConfig(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range []struct {
-		name    string
+		name string
+		// doPatch will use the same project in parallel, so it is important to only do one operation per test
 		doPatch func(t *testing.T, exec execFunc)
 	}{
 		{
@@ -29,10 +30,7 @@ func TestPatchPermissionConfig(t *testing.T) {
 		{
 			name: "is able to add a key using permission-config",
 			doPatch: func(t *testing.T, exec execFunc) {
-				_, _, err := exec(nil, "patch", "permission-config", "--format", "json", "--replace", `/namespaces=[]`)
-				require.NoError(t, err)
-
-				stdout, _, err := exec(nil, "patch", "permission-config", "--format", "json", "--add", `/namespaces/0={"name":"docs", "id": 3}`)
+				stdout, _, err := exec(nil, "patch", "permission-config", "--format", "json", "--replace", `/namespaces=[{"name":"docs", "id": 3}]`)
 				require.NoError(t, err)
 				assert.Equal(t, "docs", gjson.Get(stdout, "namespaces.0.name").String(), stdout)
 			},
