@@ -7,6 +7,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"io"
 	"math/rand/v2"
 	"net"
 	"net/http"
@@ -292,33 +293,32 @@ func redirectErr(w http.ResponseWriter, r *http.Request, err, desc string) {
 	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
-/*
-func (h *CommandHelper) SignOut() error {
-	ac, err := h.readConfig()
+func (h *CommandHelper) SignOut(ctx context.Context) error {
+	config, err := h.GetAuthenticatedConfig(ctx)
 	if err != nil {
 		return err
 	}
-	if ac.AccessToken == nil {
-		return h.WriteConfig(new(AuthContext))
+	if config.AccessToken == nil {
+		return h.ClearConfig()
 	}
-	revoke, err := url.Parse(oac.Endpoint.AuthURL)
+	client := oauth2ClientConfig()
+	revoke, err := url.Parse(client.Endpoint.AuthURL)
 	if err != nil {
 		return err
 	}
 	revoke.Path = "/oauth2/revoke"
 	res, err := http.PostForm(revoke.String(), url.Values{
-		"client_id": []string{oac.ClientID},
-		"token":     []string{ac.AccessToken.RefreshToken}, // this also revokes the associated access token
+		"client_id": []string{client.ClientID},
+		"token":     []string{config.AccessToken.RefreshToken}, // this also revokes the associated access token
 	})
 	if err != nil {
-		fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", err)
+		_, _ = fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", err)
 	} else {
 		defer res.Body.Close()
 		if res.StatusCode < 200 || res.StatusCode > 299 {
 			body, _ := io.ReadAll(res.Body)
-			fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", string(body))
+			_, _ = fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", string(body))
 		}
 	}
-	return h.WriteConfig(new(AuthContext))
+	return h.ClearConfig()
 }
-*/

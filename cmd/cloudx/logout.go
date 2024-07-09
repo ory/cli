@@ -20,7 +20,7 @@ func NewLogoutCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := h.ClearConfig(); err != nil {
+			if err := h.SignOut(cmd.Context()); err != nil {
 				return err
 			}
 			fmt.Println("You signed out successfully.")
