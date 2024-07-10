@@ -82,8 +82,10 @@ func WithCleanConfigFile(ctx context.Context, t testing.TB) context.Context {
 func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) context.Context {
 	dst, err := os.Create(NewConfigFile(t))
 	require.NoError(t, err)
+	defer dst.Close()
 	src, err := os.Open(originalFile)
 	require.NoError(t, err)
+	defer src.Close()
 	_, err = io.Copy(dst, src)
 	require.NoError(t, err)
 

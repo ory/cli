@@ -282,6 +282,7 @@ func (m Migrator) DumpMigrationSchema() error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	err = c.Dialect.DumpSchema(f)
 	if err != nil {
 		m.l.WithError(err).Error("Unable to dump schema.")
