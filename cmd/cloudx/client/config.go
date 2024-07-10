@@ -4,12 +4,15 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/oauth2"
 
 	"github.com/gofrs/uuid"
 	"github.com/spf13/pflag"
@@ -21,7 +24,7 @@ import (
 
 var (
 	ErrNoConfig         = errors.New("no ory configuration file present")
-	ErrNoConfigQuiet    = errors.New("please run `ory auth` to initialize your configuration or remove the `--quiet` flag")
+	ErrNoConfigQuiet    = errors.New("please authenticate the CLI or remove the `--quiet` flag")
 	ErrNotAuthenticated = errors.New("you are not authenticated, please run `ory auth` to authenticate")
 	ErrReauthenticate   = errors.New("your session or key has expired or has otherwise become invalid, re-authenticate to continue")
 )
@@ -30,7 +33,7 @@ const (
 	ConfigFileName = ".ory-cloud.json"
 	FlagConfig     = "config"
 	ConfigPathKey  = "ORY_CONFIG_PATH"
-	ConfigVersion  = "v0alpha0"
+	ConfigVersion  = "v1"
 )
 
 func RegisterConfigFlag(f *pflag.FlagSet) {
@@ -66,6 +69,14 @@ func (h *CommandHelper) UpdateConfig(c *Config) error {
 	return nil
 }
 
+func (h *CommandHelper) getOrCreateConfig() (*Config, error) {
+	c, err := h.getConfig()
+	if errors.Is(err, ErrNoConfig) {
+		return &Config{}, nil
+	}
+	return c, err
+}
+
 func (h *CommandHelper) getConfig() (*Config, error) {
 	if h.config == nil {
 		c, err := readConfig(h.configLocation)
@@ -95,8 +106,29 @@ func readConfig(location string) (*Config, error) {
 	return &c, nil
 }
 
+func (h *CommandHelper) SelectWorkspace(id string) error {
+	conf, err := h.getOrCreateConfig()
+	if err != nil {
+		return err
+	}
+
+	uid, err := uuid.FromString(id)
+	if err != nil {
+		return err
+	}
+
+	if conf.SelectedWorkspace == uid {
+		// nothing to do
+		return nil
+	}
+
+	conf.SelectedWorkspace = uid
+	h.workspaceOverride = &id
+	return h.UpdateConfig(conf)
+}
+
 func (h *CommandHelper) SelectProject(id string) error {
-	conf, err := h.getConfig()
+	conf, err := h.getOrCreateConfig()
 	if err != nil {
 		return err
 	}
@@ -112,16 +144,16 @@ func (h *CommandHelper) SelectProject(id string) error {
 	}
 
 	conf.SelectedProject = uid
-	h.projectID = &id
+	h.projectOverride = &id
 	return h.UpdateConfig(conf)
 }
 
 type Config struct {
-	Version           string    `json:"version"`
-	SessionToken      string    `json:"session_token"`
-	SelectedProject   uuid.UUID `json:"selected_project"`
-	SelectedWorkspace uuid.UUID `json:"selected_workspace"`
-	IdentityTraits    Identity  `json:"session_identity_traits"`
+	Version           string        `json:"version"`
+	AccessToken       *oauth2.Token `json:"access_token"`
+	SelectedProject   uuid.UUID     `json:"selected_project"`
+	SelectedWorkspace uuid.UUID     `json:"selected_workspace"`
+	IdentityTraits    Identity      `json:"session_identity_traits"`
 
 	// isAuthenticated is a flag that we set once the session was checked and is valid.
 	// Because this is not stored to the config file, it means that every command execution does at most one session check.
@@ -160,4 +192,8 @@ type Identity struct {
 	ID    uuid.UUID
 	Email string `json:"email"`
 	Name  string `json:"name"`
+}
+
+func (c *Config) TokenSource(ctx context.Context) oauth2.TokenSource {
+	return oauth2ClientConfig().TokenSource(ctx, c.AccessToken)
 }

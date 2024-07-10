@@ -4,6 +4,7 @@
 package organizations_test
 
 import (
+	"context"
 	"testing"
 
 	cloud "github.com/ory/client-go"
@@ -17,17 +18,21 @@ import (
 )
 
 var (
-	project    *cloud.Project
-	defaultCmd *cmdx.CommandExecuter
+	defaultProject *cloud.Project
+	defaultCmd     *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	_, _, _, _, project, defaultCmd = testhelpers.CreateDefaultAssets()
-	testhelpers.RunAgainstStaging(m)
+	_, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	m.Run()
 }
 
 func TestNoUnauthenticated(t *testing.T) {
 	t.Parallel()
+
+	ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+	cmd := testhelpers.Cmd(ctx)
+
 	cases := []struct {
 		verb string
 		noun string
@@ -41,9 +46,7 @@ func TestNoUnauthenticated(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run("verb="+tc.verb, func(t *testing.T) {
-			configDir := testhelpers.NewConfigFile(t)
-			cmd := testhelpers.CmdWithConfig(configDir)
-			args := []string{tc.verb, tc.noun, "--quiet", "--project", project.Id}
+			args := []string{tc.verb, tc.noun, "--quiet", "--project", defaultProject.Id}
 			if tc.arg != "" {
 				args = append(args, tc.arg)
 			}
@@ -56,9 +59,7 @@ func TestNoUnauthenticated(t *testing.T) {
 func TestCRUD(t *testing.T) {
 	t.Parallel()
 
-	defaultCmd.ExecNoErr(t, "use", project.Id)
-
 	// List organizations: Empty
-	out := defaultCmd.ExecNoErr(t, "list", "organizations", "--format=json")
+	out := defaultCmd.ExecNoErr(t, "list", "organizations", "--format=json", "--project", defaultProject.Id)
 	assert.Equal(t, "[]\n", out)
 }

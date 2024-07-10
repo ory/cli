@@ -4,6 +4,7 @@
 package identity_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,30 +16,27 @@ import (
 )
 
 func TestDeleteIdentity(t *testing.T) {
-	t.Run("is not able to delete identities if not authenticated and quiet flag", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
+	t.Parallel()
 
-		cmd := testhelpers.CmdWithConfig(testhelpers.NewConfigFile(t))
-		_, _, err := cmd.Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject.Id, userID)
+	userID := testhelpers.ImportIdentity(ctx, t, defaultProject.Id, nil)
+
+	t.Run("is not able to delete identities if not authenticated and quiet flag", func(t *testing.T) {
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "delete", "identity", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "delete", "identity", "--project", defaultProject.Id, userID)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
+	})
+
 	t.Run("is able to delete identities", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
 		stdout, stderr, err := defaultCmd.Exec(nil, "delete", "identity", "--format", "json", "--project", defaultProject.Id, userID)
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
 		assert.Equal(t, userID, out.String(), "stdout: %s", stdout)
-	})
-
-	t.Run("is able to delete identities after authenticating", func(t *testing.T) {
-		userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "delete", "identity", "--format", "json", "--project", defaultProject.Id, userID)
-		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
-		out := gjson.Parse(stdout)
-		assert.Equal(t, userID, out.String(), stdout)
 	})
 }

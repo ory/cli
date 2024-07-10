@@ -4,17 +4,21 @@
 package testhelpers
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime/debug"
 	"testing"
 
-	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/require"
+
 	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
 	"github.com/ory/x/randx"
 
-	"github.com/ory/x/cmdx"
+	"github.com/ory/cli/cmd/cloudx/client"
 )
 
 func setEnvIfUnset(key, value string) {
@@ -26,44 +30,83 @@ func setEnvIfUnset(key, value string) {
 }
 
 func UseStaging() {
-	setEnvIfUnset(client.ConsoleURLKey, "https://console.staging.ory.dev:443")
-	setEnvIfUnset(client.OryAPIsURLKey, "https://projects.staging.oryapis.dev:443")
+	setEnvIfUnset(client.ConsoleURLKey, "https://console.staging.ory.dev")
+	setEnvIfUnset(client.OryAPIsURLKey, "https://staging.oryapis.dev")
 }
 
-func CreateDefaultAssets() (defaultConfig, defaultEmail, defaultPassword string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
-	t := testingT{}
+	t := MockTestingTForMain{}
 
 	defaultConfig = NewConfigFile(t)
 
-	defaultEmail, defaultPassword, _ = RegisterAccount(t, defaultConfig)
-	extraProject = CreateProject(t, defaultConfig, nil)
-	defaultProject = CreateProject(t, defaultConfig, nil)
-	defaultCmd = CmdWithConfig(defaultConfig)
+	email, password, _, sessionToken := RegisterAccount(context.Background(), t)
+	ctx = client.ContextWithOptions(context.Background(),
+		client.WithConfigLocation(defaultConfig),
+		client.WithSessionToken(t, sessionToken))
+
+	defaultProject = CreateProject(ctx, t, nil)
+	extraProject = CreateProject(ctx, t, nil)
+
+	_, page, cleanup := SetupPlaywright(t)
+	defer cleanup()
+	BrowserLogin(t, page, email, password)
+
+	ctx = client.ContextWithOptions(context.Background(), client.WithConfigLocation(NewConfigFile(t)))
+	h, err := client.NewCommandHelper(
+		ctx,
+		client.WithQuiet(false),
+		client.WithOpenBrowserHook(PlaywrightAcceptConsentBrowserHook(t, page, password)),
+	)
+	require.NoError(t, err)
+	require.NoError(t, h.Authenticate(ctx))
+
+	defaultCmd = Cmd(ctx)
 	return
 }
 
-func RunAgainstStaging(m *testing.M) {
+func CreateDefaultAssets() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
-	os.Exit(m.Run())
+
+	t := MockTestingTForMain{}
+
+	defaultConfig = NewConfigFile(t)
+
+	_, _, _, sessionToken := RegisterAccount(context.Background(), t)
+	ctx = client.ContextWithOptions(context.Background(),
+		client.WithConfigLocation(defaultConfig),
+		client.WithSessionToken(t, sessionToken),
+		client.WithOpenBrowserHook(func(uri string) error {
+			return errors.WithStack(fmt.Errorf("open browser hook not expected: %s", uri))
+		}))
+
+	defaultProject = CreateProject(ctx, t, nil)
+	extraProject = CreateProject(ctx, t, nil)
+	defaultCmd = Cmd(ctx)
+	return
 }
 
-type testingT struct {
+type MockTestingTForMain struct {
 	testing.TB
 }
 
-func (testingT) Errorf(format string, args ...interface{}) {
+func (MockTestingTForMain) Logf(format string, args ...interface{}) {
+	fmt.Printf(format, args...)
+	fmt.Println()
+}
+
+func (MockTestingTForMain) Errorf(format string, args ...interface{}) {
 	fmt.Printf(format, args...)
 	fmt.Println()
 	debug.PrintStack()
 }
 
-func (testingT) FailNow() {
+func (MockTestingTForMain) FailNow() {
 	os.Exit(1)
 }
 
-func (testingT) TempDir() string {
+func (MockTestingTForMain) TempDir() string {
 	dirname := filepath.Join(os.TempDir(), randx.MustString(6, randx.AlphaLowerNum))
 	if err := os.MkdirAll(dirname, 0700); err != nil {
 		panic(err)
@@ -71,8 +114,8 @@ func (testingT) TempDir() string {
 	return dirname
 }
 
-func (testingT) Helper() {}
+func (MockTestingTForMain) Helper() {}
 
-func (testingT) Name() string {
+func (MockTestingTForMain) Name() string {
 	return "TestMain"
 }

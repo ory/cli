@@ -12,36 +12,60 @@ import (
 )
 
 func TestGetProject(t *testing.T) {
-	runWithProject(t, func(t *testing.T, exec execFunc, projectID string) {
-		stdout, _, err := exec(nil, "get", "project", "--format", "json")
-		require.NoError(t, err)
-		assert.Equal(t, projectID, gjson.Get(stdout, "id").String())
-		assert.NotEmpty(t, gjson.Get(stdout, "slug").String())
-	}, WithDefaultProject, WithPositionalProject)
+	t.Parallel()
+
+	getProject := func(projectID string) func(t *testing.T, exec execFunc) {
+		return func(t *testing.T, exec execFunc) {
+			stdout, _, err := exec(nil, "get", "project", "--format", "json")
+			require.NoError(t, err)
+			assert.Equal(t, projectID, gjson.Get(stdout, "id").String())
+			assert.NotEmpty(t, gjson.Get(stdout, "slug").String())
+		}
+	}
+
+	runWithProjectAsDefault(ctx, t, defaultProject.Id, getProject(defaultProject.Id))
+	runWithProjectAsArgument(ctx, t, extraProject.Id, getProject(extraProject.Id))
 }
 
 func TestGetServiceConfig(t *testing.T) {
-	t.Run("service=kratos", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "get", "kratos-config", "--format", "json")
+	t.Parallel()
+
+	t.Run("service=identity", func(t *testing.T) {
+		t.Parallel()
+
+		getIdentityConfig := func(t *testing.T, exec execFunc) {
+			stdout, _, err := exec(nil, "get", "identity-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "selfservice.flows.error.ui_url").Exists())
-		}, WithDefaultProject, WithFlagProject)
+		}
+
+		runWithProjectAsDefault(ctx, t, defaultProject.Id, getIdentityConfig)
+		runWithProjectAsFlag(ctx, t, extraProject.Id, getIdentityConfig)
 	})
 
-	t.Run("service=keto", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "get", "keto-config", "--format", "json")
+	t.Run("service=permissions", func(t *testing.T) {
+		t.Parallel()
+
+		getPermissionsConfig := func(t *testing.T, exec execFunc) {
+			stdout, _, err := exec(nil, "get", "permission-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "namespaces").Exists(), stdout)
-		}, WithDefaultProject, WithFlagProject)
+		}
+
+		runWithProjectAsDefault(ctx, t, defaultProject.Id, getPermissionsConfig)
+		runWithProjectAsFlag(ctx, t, extraProject.Id, getPermissionsConfig)
 	})
 
-	t.Run("service=hydra", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+	t.Run("service=oauth2", func(t *testing.T) {
+		t.Parallel()
+
+		getOAuth2Config := func(t *testing.T, exec execFunc) {
 			stdout, _, err := exec(nil, "get", "oauth2-config", "--format", "json")
 			require.NoError(t, err)
 			assert.True(t, gjson.Get(stdout, "oauth2").Exists(), stdout)
-		}, WithDefaultProject, WithFlagProject)
+		}
+
+		runWithProjectAsDefault(ctx, t, defaultProject.Id, getOAuth2Config)
+		runWithProjectAsFlag(ctx, t, extraProject.Id, getOAuth2Config)
 	})
 }

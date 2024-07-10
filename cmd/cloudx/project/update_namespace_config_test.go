@@ -32,24 +32,33 @@ func writeFile(t *testing.T, content string) (path string) {
 }
 
 func TestUpdateNamespaceConfig(t *testing.T) {
+	if testing.Short() {
+		// this test needs internet, typically not available when you're on a (german) train
+		return
+	}
+
+	t.Parallel()
+
 	content := `class Default implements Namespace {}`
 	config := writeFile(t, content)
 	verbs := []string{"update", "patch"}
 
 	for _, verb := range verbs {
 		t.Run(fmt.Sprintf("is able to %q the namespace config", verb), func(t *testing.T) {
-			runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
+			t.Parallel()
+
+			updateNamespace := func(t *testing.T, exec execFunc) {
 				stdout, stderr, err := exec(nil, verb, "opl", "--format", "json", "--file", config)
 				require.NoError(t, err, stderr)
 
-				if !testing.Short() {
-					// Don't download and compare the config in short mode, might not have internet everywhere
-					url := gjson.Get(stdout, "namespaces.location").String()
-					data, err := fetcher.NewFetcher().Fetch(url)
-					require.NoError(t, err, "could not download the config")
-					assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
-				}
-			}, WithDefaultProject, WithFlagProject)
+				url := gjson.Get(stdout, "namespaces.location").String()
+				data, err := fetcher.NewFetcher().Fetch(url)
+				require.NoError(t, err, "could not download the config")
+				assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
+			}
+
+			runWithProjectAsDefault(ctx, t, defaultProject.Id, updateNamespace)
+			runWithProjectAsFlag(ctx, t, extraProject.Id, updateNamespace)
 		})
 	}
 }

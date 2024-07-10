@@ -4,6 +4,7 @@
 package identity_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/ory/cli/cmd/cloudx/client"
@@ -15,13 +16,20 @@ import (
 )
 
 func TestGetIdentity(t *testing.T) {
-	userID := testhelpers.ImportIdentity(t, defaultCmd, defaultProject.Id, nil)
+	t.Parallel()
+
+	userID := testhelpers.ImportIdentity(ctx, t, defaultProject.Id, nil)
 
 	t.Run("is not able to get identity if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
-		_, _, err := cmd.Exec(nil, "get", "identity", "--quiet", "--project", defaultProject.Id, userID)
+		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "get", "identity", "--quiet", "--project", defaultProject.Id, userID)
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
+	})
+
+	t.Run("triggers auth flow when not authenticated", func(t *testing.T) {
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "get", "identity", "--project", defaultProject.Id, userID)
+		require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 
 	t.Run("is able to get identity", func(t *testing.T) {
@@ -29,16 +37,6 @@ func TestGetIdentity(t *testing.T) {
 		require.NoError(t, err, stderr)
 		out := gjson.Parse(stdout)
 		assert.True(t, gjson.Valid(stdout))
-		assert.Len(t, out.Array(), 1)
-		assert.Equal(t, userID, out.Array()[0].Get("id").String())
-	})
-
-	t.Run("is able to get identity after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-		stdout, stderr, err := cmd.Exec(r, "get", "identity", "--format", "json", "--project", defaultProject.Id, userID)
-		require.NoError(t, err, stderr)
-		assert.True(t, gjson.Valid(stdout))
-		out := gjson.Parse(stdout)
 		assert.Len(t, out.Array(), 1)
 		assert.Equal(t, userID, out.Array()[0].Get("id").String())
 	})

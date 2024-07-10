@@ -12,34 +12,49 @@ import (
 )
 
 func TestPatchKratosConfig(t *testing.T) {
-	t.Run("is able to replace a key", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "patch", "kratos-config", "--format", "json", "--replace", `/selfservice/methods/password/enabled=false`)
-			require.NoError(t, err)
-			assert.False(t, gjson.Get(stdout, "selfservice.methods.password.enabled").Bool())
-		}, WithDefaultProject, WithFlagProject)
-	})
+	t.Parallel()
 
-	t.Run("is able to add a key", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "patch", "identity-config", "--format", "json", "--add", `/selfservice/methods/password/enabled=false`)
-			require.NoError(t, err)
-			assert.False(t, gjson.Get(stdout, "selfservice.methods.password.enabled").Bool())
-		}, WithDefaultProject, WithFlagProject)
-	})
+	for _, tc := range []struct {
+		name    string
+		doPatch func(t *testing.T, exec execFunc)
+	}{
+		{
+			name: "is able to replace a key",
+			doPatch: func(t *testing.T, exec execFunc) {
+				stdout, _, err := exec(nil, "patch", "kratos-config", "--format", "json", "--replace", `/selfservice/methods/password/enabled=false`)
+				require.NoError(t, err)
+				assert.False(t, gjson.Get(stdout, "selfservice.methods.password.enabled").Bool())
+			},
+		},
+		{
+			name: "is able to add a key",
+			doPatch: func(t *testing.T, exec execFunc) {
+				stdout, _, err := exec(nil, "patch", "identity-config", "--format", "json", "--add", `/selfservice/methods/password/enabled=false`)
+				require.NoError(t, err)
+				assert.False(t, gjson.Get(stdout, "selfservice.methods.password.enabled").Bool())
+			},
+		},
+		{
+			name: "is able to add a key with string",
+			doPatch: func(t *testing.T, exec execFunc) {
+				stdout, _, err := exec(nil, "patch", "ic", "--format", "json", "--replace", "/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
+				require.NoError(t, err)
+				assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "selfservice.flows.error.ui_url").String())
+			},
+		},
+		{
+			name: "fails if no opts are given",
+			doPatch: func(t *testing.T, exec execFunc) {
+				stdout, _, err := exec(nil, "patch", "ic", "--format", "json")
+				require.Error(t, err, stdout)
+			},
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 
-	t.Run("is able to add a key with string", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "patch", "ic", "--format", "json", "--replace", "/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
-			require.NoError(t, err)
-			assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "selfservice.flows.error.ui_url").String())
-		}, WithDefaultProject, WithFlagProject)
-	})
-
-	t.Run("fails if no opts are given", func(t *testing.T) {
-		runWithProject(t, func(t *testing.T, exec execFunc, _ string) {
-			stdout, _, err := exec(nil, "patch", "ic", "--format", "json")
-			require.Error(t, err, stdout)
-		}, WithDefaultProject, WithFlagProject)
-	})
+			runWithProjectAsDefault(ctx, t, defaultProject.Id, tc.doPatch)
+			runWithProjectAsFlag(ctx, t, extraProject.Id, tc.doPatch)
+		})
+	}
 }

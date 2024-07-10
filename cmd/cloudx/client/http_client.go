@@ -6,25 +6,15 @@ package client
 import (
 	"net/http"
 	"time"
+
+	"golang.org/x/oauth2"
 )
 
-type bearerTokenTransporter struct {
-	http.RoundTripper
-	bearerToken string
-}
-
-func (t *bearerTokenTransporter) RoundTrip(req *http.Request) (*http.Response, error) {
-	if t.bearerToken != "" {
-		req.Header.Set("Authorization", "Bearer "+t.bearerToken)
-	}
-	return t.RoundTripper.RoundTrip(req)
-}
-
-func newBearerTokenClient(token string) *http.Client {
+func newOAuth2TokenClient(token oauth2.TokenSource) *http.Client {
 	return &http.Client{
-		Transport: &bearerTokenTransporter{
-			RoundTripper: http.DefaultTransport,
-			bearerToken:  token,
+		Transport: &oauth2.Transport{
+			Base:   http.DefaultTransport,
+			Source: token,
 		},
 		Timeout: time.Second * 30,
 	}

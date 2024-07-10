@@ -9,11 +9,9 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ory/cli/cmd/cloudx/client"
 	ketoClient "github.com/ory/keto/cmd/client"
 	"github.com/ory/keto/cmd/relationtuple"
-	"github.com/ory/x/randx"
-
-	"github.com/ory/cli/cmd/cloudx/client"
 )
 
 const FlagAll = "all"
@@ -68,15 +66,23 @@ func forwardConnectionInfo(cmd *cobra.Command) {
 			return err
 		}
 
-		key, err := h.CreateAPIKey(ctx, project.Id, "keto-temp-"+randx.MustString(8, randx.AlphaNum))
+		tokenSource, baseURL, err := h.ProjectAuthToken(ctx)
 		if err != nil {
 			return err
 		}
-		defer func() { _ = h.DeleteAPIKey(ctx, project.Id, key.Id) }()
 
-		_ = os.Setenv(ketoClient.EnvAuthToken, *key.Value)
-		_ = os.Setenv(ketoClient.EnvReadRemote, client.CloudAPIsURL(project.Slug).Host)
-		_ = os.Setenv(ketoClient.EnvWriteRemote, client.CloudAPIsURL(project.Slug).Host)
+		upstream := baseURL(project.Slug + ".projects")
+		if upstream.Port() == "" {
+			upstream.Host = upstream.Host + ":443"
+		}
+
+		token, err := tokenSource.Token()
+		if err != nil {
+			return err
+		}
+		_ = os.Setenv(ketoClient.EnvAuthToken, token.AccessToken)
+		_ = os.Setenv(ketoClient.EnvReadRemote, upstream.Host)
+		_ = os.Setenv(ketoClient.EnvWriteRemote, upstream.Host)
 
 		return originalRunE(cmd, args)
 	}

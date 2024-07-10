@@ -4,6 +4,7 @@
 package identity_test
 
 import (
+	"context"
 	"testing"
 
 	cloud "github.com/ory/client-go"
@@ -13,12 +14,12 @@ import (
 )
 
 var (
-	defaultConfig, defaultEmail, defaultPassword string
-	defaultProject                               *cloud.Project
-	defaultCmd                                   *cmdx.CommandExecuter
+	ctx            context.Context
+	defaultProject *cloud.Project
+	defaultCmd     *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	defaultConfig, defaultEmail, defaultPassword, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
-	testhelpers.RunAgainstStaging(m)
+	ctx, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	m.Run()
 }

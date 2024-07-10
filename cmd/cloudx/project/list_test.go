@@ -4,6 +4,7 @@
 package project_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -18,17 +19,21 @@ import (
 )
 
 func TestListProject(t *testing.T) {
-	configDir := testhelpers.NewConfigFile(t)
-	cmd := testhelpers.CmdWithConfig(configDir)
-	email, password, _ := testhelpers.RegisterAccount(t, configDir)
+	t.Parallel()
+
+	// this test needs a separate account to properly list projects
+	_, _, _, sessionToken := testhelpers.RegisterAccount(context.Background(), t)
+	ctx := client.ContextWithOptions(ctx,
+		client.WithSessionToken(t, sessionToken),
+		client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+	cmd := testhelpers.Cmd(ctx)
 
 	projects := make([]*cloud.Project, 3)
 	projectIDs := make([]string, len(projects))
 	for k := range projects {
-		projects[k] = testhelpers.CreateProject(t, configDir, nil)
+		projects[k] = testhelpers.CreateProject(ctx, t, nil)
 		projectIDs[k] = projects[k].Id
 	}
-	t.Logf("Created projects %+v", projects)
 
 	assertHasProjects := func(t *testing.T, stdout string) {
 		out := gjson.Parse(stdout)
@@ -41,6 +46,8 @@ func TestListProject(t *testing.T) {
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s projects", proc), func(t *testing.T) {
+			t.Parallel()
+
 			stdout, _, err := cmd.Exec(nil, proc, "projects", "--format", "json")
 			require.NoError(t, err)
 			assertHasProjects(t, stdout)
@@ -48,16 +55,19 @@ func TestListProject(t *testing.T) {
 	}
 
 	t.Run("is not able to list projects if not authenticated and quiet flag", func(t *testing.T) {
-		configDir := testhelpers.NewConfigFile(t)
-		cmd := testhelpers.CmdWithConfig(configDir)
+		t.Parallel()
+
+		cmd := testhelpers.Cmd(testhelpers.WithCleanConfigFile(context.Background(), t))
 		_, _, err := cmd.Exec(nil, "list", "projects", "--quiet")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
-	t.Run("is able to list projects after authenticating", func(t *testing.T) {
-		cmd, r := testhelpers.WithReAuth(t, email, password)
-		stdout, _, err := cmd.Exec(r, "ls", "projects", "--format", "json")
-		require.NoError(t, err)
-		assertHasProjects(t, stdout)
+	t.Run("triggers authentication flow", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "ls", "projects")
+		assert.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 }

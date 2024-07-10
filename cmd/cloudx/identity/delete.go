@@ -14,6 +14,7 @@ import (
 func NewDeleteIdentityCmd() *cobra.Command {
 	cmd := identities.NewDeleteIdentityCmd()
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
 	return cmd
 }

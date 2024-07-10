@@ -38,10 +38,12 @@ func copyDir(t *testing.T, src, dst string) {
 	for _, fn := range files {
 		srcF, err := os.Open(fn)
 		require.NoError(t, err)
+		defer srcF.Close()
 		dstFn := path.Join(dst, strings.TrimLeft(fn, src))
 		require.NoError(t, os.MkdirAll(path.Dir(dstFn), 0777))
 		dstF, err := os.OpenFile(dstFn, os.O_WRONLY|os.O_CREATE, 0666)
 		require.NoError(t, err)
+		defer dstF.Close()
 		_, err = io.Copy(dstF, srcF)
 		require.NoError(t, err)
 		require.NoError(t, srcF.Close())

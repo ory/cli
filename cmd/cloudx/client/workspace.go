@@ -5,6 +5,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -13,7 +14,7 @@ import (
 )
 
 func (h *CommandHelper) ListWorkspaces(ctx context.Context) ([]cloud.Workspace, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -56,13 +57,14 @@ func (h *CommandHelper) findWorkspace(ctx context.Context, semiIdentifier string
 }
 
 func (h *CommandHelper) CreateWorkspace(ctx context.Context, name string) (*cloud.Workspace, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	workspace, _, err := c.WorkspaceAPI.CreateWorkspace(ctx).CreateWorkspaceBody(cloud.CreateWorkspaceBody{Name: name}).Execute()
+	workspace, res, err := c.WorkspaceAPI.CreateWorkspace(ctx).CreateWorkspaceBody(cloud.CreateWorkspaceBody{Name: name}).Execute()
 	if err != nil {
+		fmt.Printf("raw response: %+v", res)
 		return nil, err
 	}
 	return workspace, nil

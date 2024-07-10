@@ -20,7 +20,7 @@ import (
 )
 
 func (h *CommandHelper) ListProjects(ctx context.Context, workspace *string) ([]client.ProjectMetadata, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (h *CommandHelper) GetSelectedProject(ctx context.Context) (*client.Project
 		return nil, err
 	}
 
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (h *CommandHelper) GetProject(ctx context.Context, idOrSlug string, workspa
 		id = uuid.FromStringOrNil(projectMeta.GetId())
 	}
 
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (h *CommandHelper) findProject(ctx context.Context, semiIdentifier string, 
 }
 
 func (h *CommandHelper) CreateProject(ctx context.Context, name, environment string, workspace *string, setDefault bool) (*client.Project, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -135,9 +135,14 @@ func (h *CommandHelper) CreateProject(ctx context.Context, name, environment str
 		return nil, handleError("unable to list projects", res, err)
 	}
 
-	if setDefault || h.projectID == nil {
+	if setDefault || h.projectOverride == nil {
 		if err := h.SelectProject(project.Id); err != nil {
 			return nil, fmt.Errorf("project created successfully, but could not select it: %w", err)
+		}
+		if workspace != nil {
+			if err := h.SelectWorkspace(*workspace); err != nil {
+				return nil, fmt.Errorf("project created successfully, but could not select workspace: %w", err)
+			}
 		}
 	}
 
@@ -145,7 +150,7 @@ func (h *CommandHelper) CreateProject(ctx context.Context, name, environment str
 }
 
 func (h *CommandHelper) PatchProject(ctx context.Context, id string, raw []json.RawMessage, add, replace, del []string) (*client.SuccessfulProjectUpdate, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +196,7 @@ func (h *CommandHelper) PatchProject(ctx context.Context, id string, raw []json.
 }
 
 func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name string, configs []json.RawMessage) (*client.SuccessfulProjectUpdate, error) {
-	c, err := h.newCloudClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}

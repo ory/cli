@@ -29,7 +29,9 @@ var (
 )
 
 func TestUpdateProject(t *testing.T) {
-	project := testhelpers.CreateProject(t, defaultConfig, nil)
+	t.Parallel()
+
+	project := testhelpers.CreateProject(ctx, t, nil)
 
 	for _, tc := range []struct {
 		subcommand,
@@ -72,8 +74,11 @@ func TestUpdateProject(t *testing.T) {
 		},
 	} {
 		t.Run("target="+tc.subcommand, func(t *testing.T) {
+			t.Parallel()
+
 			t.Run("is able to update a project", func(t *testing.T) {
 				t.Skip("TODO")
+				t.Parallel()
 
 				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project.Id, "--format", "json", "--file", tc.pathSuccess)
 				require.NoError(t, err)
@@ -144,6 +149,8 @@ func TestUpdateProject(t *testing.T) {
 			})
 
 			t.Run("prints good error messages for failing schemas", func(t *testing.T) {
+				t.Parallel()
+
 				args := []string{"update", tc.subcommand, "--format", "json", "--file", tc.pathFailure}
 				if tc.projectFlag != "" {
 					args = append(args, tc.projectFlag)

@@ -4,6 +4,7 @@
 package relationtuples_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -21,14 +22,13 @@ import (
 )
 
 var (
-	defaultEmail, defaultPassword string
-	project                       *cloud.Project
-	defaultCmd                    *cmdx.CommandExecuter
+	defaultProject *cloud.Project
+	defaultCmd     *cmdx.CommandExecuter
 )
 
 func TestMain(m *testing.M) {
-	_, defaultEmail, defaultPassword, _, project, defaultCmd = testhelpers.CreateDefaultAssets()
-	testhelpers.RunAgainstStaging(m)
+	_, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
+	m.Run()
 }
 
 func TestNoUnauthenticated(t *testing.T) {
@@ -45,9 +45,8 @@ func TestNoUnauthenticated(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run("verb="+tc.verb, func(t *testing.T) {
-			configDir := testhelpers.NewConfigFile(t)
-			cmd := testhelpers.CmdWithConfig(configDir)
-			args := append([]string{tc.verb, "relationships", "--quiet", "--project", project.Id},
+			cmd := testhelpers.Cmd(testhelpers.WithCleanConfigFile(context.Background(), t))
+			args := append([]string{tc.verb, "relationships", "--quiet", "--project", defaultProject.Id},
 				tc.extraArgs...)
 			_, _, err := cmd.Exec(nil, args...)
 			require.ErrorIsf(t, err, client.ErrNoConfigQuiet, "got error: %v", err)
@@ -67,14 +66,12 @@ func TestAfterAuthentication(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		tc := tc
 		t.Run("verb="+tc.verb, func(t *testing.T) {
-			t.Parallel()
-			cmd, r := testhelpers.WithReAuth(t, defaultEmail, defaultPassword)
-			args := append([]string{tc.verb, "relation-tuples", "--project", project.Id},
+			ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
+			args := append([]string{tc.verb, "relation-tuples", "--project", defaultProject.Id},
 				tc.extraArgs...)
-			_, stderr, err := cmd.Exec(r, args...)
-			require.NoError(t, err, stderr)
+			_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, args...)
+			require.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered, stderr)
 		})
 	}
 }
@@ -83,7 +80,7 @@ func TestParse(t *testing.T) {
 	t.Parallel()
 
 	in := strings.NewReader("nspace:obj#rel@sub")
-	out, stderr, err := defaultCmd.Exec(in, "parse", "relation-tuples", "--format=json", "--project", project.Id, "-")
+	out, stderr, err := defaultCmd.Exec(in, "parse", "relation-tuples", "--format=json", "--project", defaultProject.Id, "-")
 
 	require.NoError(t, err, stderr)
 	assert.JSONEq(t, `{"namespace":"nspace","object":"obj","relation":"rel","subject_id":"sub"}`, out, out)
@@ -93,7 +90,7 @@ func TestParse(t *testing.T) {
 // The tests must be run in a sequence.
 func TestCRUD(t *testing.T) {
 	t.Parallel()
-	createNamespace(t, project.Id, `{"name": "n", "id": 0}`)
+	createLegacyNamespace(t, defaultProject.Id, `{"name": "n", "id": 0}`)
 
 	tuple := func(object string) string {
 		return fmt.Sprintf(`[{
@@ -105,19 +102,19 @@ func TestCRUD(t *testing.T) {
 	}
 	create := func(t *testing.T, object string) string {
 		in := strings.NewReader(tuple(object))
-		stdout, stderr, err := defaultCmd.Exec(in, "create", "relation-tuples", "--format", "json", "--project", project.Id, "-")
+		stdout, stderr, err := defaultCmd.Exec(in, "create", "relation-tuples", "--format", "json", "--project", defaultProject.Id, "-")
 		require.NoError(t, err, stderr)
 		return stdout
 	}
 	list := func(t *testing.T) string {
-		stdout, stderr, err := defaultCmd.Exec(nil, "list", "relation-tuples", "--format", "json", "--project", project.Id)
+		stdout, stderr, err := defaultCmd.Exec(nil, "list", "relation-tuples", "--format", "json", "--project", defaultProject.Id)
 		require.NoError(t, err, stderr)
 		return stdout
 	}
 	isAllowed := func(t *testing.T, subject, relation, namespace, object string) string {
 		stdout, stderr, err := defaultCmd.Exec(nil,
 			"is", "allowed", subject, relation, namespace, object,
-			"--project", project.Id, "--format", "json")
+			"--project", defaultProject.Id, "--format", "json")
 		require.NoError(t, err, stderr)
 		return stdout
 	}
@@ -135,7 +132,7 @@ func TestCRUD(t *testing.T) {
 	require.JSONEq(t, `{"allowed":true}`, stdout, stdout)
 
 	// 3. delete with --all but without --force
-	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project.Id,
+	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,
 		"--all")
 	require.NoError(t, err, stderr)
 	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
@@ -144,13 +141,13 @@ func TestCRUD(t *testing.T) {
 	create(t, "o2")
 
 	// 5. delete without --all but with --force
-	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project.Id,
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,
 		"--force")
 	require.ErrorIs(t, err, relationtuples.ErrDeleteMissingAllFlag, stderr)
 	require.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 2, list(t))
 
 	// 6. delete one tuple with query and with --force
-	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project.Id,
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,
 		"--force", "--object=o2")
 	require.NoError(t, err, stderr)
 	require.JSONEq(t, tuple("o1"), gjson.Get(list(t), "relation_tuples").Raw, list(t))
@@ -159,16 +156,16 @@ func TestCRUD(t *testing.T) {
 	create(t, "o42")
 
 	// 8. delete with --all and with --force
-	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", project.Id,
+	_, stderr, err = defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,
 		"--force", "--all")
 	require.NoError(t, err, stderr)
 	assert.Len(t, gjson.Get(list(t), "relation_tuples").Array(), 0, list(t))
 }
 
-func createNamespace(t *testing.T, project, JSON string) {
+func createLegacyNamespace(t *testing.T, project, rawNamespace string) {
 	t.Helper()
 	_, _, err := defaultCmd.Exec(nil, "patch", "permission-config", "--project", project,
-		"--add", `/namespaces/-=`+JSON)
+		"--add", `/namespaces/-=`+rawNamespace)
 	if err != nil {
 		t.Fatal(err)
 	}

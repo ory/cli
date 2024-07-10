@@ -4,60 +4,58 @@
 package project_test
 
 import (
+	"context"
 	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
-type execFunc func(stdin io.Reader, args ...string) (string, string, error)
+type execFunc = func(stdin io.Reader, args ...string) (string, string, error)
 
-type RunWithProjectOption uint8
+func runWithProjectAsDefault(ctx context.Context, t *testing.T, projectID string, test func(t *testing.T, exec execFunc)) {
+	t.Run("project passed as default", func(t *testing.T) {
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		testhelpers.SetDefaultProject(ctx, t, projectID)
 
-const (
-	WithDefaultProject RunWithProjectOption = 1 << iota
-	WithPositionalProject
-	WithFlagProject
-)
+		test(t, testhelpers.Cmd(ctx).Exec)
 
-func runWithProject(t *testing.T, test func(t *testing.T, exec execFunc, projectID string), opts ...RunWithProjectOption) {
-	for _, v := range opts {
-		switch v {
-		case WithDefaultProject:
-			t.Run("project via configured default", func(t *testing.T) {
-				testhelpers.SetDefaultProject(t, defaultConfig, extraProject.Id)
+		// make sure, the default wasn't changed implicitly
+		assert.Equal(t, projectID, testhelpers.GetDefaultProjectID(ctx, t))
+	})
+}
 
-				test(t, func(stdin io.Reader, args ...string) (string, string, error) {
-					return defaultCmd.Exec(stdin, args...)
-				}, extraProject.Id)
+func runWithProjectAsArgument(ctx context.Context, t *testing.T, projectID string, test func(t *testing.T, exec execFunc)) {
+	t.Run("project passed as argument", func(t *testing.T) {
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		selectedProject := testhelpers.GetDefaultProjectID(ctx, t)
+		require.NotEqual(t, selectedProject, projectID, "to ensure correct isolation, please use another project than the 'default' selected")
 
-				// make sure, the default wasn't changed implicitly
-				assert.Equal(t, extraProject.Id, testhelpers.GetDefaultProjectID(t, defaultConfig))
-			})
-		case WithPositionalProject:
-			t.Run("explicit project via positional argument", func(t *testing.T) {
-				testhelpers.SetDefaultProject(t, defaultConfig, defaultProject.Id)
+		cmd := testhelpers.Cmd(ctx)
+		test(t, func(stdin io.Reader, args ...string) (string, string, error) {
+			return cmd.Exec(stdin, append(args, projectID)...)
+		})
 
-				test(t, func(stdin io.Reader, args ...string) (string, string, error) {
-					return defaultCmd.Exec(stdin, append(args, extraProject.Id)...)
-				}, extraProject.Id)
+		// make sure, the default wasn't changed implicitly
+		assert.Equal(t, selectedProject, testhelpers.GetDefaultProjectID(ctx, t))
+	})
+}
 
-				// make sure, the default wasn't changed implicitly
-				assert.Equal(t, defaultProject.Id, testhelpers.GetDefaultProjectID(t, defaultConfig))
-			})
-		case WithFlagProject:
-			t.Run("explicit project via `--project` flag", func(t *testing.T) {
-				testhelpers.SetDefaultProject(t, defaultConfig, defaultProject.Id)
+func runWithProjectAsFlag(ctx context.Context, t *testing.T, projectID string, test func(t *testing.T, exec execFunc)) {
+	t.Run("project passed as flag", func(t *testing.T) {
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		selectedProject := testhelpers.GetDefaultProjectID(ctx, t)
+		require.NotEqual(t, selectedProject, projectID, "to ensure correct isolation, please use another project than the 'default' selected")
 
-				test(t, func(stdin io.Reader, args ...string) (string, string, error) {
-					return defaultCmd.Exec(stdin, append(args, "--project", extraProject.Id)...)
-				}, extraProject.Id)
+		cmd := testhelpers.Cmd(ctx)
+		test(t, func(stdin io.Reader, args ...string) (string, string, error) {
+			return cmd.Exec(stdin, append(args, "--project", projectID)...)
+		})
 
-				// make sure, the default wasn't changed implicitly
-				assert.Equal(t, defaultProject.Id, testhelpers.GetDefaultProjectID(t, defaultConfig))
-			})
-		}
-	}
+		// make sure, the default wasn't changed implicitly
+		assert.Equal(t, selectedProject, testhelpers.GetDefaultProjectID(ctx, t))
+	})
 }
