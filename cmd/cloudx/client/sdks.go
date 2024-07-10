@@ -100,22 +100,24 @@ func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client,
 	return newOAuth2TokenClient(config.TokenSource(ctx)), nil
 }
 
-func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client, func(string) *url.URL, error) {
-	var tokenSource oauth2.TokenSource
-	var baseURL func(string) *url.URL
+func (h *CommandHelper) ProjectAuthToken(ctx context.Context) (oauth2.TokenSource, func(string) *url.URL, error) {
 	if h.projectAPIKey != nil {
-		tokenSource = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey})
-		baseURL = CloudAPIsURL
+		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey}), CloudAPIsURL, nil
 	} else if h.sessionToken != nil {
-		tokenSource = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken})
-		baseURL = CloudConsoleURL
-	} else {
-		config, err := h.GetAuthenticatedConfig(ctx)
-		if err != nil {
-			return nil, nil, err
-		}
-		tokenSource = config.TokenSource(ctx)
-		baseURL = CloudAPIsURL
+		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken}), CloudConsoleURL, nil
+	}
+
+	config, err := h.GetAuthenticatedConfig(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	return config.TokenSource(ctx), CloudAPIsURL, nil
+}
+
+func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client, func(string) *url.URL, error) {
+	tokenSource, baseURL, err := h.ProjectAuthToken(ctx)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	retryable := retryablehttp.NewClient()

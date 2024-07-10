@@ -26,6 +26,7 @@ import (
 	"github.com/ory/cli/cmd/cloudx/client"
 
 	"github.com/ory/x/cmdx"
+	. "github.com/ory/x/pointerx"
 	"github.com/ory/x/randx"
 )
 
@@ -166,6 +167,18 @@ func ListIdentities(ctx context.Context, t testing.TB, project string) gjson.Res
 	return gjson.Parse(stdout)
 }
 
+func ListRelationTuples(ctx context.Context, t testing.TB, project string) gjson.Result {
+	stdout, stderr, err := Cmd(ctx).Exec(nil, "list", "relation-tuples", "--format", "json", "--project", project)
+	require.NoError(t, err, stderr)
+	return gjson.Parse(stdout)
+}
+
+func ListClients(ctx context.Context, t testing.TB, project string) gjson.Result {
+	stdout, stderr, err := Cmd(ctx).Exec(nil, "list", "clients", "--format", "json", "--project", project)
+	require.NoError(t, err, stderr)
+	return gjson.Parse(stdout)
+}
+
 func CreateClient(ctx context.Context, t testing.TB, project string) gjson.Result {
 	stdout, stderr, err := Cmd(ctx).Exec(nil, "create", "client", "--format", "json", "--project", project)
 	require.NoError(t, err, stderr)
@@ -206,4 +219,42 @@ func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, 
 	require.NotNil(t, res.SessionToken)
 
 	return email, password, name, *res.SessionToken
+}
+
+func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func()) {
+	pw, err := playwright.Run()
+	require.NoError(t, err)
+	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
+		Headless:  Ptr(true),
+		TracesDir: Ptr("./playwright-traces"),
+	})
+	require.NoError(t, err)
+	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
+		BaseURL: Ptr(client.CloudConsoleURL("").String()),
+	})
+	require.NoError(t, err)
+
+	return browser, page, func() {
+		t.Logf("page close error: %+v", page.Close())
+		t.Logf("browser close error: %+v", browser.Close())
+		t.Logf("playwright stop error: %+v", pw.Stop())
+	}
+}
+
+func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, password string) func(uri string) error {
+	return func(uri string) error {
+		t.Logf("open browser with %s", uri)
+
+		_, err := page.Goto(uri)
+		require.NoError(t, err)
+
+		// reconfirm password
+		require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
+		require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+		// accept consent
+		require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
+
+		t.Logf("consent successful")
+		return nil
+	}
 }

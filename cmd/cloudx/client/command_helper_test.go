@@ -15,7 +15,6 @@ import (
 	"github.com/playwright-community/playwright-go"
 
 	"github.com/ory/x/cmdx"
-	. "github.com/ory/x/pointerx"
 	"github.com/ory/x/randx"
 	"github.com/ory/x/stringslice"
 
@@ -196,49 +195,25 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=Authenticate", func(t *testing.T) {
 		t.Parallel()
 
-		// setup playwright for the browser login part
-		pw, err := playwright.Run()
-		require.NoError(t, err)
-		browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-			Headless:  Ptr(true),
-			TracesDir: Ptr("./playwright-traces"),
-		})
-		require.NoError(t, err)
-		page, err := browser.NewPage(playwright.BrowserNewPageOptions{
-			BaseURL: Ptr(client.CloudConsoleURL("").String()),
-		})
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			t.Logf("page close error: %+v", page.Close())
-			t.Logf("browser close error: %+v", browser.Close())
-			t.Logf("playwright stop error: %+v", pw.Stop())
-		})
+		_, page, cleanup := testhelpers.SetupPlaywright(t)
+		t.Cleanup(cleanup)
 
 		// ensure the browser has a valid session cookie
 		testhelpers.BrowserLogin(t, page, email, password)
+		t.Logf("browser login successful")
 
 		// set up the command helper
-		configPath := testhelpers.NewConfigFile(t)
-		h, err := client.NewCommandHelper(ctx,
-			client.WithConfigLocation(configPath),
+		ctx := client.ContextWithOptions(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+		h, err := client.NewCommandHelper(
+			ctx,
 			client.WithQuiet(false),
-			client.WithOpenBrowserHook(func(uri string) error {
-				_, err := page.Goto(uri)
-				require.NoError(t, err)
-
-				// reconfirm password
-				require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-				require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
-				// accept consent
-				require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
-
-				return nil
-			}),
+			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, password)),
 		)
 		require.NoError(t, err)
 
 		// authenticate
 		require.NoError(t, h.Authenticate(ctx))
+		t.Logf("authentication successful")
 
 		// assert success
 		config, err := h.GetAuthenticatedConfig(ctx)
@@ -249,10 +224,20 @@ func TestCommandHelper(t *testing.T) {
 		require.NotNil(t, config.AccessToken)
 		assert.NotEmpty(t, config.AccessToken.AccessToken)
 
-		// simple check to see if the token is valid and gets used
+		// simple requests against all services to see if the token is valid and gets used
 		p, err := h.GetProject(ctx, defaultProject.Id, nil)
 		require.NoError(t, err)
 		assert.Equal(t, defaultProject.Id, p.Id)
+		t.Logf("project request successful")
+
+		assert.JSONEq(t, "[]", testhelpers.ListIdentities(ctx, t, defaultProject.Id).Get("identities").Raw)
+		t.Logf("list identities request successful")
+
+		assert.JSONEq(t, "[]", testhelpers.ListClients(ctx, t, defaultProject.Id).Get("items").Raw)
+		t.Logf("list clients request successful")
+
+		assert.JSONEq(t, "[]", testhelpers.ListRelationTuples(ctx, t, defaultProject.Id).Get("relation_tuples").Raw)
+		t.Logf("list relation tuples request successful")
 	})
 
 	t.Run("func=CreateProjectAPIKey and DeleteApiKey", func(t *testing.T) {
