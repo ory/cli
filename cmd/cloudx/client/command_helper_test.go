@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"testing"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/playwright-community/playwright-go"
@@ -215,6 +216,7 @@ func TestCommandHelper(t *testing.T) {
 		require.NoError(t, h.Authenticate(ctx))
 		t.Logf("authentication successful")
 
+		// we don't need playwright anymore
 		cleanup()
 
 		// assert success
@@ -240,6 +242,28 @@ func TestCommandHelper(t *testing.T) {
 
 		assert.JSONEq(t, "[]", testhelpers.ListRelationTuples(ctx, t, defaultProject.Id).Get("relation_tuples").Raw)
 		t.Logf("list relation tuples request successful")
+
+		t.Run("refreshes and stores the refreshed oauth2 access token", func(t *testing.T) {
+			ctx := client.ContextWithOptions(ctx, client.WithOpenBrowserHook(func(uri string) error {
+				return fmt.Errorf("open browser hook not expected: %s", uri)
+			}))
+
+			oldToken := *config.AccessToken
+			oldToken.Expiry = time.Unix(0, 0)
+			oldConfig := *config
+			oldConfig.AccessToken = &oldToken
+			require.NoError(t, h.UpdateConfig(&oldConfig))
+
+			actual, err := h.GetProject(ctx, defaultProject.Id, nil)
+			require.NoError(t, err)
+			assert.Equal(t, defaultProject.Id, actual.Id)
+
+			newConfig, err := h.GetAuthenticatedConfig(ctx)
+			require.NoError(t, err)
+			require.NotNil(t, newConfig.AccessToken)
+			assert.NotEmpty(t, newConfig.AccessToken.AccessToken)
+			assert.NotEqual(t, oldToken.AccessToken, newConfig.AccessToken.AccessToken)
+		})
 	})
 
 	t.Run("func=CreateProjectAPIKey and DeleteApiKey", func(t *testing.T) {
