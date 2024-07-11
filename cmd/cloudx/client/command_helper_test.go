@@ -215,6 +215,8 @@ func TestCommandHelper(t *testing.T) {
 		require.NoError(t, h.Authenticate(ctx))
 		t.Logf("authentication successful")
 
+		cleanup()
+
 		// assert success
 		config, err := h.GetAuthenticatedConfig(ctx)
 		require.NoError(t, err)

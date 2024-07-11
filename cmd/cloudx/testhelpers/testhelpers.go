@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -193,6 +194,45 @@ func BrowserLogin(t testing.TB, page playwright.Page, email, password string) {
 	require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 }
 
+func BrowserRegistration(t testing.TB, page playwright.Page) (email, password, name, workspaceID, projectID string) {
+	email, password, name = FakeAccount()
+	_, err := page.Goto(client.CloudConsoleURL("").String() + "/registration")
+	require.NoError(t, err)
+
+	// registration screen
+	require.NoError(t, page.Locator(`[data-testid="node/input/traits.email"] input`).Fill(email))
+	require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
+	require.NoError(t, page.Locator(`[data-testid="node/input/traits.name"] input`).Fill(name))
+	require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+
+	// get started required fields
+	require.NoError(t, page.Locator("input[name=company]").Fill("Ory Test Monkey Inc."))
+	require.NoError(t, page.Locator("button[name=jobtitle]").Click())
+	require.NoError(t, page.Locator("button[role=option]:has-test(Other)").Click())
+	require.NoError(t, page.Locator("button[type=submit]").Click())
+
+	// get started non-required fields
+	require.NoError(t, page.Locator("button[type=submit]").Click())
+
+	resp, err := page.Context().Request().Get(client.CloudConsoleURL("api.").String() + "/workspaces")
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.Status())
+	workspaces, err := resp.Body()
+	require.NoError(t, err)
+	workspaceID = gjson.GetBytes(workspaces, "0.id").Str
+	require.NotZerof(t, workspaceID, "Raw response body: %s", workspaces)
+
+	resp, err = page.Context().Request().Get(client.CloudConsoleURL("api.").String() + "/projects")
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.Status())
+	projects, err := resp.Body()
+	require.NoError(t, err)
+	projectID = gjson.GetBytes(projects, "0.id").Str
+	require.NotZerof(t, projectID, "Raw response body: %s", projects)
+
+	return
+}
+
 func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, sessionToken string) {
 	email, password, name = FakeAccount()
 	c := client.NewPublicOryProjectClient()
@@ -225,8 +265,7 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 	pw, err := playwright.Run()
 	require.NoError(t, err)
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless:  Ptr(true),
-		TracesDir: Ptr("./playwright-traces"),
+		Headless: Ptr(true),
 	})
 	require.NoError(t, err)
 	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
