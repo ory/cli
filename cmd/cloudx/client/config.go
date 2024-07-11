@@ -52,27 +52,32 @@ func getConfigPath() (string, error) {
 	), nil
 }
 
-func (h *CommandHelper) UpdateConfig(c *Config) error {
+func (c *Config) writeUpdate() error {
 	c.Version = ConfigVersion
-	h.config = c
 
-	f, err := os.OpenFile(h.configLocation, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(c.location, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		return fmt.Errorf("unable to open file %q for writing: %w", h.configLocation, err)
+		return fmt.Errorf("unable to open file %q for writing: %w", c.location, err)
 	}
 	defer f.Close()
 
 	if err := json.NewEncoder(f).Encode(c); err != nil {
-		return fmt.Errorf("unable to write configuration file %q: %w", h.configLocation, err)
+		return fmt.Errorf("unable to write configuration file %q: %w", c.location, err)
 	}
-
 	return nil
+}
+
+func (h *CommandHelper) UpdateConfig(c *Config) error {
+	h.config = c
+	return c.writeUpdate()
 }
 
 func (h *CommandHelper) getOrCreateConfig() (*Config, error) {
 	c, err := h.getConfig()
 	if errors.Is(err, ErrNoConfig) {
-		return &Config{}, nil
+		return &Config{
+			location: h.configLocation,
+		}, nil
 	}
 	return c, err
 }
@@ -98,7 +103,9 @@ func readConfig(location string) (*Config, error) {
 	}
 	defer f.Close()
 
-	var c Config
+	c := Config{
+		location: location,
+	}
 	if err := json.NewDecoder(f).Decode(&c); err != nil {
 		return nil, fmt.Errorf("unable to JSON decode the ory config file %q: %w", location, err)
 	}
@@ -158,6 +165,8 @@ type Config struct {
 	// isAuthenticated is a flag that we set once the session was checked and is valid.
 	// Because this is not stored to the config file, it means that every command execution does at most one session check.
 	isAuthenticated bool
+	// location is the path to the configuration file
+	location string
 }
 
 func (c *Config) ID() string {
@@ -195,5 +204,29 @@ type Identity struct {
 }
 
 func (c *Config) TokenSource(ctx context.Context) oauth2.TokenSource {
-	return oauth2ClientConfig().TokenSource(ctx, c.AccessToken)
+	return &autoStoreRefreshedTokenSource{
+		ctx: ctx,
+		c:   c,
+	}
+}
+
+// autoStoreRefreshedTokenSource is a token source that automatically stores the refreshed token in the config file.
+// Because it holds the context, it should not be re-used. Always create a new one using Config.TokenSource() with the current context.
+type autoStoreRefreshedTokenSource struct {
+	ctx context.Context
+	c   *Config
+}
+
+func (s *autoStoreRefreshedTokenSource) Token() (*oauth2.Token, error) {
+	newToken, err := oauth2ClientConfig().TokenSource(s.ctx, s.c.AccessToken).Token()
+	if err != nil {
+		return nil, err
+	}
+	if newToken.AccessToken != s.c.AccessToken.AccessToken {
+		s.c.AccessToken = newToken
+		if err := s.c.writeUpdate(); err != nil {
+			return nil, err
+		}
+	}
+	return newToken, nil
 }

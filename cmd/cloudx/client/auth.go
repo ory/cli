@@ -37,9 +37,8 @@ func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
 	if c.AccessToken == nil {
 		return ErrNotAuthenticated
 	}
-	if c.AccessToken.Expiry.Before(time.Now()) {
-		return ErrReauthenticate
-	}
+	// TODO should we do some API call here to check whether the token is still valid?
+	// return ErrReauthenticate
 	return nil
 }
 
@@ -98,7 +97,9 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 
 	config, err := h.getConfig()
 	if stderrors.Is(err, ErrNoConfig) {
-		config = new(Config)
+		config = &Config{
+			location: h.configLocation,
+		}
 	} else if err != nil {
 		return err
 	}
@@ -118,7 +119,9 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 }
 
 func (h *CommandHelper) ClearConfig() error {
-	return h.UpdateConfig(new(Config))
+	return h.UpdateConfig(&Config{
+		location: h.configLocation,
+	})
 }
 
 func oauth2ClientConfig() *oauth2.Config {
@@ -149,6 +152,7 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 
 	config := &Config{
 		AccessToken: token,
+		location:    h.configLocation,
 	}
 	cl := NewPublicOryProjectClient()
 	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
