@@ -5,10 +5,11 @@ package accountexperience_test
 
 import (
 	"context"
-	cloud "github.com/ory/client-go"
-	"github.com/ory/x/cmdx"
 	"strings"
 	"testing"
+
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
 
 	"github.com/stretchr/testify/assert"
 

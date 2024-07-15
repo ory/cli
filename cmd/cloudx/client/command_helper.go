@@ -8,16 +8,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/browser"
 	"io"
 	"net/http"
 	"os"
 	"os/user"
 	"strings"
 
-	"github.com/ory/x/pointerx"
-
 	"github.com/gofrs/uuid"
+	"github.com/pkg/browser"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
@@ -26,6 +24,7 @@ import (
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
+	"github.com/ory/x/pointerx"
 )
 
 const (
