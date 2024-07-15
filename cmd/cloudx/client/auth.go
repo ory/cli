@@ -26,7 +26,7 @@ import (
 	"github.com/ory/x/urlx"
 )
 
-func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
+func (h *CommandHelper) checkAuthenticated(ctx context.Context) error {
 	c, err := h.getConfig()
 	if err != nil {
 		return err
@@ -37,8 +37,13 @@ func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
 	if c.AccessToken == nil {
 		return ErrNotAuthenticated
 	}
-	// TODO should we do some API call here to check whether the token is still valid?
-	// return ErrReauthenticate
+	if c.AccessToken.Expiry.Before(time.Now()) {
+		// Do a simple call that refreshes the token. If it fails, the user should re-authenticate.
+		_, _, err := NewPublicOryProjectClient().OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, c.TokenSource(ctx))).Execute()
+		if err != nil {
+			return ErrReauthenticate
+		}
+	}
 	return nil
 }
 
@@ -154,8 +159,7 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 		AccessToken: token,
 		location:    h.configLocation,
 	}
-	cl := NewPublicOryProjectClient()
-	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
+	userInfo, _, err := NewPublicOryProjectClient().OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
 	if err != nil {
 		return nil, err
 	}
