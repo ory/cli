@@ -173,7 +173,7 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 		l            net.Listener
 		state        = randx.MustString(32, randx.AlphaNum)
 		pkceVerifier = oauth2.GenerateVerifier()
-		ports        = []int{12345, 34525, 49763, 51238, 59724, 60582, 62125}
+		ports        = []int{12345, 15793, 17628, 19834, 23730, 27462, 34525, 36209, 42827, 46718, 49763, 51238, 52213, 57923, 59724, 60582, 62125, 65321, 49876, 54321, 59876, 60987, 62345, 63456, 64567, 65123, 65234, 65432, 65500, 65510, 65520, 65530}
 	)
 	rand.Shuffle(len(ports), func(i, j int) { ports[i], ports[j] = ports[j], ports[i] })
 	for _, port := range ports {

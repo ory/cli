@@ -11,7 +11,6 @@ import (
 	"runtime/debug"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 
 	cloud "github.com/ory/client-go"
@@ -41,48 +40,25 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, ex
 
 	defaultConfig = NewConfigFile(t)
 
-	email, password, _, sessionToken := RegisterAccount(context.Background(), t)
-	ctx = client.ContextWithOptions(context.Background(),
-		client.WithConfigLocation(defaultConfig),
-		client.WithSessionToken(t, sessionToken))
-
-	defaultProject = CreateProject(ctx, t, nil)
-	extraProject = CreateProject(ctx, t, nil)
+	email, password, _, _ := RegisterAccount(context.Background(), t)
 
 	_, page, cleanup := SetupPlaywright(t)
 	defer cleanup()
-	BrowserLogin(t, page, email, password)
 
-	ctx = client.ContextWithOptions(context.Background(), client.WithConfigLocation(NewConfigFile(t)))
+	ctx = client.ContextWithOptions(context.Background(), client.WithConfigLocation(defaultConfig))
 	h, err := client.NewCommandHelper(
 		ctx,
 		client.WithQuiet(false),
-		client.WithOpenBrowserHook(PlaywrightAcceptConsentBrowserHook(t, page, password)),
+		client.WithOpenBrowserHook(PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
 	)
 	require.NoError(t, err)
 	require.NoError(t, h.Authenticate(ctx))
-
-	defaultCmd = Cmd(ctx)
-	return
-}
-
-func CreateDefaultAssets() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
-	UseStaging()
-
-	t := MockTestingTForMain{}
-
-	defaultConfig = NewConfigFile(t)
-
-	_, _, _, sessionToken := RegisterAccount(context.Background(), t)
-	ctx = client.ContextWithOptions(context.Background(),
-		client.WithConfigLocation(defaultConfig),
-		client.WithSessionToken(t, sessionToken),
-		client.WithOpenBrowserHook(func(uri string) error {
-			return errors.WithStack(fmt.Errorf("open browser hook not expected: %s", uri))
-		}))
+	// we don't need playwright anymore
+	cleanup()
 
 	defaultProject = CreateProject(ctx, t, nil)
 	extraProject = CreateProject(ctx, t, nil)
+
 	defaultCmd = Cmd(ctx)
 	return
 }

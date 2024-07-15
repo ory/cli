@@ -8,14 +8,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/browser"
 	"io"
 	"net/http"
 	"os"
 	"os/user"
 	"strings"
-	"testing"
-
-	"github.com/pkg/browser"
 
 	"github.com/ory/x/pointerx"
 
@@ -53,7 +51,6 @@ type (
 		openBrowserHook   func(string) error
 		projectAPIKey     *string
 		workspaceAPIKey   *string
-		sessionToken      *string
 	}
 	helperOptionsContextKey struct{}
 	CommandHelperOption     func(*CommandHelper)
@@ -118,12 +115,6 @@ func WithProjectAPIKey(apiKey string) CommandHelperOption {
 func WithWorkspaceAPIKey(apiKey string) CommandHelperOption {
 	return func(h *CommandHelper) {
 		h.workspaceAPIKey = &apiKey
-	}
-}
-
-func WithSessionToken(_ testing.TB, sessionToken string) CommandHelperOption {
-	return func(h *CommandHelper) {
-		h.sessionToken = &sessionToken
 	}
 }
 

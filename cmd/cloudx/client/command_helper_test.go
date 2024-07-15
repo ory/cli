@@ -43,9 +43,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestCommandHelper(t *testing.T) {
+	defaultConfigFile := testhelpers.NewConfigFile(t)
 	ctx := client.ContextWithOptions(
 		context.Background(),
-		client.WithConfigLocation(testhelpers.NewConfigFile(t)),
+		client.WithConfigLocation(defaultConfigFile),
 		client.WithNoConfirm(true),
 		client.WithQuiet(true),
 		client.WithVerboseErrWriter(io.Discard),
@@ -54,9 +55,16 @@ func TestCommandHelper(t *testing.T) {
 		}))
 
 	email, password, name, sessionToken := testhelpers.RegisterAccount(ctx, t)
-	defaultConfigFile := testhelpers.NewConfigFile(t)
-	authenticated, err := client.NewCommandHelper(ctx, client.WithConfigLocation(defaultConfigFile), client.WithSessionToken(t, sessionToken))
+
+	browser, page, cleanup := testhelpers.SetupPlaywright(t)
+	t.Cleanup(cleanup)
+	authenticated, err := client.NewCommandHelper(
+		ctx,
+		client.WithQuiet(false),
+		client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
+	)
 	require.NoError(t, err)
+	require.NoError(t, authenticated.Authenticate(ctx))
 
 	defaultWorkspace, err := authenticated.CreateWorkspace(ctx, randx.MustString(6, randx.AlphaNum))
 	require.NoError(t, err)
@@ -78,14 +86,14 @@ func TestCommandHelper(t *testing.T) {
 
 	t.Run("func=SelectProjectWorkspace", func(t *testing.T) {
 		t.Parallel()
-		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
+		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)
 		otherProject, err := h.CreateProject(ctx, "other project", "dev", &defaultWorkspace.Id, false)
 		require.NoError(t, err)
 
 		t.Run("can change the selected project and workspace", func(t *testing.T) {
 			// create new helper to ensure clean internal state
-			h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
+			h, err := client.NewCommandHelper(ctx)
 			require.NoError(t, err)
 
 			current, err := h.ProjectID()
@@ -104,7 +112,7 @@ func TestCommandHelper(t *testing.T) {
 			assert.Equal(t, defaultWorkspace.Id, *actualWorkspace)
 
 			// check if persistent across instances
-			h, err = client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(defaultConfigFile))
+			h, err = client.NewCommandHelper(ctx)
 			require.NoError(t, err)
 
 			current, err = h.ProjectID()
@@ -116,10 +124,19 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=ListProjects", func(t *testing.T) {
 		t.Parallel()
 
-		configFile := testhelpers.NewConfigFile(t)
-		_, _, _, sessionToken := testhelpers.RegisterAccount(ctx, t)
+		ctx := client.ContextWithOptions(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+		email, password, _, _ := testhelpers.RegisterAccount(ctx, t)
+		page, err := browser.NewPage()
+		require.NoError(t, err)
+		authenticated, err := client.NewCommandHelper(
+			ctx,
+			client.WithQuiet(false),
+			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
+		)
+		require.NoError(t, err)
+		require.NoError(t, authenticated.Authenticate(ctx))
 
-		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(configFile))
+		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)
 
 		t.Run("empty list", func(t *testing.T) {
@@ -160,9 +177,9 @@ func TestCommandHelper(t *testing.T) {
 
 	t.Run("func=CreateProject", func(t *testing.T) {
 		t.Parallel()
-		configPath := testhelpers.NewConfigFile(t)
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfigFile)
 
-		h, err := client.NewCommandHelper(ctx, client.WithSessionToken(t, sessionToken), client.WithConfigLocation(configPath))
+		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)
 		workspace, err := h.CreateWorkspace(ctx, t.Name())
 		require.NoError(t, err)
@@ -195,19 +212,12 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=Authenticate", func(t *testing.T) {
 		t.Parallel()
 
-		_, page, cleanup := testhelpers.SetupPlaywright(t)
-		t.Cleanup(cleanup)
-
-		// ensure the browser has a valid session cookie
-		testhelpers.BrowserLogin(t, page, email, password)
-		t.Logf("browser login successful")
-
 		// set up the command helper
 		ctx := client.ContextWithOptions(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)))
 		h, err := client.NewCommandHelper(
 			ctx,
 			client.WithQuiet(false),
-			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, password)),
+			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
 		)
 		require.NoError(t, err)
 
@@ -286,7 +296,7 @@ func TestCommandHelper(t *testing.T) {
 			t.Run("is not able to get project if not authenticated and quiet flag "+name, func(t *testing.T) {
 				t.Parallel()
 
-				h, err := client.NewCommandHelper(ctx, client.WithQuiet(true))
+				h, err := client.NewCommandHelper(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)), client.WithQuiet(true))
 				require.NoError(t, err)
 				_, err = h.GetProject(ctx, p.Id, p.WorkspaceId.Get())
 				assert.ErrorIs(t, err, client.ErrNoConfigQuiet)

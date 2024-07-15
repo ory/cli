@@ -5,6 +5,8 @@ package accountexperience_test
 
 import (
 	"context"
+	cloud "github.com/ory/client-go"
+	"github.com/ory/x/cmdx"
 	"strings"
 	"testing"
 
@@ -16,22 +18,22 @@ import (
 	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
+var (
+	ctx     context.Context
+	project *cloud.Project
+	cmd     *cmdx.CommandExecuter
+)
+
 func TestMain(m *testing.M) {
+	ctx, _, _, project, cmd = testhelpers.CreateDefaultAssetsBrowser()
 	testhelpers.UseStaging()
 	m.Run()
 }
 
 func TestOpenAXPages(t *testing.T) {
-	_, _, _, sessionToken := testhelpers.RegisterAccount(context.Background(), t)
-	ctx := client.ContextWithOptions(context.Background(),
-		client.WithConfigLocation(testhelpers.NewConfigFile(t)),
-		client.WithSessionToken(t, sessionToken))
-	project := testhelpers.CreateProject(ctx, t, nil)
-	cmd := testhelpers.Cmd(ctx)
-
 	t.Run("is able to open all pages", func(t *testing.T) {
 		for _, flowType := range []string{"login", "registration", "recovery", "verification", "settings"} {
-			testhelpers.Cmd(client.ContextWithOptions(ctx, client.WithOpenBrowserHook(func(uri string) error {
+			cmd := testhelpers.Cmd(client.ContextWithOptions(ctx, client.WithOpenBrowserHook(func(uri string) error {
 				assert.Truef(t, strings.HasPrefix(uri, "https://"+project.Slug), "expected %q to have prefix %q", uri, "https://"+project.Slug)
 				assert.Contains(t, uri, flowType)
 				return nil

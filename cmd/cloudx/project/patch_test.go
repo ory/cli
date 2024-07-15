@@ -21,54 +21,54 @@ func TestPatchProject(t *testing.T) {
 		{
 			name: "is able to replace a key",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
-				require.NoError(t, err)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/methods/password/enabled=false`)
+				require.NoError(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 			},
 		},
 		{
 			name: "is able to add a key",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
-				require.NoError(t, err)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json", "--add", `/services/identity/config/selfservice/methods/password/enabled=false`)
+				require.NoError(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.False(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 			},
 		},
 		{
 			name: "is able to add a key with string",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
-				require.NoError(t, err)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json", "--replace", "/services/identity/config/selfservice/flows/error/ui_url=\"https://example.com/error-ui\"")
+				require.NoError(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.Equal(t, "https://example.com/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 			},
 		},
 		{
 			name: "is able to add a key with raw json",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
-				require.NoError(t, err)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json", "--replace", `/services/identity/config/selfservice/flows/error={"ui_url":"https://example.org/error-ui"}`)
+				require.NoErrorf(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.Equal(t, "https://example.org/error-ui", gjson.Get(stdout, "services.identity.config.selfservice.flows.error.ui_url").String())
 			},
 		},
 		{
 			name: "is able to remove a key",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
-				require.NoError(t, err)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json", "--remove", `/services/identity/config/selfservice/methods/password/enabled`)
+				require.NoErrorf(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 			},
 		},
 		{
 			name: "fails if no opts are given",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json")
-				require.Error(t, err, stdout)
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json")
+				require.Errorf(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 			},
 		},
 		{
 			name: "is able to update several keys",
 			doPatch: func(t *testing.T, exec execFunc) {
-				stdout, _, err := exec(nil, "patch", "project", "--format", "json",
+				stdout, stderr, err := exec(nil, "patch", "project", "--format", "json",
 					"--replace", `/services/identity/config/selfservice/methods/link/enabled=true`,
 					"--replace", `/services/identity/config/selfservice/methods/oidc/enabled=true`,
 					"--remove", `/services/identity/config/selfservice/methods/profile/enabled`,
@@ -78,7 +78,7 @@ func TestPatchProject(t *testing.T) {
 					"-f", "fixtures/patch/1.json",
 					"-f", "fixtures/patch/2.json",
 				)
-				require.NoError(t, err)
+				require.NoErrorf(t, err, "stdout: %s\nstderr: %s", stdout, stderr)
 				assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.password.enabled").Bool())
 				assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.profile.enabled").Bool())
 				assert.True(t, gjson.Get(stdout, "services.identity.config.selfservice.methods.link.enabled").Bool())
@@ -92,8 +92,6 @@ func TestPatchProject(t *testing.T) {
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Parallel()
-
 			runWithProjectAsDefault(ctx, t, defaultProject.Id, tc.doPatch)
 			runWithProjectAsArgument(ctx, t, extraProject.Id, tc.doPatch)
 		})
