@@ -29,7 +29,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/imdario/mergo v0.3.16
 	github.com/jackc/pgx/v4 v4.18.2
-	github.com/ory/client-go v1.13.10
+	github.com/ory/client-go v1.14.0
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b

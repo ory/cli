@@ -5,12 +5,8 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
@@ -24,8 +20,7 @@ func (h *CommandHelper) CreateProjectAPIKey(ctx context.Context, projectID, name
 
 	token, res, err := c.ProjectAPI.CreateProjectApiKey(ctx, projectID).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
 	if err != nil {
-		fmt.Printf("res: %+v\nreq: %+v\n", res, res.Request)
-		return nil, err
+		return nil, handleError("unable to create project API key", res, err)
 	}
 
 	return token, nil
@@ -37,72 +32,34 @@ func (h *CommandHelper) DeleteProjectAPIKey(ctx context.Context, projectID, keyI
 		return err
 	}
 
-	if _, err := c.ProjectAPI.DeleteProjectApiKey(ctx, projectID, keyID).Execute(); err != nil {
-		return err
+	if res, err := c.ProjectAPI.DeleteProjectApiKey(ctx, projectID, keyID).Execute(); err != nil {
+		return handleError("unable to delete project API key", res, err)
 	}
 
 	return nil
 }
 
 func (h *CommandHelper) CreateWorkspaceAPIKey(ctx context.Context, workspaceID, name string) (*cloud.WorkspaceApiKey, error) {
-	// TODO replace with SDK method
-	baseURL := CloudConsoleURL("api")
-	c, err := h.newConsoleHTTPClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodPost,
-		fmt.Sprintf("%s/workspaces/%s/tokens", baseURL.String(), workspaceID),
-		strings.NewReader(fmt.Sprintf(`{"name":"%s"}`, name)),
-	)
+
+	key, res, err := c.WorkspaceAPI.CreateWorkspaceApiKey(ctx, workspaceID).CreateWorkspaceApiKeyBody(cloud.CreateWorkspaceApiKeyBody{Name: name}).Execute()
 	if err != nil {
-		return nil, err
+		return nil, handleError("unable to create workspace API key", res, err)
 	}
-	req.Header.Set("Content-Type", "application/json")
-	res, err := c.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusCreated {
-		resBody, err := io.ReadAll(res.Body)
-		if err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("expected status code %d but got %d\n%s", http.StatusCreated, res.StatusCode, resBody)
-	}
-	key := cloud.WorkspaceApiKey{}
-	if err := json.NewDecoder(res.Body).Decode(&key); err != nil {
-		return nil, err
-	}
-	return &key, nil
+	return key, nil
 }
 
 func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, keyID string) error {
-	// TODO replace with SDK method
-	baseURL := CloudConsoleURL("api")
-	c, err := h.newConsoleHTTPClient(ctx)
+	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodDelete,
-		fmt.Sprintf("%s/workspaces/%s/tokens/%s", baseURL.String(), workspaceID, keyID),
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-	res, err := c.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("expected status code %d but got %d", http.StatusNoContent, res.StatusCode)
+
+	if res, err := c.WorkspaceAPI.DeleteWorkspaceApiKey(ctx, workspaceID, keyID).Execute(); err != nil {
+		return handleError("unable to delete workspace API key", res, err)
 	}
 	return nil
 }
