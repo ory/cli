@@ -23,7 +23,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	_, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssets()
+	_, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
 	m.Run()
 }
 

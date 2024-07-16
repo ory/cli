@@ -22,10 +22,21 @@ func TestListProject(t *testing.T) {
 	t.Parallel()
 
 	// this test needs a separate account to properly list projects
-	_, _, _, sessionToken := testhelpers.RegisterAccount(context.Background(), t)
 	ctx := client.ContextWithOptions(ctx,
-		client.WithSessionToken(t, sessionToken),
 		client.WithConfigLocation(testhelpers.NewConfigFile(t)))
+
+	email, password, _, _ := testhelpers.RegisterAccount(context.Background(), t)
+	_, page, cleanup := testhelpers.SetupPlaywright(t)
+	t.Cleanup(cleanup)
+	h, err := client.NewCommandHelper(
+		ctx,
+		client.WithQuiet(false),
+		client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
+	)
+	require.NoError(t, err)
+	require.NoError(t, h.Authenticate(ctx))
+	cleanup()
+
 	cmd := testhelpers.Cmd(ctx)
 
 	projects := make([]*cloud.Project, 3)

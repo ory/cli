@@ -185,14 +185,6 @@ func CreateClient(ctx context.Context, t testing.TB, project string) gjson.Resul
 	return gjson.Parse(stdout)
 }
 
-func BrowserLogin(t testing.TB, page playwright.Page, email, password string) {
-	_, err := page.Goto(client.CloudConsoleURL("").String() + "/login")
-	require.NoError(t, err)
-	require.NoError(t, page.Locator(`[data-testid="node/input/identifier"] input`).Fill(email))
-	require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-	require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
-}
-
 func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, sessionToken string) {
 	email, password, name = FakeAccount()
 	c := client.NewPublicOryProjectClient()
@@ -241,16 +233,26 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 	}
 }
 
-func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, password string) func(uri string) error {
+func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, email, password string) func(uri string) error {
 	return func(uri string) error {
 		t.Logf("open browser with %s", uri)
 
 		_, err := page.Goto(uri)
 		require.NoError(t, err)
 
-		// reconfirm password
-		require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-		require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+		if err := page.Locator(`[data-testid="node/input/identifier"] input`).WaitFor(); err == nil {
+			// we need to log in first
+			t.Logf("logging in")
+			require.NoError(t, page.Locator(`[data-testid="node/input/identifier"] input`).Fill(email))
+			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
+			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+		} else {
+			// reconfirm password
+			t.Logf("reconfirming password")
+			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
+			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
+		}
+
 		// accept consent
 		require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
 

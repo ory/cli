@@ -68,12 +68,6 @@ func NewPublicOryProjectClient() *cloud.APIClient {
 	return cloud.NewAPIClient(conf)
 }
 
-func NewConsoleAPIClient(sessionToken string) *cloud.APIClient {
-	conf := newSDKConfiguration(CloudConsoleURL("api").String())
-	conf.HTTPClient = newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: sessionToken}))
-	return cloud.NewAPIClient(conf)
-}
-
 func (h *CommandHelper) newConsoleAPIClient(ctx context.Context) (_ *cloud.APIClient, err error) {
 	conf := newSDKConfiguration(CloudConsoleURL("api").String())
 	conf.HTTPClient, err = h.newConsoleHTTPClient(ctx)
@@ -87,8 +81,6 @@ func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client,
 	// use the workspace API key if set
 	if h.workspaceAPIKey != nil {
 		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.workspaceAPIKey})), nil
-	} else if h.sessionToken != nil {
-		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken})), nil
 	}
 
 	// fall back to interactive OAuth2 flow
@@ -103,8 +95,6 @@ func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client,
 func (h *CommandHelper) ProjectAuthToken(ctx context.Context) (oauth2.TokenSource, func(string) *url.URL, error) {
 	if h.projectAPIKey != nil {
 		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey}), CloudAPIsURL, nil
-	} else if h.sessionToken != nil {
-		return oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.sessionToken}), CloudConsoleURL, nil
 	}
 
 	config, err := h.GetAuthenticatedConfig(ctx)
