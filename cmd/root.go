@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -17,6 +18,8 @@ import (
 	"github.com/ory/kratos/cmd/jsonnet"
 	"github.com/ory/x/cmdx"
 )
+
+var commandTemplatingOnce sync.Once
 
 func NewRootCmd() *cobra.Command {
 	c := &cobra.Command{
@@ -48,7 +51,9 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewIsCmd(),
 		versionCmd,
 	)
-	cmdx.EnableUsageTemplating(c)
+	commandTemplatingOnce.Do(func() {
+		cmdx.EnableUsageTemplating(c)
+	})
 
 	return c
 }

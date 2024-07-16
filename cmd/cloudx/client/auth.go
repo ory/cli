@@ -26,7 +26,7 @@ import (
 	"github.com/ory/x/urlx"
 )
 
-func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
+func (h *CommandHelper) checkAuthenticated(ctx context.Context) error {
 	c, err := h.getConfig()
 	if err != nil {
 		return err
@@ -38,7 +38,11 @@ func (h *CommandHelper) checkAuthenticated(_ context.Context) error {
 		return ErrNotAuthenticated
 	}
 	if c.AccessToken.Expiry.Before(time.Now()) {
-		return ErrReauthenticate
+		// Do a simple call that refreshes the token. If it fails, the user should re-authenticate.
+		_, _, err := NewPublicOryProjectClient().OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, c.TokenSource(ctx))).Execute()
+		if err != nil {
+			return ErrReauthenticate
+		}
 	}
 	return nil
 }
@@ -98,7 +102,9 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 
 	config, err := h.getConfig()
 	if stderrors.Is(err, ErrNoConfig) {
-		config = new(Config)
+		config = &Config{
+			location: h.configLocation,
+		}
 	} else if err != nil {
 		return err
 	}
@@ -118,7 +124,9 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 }
 
 func (h *CommandHelper) ClearConfig() error {
-	return h.UpdateConfig(new(Config))
+	return h.UpdateConfig(&Config{
+		location: h.configLocation,
+	})
 }
 
 func oauth2ClientConfig() *oauth2.Config {
@@ -149,9 +157,9 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 
 	config := &Config{
 		AccessToken: token,
+		location:    h.configLocation,
 	}
-	cl := NewPublicOryProjectClient()
-	userInfo, _, err := cl.OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
+	userInfo, _, err := NewPublicOryProjectClient().OidcAPI.GetOidcUserInfo(context.WithValue(ctx, cloud.ContextOAuth2, config.TokenSource(ctx))).Execute()
 	if err != nil {
 		return nil, err
 	}
