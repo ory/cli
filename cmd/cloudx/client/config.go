@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -87,6 +88,24 @@ func (h *CommandHelper) getConfig() (*Config, error) {
 		c, err := readConfig(h.configLocation)
 		if err != nil {
 			return nil, err
+		}
+		switch c.Version {
+		case "v0alpha0":
+			if h.isQuiet {
+				return nil, fmt.Errorf("you have to authenticate the Ory CLI now differently, plese see ory auth for details")
+			}
+
+			_, _ = fmt.Fprintln(h.VerboseErrWriter, "Thanks for upgrading! You will now be prompted to log in to the Ory CLI through the Ory Console.")
+			_, _ = fmt.Fprintln(h.VerboseErrWriter, "Press enter to continue...")
+			_, err := h.Stdin.ReadString('\n')
+			if err != nil && err != io.EOF {
+				return nil, fmt.Errorf("unable to read from stdin: %w", err)
+			}
+			fallthrough
+		default:
+			return nil, ErrNoConfig
+		case ConfigVersion:
+			// pass
 		}
 		h.config = c
 	}
