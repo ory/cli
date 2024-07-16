@@ -1,15 +1,20 @@
+// Copyright © 2024 Ory Corp
+// SPDX-License-Identifier: Apache-2.0
+
 package client_test
 
 import (
 	"bytes"
 	"context"
-	"github.com/ory/cli/cmd/cloudx/client"
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/testhelpers"
 )
 
 func TestLegacyConfigHandling(t *testing.T) {
