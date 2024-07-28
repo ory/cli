@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
@@ -65,7 +66,7 @@ func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, 
 }
 
 func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string) (apiKey string, cleanup func() error, err error) {
-	if ak := GetProjectAPIKeyFromEnvironment(); len(ak) > 0 {
+	if ak := os.Getenv(ProjectAPIKey); len(ak) > 0 {
 		return ak, noop, nil
 	}
 
