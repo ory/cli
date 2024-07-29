@@ -34,7 +34,7 @@ jobs:
           npm run server &
           docker run \
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
-            -e ORY_PROJECT_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
+            -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
             -p 4445:3000 -d \
             --name hydra-ui \
             docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.2
@@ -72,7 +72,7 @@ jobs:
         run: |
           docker run \
             -e HYDRA_ADMIN_URL=https://admiring-tu-swczqlujc0.projects.oryapis.com \
-            -e ORY_PROJECT_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
+            -e ORY_API_KEY="${{ secrets.ORY_PROJECT_API_KEY }}" \
             -p 4445:3000 -d \
             --name hydra-ui \
             docker.io/oryd/hydra-login-consent-node:v2.0.0-alpha.0.pre.2
