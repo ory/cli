@@ -24,7 +24,7 @@ jobs:
           ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app --quiet --rewrite-host &
           npm run test
         env:
-          ORY_API_KEY: nokey
+          ORY_PROJECT_API_KEY: nokey
           ORY_PROJECT_SLUG: affectionate-archimedes-s9mkjq77k0
           ORY_CONSOLE_URL: https://console.staging.ory.dev
           ORY_ORYAPIS_URL: https://staging.oryapis.dev
