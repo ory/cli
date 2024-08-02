@@ -55,7 +55,7 @@ Example:
 `,
 	Args: cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var oas2 openapi2.Swagger
+		var oas2 openapi2.T
 
 		in, err := os.ReadFile(args[0])
 		if err != nil {
@@ -66,7 +66,7 @@ Example:
 			return errors.WithStack(err)
 		}
 
-		oas3, err := openapi2conv.ToV3Swagger(&oas2)
+		oas3, err := openapi2conv.ToV3(&oas2)
 		if err != nil {
 			return errors.WithStack(err)
 		}

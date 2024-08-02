@@ -259,7 +259,7 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 		case token = <-serverToken:
 		case err = <-serverErr:
 		}
-		ctx, cancel := context.WithDeadline(context.WithoutCancel(ctx), time.Now().Add(2*time.Second))
+		ctx, cancel := context.WithDeadline(context.WithoutCancel(ctx), time.Now().Add(20*time.Second))
 		defer cancel()
 		return stderrors.Join(err, srv.Shutdown(ctx))
 	})
