@@ -74,7 +74,7 @@ var doubleSlashComments = Format{
 	endToken:   "",
 }
 
-// comment format that starts with a doubleslash
+// comment format that is surrounded by /* */
 var slashStarComments = Format{
 	startToken: "/* ",
 	endToken:   " */",
