@@ -118,3 +118,19 @@ hello: world`, "\n")
 	_, have := htmlComments.SplitHeaderFromContent(give, regexp.MustCompile(`Copyright © \d{4} Ory Corp Inc.`))
 	assert.Equal(t, want, have)
 }
+
+func TestSlashStarComments(t *testing.T) {
+	t.Parallel()
+	tests := map[string]string{
+		"Hello":          "/* Hello */",
+		"Hello\n":        "/* Hello */\n",
+		"Hello\nWorld":   "/* Hello */\n/* World */",
+		"Hello\nWorld\n": "/* Hello */\n/* World */\n",
+	}
+	for give, want := range tests {
+		t.Run(fmt.Sprintf("%s -> %s", give, want), func(t *testing.T) {
+			have := slashStarComments.renderBlock(give)
+			assert.Equal(t, want, have)
+		})
+	}
+}
