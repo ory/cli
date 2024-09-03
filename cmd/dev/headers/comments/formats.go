@@ -74,6 +74,12 @@ var doubleSlashComments = Format{
 	endToken:   "",
 }
 
+// comment format that is surrounded by /* */
+var slashStarComments = Format{
+	startToken: "/* ",
+	endToken:   " */",
+}
+
 // comment format that starts with pound symbols
 var poundComments = Format{
 	startToken: "# ",
@@ -93,14 +99,18 @@ var commentFormats = map[FileType]Format{
 	"go":   doubleSlashComments,
 	"java": doubleSlashComments,
 	"js":   doubleSlashComments,
+	"jsx":  doubleSlashComments,
 	"md":   htmlComments,
 	"php":  doubleSlashComments,
 	"py":   poundComments,
 	"rb":   poundComments,
 	"rs":   doubleSlashComments,
 	"ts":   doubleSlashComments,
+	"tsx":  doubleSlashComments,
 	"vue":  htmlComments,
 	"yml":  poundComments,
+	"html": htmlComments,
+	"css":  slashStarComments,
 }
 
 func GetFormat(path string) (Format, bool) {
