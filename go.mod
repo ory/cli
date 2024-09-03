@@ -50,7 +50,6 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/oauth2 v0.21.0
-	golang.org/x/sync v0.7.0
 	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -214,7 +213,7 @@ require (
 	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
-	github.com/opencontainers/runc v1.1.13 // indirect
+	github.com/opencontainers/runc v1.1.14 // indirect
 	github.com/openzipkin/zipkin-go v0.4.2 // indirect
 	github.com/ory/analytics-go/v5 v5.0.1 // indirect
 	github.com/ory/dockertest/v3 v3.10.1-0.20240704115616-d229e74b748d // indirect
@@ -293,6 +292,7 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/tools v0.23.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
