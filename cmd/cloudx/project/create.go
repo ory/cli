@@ -39,8 +39,13 @@ func NewCreateProjectCmd() *cobra.Command {
 				return err
 			}
 
-			if (len(name) == 0 || len(environment) == 0) && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
-				return errors.New("you must specify the --name and --environment flags when using --quiet")
+			wsID := h.WorkspaceID()
+			if wsID == nil || len(environment) == 0 {
+				return errors.New("a workspace and environment is required to create a project")
+			}
+
+			if len(name) == 0 && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {
+				return errors.New("you must specify the --name flag when using --quiet")
 			}
 
 			for name == "" {
@@ -51,7 +56,7 @@ func NewCreateProjectCmd() *cobra.Command {
 				}
 			}
 
-			p, err := h.CreateProject(ctx, name, string(environment), h.WorkspaceID(), useProject)
+			p, err := h.CreateProject(ctx, name, string(environment), wsID, useProject)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}

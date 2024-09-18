@@ -20,6 +20,6 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	ctx, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
+	ctx, _, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
 	m.Run()
 }

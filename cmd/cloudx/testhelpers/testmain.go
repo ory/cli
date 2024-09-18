@@ -33,7 +33,7 @@ func UseStaging() {
 	setEnvIfUnset(client.OryAPIsURLKey, "https://staging.oryapis.dev")
 }
 
-func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig, defaultWorkspaceID string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
 	t := MockTestingTForMain{}
@@ -55,9 +55,11 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, ex
 	require.NoError(t, h.Authenticate(ctx))
 	// we don't need playwright anymore
 	cleanup()
+	fmt.Println("authenticated, creating default assets")
 
-	defaultProject = CreateProject(ctx, t, nil)
-	extraProject = CreateProject(ctx, t, nil)
+	defaultWorkspaceID = CreateWorkspace(ctx, t)
+	defaultProject = CreateProject(ctx, t, defaultWorkspaceID)
+	extraProject = CreateProject(ctx, t, defaultWorkspaceID)
 
 	defaultCmd = Cmd(ctx)
 	return

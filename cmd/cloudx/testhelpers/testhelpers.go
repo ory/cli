@@ -100,11 +100,8 @@ func Cmd(ctx context.Context) *cmdx.CommandExecuter {
 	}
 }
 
-func CreateProject(ctx context.Context, t testing.TB, workspace *string) *cloud.Project {
-	args := []string{"create", "project", "--name", TestName(), "--format", "json"}
-	if workspace != nil {
-		args = append(args, "--workspace", *workspace)
-	}
+func CreateProject(ctx context.Context, t testing.TB, workspace string) *cloud.Project {
+	args := []string{"create", "project", "--name", TestName(), "--workspace", workspace, "--format", "json", "--environment", "dev"}
 	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	p := cloud.Project{}

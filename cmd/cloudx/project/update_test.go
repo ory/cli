@@ -31,7 +31,8 @@ var (
 func TestUpdateProject(t *testing.T) {
 	t.Parallel()
 
-	project := testhelpers.CreateProject(ctx, t, nil)
+	workspace := testhelpers.CreateWorkspace(ctx, t)
+	project := testhelpers.CreateProject(ctx, t, workspace)
 
 	for _, tc := range []struct {
 		subcommand,

@@ -39,10 +39,11 @@ func TestListProject(t *testing.T) {
 
 	cmd := testhelpers.Cmd(ctx)
 
+	workspace := testhelpers.CreateWorkspace(ctx, t)
 	projects := make([]*cloud.Project, 3)
 	projectIDs := make([]string, len(projects))
 	for k := range projects {
-		projects[k] = testhelpers.CreateProject(ctx, t, nil)
+		projects[k] = testhelpers.CreateProject(ctx, t, workspace)
 		projectIDs[k] = projects[k].Id
 	}
 

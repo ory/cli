@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gofrs/uuid"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
@@ -33,14 +35,34 @@ func TestCreateProject(t *testing.T) {
 		return
 	}
 
+	t.Run("requires workspace and environment", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
+
+		for _, extraArgs := range [][]string{
+			{},
+			{"--workspace", uuid.Must(uuid.NewV4()).String()},
+			{"--environment", "dev"},
+		} {
+			_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, append([]string{"create", "project", "--name", testhelpers.TestName(), "--format", "json"}, extraArgs...)...)
+			require.Error(t, err)
+			assert.ErrorContains(t, err, "a workspace and environment is required to create a project", stderr)
+			assert.Contains(t, stderr, "a workspace and environment is required to create a project")
+		}
+	})
+
 	t.Run("is able to create a project", func(t *testing.T) {
 		t.Parallel()
 
 		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
 		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
 
+		wsID := testhelpers.CreateWorkspace(ctx, t)
+
 		name := testhelpers.TestName()
-		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--format", "json")
+		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--format", "json", "--workspace", wsID)
 		require.NoError(t, err)
 		assertResult(t, defaultConfig, stdout, name)
 
@@ -52,8 +74,9 @@ func TestCreateProject(t *testing.T) {
 
 		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
 
+		workspace := testhelpers.CreateWorkspace(ctx, t)
 		name := testhelpers.TestName()
-		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--use-project", "--format", "json")
+		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--use-project", "--workspace", workspace, "--environment", "dev", "--format", "json")
 		require.NoError(t, err)
 		id, _, _ := assertResult(t, defaultConfig, stdout, name)
 
@@ -65,7 +88,8 @@ func TestCreateProject(t *testing.T) {
 
 		name := testhelpers.TestName()
 		stdin := strings.NewReader(name + "\n")
-		stdout, _, err := defaultCmd.Exec(stdin, "create", "project", "--format", "json")
+		workspace := testhelpers.CreateWorkspace(ctx, t)
+		stdout, _, err := defaultCmd.Exec(stdin, "create", "project", "--workspace", workspace, "--environment", "dev", "--format", "json")
 		require.NoError(t, err)
 		assertResult(t, defaultConfig, stdout, name)
 	})
@@ -73,11 +97,12 @@ func TestCreateProject(t *testing.T) {
 	t.Run("is not able to create a project if no name flag and quiet flag", func(t *testing.T) {
 		t.Parallel()
 
+		workspace := testhelpers.CreateWorkspace(ctx, t)
 		name := testhelpers.TestName()
 		stdin := strings.NewReader(name)
-		_, stderr, err := defaultCmd.Exec(stdin, "create", "project", "--quiet")
+		_, stderr, err := defaultCmd.Exec(stdin, "create", "project", "--quiet", "--workspace", workspace, "--environment", "dev")
 		require.Error(t, err)
-		assert.Contains(t, stderr, "you must specify the --name and --environment flags when using --quiet")
+		assert.Contains(t, stderr, "you must specify the --name flag when using --quiet")
 	})
 
 	t.Run("is not able to create a project if not authenticated and quiet flag", func(t *testing.T) {
@@ -85,8 +110,7 @@ func TestCreateProject(t *testing.T) {
 
 		ctx := testhelpers.WithCleanConfigFile(context.Background(), t)
 
-		name := testhelpers.TestName()
-		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--quiet")
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", testhelpers.TestName(), "--workspace", uuid.Must(uuid.NewV4()).String(), "--environment", "dev", "--quiet")
 		require.ErrorIs(t, err, client.ErrNoConfigQuiet)
 	})
 
@@ -95,7 +119,7 @@ func TestCreateProject(t *testing.T) {
 
 		ctx := testhelpers.WithEmitAuthFlowTriggeredErr(context.Background(), t)
 
-		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", testhelpers.TestName(), "--format", "json")
+		_, _, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", testhelpers.TestName(), "--workspace", uuid.Must(uuid.NewV4()).String(), "--environment", "dev", "--format", "json")
 		assert.ErrorIs(t, err, testhelpers.ErrAuthFlowTriggered)
 	})
 }
