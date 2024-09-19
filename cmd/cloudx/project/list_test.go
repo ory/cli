@@ -21,26 +21,8 @@ import (
 func TestListProject(t *testing.T) {
 	t.Parallel()
 
-	// this test needs a separate account to properly list projects
-	ctx := client.ContextWithOptions(ctx,
-		client.WithConfigLocation(testhelpers.NewConfigFile(t)))
-
-	email, password, _, _ := testhelpers.RegisterAccount(context.Background(), t)
-	_, page, cleanup := testhelpers.SetupPlaywright(t)
-	t.Cleanup(cleanup)
-	h, err := client.NewCommandHelper(
-		ctx,
-		client.WithQuiet(false),
-		client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
-	)
-	require.NoError(t, err)
-	require.NoError(t, h.Authenticate(ctx))
-	cleanup()
-
-	cmd := testhelpers.Cmd(ctx)
-
 	workspace := testhelpers.CreateWorkspace(ctx, t)
-	projects := make([]*cloud.Project, 3)
+	projects := make([]*cloud.Project, 2)
 	projectIDs := make([]string, len(projects))
 	for k := range projects {
 		projects[k] = testhelpers.CreateProject(ctx, t, workspace)
@@ -49,18 +31,19 @@ func TestListProject(t *testing.T) {
 
 	assertHasProjects := func(t *testing.T, stdout string) {
 		out := gjson.Parse(stdout)
-		assert.EqualValues(t, out.Get("#").Int(), len(projects))
-		out.ForEach(func(_, project gjson.Result) bool {
-			assert.Contains(t, projectIDs, project.Get("id").String())
-			return true
-		})
+		require.EqualValues(t, out.Get("#").Int(), len(projects))
+		actualIDs := make([]string, 0, len(projects))
+		for _, id := range out.Get("#.id").Array() {
+			actualIDs = append(actualIDs, id.Str)
+		}
+		assert.ElementsMatch(t, projectIDs, actualIDs)
 	}
 
 	for _, proc := range []string{"list", "ls"} {
 		t.Run(fmt.Sprintf("is able to %s projects", proc), func(t *testing.T) {
 			t.Parallel()
 
-			stdout, _, err := cmd.Exec(nil, proc, "projects", "--format", "json")
+			stdout, _, err := defaultCmd.Exec(nil, proc, "projects", "--format", "json", "--workspace", workspace)
 			require.NoError(t, err)
 			assertHasProjects(t, stdout)
 		})
