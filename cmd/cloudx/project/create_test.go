@@ -5,6 +5,8 @@ package project_test
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -38,25 +40,29 @@ func TestCreateProject(t *testing.T) {
 	t.Run("requires workspace and environment", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
-		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
+		ctx, newConfig := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		conf := testhelpers.ReadConfig(t, newConfig)
+		conf.SelectedWorkspace = uuid.Nil
+		rawConfig, err := json.Marshal(conf)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(newConfig, rawConfig, 0600))
 
 		for _, extraArgs := range [][]string{
 			{},
-			{"--workspace", uuid.Must(uuid.NewV4()).String()},
 			{"--environment", "dev"},
 		} {
-			_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, append([]string{"create", "project", "--name", testhelpers.TestName(), "--format", "json"}, extraArgs...)...)
-			require.Error(t, err)
-			assert.ErrorContains(t, err, "a workspace and environment is required to create a project", stderr)
-			assert.Contains(t, stderr, "a workspace and environment is required to create a project")
+			t.Run("args="+strings.Join(extraArgs, " "), func(t *testing.T) {
+				_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, append([]string{"create", "project", "--name", testhelpers.TestName(), "--format", "json"}, extraArgs...)...)
+				require.Error(t, err)
+				assert.Contains(t, stderr, "a workspace is required to create a project")
+			})
 		}
 	})
 
 	t.Run("is able to create a project", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
 		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
 
 		wsID := testhelpers.CreateWorkspace(ctx, t)
@@ -72,7 +78,7 @@ func TestCreateProject(t *testing.T) {
 	t.Run("is able to create a project and use the project as default", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
 
 		workspace := testhelpers.CreateWorkspace(ctx, t)
 		name := testhelpers.TestName()

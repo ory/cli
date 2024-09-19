@@ -40,8 +40,8 @@ func NewCreateProjectCmd() *cobra.Command {
 			}
 
 			wsID := h.WorkspaceID()
-			if wsID == nil || len(environment) == 0 {
-				return errors.New("a workspace and environment is required to create a project")
+			if wsID == nil {
+				return errors.New("a workspace is required to create a project")
 			}
 
 			if len(name) == 0 && flagx.MustGetBool(cmd, cmdx.FlagQuiet) {

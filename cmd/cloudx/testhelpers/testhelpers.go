@@ -80,7 +80,7 @@ func WithCleanConfigFile(ctx context.Context, t testing.TB) context.Context {
 	return client.ContextWithOptions(ctx, client.WithConfigLocation(NewConfigFile(t)))
 }
 
-func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) context.Context {
+func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) (context.Context, string) {
 	dst, err := os.Create(NewConfigFile(t))
 	require.NoError(t, err)
 	defer dst.Close()
@@ -90,7 +90,7 @@ func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile st
 	_, err = io.Copy(dst, src)
 	require.NoError(t, err)
 
-	return client.ContextWithOptions(ctx, client.WithConfigLocation(dst.Name()))
+	return client.ContextWithOptions(ctx, client.WithConfigLocation(dst.Name())), dst.Name()
 }
 
 func Cmd(ctx context.Context) *cmdx.CommandExecuter {
