@@ -13,3 +13,4 @@ cypress/screenshots
 cypress/videos
 cli
 playwright-traces
+.DS_Store
