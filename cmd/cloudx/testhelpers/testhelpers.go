@@ -211,6 +211,8 @@ func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, 
 }
 
 func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func()) {
+	_ = os.RemoveAll("./playwright-traces")
+
 	pw, err := playwright.Run()
 	require.NoError(t, err)
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
@@ -234,6 +236,10 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 	return func(uri string) error {
 		t.Logf("open browser with %s", uri)
 
+		require.NoError(t, page.Context().Tracing().Start(playwright.TracingStartOptions{
+			Screenshots: Ptr(true),
+			Snapshots:   Ptr(true),
+		}))
 		_, err := page.Goto(uri)
 		require.NoError(t, err)
 
@@ -250,10 +256,17 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		}
 
+		// we wait here for the button +1s because there is some console bug that can lead to form submissions before the form action is correctly set
+		require.NoError(t, page.Locator(`button:has-text("Accept")`).WaitFor())
+		time.Sleep(time.Second)
+
 		// accept consent
 		require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
 
 		t.Logf("consent successful")
+
+		require.NoError(t, page.Context().Tracing().Stop("playwright-traces/login-consent-trace.zip"))
+
 		return nil
 	}
 }

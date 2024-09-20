@@ -12,3 +12,4 @@ unpacked_bin/
 cypress/screenshots
 cypress/videos
 cli
+playwright-traces

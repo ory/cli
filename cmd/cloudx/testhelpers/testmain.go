@@ -69,6 +69,10 @@ type MockTestingTForMain struct {
 	testing.TB
 }
 
+func (MockTestingTForMain) Log(args ...interface{}) {
+	fmt.Println(args...)
+}
+
 func (MockTestingTForMain) Logf(format string, args ...interface{}) {
 	fmt.Printf(format, args...)
 	fmt.Println()
