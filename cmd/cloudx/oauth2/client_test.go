@@ -27,7 +27,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	ctx, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
+	ctx, _, _, _, defaultProject, defaultCmd = testhelpers.CreateDefaultAssetsBrowser()
 	m.Run()
 }
 
@@ -140,7 +140,8 @@ func TestImportClient(t *testing.T) {
 func TestListClients(t *testing.T) {
 	t.Parallel()
 
-	project := testhelpers.CreateProject(ctx, t, nil)
+	workspace := testhelpers.CreateWorkspace(ctx, t)
+	project := testhelpers.CreateProject(ctx, t, workspace)
 	clientID := testhelpers.CreateClient(ctx, t, project.Id).Get("client_id").String()
 
 	t.Run("is not able to list oauth2 clients if not authenticated and quiet flag", func(t *testing.T) {
