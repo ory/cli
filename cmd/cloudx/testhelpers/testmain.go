@@ -37,6 +37,7 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig, defaultWo
 	UseStaging()
 
 	t := MockTestingTForMain{}
+	defer t.ExitOnFailure()
 
 	defaultConfig = NewConfigFile(t)
 
@@ -65,6 +66,8 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig, defaultWo
 	return
 }
 
+// MockTestingTForMain is a mock testing.TB implementation that is used in TestMain.
+// Always defer t.ExitOnFailure() in the TestMain function.
 type MockTestingTForMain struct {
 	testing.TB
 }
@@ -84,8 +87,19 @@ func (MockTestingTForMain) Errorf(format string, args ...interface{}) {
 	debug.PrintStack()
 }
 
+type exitCode int
+
 func (MockTestingTForMain) FailNow() {
-	os.Exit(1)
+	panic(exitCode(1))
+}
+
+func (MockTestingTForMain) ExitOnFailure() {
+	if r := recover(); r != nil {
+		if e, ok := r.(exitCode); ok {
+			os.Exit(int(e))
+		}
+		panic(r)
+	}
 }
 
 func (MockTestingTForMain) TempDir() string {

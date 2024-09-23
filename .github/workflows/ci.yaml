@@ -32,6 +32,10 @@ jobs:
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}
           ORY_CONSOLE_URL: https://console.staging.ory.dev
           ORY_ORYAPIS_URL: https://staging.oryapis.dev
+      - uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: playwright-traces
 
   docs:
     name: Generate docs
