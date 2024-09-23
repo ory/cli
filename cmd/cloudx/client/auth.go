@@ -225,8 +225,8 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 				serverErr <- fmt.Errorf("failed OAuth2 token exchange: %w", err)
 				return
 			}
-			serverToken <- t
 			redirectOK(w, r)
+			serverToken <- t
 		}),
 	}
 	go func() { _ = srv.Serve(l) }()
