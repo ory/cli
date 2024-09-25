@@ -19,7 +19,8 @@ import (
 func TestListIdentities(t *testing.T) {
 	t.Parallel()
 
-	project := testhelpers.CreateProject(ctx, t, nil)
+	workspace := testhelpers.CreateWorkspace(ctx, t)
+	project := testhelpers.CreateProject(ctx, t, workspace)
 	userID := testhelpers.ImportIdentity(ctx, t, project.Id, nil)
 
 	t.Run("is not able to list identities if not authenticated and quiet flag", func(t *testing.T) {

@@ -178,7 +178,7 @@ func TestCommandHelper(t *testing.T) {
 
 	t.Run("func=CreateProject", func(t *testing.T) {
 		t.Parallel()
-		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfigFile)
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfigFile)
 
 		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)

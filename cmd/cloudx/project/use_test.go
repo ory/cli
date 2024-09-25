@@ -19,7 +19,7 @@ func TestUseProject(t *testing.T) {
 	t.Run("is able to use project", func(t *testing.T) {
 		t.Parallel()
 
-		ctx := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
 		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
 
 		stdout, _, err := testhelpers.Cmd(ctx).Exec(nil, "use", "project", extraProject.Id, "--quiet")

@@ -80,7 +80,7 @@ func WithCleanConfigFile(ctx context.Context, t testing.TB) context.Context {
 	return client.ContextWithOptions(ctx, client.WithConfigLocation(NewConfigFile(t)))
 }
 
-func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) context.Context {
+func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile string) (context.Context, string) {
 	dst, err := os.Create(NewConfigFile(t))
 	require.NoError(t, err)
 	defer dst.Close()
@@ -90,7 +90,7 @@ func WithDuplicatedConfigFile(ctx context.Context, t testing.TB, originalFile st
 	_, err = io.Copy(dst, src)
 	require.NoError(t, err)
 
-	return client.ContextWithOptions(ctx, client.WithConfigLocation(dst.Name()))
+	return client.ContextWithOptions(ctx, client.WithConfigLocation(dst.Name())), dst.Name()
 }
 
 func Cmd(ctx context.Context) *cmdx.CommandExecuter {
@@ -100,11 +100,8 @@ func Cmd(ctx context.Context) *cmdx.CommandExecuter {
 	}
 }
 
-func CreateProject(ctx context.Context, t testing.TB, workspace *string) *cloud.Project {
-	args := []string{"create", "project", "--name", TestName(), "--format", "json"}
-	if workspace != nil {
-		args = append(args, "--workspace", *workspace)
-	}
+func CreateProject(ctx context.Context, t testing.TB, workspace string) *cloud.Project {
+	args := []string{"create", "project", "--name", TestName(), "--workspace", workspace, "--format", "json", "--environment", "dev"}
 	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	p := cloud.Project{}
@@ -218,7 +215,7 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 	require.NoError(t, err)
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless:  Ptr(true),
-		TracesDir: Ptr("./playwright-traces"),
+		TracesDir: Ptr(tracesDir),
 	})
 	require.NoError(t, err)
 	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
@@ -237,6 +234,18 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 	return func(uri string) error {
 		t.Logf("open browser with %s", uri)
 
+		require.NoError(t, page.Context().Tracing().Start(playwright.TracingStartOptions{
+			Screenshots: Ptr(true),
+			Snapshots:   Ptr(true),
+		}))
+		defer func() {
+			r := recover()
+			_ = page.Context().Tracing().Stop(filepath.Join(tracesDir, fmt.Sprintf("%s.zip", t.Name())))
+			if r != nil {
+				panic(r)
+			}
+		}()
+
 		_, err := page.Goto(uri)
 		require.NoError(t, err)
 
@@ -253,10 +262,32 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		}
 
+		// we wait here for the button +1s because there is some console bug that can lead to form submissions before the form action is correctly set
+		require.NoError(t, page.Locator(`button:has-text("Allow")`).WaitFor())
+		time.Sleep(time.Second)
+
 		// accept consent
 		require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
 
 		t.Logf("consent successful")
+
 		return nil
 	}
+}
+
+var tracesDir string
+
+func init() {
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	dirs := strings.Split(cwd, string(os.PathSeparator))
+	for i := range dirs {
+		if dirs[i] == "cloudx" {
+			dirs = dirs[:i-1]
+			break
+		}
+	}
+	tracesDir = string(os.PathSeparator) + filepath.Join(append(dirs, "playwright-traces")...)
 }

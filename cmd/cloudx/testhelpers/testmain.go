@@ -33,10 +33,11 @@ func UseStaging() {
 	setEnvIfUnset(client.OryAPIsURLKey, "https://staging.oryapis.dev")
 }
 
-func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
+func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig, defaultWorkspaceID string, extraProject, defaultProject *cloud.Project, defaultCmd *cmdx.CommandExecuter) {
 	UseStaging()
 
 	t := MockTestingTForMain{}
+	defer t.ExitOnFailure()
 
 	defaultConfig = NewConfigFile(t)
 
@@ -55,16 +56,24 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig string, ex
 	require.NoError(t, h.Authenticate(ctx))
 	// we don't need playwright anymore
 	cleanup()
+	fmt.Println("authenticated, creating default assets")
 
-	defaultProject = CreateProject(ctx, t, nil)
-	extraProject = CreateProject(ctx, t, nil)
+	defaultWorkspaceID = CreateWorkspace(ctx, t)
+	defaultProject = CreateProject(ctx, t, defaultWorkspaceID)
+	extraProject = CreateProject(ctx, t, defaultWorkspaceID)
 
 	defaultCmd = Cmd(ctx)
 	return
 }
 
+// MockTestingTForMain is a mock testing.TB implementation that is used in TestMain.
+// Always defer t.ExitOnFailure() in the TestMain function.
 type MockTestingTForMain struct {
 	testing.TB
+}
+
+func (MockTestingTForMain) Log(args ...interface{}) {
+	fmt.Println(args...)
 }
 
 func (MockTestingTForMain) Logf(format string, args ...interface{}) {
@@ -78,8 +87,19 @@ func (MockTestingTForMain) Errorf(format string, args ...interface{}) {
 	debug.PrintStack()
 }
 
+type exitCode int
+
 func (MockTestingTForMain) FailNow() {
-	os.Exit(1)
+	panic(exitCode(1))
+}
+
+func (MockTestingTForMain) ExitOnFailure() {
+	if r := recover(); r != nil {
+		if e, ok := r.(exitCode); ok {
+			os.Exit(int(e))
+		}
+		panic(r)
+	}
 }
 
 func (MockTestingTForMain) TempDir() string {
