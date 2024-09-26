@@ -43,30 +43,32 @@ import (
 )
 
 const (
-	PortFlag               = "port"
-	OpenFlag               = "open"
-	DevFlag                = "dev"
-	DebugFlag              = "debug"
-	WithoutJWTFlag         = "no-jwt"
-	CookieDomainFlag       = "cookie-domain"
-	DefaultRedirectURLFlag = "default-redirect-url"
-	CORSFlag               = "allowed-cors-origins"
-	RewriteHostFlag        = "rewrite-host"
+	PortFlag                  = "port"
+	OpenFlag                  = "open"
+	DevFlag                   = "dev"
+	DebugFlag                 = "debug"
+	WithoutJWTFlag            = "no-jwt"
+	CookieDomainFlag          = "cookie-domain"
+	DefaultRedirectURLFlag    = "default-redirect-url"
+	CORSFlag                  = "allowed-cors-origins"
+	AdditionalCORSHeadersFlag = "additional-cors-headers"
+	RewriteHostFlag           = "rewrite-host"
 )
 
 type config struct {
-	port              int
-	open              bool
-	noJWT             bool
-	upstream          string
-	cookieDomain      string
-	publicURL         *url.URL
-	pathPrefix        string
-	defaultRedirectTo cmdx.URL
-	isTunnel          bool
-	isDebug           bool
-	isDev             bool
-	corsOrigins       []string
+	port                  int
+	open                  bool
+	noJWT                 bool
+	upstream              string
+	cookieDomain          string
+	publicURL             *url.URL
+	pathPrefix            string
+	defaultRedirectTo     cmdx.URL
+	isTunnel              bool
+	isDebug               bool
+	isDev                 bool
+	corsOrigins           []string
+	additionalCorsHeaders []string
 
 	// rewriteHost means the host header will be rewritten to the upstream host.
 	// This is useful in cases where upstream resolves requests based on Host.
@@ -83,6 +85,7 @@ func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.IntVar(&conf.port, PortFlag, portFromEnv(), "The port the proxy should listen on.")
 	flags.Var(&conf.defaultRedirectTo, DefaultRedirectURLFlag, "Set the URL to redirect to per default after e.g. login or account creation.")
 	flags.StringSliceVar(&conf.corsOrigins, CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
+	flags.StringSliceVar(&conf.additionalCorsHeaders, AdditionalCORSHeadersFlag, []string{}, "A list of additional CORS headers to allow. Wildcards are allowed.")
 	flags.BoolVar(&conf.isDev, DevFlag, false, "Use this flag when developing locally.")
 	flags.BoolVar(&conf.isDebug, DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	flags.BoolVar(&conf.rewriteHost, RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
@@ -240,7 +243,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		AllowedOrigins:         corsOrigins,
 		AllowOriginRequestFunc: originFunc,
 		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
-		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
+		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, append(corsx.CORSRequestHeadersExtended, conf.additionalCorsHeaders...)...),
 		ExposedHeaders:         corsx.CORSResponseHeadersSafelist,
 		MaxAge:                 0,
 		AllowCredentials:       true,
