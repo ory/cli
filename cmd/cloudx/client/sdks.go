@@ -82,8 +82,12 @@ func (h *CommandHelper) newConsoleHTTPClient(ctx context.Context) (*http.Client,
 	if h.workspaceAPIKey != nil {
 		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.workspaceAPIKey})), nil
 	}
+	// fall back to project API key if set
+	if h.projectAPIKey != nil {
+		return newOAuth2TokenClient(oauth2.StaticTokenSource(&oauth2.Token{AccessToken: *h.projectAPIKey})), nil
+	}
 
-	// fall back to interactive OAuth2 flow
+	// fall back to interactive OAuth2 flow if no key is set
 	config, err := h.GetAuthenticatedConfig(ctx)
 	if err != nil {
 		return nil, err
