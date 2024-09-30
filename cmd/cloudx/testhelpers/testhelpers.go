@@ -218,16 +218,51 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 		TracesDir: Ptr(tracesDir),
 	})
 	require.NoError(t, err)
-	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
-		BaseURL: Ptr(client.CloudConsoleURL("").String()),
-	})
-	require.NoError(t, err)
+
+	page := NewPage(t, browser)
 
 	return browser, page, func() {
 		t.Logf("page close error: %+v", page.Close())
 		t.Logf("browser close error: %+v", browser.Close())
 		t.Logf("playwright stop error: %+v", pw.Stop())
 	}
+}
+
+func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
+	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
+		BaseURL: Ptr(client.CloudConsoleURL("").String()),
+	})
+	require.NoError(t, err)
+
+	for _, route := range []string{
+		"doubleclick.net",
+		"google-analytics.com",
+		"googletagmanager.com",
+		"hs-analytics.net",
+		"hs-banner.com",
+		"hs-scripts.com",
+		"hsadspixel.net",
+		"hubapi.com",
+		"hubapi.com",
+		"licdn.com",
+		"linkedin.com",
+		"eu.posthog.com",
+		"r.stripe.com",
+		"segment.com",
+		"sentry.io",
+		"sst.ory.sh",
+		"www.google.com/pagead",
+		"app.termly.io",
+		"static.reo.dev",
+		"api.reo.dev",
+	} {
+		require.NoError(t, page.Context().Route(func(actual string) bool {
+			return strings.Contains(actual, route)
+		}, func(r playwright.Route) {
+			require.NoError(t, r.Abort())
+		}))
+	}
+	return page
 }
 
 func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, email, password string) func(uri string) error {

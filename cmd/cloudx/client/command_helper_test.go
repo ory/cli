@@ -127,12 +127,10 @@ func TestCommandHelper(t *testing.T) {
 
 		ctx := client.ContextWithOptions(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)))
 		email, password, _, _ := testhelpers.RegisterAccount(ctx, t)
-		page, err := browser.NewPage()
-		require.NoError(t, err)
 		authenticated, err := client.NewCommandHelper(
 			ctx,
 			client.WithQuiet(false),
-			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, page, email, password)),
+			client.WithOpenBrowserHook(testhelpers.PlaywrightAcceptConsentBrowserHook(t, testhelpers.NewPage(t, browser), email, password)),
 		)
 		require.NoError(t, err)
 		require.NoError(t, authenticated.Authenticate(ctx))
