@@ -23,7 +23,6 @@ jobs:
           ./ory tunnel http://localhost:4001 --quiet &
         env:
           ORY_PROJECT_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-          ORY_PROJECT_SLUG: admiring-tu-swczqlujc0
       - name: Install dependencies
         working-directory: cmd/cloudx/e2e
         run: |
@@ -63,7 +62,6 @@ jobs:
           ./ory proxy https://ory-network-httpbin-ijakee5waq-ez.a.run.app/anything --rewrite-host --quiet &
         env:
           ORY_PROJECT_API_KEY: ${{ secrets.ORY_PROJECT_API_KEY }}
-          ORY_PROJECT_SLUG: admiring-tu-swczqlujc0
       - name: Install Node
         working-directory: cmd/cloudx/e2e
         run: |

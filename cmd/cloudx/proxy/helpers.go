@@ -125,16 +125,11 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		}
 	}()
 
-	// TODO: we probably don't want to support this in the future, but it requires to be authenticated
-	slug := os.Getenv("ORY_PROJECT_SLUG")
-	if slug == "" {
-		project, err := h.GetSelectedProject(ctx)
-		if err != nil {
-			return err
-		}
-		slug = project.Slug
+	project, err := h.GetSelectedProject(ctx)
+	if err != nil {
+		return err
 	}
-	oryURL := client.CloudAPIsURL(slug + ".projects")
+	oryURL := client.CloudAPIsURL(project.Slug + ".projects")
 	oryURL.Host = strings.TrimSuffix(oryURL.Host, ":443")
 
 	writer := herodot.NewJSONWriter(&errorLogger{Writer: stdErr})

@@ -72,7 +72,7 @@ func TestCommandHelper(t *testing.T) {
 
 	defaultWorkspaceAPIKey, err := authenticated.CreateWorkspaceAPIKey(ctx, defaultWorkspace.Id, randx.MustString(6, randx.AlphaNum))
 	require.NoError(t, err)
-	_ = defaultWorkspaceAPIKey
+	require.NotNil(t, defaultWorkspaceAPIKey.Value)
 
 	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", nil, true)
 	require.NoError(t, err)
@@ -140,7 +140,6 @@ func TestCommandHelper(t *testing.T) {
 
 		t.Run("empty list", func(t *testing.T) {
 			projects, err := h.ListProjects(ctx, nil)
-
 			require.NoError(t, err)
 			require.Empty(t, projects)
 		})
@@ -153,14 +152,28 @@ func TestCommandHelper(t *testing.T) {
 
 			projects, err := h.ListProjects(ctx, nil)
 			require.NoError(t, err)
-
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
+
+			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key")
+			require.NoError(t, err)
+
+			pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
+			require.NoError(t, err)
+
+			projects, err = pjKeyH.ListProjects(ctx, nil)
+			require.NoError(t, err)
+			require.Len(t, projects, 1)
+			assert.Equal(t, p0.Id, projects[0].Id)
 		})
 
 		t.Run("list of workspace projects", func(t *testing.T) {
 			workspace, err := h.CreateWorkspace(ctx, t.Name())
 			require.NoError(t, err)
+			wsKey, err := authenticated.CreateWorkspaceAPIKey(ctx, workspace.Id, "test key")
+			require.NoError(t, err)
+			require.NotNil(t, wsKey.Value)
+
 			p0, err := h.CreateProject(ctx, "p0", "dev", &workspace.Id, false)
 			require.NoError(t, err)
 			p1, err := h.CreateProject(ctx, "p1", "dev", &workspace.Id, false)
@@ -168,9 +181,27 @@ func TestCommandHelper(t *testing.T) {
 
 			projects, err := h.ListProjects(ctx, &workspace.Id)
 			require.NoError(t, err)
-
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
+
+			wsKeyH, err := client.NewCommandHelper(ctx, client.WithWorkspaceAPIKey(*wsKey.Value))
+			require.NoError(t, err)
+
+			projects, err = wsKeyH.ListProjects(ctx, &workspace.Id)
+			require.NoError(t, err)
+			require.Len(t, projects, 2)
+			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
+
+			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key")
+			require.NoError(t, err)
+
+			pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
+			require.NoError(t, err)
+
+			projects, err = pjKeyH.ListProjects(ctx, nil)
+			require.NoError(t, err)
+			require.Len(t, projects, 1)
+			assert.Equal(t, p0.Id, projects[0].Id)
 		})
 	})
 
@@ -300,21 +331,50 @@ func TestCommandHelper(t *testing.T) {
 	})
 
 	t.Run("func=GetProject", func(t *testing.T) {
-		for name, p := range map[string]*cloud.Project{
-			"without workspace": defaultProject,
-			"with workspace":    defaultWorkspaceProject,
+		wsKeyH, err := client.NewCommandHelper(ctx, client.WithWorkspaceAPIKey(*defaultWorkspaceAPIKey.Value))
+		require.NoError(t, err)
+		pjKey, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, "test key")
+		require.NoError(t, err)
+		pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
+		require.NoError(t, err)
+
+		for _, tc := range []struct {
+			name    string
+			project *cloud.Project
+			h       *client.CommandHelper
+		}{
+			{
+				name:    "without workspace",
+				project: defaultProject,
+				h:       authenticated,
+			},
+			{
+				name:    "with workspace",
+				project: defaultWorkspaceProject,
+				h:       authenticated,
+			},
+			{
+				name:    "with workspace and api key",
+				project: defaultWorkspaceProject,
+				h:       wsKeyH,
+			},
+			{
+				name:    "without workspace and api key",
+				project: defaultProject,
+				h:       pjKeyH,
+			},
 		} {
 			t.Run("is able to get project "+name, func(t *testing.T) {
 				t.Parallel()
 
-				actual, err := authenticated.GetProject(ctx, p.Id, p.WorkspaceId.Get())
+				actual, err := authenticated.GetProject(ctx, tc.project.Id, tc.project.WorkspaceId.Get())
 				require.NoError(t, err)
-				assert.Equal(t, p.Id, actual.Id)
-				assertValidProject(t, p)
+				assert.Equal(t, tc.project.Id, actual.Id)
+				assertValidProject(t, tc.project)
 
-				actual, err = authenticated.GetProject(ctx, p.Slug[0:4], p.WorkspaceId.Get())
+				actual, err = authenticated.GetProject(ctx, tc.project.Slug[0:4], tc.project.WorkspaceId.Get())
 				require.NoError(t, err)
-				assert.Equal(t, p.Id, actual.Id)
+				assert.Equal(t, tc.project.Id, actual.Id)
 			})
 
 			t.Run("is not able to get project if not authenticated and quiet flag "+name, func(t *testing.T) {
@@ -322,7 +382,7 @@ func TestCommandHelper(t *testing.T) {
 
 				h, err := client.NewCommandHelper(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)), client.WithQuiet(true))
 				require.NoError(t, err)
-				_, err = h.GetProject(ctx, p.Id, p.WorkspaceId.Get())
+				_, err = h.GetProject(ctx, tc.project.Id, tc.project.WorkspaceId.Get())
 				assert.ErrorIs(t, err, client.ErrNoConfigQuiet)
 			})
 		}
