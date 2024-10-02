@@ -55,7 +55,7 @@ func TestCommandHelper(t *testing.T) {
 			return errors.WithStack(fmt.Errorf("open browser hook not expected: %s", uri))
 		}))
 
-	email, password, name, sessionToken := testhelpers.RegisterAccount(ctx, t)
+	email, password, name := testhelpers.RegisterAccount(ctx, t)
 
 	browser, page, cleanup := testhelpers.SetupPlaywright(t)
 	t.Cleanup(cleanup)
@@ -126,7 +126,7 @@ func TestCommandHelper(t *testing.T) {
 		t.Parallel()
 
 		ctx := client.ContextWithOptions(ctx, client.WithConfigLocation(testhelpers.NewConfigFile(t)))
-		email, password, _, _ := testhelpers.RegisterAccount(ctx, t)
+		email, password, _ := testhelpers.RegisterAccount(ctx, t)
 		authenticated, err := client.NewCommandHelper(
 			ctx,
 			client.WithQuiet(false),
@@ -317,15 +317,15 @@ func TestCommandHelper(t *testing.T) {
 
 		// check that the key works
 		ctxWithKey := client.ContextWithOptions(ctx,
-			client.WithWorkspaceAPIKey(sessionToken), // TODO this key should not be required, currently it is though to look up the slug
+			client.WithConfigLocation(testhelpers.NewConfigFile(t)),
 			client.WithProjectAPIKey(*key.Value))
-		list := testhelpers.ListIdentities(ctxWithKey, t, defaultProject.Id)
+		list := testhelpers.ListIdentities(ctxWithKey, t, "")
 		assert.True(t, list.Get("identities").Exists(), list.Raw)
 		assert.True(t, list.Get("identities").IsArray(), list.Raw)
 
 		require.NoError(t, authenticated.DeleteProjectAPIKey(ctx, defaultProject.Id, key.Id))
 
-		_, stdErr, err := testhelpers.Cmd(ctxWithKey).Exec(nil, "list", "identities", "--project", defaultProject.Id)
+		_, stdErr, err := testhelpers.Cmd(ctxWithKey).Exec(nil, "list", "identities")
 		assert.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
 		assert.Contains(t, stdErr, "Access credentials are invalid")
 	})
