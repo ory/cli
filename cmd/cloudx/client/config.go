@@ -149,7 +149,7 @@ func (h *CommandHelper) SelectWorkspace(id string) error {
 	}
 
 	conf.SelectedWorkspace = uid
-	h.workspaceOverride = &id
+	h.workspaceID = uid
 	return h.UpdateConfig(conf)
 }
 
@@ -170,7 +170,7 @@ func (h *CommandHelper) SelectProject(id string) error {
 	}
 
 	conf.SelectedProject = uid
-	h.projectOverride = &id
+	h.projectID = uid
 	return h.UpdateConfig(conf)
 }
 

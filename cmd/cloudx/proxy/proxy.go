@@ -23,7 +23,7 @@ func NewProxyCommand() *cobra.Command {
 		Short: "Run your app and Ory on the same domain using a reverse proxy",
 		Args:  cobra.RangeArgs(1, 2),
 		Example: `{{.CommandPath}} http://localhost:3000 --dev
-{{.CommandPath}} proxy http://localhost:3000 https://app.example.com \
+{{.CommandPath}} http://localhost:3000 https://app.example.com \
 	--allowed-cors-origins https://www.example.org \
 	--allowed-cors-origins https://api.example.org \
 	--allowed-cors-origins https://www.another-app.com
