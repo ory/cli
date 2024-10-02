@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
@@ -66,8 +65,8 @@ func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, 
 }
 
 func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string) (apiKey string, cleanup func() error, err error) {
-	if ak := os.Getenv(ProjectAPIKey); len(ak) > 0 {
-		return ak, noop, nil
+	if h.projectAPIKey != nil {
+		return *h.projectAPIKey, noop, nil
 	}
 
 	// For all other projects, except the playground, we need to authenticate.

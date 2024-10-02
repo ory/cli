@@ -69,7 +69,11 @@ func NewPublicOryProjectClient() *cloud.APIClient {
 }
 
 func (h *CommandHelper) newConsoleAPIClient(ctx context.Context) (_ *cloud.APIClient, err error) {
-	conf := newSDKConfiguration(CloudConsoleURL("api").String())
+	uri := CloudConsoleURL("api").String()
+	if h.cloudConsoleAPIURL != nil {
+		uri = *h.cloudConsoleAPIURL
+	}
+	conf := newSDKConfiguration(uri)
 	conf.HTTPClient, err = h.newConsoleHTTPClient(ctx)
 	if err != nil {
 		return nil, err

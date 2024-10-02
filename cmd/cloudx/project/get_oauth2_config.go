@@ -43,7 +43,11 @@ $ ory get oauth2-config --format json   # uses currently selected project
 				return err
 			}
 
-			project, err := h.GetSelectedProject(cmd.Context())
+			pID, err := h.ProjectID()
+			if err != nil {
+				return err
+			}
+			project, err := h.GetProject(cmd.Context(), pID, nil)
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
