@@ -150,7 +150,11 @@ func MakeRandomClient(t testing.TB, name string) string {
 
 func ImportIdentity(ctx context.Context, t testing.TB, project string, stdin io.Reader) string {
 	email := FakeEmail()
-	stdout, stderr, err := Cmd(ctx).Exec(stdin, "import", "identities", "--format", "json", "--project", project, MakeRandomIdentity(t, email))
+	args := []string{"import", "identities", "--format", "json", MakeRandomIdentity(t, email)}
+	if project != "" {
+		args = append(args, "--project", project)
+	}
+	stdout, stderr, err := Cmd(ctx).Exec(stdin, args...)
 	require.NoError(t, err, stderr)
 	out := gjson.Parse(stdout)
 	assert.True(t, gjson.Valid(stdout))
@@ -159,30 +163,46 @@ func ImportIdentity(ctx context.Context, t testing.TB, project string, stdin io.
 }
 
 func ListIdentities(ctx context.Context, t testing.TB, project string) gjson.Result {
-	stdout, stderr, err := Cmd(ctx).Exec(nil, "list", "identities", "--format", "json", "--project", project)
+	args := []string{"list", "identities", "--format", "json"}
+	if project != "" {
+		args = append(args, "--project", project)
+	}
+	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	return gjson.Parse(stdout)
 }
 
 func ListRelationTuples(ctx context.Context, t testing.TB, project string) gjson.Result {
-	stdout, stderr, err := Cmd(ctx).Exec(nil, "list", "relation-tuples", "--format", "json", "--project", project)
+	args := []string{"list", "relation-tuples", "--format", "json"}
+	if project != "" {
+		args = append(args, "--project", project)
+	}
+	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	return gjson.Parse(stdout)
 }
 
 func ListClients(ctx context.Context, t testing.TB, project string) gjson.Result {
-	stdout, stderr, err := Cmd(ctx).Exec(nil, "list", "clients", "--format", "json", "--project", project)
+	args := []string{"list", "clients", "--format", "json"}
+	if project != "" {
+		args = append(args, "--project", project)
+	}
+	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	return gjson.Parse(stdout)
 }
 
 func CreateClient(ctx context.Context, t testing.TB, project string) gjson.Result {
-	stdout, stderr, err := Cmd(ctx).Exec(nil, "create", "client", "--format", "json", "--project", project)
+	args := []string{"create", "client", "--format", "json"}
+	if project != "" {
+		args = append(args, "--project", project)
+	}
+	stdout, stderr, err := Cmd(ctx).Exec(nil, args...)
 	require.NoError(t, err, stderr)
 	return gjson.Parse(stdout)
 }
 
-func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, sessionToken string) {
+func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name string) {
 	email, password, name = FakeAccount()
 	c := client.NewPublicOryProjectClient()
 
@@ -207,7 +227,7 @@ func RegisterAccount(ctx context.Context, t testing.TB) (email, password, name, 
 	require.NoError(t, err)
 	require.NotNil(t, res.SessionToken)
 
-	return email, password, name, *res.SessionToken
+	return email, password, name
 }
 
 func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func()) {

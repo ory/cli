@@ -146,7 +146,11 @@ func NewCobraCommandHelper(cmd *cobra.Command, opts ...CommandHelperOption) (*Co
 	if config := flagx.MustGetString(cmd, FlagConfig); config != "" {
 		defaultOpts = append(defaultOpts, WithConfigLocation(config))
 	}
-	return NewCommandHelper(cmd.Context(), append(defaultOpts, opts...)...)
+	h, err := NewCommandHelper(cmd.Context(), append(defaultOpts, opts...)...)
+	if err != nil {
+		return nil, cmdx.PrintOpenAPIError(cmd, err)
+	}
+	return h, nil
 }
 
 func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*CommandHelper, error) {

@@ -41,7 +41,7 @@ func CreateDefaultAssetsBrowser() (ctx context.Context, defaultConfig, defaultWo
 
 	defaultConfig = NewConfigFile(t)
 
-	email, password, _, _ := RegisterAccount(context.Background(), t)
+	email, password, _ := RegisterAccount(context.Background(), t)
 
 	_, page, cleanup := SetupPlaywright(t)
 	defer cleanup()
