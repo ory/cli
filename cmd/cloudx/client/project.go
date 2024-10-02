@@ -161,7 +161,7 @@ func (h *CommandHelper) CreateProject(ctx context.Context, name, environment str
 		return nil, handleError("unable to list projects", res, err)
 	}
 
-	if setDefault || h.projectOverride == nil {
+	if setDefault || h.projectID == uuid.Nil {
 		if err := h.SelectProject(project.Id); err != nil {
 			return nil, fmt.Errorf("project created successfully, but could not select it: %w", err)
 		}

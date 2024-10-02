@@ -306,14 +306,17 @@ func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) 
 }
 
 func (h *CommandHelper) ProjectID() (string, error) {
-	if h.projectOverride == nil {
+	if h.projectID == uuid.Nil {
 		return "", ErrProjectNotSet
 	}
-	return *h.projectOverride, nil
+	return h.projectID.String(), nil
 }
 
 func (h *CommandHelper) WorkspaceID() *string {
-	return h.workspaceOverride
+	if h.workspaceID == uuid.Nil {
+		return nil
+	}
+	return pointerx.Ptr(h.workspaceID.String())
 }
 
 func (h *CommandHelper) UserName(ctx context.Context) string {
