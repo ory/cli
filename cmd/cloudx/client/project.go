@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"dario.cat/mergo"
 	"github.com/gofrs/uuid"
@@ -43,12 +44,22 @@ func (h *CommandHelper) ListProjects(ctx context.Context, workspace *string) ([]
 	return projects, nil
 }
 
-func (h *CommandHelper) GetSelectedProject(ctx context.Context) (*client.Project, error) {
+func (h *CommandHelper) GetSelectedProject(ctx context.Context) (*client.ProjectMetadata, error) {
 	id, err := h.ProjectID()
 	if err != nil {
 		return nil, err
 	}
 
+	if h.projectAPIKey != nil {
+		pjs, err := h.ListProjects(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+		if len(pjs) != 1 {
+			return nil, errors.Errorf("got unexpected number of projects when fetching with API key: %d", len(pjs))
+		}
+		return &pjs[0], nil
+	}
 	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
@@ -59,7 +70,22 @@ func (h *CommandHelper) GetSelectedProject(ctx context.Context) (*client.Project
 		return nil, handleError("unable to get project", res, err)
 	}
 
-	return project, nil
+	return &client.ProjectMetadata{
+		CreatedAt:            time.Time{},
+		Environment:          project.Environment,
+		HomeRegion:           project.HomeRegion,
+		Hosts:                nil,
+		Id:                   project.Id,
+		Name:                 project.Name,
+		Slug:                 project.Slug,
+		State:                project.State,
+		SubscriptionId:       client.NullableString{},
+		SubscriptionPlan:     client.NullableString{},
+		UpdatedAt:            time.Time{},
+		Workspace:            nil,
+		WorkspaceId:          project.WorkspaceId,
+		AdditionalProperties: nil,
+	}, nil
 }
 
 func (h *CommandHelper) GetProject(ctx context.Context, idOrSlug string, workspace *string) (*client.Project, error) {

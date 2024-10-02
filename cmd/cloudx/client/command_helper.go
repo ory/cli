@@ -39,17 +39,16 @@ var ErrProjectNotSet = fmt.Errorf("no project was specified")
 
 type (
 	CommandHelper struct {
-		config            *Config
-		projectOverride   *string
-		workspaceOverride *string
-		configLocation    string
-		noConfirm         bool
-		isQuiet           bool
-		VerboseErrWriter  io.Writer
-		Stdin             *bufio.Reader
-		openBrowserHook   func(string) error
-		projectAPIKey     *string
-		workspaceAPIKey   *string
+		config *Config
+		projectOverride, workspaceOverride,
+		projectAPIKey, workspaceAPIKey,
+		cloudConsoleAPIURL *string
+		projectID, workspaceID uuid.UUID
+		configLocation         string
+		noConfirm, isQuiet     bool
+		VerboseErrWriter       io.Writer
+		Stdin                  *bufio.Reader
+		openBrowserHook        func(string) error
 	}
 	helperOptionsContextKey struct{}
 	CommandHelperOption     func(*CommandHelper)
@@ -180,70 +179,130 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 		return nil, err
 	}
 
-	getAPIKey := func(envKey string, override *string) *string {
-		if override != nil {
-			return override
-		}
-		if key, ok := os.LookupEnv(envKey); ok {
-			return &key
-		}
-		return nil
-	}
-	h.workspaceAPIKey = getAPIKey(WorkspaceAPIKey, h.workspaceAPIKey)
-	h.projectAPIKey = getAPIKey(ProjectAPIKey, h.projectAPIKey)
-
-	{
-		// determine current workspace from all possible sources
-		workspace := ""
-		if h.workspaceOverride != nil {
-			workspace = *h.workspaceOverride
-		} else if ws, ok := os.LookupEnv(WorkspaceKey); ok {
-			workspace = ws
-		} else {
-			if config.SelectedWorkspace != uuid.Nil {
-				workspace = config.SelectedWorkspace.String()
-			}
-		}
-		workspace = strings.TrimSpace(workspace)
-
-		if id, err := uuid.FromString(workspace); err == nil {
-			h.workspaceOverride = pointerx.Ptr(id.String())
-		} else if workspace != "" {
-			ws, err := h.findWorkspace(ctx, workspace)
-			if err != nil {
-				return nil, err
-			}
-			if ws != nil {
-				h.workspaceOverride = pointerx.Ptr(ws.Id)
-			}
+	if h.workspaceAPIKey == nil {
+		if key, ok := os.LookupEnv(WorkspaceAPIKey); ok {
+			h.workspaceAPIKey = &key
 		}
 	}
-	{
-		// determine current project from all possible sources
-		project := ""
-		if h.projectOverride != nil {
-			project = *h.projectOverride
-		} else if pj, ok := os.LookupEnv(ProjectKey); ok {
-			project = pj
-		} else if config.SelectedProject != uuid.Nil {
-			project = config.SelectedProject.String()
+	if h.projectAPIKey == nil {
+		if key, ok := os.LookupEnv(ProjectAPIKey); ok {
+			h.projectAPIKey = &key
 		}
-		project = strings.TrimSpace(project)
+	}
 
-		if id, err := uuid.FromString(project); err == nil {
-			h.projectOverride = pointerx.Ptr(id.String())
-		} else if project != "" {
-			pj, err := h.findProject(ctx, project, h.workspaceOverride)
-			if err != nil {
-				return nil, err
-			}
-			if pj != nil {
-				h.projectOverride = pointerx.Ptr(pj.Id)
-			}
-		}
+	if err := h.determineWorkspaceID(ctx, config); err != nil {
+		return nil, err
+	}
+	if err := h.determineProjectID(ctx, config); err != nil {
+		return nil, err
 	}
 
 	return h, nil
+}
+
+func (h *CommandHelper) determineWorkspaceID(ctx context.Context, config *Config) error {
+	if h.workspaceAPIKey != nil {
+		if h.workspaceOverride != nil {
+			return errors.New("workspace API key is set but workspace flag is also set, please remove one")
+		}
+		ws, err := h.ListWorkspaces(ctx)
+		if err != nil {
+			return err
+		}
+		if len(ws) > 0 {
+			h.workspaceID, err = uuid.FromString(ws[0].Id)
+			if err != nil {
+				return fmt.Errorf("unable to parse workspace ID from response: %w", err)
+			}
+			return nil
+		}
+		return errors.New("workspace API key is set but no workspaces were found")
+	}
+
+	workspace := ""
+	if h.workspaceOverride != nil {
+		workspace = *h.workspaceOverride
+	} else if ws, ok := os.LookupEnv(WorkspaceKey); ok {
+		workspace = ws
+	} else if config.SelectedWorkspace != uuid.Nil {
+		h.workspaceID = config.SelectedWorkspace
+		return nil
+	}
+	workspace = strings.TrimSpace(workspace)
+	if workspace == "" {
+		return nil
+	}
+
+	// At this point, we have a (partial) workspace ID or name.
+	if id, err := uuid.FromString(workspace); err == nil {
+		h.workspaceID = id
+		return nil
+	}
+
+	// We need to resolve the non-UUID identifier to the workspace ID.
+	ws, err := h.findWorkspace(ctx, workspace)
+	if err != nil {
+		return err
+	}
+	h.workspaceID, err = uuid.FromString(ws.Id)
+	if err != nil {
+		return fmt.Errorf("unable to parse workspace ID from response: %w", err)
+	}
+	return nil
+}
+
+func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) error {
+	if h.projectAPIKey != nil {
+		if h.projectOverride != nil {
+			return errors.New("project API key is set but project flag is also set, please remove one")
+		}
+		if h.workspaceID != uuid.Nil {
+			return errors.New("project API key is set but workspace is also set, please remove one")
+		}
+		pjs, err := h.ListProjects(ctx, nil)
+		if err != nil {
+			return err
+		}
+		if len(pjs) > 0 {
+			h.projectID, err = uuid.FromString(pjs[0].Id)
+			if err != nil {
+				return fmt.Errorf("unable to parse project ID from response: %w", err)
+			}
+			return nil
+		}
+		return errors.New("project API key is set but no projects were found")
+	}
+
+	project := ""
+	if h.projectOverride != nil {
+		project = *h.projectOverride
+	} else if pj, ok := os.LookupEnv(ProjectKey); ok {
+		project = pj
+	} else if config.SelectedProject != uuid.Nil {
+		h.projectID = config.SelectedProject
+		return nil
+	}
+	project = strings.TrimSpace(project)
+	if project == "" {
+		return nil
+	}
+
+	// At this point, we have a (partial) project ID or slug.
+	if id, err := uuid.FromString(project); err == nil {
+		h.projectID = id
+		return nil
+	}
+
+	// We need to resolve the non-UUID identifier to the project ID.
+	pj, err := h.findProject(ctx, project, h.workspaceOverride)
+	if err != nil {
+		return err
+	}
+	h.projectID, err = uuid.FromString(pj.Id)
+	if err != nil {
+		return fmt.Errorf("unable to parse project ID from response: %w", err)
+	}
+	return nil
 }
 
 func (h *CommandHelper) ProjectID() (string, error) {
