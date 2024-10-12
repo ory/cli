@@ -193,7 +193,6 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 
 	config, err := h.getOrCreateConfig()
 	if err != nil {
-		panic(fmt.Sprintf("found kjey: %s %s", os.Getenv(ProjectAPIKey), err))
 		return nil, err
 	}
 
