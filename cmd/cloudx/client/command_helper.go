@@ -178,20 +178,23 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 	for _, o := range opts {
 		o(h)
 	}
-	config, err := h.getOrCreateConfig()
-	if err != nil {
-		return nil, err
-	}
 
 	if h.workspaceAPIKey == nil {
 		if key, ok := os.LookupEnv(WorkspaceAPIKey); ok {
 			h.workspaceAPIKey = &key
 		}
 	}
+
 	if h.projectAPIKey == nil {
 		if key, ok := os.LookupEnv(ProjectAPIKey); ok {
 			h.projectAPIKey = &key
 		}
+	}
+
+	config, err := h.getOrCreateConfig()
+	if err != nil {
+		panic(fmt.Sprintf("found kjey: %s %s", os.Getenv(ProjectAPIKey), err))
+		return nil, err
 	}
 
 	if err := h.determineWorkspaceID(ctx, config); err != nil {
