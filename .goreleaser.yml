@@ -12,3 +12,4 @@ variables:
   buildinfo_date: "github.com/ory/cli/buildinfo.Time"
 
 project_name: ory
+version: 2
