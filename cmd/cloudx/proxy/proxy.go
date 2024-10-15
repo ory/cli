@@ -22,11 +22,7 @@ func NewProxyCommand() *cobra.Command {
 		Use:   "proxy <application-url> [<publish-url>]",
 		Short: "Run your app and Ory on the same domain using a reverse proxy",
 		Args:  cobra.RangeArgs(1, 2),
-		Example: `{{.CommandPath}} http://localhost:3000 --dev
-{{.CommandPath}} http://localhost:3000 https://app.example.com \
-	--allowed-cors-origins https://www.example.org \
-	--allowed-cors-origins https://api.example.org \
-	--allowed-cors-origins https://www.another-app.com
+		Example: `{{.CommandPath}} http://localhost:3000
 `,
 		Long: `The Ory Proxy allows your application and Ory to run on the same domain by acting as a reverse proxy. It forwards all traffic to your application, ensuring that features like cookies and CORS function correctly during local development.
 
@@ -49,15 +45,26 @@ Once your project is ready, pass the project’s slug to the proxy command:
 
 ### Local development
 
-For local development, use the ` + "`--dev`" + ` flag to apply a relaxed security setting:
+For local development, use:
 
-		$ {{.CommandPath}} --dev --project <project-id-or-slug> http://localhost:3000
+		$ {{.CommandPath}} --project <project-id-or-slug> http://localhost:3000
 
 The first argument, ` + "`application-url`" + `, points to your application's location. If running both the proxy and your app on the same host, this could be ` + "`localhost`" + `. All traffic sent to the Ory Proxy will be forwarded to this URL.
 
-The second argument, ` + "`publish-url`" + `, is optional and only necessary for production scenarios. It specifies the public URL of your application (e.g., ` + "`https://www.example.org`" + `). If ` + "`publish-url`" + ` is not set, it defaults to the host and port the proxy listens on.
+The second argument, ` + "`publish-url`" + `, is optional and only necessary when the local app is not running on localhost. It specifies the public URL of your application (e.g., ` + "`https://www.example.org`" + `). If ` + "`publish-url`" + ` is not set, it defaults to the host and port the proxy listens on.
 
 **Important**: The Ory Proxy is intended for development use only and should not be used in production environments.
+
+### CORS
+
+You can restrict the CORS domains using the ` + "`--allowed-cors-origins`" + ` flag:
+
+		$ {{.CommandPath}} http://localhost:3000 https://app.example.com \
+			--allowed-cors-origins https://www.example.org \
+			--allowed-cors-origins https://api.example.org \
+			--allowed-cors-origins https://www.another-app.com
+
+Per default, CORS is enabled for all origins.
 
 ### Connecting in automated environments
 
@@ -89,8 +96,6 @@ If the proxy runs on a subdomain and you want Ory’s cookies (e.g., session coo
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
 		  --cookie-domain gateway.local \
-		  --allowed-cors-origins https://www.gateway.local \
-		  --allowed-cors-origins https://api.gateway.local \
 		  http://127.0.0.1:3000 \
 		  https://ory.gateway.local
 
