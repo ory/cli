@@ -68,9 +68,9 @@ Per default, CORS is enabled for all origins.
 
 ### Connecting in automated environments
 
-To connect the Ory Tunnel in automated environments, create a Project API Key for your project and set it as an environment variable:
+To connect the Ory Tunnel in automated environments, create a Project API Key for your project, set it as an environment variable, and use the ` + "`--quiet`" + ` flag:
 
-		$ %[2]s=<project-api-key> {{.CommandPath}} tunnel ...
+		$ %[2]s=<project-api-key> {{.CommandPath}} -q ...
 
 This will prevent the browser window from opening.
 
@@ -79,8 +79,8 @@ This will prevent the browser window from opening.
 If you are using the Ory Proxy behind a gateway during development, you must set the ` + "`publish-url`" + ` argument:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
-		  http://localhost:3000 \
-		  https://gateway.local:5000
+			  http://localhost:3000 \
+			  https://gateway.local:5000
 
 Note: You cannot set a path in the ` + "`publish-url`" + `.
 
@@ -95,18 +95,18 @@ By default, the proxy listens on port 4000. To change this, use the ` + "`--port
 If the proxy runs on a subdomain and you want Ory’s cookies (e.g., session cookies) to be accessible across all your domains, use the ` + "`--cookie-domain`" + ` flag to customize the cookie domain. Additionally, allow your subdomains in the CORS headers:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
-		  --cookie-domain gateway.local \
-		  http://127.0.0.1:3000 \
-		  https://ory.gateway.local
+			  --cookie-domain gateway.local \
+			  http://127.0.0.1:3000 \
+			  https://ory.gateway.local
 
 ### Redirects
 
 By default, all redirects will point to ` + "`publish-url`" + `. You can customize this behavior using the ` + "`--default-redirect-url`" + ` flag:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
-		  --default-redirect-url /welcome \
-		  http://127.0.0.1:3000 \
-		  https://ory.example.org
+			  --default-redirect-url /welcome \
+			  http://127.0.0.1:3000 \
+			  https://ory.example.org
 
 This ensures that all redirects (e.g., after login) go to ` + "`/welcome`" + ` instead of ` + "`/`" + `, unless you’ve specified custom redirects in your Ory configuration or via the flow’s ` + "`?return_to=`" + ` query parameter.
 
