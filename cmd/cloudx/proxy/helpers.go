@@ -86,7 +86,7 @@ func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.Var(&conf.defaultRedirectTo, DefaultRedirectURLFlag, "Set the URL to redirect to per default after e.g. login or account creation.")
 	flags.StringSliceVar(&conf.corsOrigins, CORSFlag, []string{}, "A list of allowed CORS origins. Wildcards are allowed.")
 	flags.StringSliceVar(&conf.additionalCorsHeaders, AdditionalCORSHeadersFlag, []string{}, "A list of additional CORS headers to allow. Wildcards are allowed.")
-	flags.BoolVar(&conf.isDev, DevFlag, false, "Use this flag when developing locally.")
+	flags.BoolVar(&conf.isDev, DevFlag, true, "This flag is deprecated as the command is only supposed to be used during development.")
 	flags.BoolVar(&conf.isDebug, DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	flags.BoolVar(&conf.rewriteHost, RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
 }
@@ -223,7 +223,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 	}
 
 	var originFunc func(r *http.Request, origin string) bool
-	if conf.isDev {
+	if len(conf.corsOrigins) == 0 {
 		originFunc = func(r *http.Request, origin string) bool {
 			return true
 		}
@@ -254,16 +254,21 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 	if conf.isTunnel {
 		_, _ = fmt.Fprintf(stdErr, `To access Ory's APIs, use URL
 
-	%[1]s
+	export ORY_SDK_URL=%[1]s # Linux / macOS
+	set ORY_SDK_URL=%[1]s # Windows CMD
+	$env:ORY_SDK_URL = "%[1]s" # Windows PowerShell
 
 and configure your SDKs to point to it, for example in JavaScript:
 
-	import { V0alpha2Api, Configuration } from '@ory/client'
-	const ory = new V0alpha2Api(new Configuration({
+	import { FrontendApi, Configuration } from '@ory/client-fetch'
+	const ory = new FrontendApi(new Configuration({
 	  basePath: '%[1]s',
 	  baseOptions: {
 		withCredentials: true
-	  }
+	  },
+	  headers: {
+	    Accept: "application/json"
+      }
 	}))
 
 `, conf.publicURL.String())

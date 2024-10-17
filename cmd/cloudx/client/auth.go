@@ -107,7 +107,7 @@ func (h *CommandHelper) Authenticate(ctx context.Context) error {
 	}
 
 	if config.AccessToken != nil {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "You are already logged in. Use the logout command to log out.\n")
+		_, _ = fmt.Fprintf(h.VerboseErrWriter, "Using API key instead of a user session.\n")
 		return nil
 	}
 

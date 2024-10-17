@@ -24,11 +24,7 @@ func NewTunnelCommand() *cobra.Command {
 		Use:   "tunnel <application-url> [<tunnel-url>]",
 		Short: "Mirror Ory APIs on your local machine for local development and testing",
 		Args:  cobra.RangeArgs(1, 2),
-		Example: `{{.CommandPath}} http://localhost:3000 --dev
-{{.CommandPath}} https://app.example.com \
-	--allowed-cors-origins https://www.example.org \
-	--allowed-cors-origins https://api.example.org \
-	--allowed-cors-origins https://www.another-app.com
+		Example: `{{.CommandPath}} http://localhost:3000
 `,
 		Long: fmt.Sprintf(`The Ory Tunnel mirrors Ory APIs on your local machine, allowing seamless development and testing. This setup is required for features such as CORS and cookie support, making it possible for Ory and your application to share the same top-level domain during development. To use the tunnel, authentication via `+"`ORY_PROJECT_API_KEY`"+` or browser-based sign-in is required.
 
@@ -62,11 +58,23 @@ This will prevent the browser window from opening.
 
 ### Local development
 
-When developing locally, use the --dev flag to enable a more relaxed security configuration:
+For local development, use:
 
-		$ {{.CommandPath}} --dev --project <project-id-or-slug> http://localhost:3000
+		$ {{.CommandPath}} --project <project-id-or-slug> http://localhost:3000
 
-Running behind a gateway (development only)
+### CORS
+
+You can restrict the CORS domains using the `+"`--allowed-cors-origins`"+` flag:
+
+		$ {{.CommandPath}} http://localhost:3000 https://app.example.com \
+			--allowed-cors-origins https://www.example.org \
+			--allowed-cors-origins https://api.example.org \
+			--allowed-cors-origins https://www.another-app.com
+
+Per default, CORS is enabled for all origins.
+
+### Running behind a gateway (development only)
+
 Important: The Ory Tunnel is designed for development purposes only and should not be used in production environments.
 
 If you need to run the tunnel behind a gateway during development, you can specify the optional second argument, tunnel-url, to define the domain where the Ory Tunnel will run (for example, https://ory.example.org).
@@ -76,9 +84,7 @@ Example:
 		$ {{.CommandPath}} --project <project-id-or-slug> \
 		  https://www.example.org \
 		  https://auth.example.org \
-		  --cookie-domain example.org \
-		  --allowed-cors-origins https://www.example.org \
-		  --allowed-cors-origins https://api.example.org
+		  --cookie-domain example.org
 
 Note: You cannot set a path in the `+"`tunnel-url`"+`.
 
