@@ -46,13 +46,13 @@ Before using the Ory Tunnel, ensure that you have a running Ory Network project.
 Once your project is ready, pass the project's slug to the tunnel command:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> ...
-		$ %[1]s=<project-id-or-slug> {{.CommandPath}} tunnel ...
+		$ %[1]s=<project-id-or-slug> {{.CommandPath}} ...
 
 ### Connecting in automated environments
 
-To connect the Ory Tunnel in automated environments, create a Project API Key for your project and set it as an environment variable:
+To connect the Ory Tunnel in automated environments, create a Project API Key for your project, set it as an environment variable, and use the `+"`--quiet`"+` flag:
 
-		$ %[2]s=<project-api-key> {{.CommandPath}} tunnel ...
+		$ %[2]s=<project-api-key> {{.CommandPath}} -q ...
 
 This will prevent the browser window from opening.
 
@@ -82,9 +82,9 @@ If you need to run the tunnel behind a gateway during development, you can speci
 Example:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
-		  https://www.example.org \
-		  https://auth.example.org \
-		  --cookie-domain example.org
+			https://www.example.org \
+			https://auth.example.org \
+			--cookie-domain example.org
 
 Note: You cannot set a path in the `+"`tunnel-url`"+`.
 
@@ -103,17 +103,17 @@ If your application runs on a non-standard HTTP or HTTPS port, include the port 
 For cookie support, set the `+"`--cookie-domain`"+` flag to your top-level domain:
 
 		$ {{.CommandPath}} --project <project-id-or-slug> \
-		  --cookie-domain example.org \
-		  https://www.example.org \
-		  https://auth.example.org
+			--cookie-domain example.org \
+			https://www.example.org \
+			https://auth.example.org
 
 ### Redirects
 
 To specify a custom redirect URL, use the `+"`--default-redirect-url`"+` flag:
 
-$ {{.CommandPath}} tunnel --project <project-id-or-slug> \
-  --default-redirect-url /welcome \
-  https://www.example.org`, client.ProjectKey, client.ProjectAPIKey),
+$ {{.CommandPath}} --project <project-id-or-slug> \
+	--default-redirect-url /welcome \
+	https://www.example.org`, client.ProjectKey, client.ProjectAPIKey),
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			h, err := client.NewCobraCommandHelper(cmd)
