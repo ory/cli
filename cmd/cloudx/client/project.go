@@ -158,7 +158,7 @@ func (h *CommandHelper) CreateProject(ctx context.Context, name, environment str
 		WorkspaceId: workspace,
 	}).Execute()
 	if err != nil {
-		return nil, handleError("unable to list projects", res, err)
+		return nil, handleError("unable to create project", res, err)
 	}
 
 	if setDefault || h.projectID == uuid.Nil {

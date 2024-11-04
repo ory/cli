@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/browser"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
 
@@ -209,7 +209,7 @@ func NewCommandHelper(ctx context.Context, opts ...CommandHelperOption) (*Comman
 func (h *CommandHelper) determineWorkspaceID(ctx context.Context, config *Config) error {
 	if h.workspaceAPIKey != nil {
 		if h.workspaceOverride != nil {
-			return errors.New("workspace API key is set but workspace flag is also set, please remove one")
+			return fmt.Errorf("workspace API key is set but workspace flag is also set, please remove one")
 		}
 		ws, err := h.ListWorkspaces(ctx)
 		if err != nil {
@@ -222,7 +222,7 @@ func (h *CommandHelper) determineWorkspaceID(ctx context.Context, config *Config
 			}
 			return nil
 		}
-		return errors.New("workspace API key is set but no workspaces were found")
+		return fmt.Errorf("workspace API key is set but no workspaces were found")
 	}
 
 	workspace := ""
@@ -260,10 +260,10 @@ func (h *CommandHelper) determineWorkspaceID(ctx context.Context, config *Config
 func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) error {
 	if h.projectAPIKey != nil {
 		if h.projectOverride != nil {
-			return errors.New("project API key is set but project flag is also set, please remove one")
+			return fmt.Errorf("project API key is set but project flag is also set, please remove one")
 		}
 		if h.workspaceID != uuid.Nil {
-			return errors.New("project API key is set but workspace is also set, please remove one")
+			return fmt.Errorf("project API key is set but workspace is also set, please remove one")
 		}
 		pjs, err := h.ListProjects(ctx, nil)
 		if err != nil {
@@ -276,7 +276,7 @@ func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) 
 			}
 			return nil
 		}
-		return errors.New("project API key is set but no projects were found")
+		return fmt.Errorf("project API key is set but no projects were found")
 	}
 
 	project := ""
@@ -346,29 +346,29 @@ func (h *CommandHelper) OpenURL(uri string) error {
 
 func handleError(message string, res *http.Response, err error) error {
 	if e := new(cloud.GenericOpenAPIError); errors.As(err, &e) {
-		return errors.Wrapf(err, "%s: %s", message, e.Body())
+		return fmt.Errorf("%s: %s: %w", message, e.Body(), err)
 	}
 
 	if res == nil {
-		return errors.Wrapf(err, "%s", message)
+		return fmt.Errorf("%s: %w", message, err)
 	}
 
 	body, _ := io.ReadAll(res.Body)
-	return errors.Wrapf(err, "%s: %s", message, body)
+	return fmt.Errorf("%s: %s: %w", message, body, err)
 }
 
 func toPatch(op string, values []string) (patches []cloud.JsonPatch, err error) {
 	for _, v := range values {
 		path, value, found := strings.Cut(v, "=")
 		if !found {
-			return nil, errors.Errorf("patches must be in format of `/some/config/key=some-value` but got: %s", v)
+			return nil, fmt.Errorf("patches must be in format of `/some/config/key=some-value` but got: %s", v)
 		} else if !gjson.Valid(value) {
-			return nil, errors.Errorf("value for %s must be valid JSON but got: %s", path, value)
+			return nil, fmt.Errorf("value for %s must be valid JSON but got: %s", path, value)
 		}
 
 		config, err := jsonx.EmbedSources(json.RawMessage(value), jsonx.WithIgnoreKeys("$id", "$schema"), jsonx.WithOnlySchemes("file"))
 		if err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 
 		patches = append(patches, cloud.JsonPatch{Op: op, Path: path, Value: config})

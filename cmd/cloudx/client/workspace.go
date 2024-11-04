@@ -69,3 +69,16 @@ func (h *CommandHelper) CreateWorkspace(ctx context.Context, name string) (*clou
 	}
 	return workspace, nil
 }
+
+func (h *CommandHelper) GetWorkspace(ctx context.Context, id string) (*cloud.Workspace, error) {
+	c, err := h.newConsoleAPIClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	workspace, res, err := c.WorkspaceAPI.GetWorkspace(ctx, id).Execute()
+	if err != nil {
+		return nil, handleError("unable to get workspace", res, err)
+	}
+	return workspace, nil
+}
