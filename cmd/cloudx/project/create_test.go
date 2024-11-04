@@ -24,9 +24,9 @@ func TestCreateProject(t *testing.T) {
 	t.Parallel()
 
 	parseOutput := func(stdout string) (id string, slug string, name string) {
-		id = gjson.Get(stdout, "id").String()
-		slug = gjson.Get(stdout, "slug").String()
-		name = gjson.Get(stdout, "name").String()
+		id = gjson.Get(stdout, "id").Str
+		slug = gjson.Get(stdout, "slug").Str
+		name = gjson.Get(stdout, "name").Str
 		return
 	}
 	assertResult := func(t *testing.T, configDir string, stdout string, expectedName string) (id, slug, name string) {
@@ -37,7 +37,7 @@ func TestCreateProject(t *testing.T) {
 		return
 	}
 
-	t.Run("requires workspace and environment", func(t *testing.T) {
+	t.Run("requires workspace", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, newConfig := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
@@ -47,16 +47,44 @@ func TestCreateProject(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, os.WriteFile(newConfig, rawConfig, 0600))
 
-		for _, extraArgs := range [][]string{
-			{},
-			{"--environment", "dev"},
+		for _, tc := range []struct {
+			expectedErr string
+			extraArgs   []string
+		}{
+			{
+				expectedErr: "no workspace found",
+				extraArgs:   nil,
+			},
+			{
+				expectedErr: "The requested action was forbidden", // because the workspace does not exist we get a permission check error
+				extraArgs:   []string{"--workspace", uuid.Must(uuid.NewV4()).String()},
+			},
 		} {
-			t.Run("args="+strings.Join(extraArgs, " "), func(t *testing.T) {
-				_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, append([]string{"create", "project", "--name", testhelpers.TestName(), "--format", "json"}, extraArgs...)...)
+			t.Run("args="+strings.Join(tc.extraArgs, " "), func(t *testing.T) {
+				_, stderr, err := testhelpers.Cmd(ctx).Exec(nil, append([]string{"create", "project", "--name", testhelpers.TestName(), "--format", "json", "--quiet"}, tc.extraArgs...)...)
 				require.Error(t, err)
-				assert.Contains(t, stderr, "a workspace is required to create a project")
+				assert.Contains(t, stderr, tc.expectedErr)
 			})
 		}
+	})
+
+	t.Run("is able to create a project with a workspace", func(t *testing.T) {
+		t.Parallel()
+
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfig)
+		testhelpers.SetDefaultProject(ctx, t, defaultProject.Id)
+
+		name := testhelpers.TestName()
+		pjRaw, stderr, err := testhelpers.Cmd(ctx).Exec(nil, "create", "project", "--name", name, "--create-workspace", "My new workspace", "--environment", "dev", "--format", "json")
+		require.NoErrorf(t, err, "%s", stderr)
+		assertResult(t, defaultConfig, pjRaw, name)
+
+		wsID := gjson.Get(pjRaw, "workspace_id").Str
+		require.NotZerof(t, wsID, "%s", pjRaw)
+
+		wsRaw := testhelpers.Cmd(ctx).ExecNoErr(t, "get", "workspace", wsID, "--format", "json")
+		assert.Equalf(t, wsID, gjson.Get(wsRaw, "id").Str, "%s", wsRaw)
+		assert.Equalf(t, "My new workspace", gjson.Get(wsRaw, "name").Str, "%s", wsRaw)
 	})
 
 	t.Run("is able to create a project", func(t *testing.T) {
