@@ -895,8 +895,8 @@ github.com/ory/client-go v1.15.10 h1:d009nseCcvWJt4KcyJUNYTzsWyU7JJ+0fTzE8YWfEd8
 github.com/ory/client-go v1.15.10/go.mod h1:WSa8NSYIoobY1lcSW0pd3k8erI49z15wlQ/GkUhSV+Y=
 github.com/ory/dockertest/v3 v3.11.0 h1:OiHcxKAvSDUwsEVh2BjxQQc/5EHz9n0va9awCtNGuyA=
 github.com/ory/dockertest/v3 v3.11.0/go.mod h1:VIPxS1gwT9NpPOrfD3rACs8Y9Z7yhzO4SB194iUDnUI=
-github.com/ory/fosite v0.47.0 h1:Iqu5uhx54JqZQPn2hRhqjESrmRRyQb00uJjfEi1a1QI=
-github.com/ory/fosite v0.47.0/go.mod h1:5U6c9nOLxyTdD/qrFv7N88TSxkdk5Wq8NzvB7UViDP0=
+github.com/ory/fosite v0.47.1-0.20241101073333-eab241e153a4 h1:1pEVHGC+Dx2xMPMgpRgG3lyejyK8iU9KKfSnLowLYd8=
+github.com/ory/fosite v0.47.1-0.20241101073333-eab241e153a4/go.mod h1:AZyn1jrABUaGN12RHcWorRLbqLn52gTdHaIYY81m5J0=
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe h1:rvu4obdvqR0fkSIJ8IfgzKOWwZ5kOT2UNfLq81Qk7rc=
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe/go.mod h1:z4n3u6as84LbV4YmgjHhnwtccQqzf4cZlSk9f1FhygI=
 github.com/ory/go-convenience v0.1.0 h1:zouLKfF2GoSGnJwGq+PE/nJAE6dj2Zj5QlTgmMTsTS8=
@@ -915,8 +915,8 @@ github.com/ory/jsonschema/v3 v3.0.8 h1:Ssdb3eJ4lDZ/+XnGkvQS/te0p+EkolqwTsDOCxr/F
 github.com/ory/jsonschema/v3 v3.0.8/go.mod h1:ZPzqjDkwd3QTnb2Z6PAS+OTvBE2x5i6m25wCGx54W/0=
 github.com/ory/keto v0.13.0-alpha.0.0.20241104201835-f92008cde66f h1:ELhYAGRvk6q7W76omQPwS3dmQahDnKbfyH1DN9i+ERg=
 github.com/ory/keto v0.13.0-alpha.0.0.20241104201835-f92008cde66f/go.mod h1:h4mv8v3PQmNnQYN17R+cicJUBom9ksEqFqHC6vVfAm8=
-github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7 h1:qHgWDFJ642DUYj7fMUs7pRTqr1oM7Hqw26qnxB9lvlk=
-github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7/go.mod h1:6RagCXA7X1hhFSVjcy13ruIo8Dq/nj4J0mcN92qL+hY=
+github.com/ory/keto/proto v0.13.0-alpha.0.0.20241104201835-f92008cde66f h1:1/ELHm+LqyhpvvASSVXo0Ac+rJeIE8nGj4TXdy4RQ2E=
+github.com/ory/keto/proto v0.13.0-alpha.0.0.20241104201835-f92008cde66f/go.mod h1:r060ciW8gaEnMNt6FkGNQKTzpYaeyofKUfn/AgDNUqQ=
 github.com/ory/kratos v1.3.1-0.20241108141345-f75bf140d283 h1:9L2y0gr5E0T6zUhg4ymUoLSGpzgVabaa681woW1TjjE=
 github.com/ory/kratos v1.3.1-0.20241108141345-f75bf140d283/go.mod h1:ZOdpTICXRKuPu+QFUvAcFhBFPMXaBQ9mfCRwaXlxQss=
 github.com/ory/kratos-client-go v1.2.1 h1:Q3T/adfAfAkHFcV1LGLnwz4QkY6ghBdX9zde5T8uO/4=

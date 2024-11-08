@@ -8,7 +8,8 @@ replace (
 	github.com/gobuffalo/fizz => github.com/gobuffalo/fizz v1.14.1-0.20211203174856-c4fb927e86d7
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.16
-	github.com/ory/keto/proto => github.com/ory/keto/proto v0.11.1-alpha.0.0.20231229091411-ac44cabd79b7
+	github.com/ory/fosite => github.com/ory/fosite v0.47.1-0.20241101073333-eab241e153a4
+	github.com/ory/keto/proto => github.com/ory/keto/proto v0.13.0-alpha.0.0.20241104201835-f92008cde66f
 )
 
 require (
