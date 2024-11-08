@@ -11,7 +11,6 @@ import (
 	"github.com/ory/cli/cmd/dev/markdown"
 	"github.com/ory/cli/cmd/dev/newsletter"
 	"github.com/ory/cli/cmd/dev/openapi"
-	"github.com/ory/cli/cmd/dev/pop"
 	"github.com/ory/cli/cmd/dev/release"
 	"github.com/ory/cli/cmd/dev/schema"
 	"github.com/ory/cli/cmd/dev/swagger"
@@ -27,7 +26,6 @@ Please check the individual commands for more information!`,
 
 func init() {
 	Main.AddCommand(
-		pop.Main,
 		newsletter.Main,
 		markdown.Main,
 		release.Main,
