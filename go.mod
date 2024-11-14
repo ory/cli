@@ -28,7 +28,7 @@ require (
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b
 	github.com/ory/hydra-client-go/v2 v2.2.1
-	github.com/ory/hydra/v2 v2.2.1-0.20241105135439-0ce9d7a0d479
+	github.com/ory/hydra/v2 v2.2.1-0.20241114124644-68aa16725f52
 	github.com/ory/jsonschema/v3 v3.0.8
 	github.com/ory/keto v0.13.0-alpha.0.0.20241104201835-f92008cde66f
 	github.com/ory/kratos v1.3.1-0.20241108141345-f75bf140d283

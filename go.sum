@@ -628,8 +628,8 @@ github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b h1:AEUyF55UrqTuhJh7
 github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b/go.mod h1:MMNmY6MG1uB6fnXYFaHoqdV23DTWctlPsmRCeq/2+wc=
 github.com/ory/hydra-client-go/v2 v2.2.1 h1:m1821pIX6ybG/3oSAn2wtrbBKNwe9q5A8fLljYuLpBk=
 github.com/ory/hydra-client-go/v2 v2.2.1/go.mod h1:K83R+iK40+5uF2uQ34yRUrf9izRvFsza9pG2Se5qMmk=
-github.com/ory/hydra/v2 v2.2.1-0.20241105135439-0ce9d7a0d479 h1:WOfHgygjgjOCj5KpvK80qDZvpmOb0ZtZQ2iV/yMM/qo=
-github.com/ory/hydra/v2 v2.2.1-0.20241105135439-0ce9d7a0d479/go.mod h1:zP7o0iaGt9BkjBi7R54IKDoOTLe5Cin/dpUu+9Xmipw=
+github.com/ory/hydra/v2 v2.2.1-0.20241114124644-68aa16725f52 h1:nUyMMtY5vaWZTckfW1mvvLdb9LEAu5Dgl+cM02k4u+8=
+github.com/ory/hydra/v2 v2.2.1-0.20241114124644-68aa16725f52/go.mod h1:1BMq3v8KHmk+HUvkntmxkDotu0bYnWY7VDgGy0t+C0M=
 github.com/ory/jsonschema/v3 v3.0.8 h1:Ssdb3eJ4lDZ/+XnGkvQS/te0p+EkolqwTsDOCxr/FmU=
 github.com/ory/jsonschema/v3 v3.0.8/go.mod h1:ZPzqjDkwd3QTnb2Z6PAS+OTvBE2x5i6m25wCGx54W/0=
 github.com/ory/keto v0.13.0-alpha.0.0.20241104201835-f92008cde66f h1:ELhYAGRvk6q7W76omQPwS3dmQahDnKbfyH1DN9i+ERg=
