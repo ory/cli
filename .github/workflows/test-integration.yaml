@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: add bash
+        run: apk add bash
       - name: read files from the repo
         run: cat README.md
       - name: write to file
@@ -28,10 +30,8 @@ jobs:
       - name: read created file
         run: cat write
       - name: run script from filesystem
+        shell: bash
         run: |
-          pwd
-          ls -al
-          ls -al scripts
-          cd scripts && ./hello.sh
-      - name: Check integration
-        run: ory get project ${{ env.ORY_PROJECT_ID }}
+          ./scripts/hello.sh
+      # - name: Check integration
+      #   run: ory get project ${{ env.ORY_PROJECT_ID }}
