@@ -25,5 +25,9 @@ jobs:
         run: cat README.md
       - name: write to file
         run: echo "am i read/write?" > write
+      - name: read created file
+        run: cat write
+      - name: run script from filesystem
+        run: ./scripts/hello.sh
       - name: Check integration
         run: ory get project ${{ env.ORY_PROJECT_ID }}
