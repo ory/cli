@@ -28,6 +28,9 @@ jobs:
       - name: read created file
         run: cat write
       - name: run script from filesystem
-        run: ./scripts/hello.sh
+        run: |
+          pwd
+          ls -al
+          sh -c scripts/hello.sh
       - name: Check integration
         run: ory get project ${{ env.ORY_PROJECT_ID }}
