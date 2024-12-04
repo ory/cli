@@ -21,5 +21,7 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
+      - name: read files from the repo
+        run: cat README.md
       - name: Check integration
         run: ory get project ${{ env.ORY_PROJECT_ID }}
