@@ -15,7 +15,9 @@ env:
 jobs:
   gha:
     runs-on: ubuntu-latest
-    container: oryd/ory:v1.1.0
+    container: 
+      image: oryd/ory:v1.1.0
+      options: --user root
     steps:
       - name: checkout
         uses: actions/checkout@v3
