@@ -31,6 +31,7 @@ jobs:
         run: |
           pwd
           ls -al
-          sh -c scripts/hello.sh
+          ls -al scripts
+          cd scripts && ./hello.sh
       - name: Check integration
         run: ory get project ${{ env.ORY_PROJECT_ID }}
