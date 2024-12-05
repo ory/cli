@@ -17,21 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     container: 
       image: oryd/ory:v1.1.0
+      # temporary until we release new image
       options: --user root
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      # temporary until we release new image
       - name: add bash
         run: apk add bash
-      - name: read files from the repo
-        run: cat README.md
-      - name: write to file
-        run: echo "am i read/write?" > write
-      - name: read created file
-        run: cat write
-      - name: run script from filesystem
-        shell: bash
-        run: |
-          ./scripts/hello.sh
-      # - name: Check integration
-      #   run: ory get project ${{ env.ORY_PROJECT_ID }}
+      - name: Check integration
+        run: ory get project ${{ env.ORY_PROJECT_ID }}
