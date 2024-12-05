@@ -1,0 +1,29 @@
+name: dogfood integration test
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  ORY_PROJECT_ID: "6c2ec103-0b67-4cfe-a975-8008ede7d2ff"
+  ORY_WORKSPACE_ID: "d4c796bf-6062-4cf0-87fc-5fcbf41743bb"
+  ORY_WORKSPACE_API_KEY: ${{ secrets.ORY_WORKSPACE_API_KEY }}
+
+jobs:
+  gha:
+    runs-on: ubuntu-latest
+    container: 
+      image: oryd/ory:v1.1.0
+      # temporary until we release new image
+      options: --user root
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      # temporary until we release new image
+      - name: add bash
+        run: apk add bash
+      - name: Check integration
+        run: ory get project ${{ env.ORY_PROJECT_ID }}
