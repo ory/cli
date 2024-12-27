@@ -15,7 +15,7 @@ env:
 jobs:
   gha:
     runs-on: ubuntu-latest
-    container: 
+    container:
       image: oryd/ory:v1.1.0
       # temporary until we release new image
       options: --user root
