@@ -43,32 +43,34 @@ import (
 )
 
 const (
-	PortFlag                  = "port"
-	OpenFlag                  = "open"
-	DevFlag                   = "dev"
-	DebugFlag                 = "debug"
-	WithoutJWTFlag            = "no-jwt"
-	CookieDomainFlag          = "cookie-domain"
-	DefaultRedirectURLFlag    = "default-redirect-url"
-	CORSFlag                  = "allowed-cors-origins"
-	AdditionalCORSHeadersFlag = "additional-cors-headers"
-	RewriteHostFlag           = "rewrite-host"
+	PortFlag                     = "port"
+	OpenFlag                     = "open"
+	DevFlag                      = "dev"
+	DebugFlag                    = "debug"
+	WithoutJWTFlag               = "no-jwt"
+	CookieDomainFlag             = "cookie-domain"
+	DefaultRedirectURLFlag       = "default-redirect-url"
+	CORSFlag                     = "allowed-cors-origins"
+	AdditionalCORSHeadersFlag    = "additional-cors-headers"
+	AdditionalRequestHeadersFlag = "additional-request-headers"
+	RewriteHostFlag              = "rewrite-host"
 )
 
 type config struct {
-	port                  int
-	open                  bool
-	noJWT                 bool
-	upstream              string
-	cookieDomain          string
-	publicURL             *url.URL
-	pathPrefix            string
-	defaultRedirectTo     cmdx.URL
-	isTunnel              bool
-	isDebug               bool
-	isDev                 bool
-	corsOrigins           []string
-	additionalCorsHeaders []string
+	port                     int
+	open                     bool
+	noJWT                    bool
+	upstream                 string
+	cookieDomain             string
+	publicURL                *url.URL
+	pathPrefix               string
+	defaultRedirectTo        cmdx.URL
+	isTunnel                 bool
+	isDebug                  bool
+	isDev                    bool
+	corsOrigins              []string
+	additionalCorsHeaders    []string
+	additionalRequestHeaders map[string]string
 
 	// rewriteHost means the host header will be rewritten to the upstream host.
 	// This is useful in cases where upstream resolves requests based on Host.
@@ -89,6 +91,7 @@ func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.BoolVar(&conf.isDev, DevFlag, true, "This flag is deprecated as the command is only supposed to be used during development.")
 	flags.BoolVar(&conf.isDebug, DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	flags.BoolVar(&conf.rewriteHost, RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
+	flags.StringToStringVar(&conf.additionalRequestHeaders, AdditionalRequestHeadersFlag, map[string]string{}, "A list of additional request headers to forward to the upstream server.")
 }
 
 func portFromEnv() int {
@@ -201,6 +204,10 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 			r.Out.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
 			if len(apiKey) > 0 {
 				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+			}
+
+			for _, header := range conf.additionalRequestHeaders {
+				r.Out.Header.Set(header, r.In.Header.Get(header))
 			}
 
 			return body, nil

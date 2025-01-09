@@ -15,7 +15,8 @@ import (
 
 func NewProxyCommand() *cobra.Command {
 	conf := config{
-		pathPrefix: "/.ory",
+		pathPrefix:               "/.ory",
+		additionalRequestHeaders: map[string]string{},
 	}
 
 	proxyCmd := &cobra.Command{

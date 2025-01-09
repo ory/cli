@@ -15,9 +15,10 @@ import (
 
 func NewTunnelCommand() *cobra.Command {
 	conf := config{
-		isTunnel: true,
-		noJWT:    true,
-		open:     false,
+		isTunnel:                 true,
+		noJWT:                    true,
+		open:                     false,
+		additionalRequestHeaders: map[string]string{},
 	}
 
 	cmd := &cobra.Command{
