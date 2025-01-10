@@ -206,8 +206,8 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
 			}
 
-			for _, header := range conf.additionalRequestHeaders {
-				r.Out.Header.Set(header, r.In.Header.Get(header))
+			for key, value := range conf.additionalRequestHeaders {
+				r.Out.Header.Set(key, value)
 			}
 
 			return body, nil
