@@ -46,8 +46,10 @@ lint: .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 	.bin/golangci-lint-$(GOLANGCI_LINT_VERSION) run --timeout=10m ./...
 
 .PHONY: install
+# Until https://github.com/golang/go/issues/44469 is resolved, we have to use `go build` instead of
+# `go install` to customize the executable name.
 install:
-	GO111MODULE=on go install -tags sqlite .
+	GO111MODULE=on go build -o "$(shell go env GOPATH)/bin/ory" -tags sqlite .
 
 .PHONY: refresh
 refresh:

@@ -12,6 +12,13 @@ $ curl https://raw.githubusercontent.com/ory/meta/master/install.sh | sh -s ory
 $ ory help
 ```
 
+or to build it from source and install it in your $GOPATH:
+
+```shell-session
+$ make install
+$ ory help
+```
+
 ## macOS
 
 ```shell-session
