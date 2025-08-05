@@ -113,11 +113,12 @@ Does not add the header to files listed in .gitignore and .prettierignore.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		year, _, _ := time.Now().Date()
 		var template string
-		if headerType == headerTypeProprietary {
+		switch headerType {
+		case headerTypeProprietary:
 			template = HEADER_TEMPLATE_PROPRIETARY
-		} else if headerType == headerTypeOpenSource {
+		case headerTypeOpenSource:
 			template = HEADER_TEMPLATE_OPEN_SOURCE
-		} else {
+		default:
 			return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
 		}
 		return AddHeaders(".", fmt.Sprintf(template, year), exclude, regexp.MustCompile(HEADER_REGEXP))

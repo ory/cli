@@ -59,7 +59,7 @@ func getGitDefaults() string {
 func getChangedFiles(rootDirectory string, revisionRange string, gitOpts string) (string, error) {
 	changeLog, err := getRepositoryChangeLog(rootDirectory, revisionRange, gitOpts)
 	if err != nil {
-		return "", fmt.Errorf("Error getting changes from Git: %v", err)
+		return "", fmt.Errorf("error getting changes from Git: %v", err)
 	}
 	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
 	cleanseRepositoryChanges(&cleansedChangeLogArray, true, true)
@@ -75,7 +75,7 @@ func getChangedFiles(rootDirectory string, revisionRange string, gitOpts string)
 func getChangedDirectories(rootDirectory string, revisionRange string, gitOpts string) (string, error) {
 	changeLog, err := getRepositoryChangeLog(rootDirectory, revisionRange, gitOpts)
 	if err != nil {
-		return "", fmt.Errorf("Error getting changes from Git: %v", err)
+		return "", fmt.Errorf("error getting changes from Git: %v", err)
 	}
 	cleansedChangeLogArray := strings.Split(removeCommitMessages(changeLog), "\n")
 	cleanseRepositoryChanges(&cleansedChangeLogArray, false, true)
@@ -90,7 +90,7 @@ func getChangedDirectories(rootDirectory string, revisionRange string, gitOpts s
 func getChangeLog(rootDirectory string, revisionRange string, gitOpts string) (string, error) {
 	repoChanges, err := getRepositoryChangeLog(rootDirectory, revisionRange, gitOpts)
 	if err != nil {
-		return "", fmt.Errorf("Error getting changes from Git: %v", err)
+		return "", fmt.Errorf("error getting changes from Git: %v", err)
 	}
 
 	return repoChanges, nil

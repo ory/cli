@@ -8,7 +8,7 @@ export GO111MODULE := on
 export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
-GOLANGCI_LINT_VERSION = 1.61.0
+GOLANGCI_LINT_VERSION = 2.3.1
 
 GO_DEPENDENCIES = github.com/ory/go-acc \
 				  github.com/golang/mock/mockgen \

@@ -49,7 +49,7 @@ func (graph *ComponentGraph) getComponentGraph(rootDirectory string) (*Component
 		return nil, err
 	}
 	if !isDirectory {
-		return nil, fmt.Errorf("Provided path '%s' is not a directory", rootDirectory)
+		return nil, fmt.Errorf("provided path '%s' is not a directory", rootDirectory)
 	}
 	if err := filepath.Walk(rootDirectory, func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
@@ -92,20 +92,20 @@ func isDirectory(path string) (bool, error) {
 func (component *Component) getComponentFromConfig(configFilePath, rootDir string) (*Component, error) {
 	yamlFile, err := os.ReadFile(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("Config file not found: '%s'", configFilePath)
+		return nil, fmt.Errorf("config file not found: '%s'", configFilePath)
 	}
 	err = yaml.Unmarshal(yamlFile, component)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading config file '%s', invalid format: %v", configFilePath, err)
+		return nil, fmt.Errorf("error reading config file '%s', invalid format: %v", configFilePath, err)
 	}
 
 	configFilePath, err = filepath.Abs(configFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("Error determining absolute config file path '%s': %v", configFilePath, err)
+		return nil, fmt.Errorf("error determining absolute config file path '%s': %v", configFilePath, err)
 	}
 	rootDir, err = filepath.Abs(rootDir)
 	if err != nil {
-		return nil, fmt.Errorf("Error determining absolute root directory path '%s': %v", rootDir, err)
+		return nil, fmt.Errorf("error determining absolute root directory path '%s': %v", rootDir, err)
 	}
 	rootDir = rootDir + "/"
 	component.Path = strings.TrimSuffix(strings.TrimPrefix(configFilePath, rootDir), "/"+configFile)
@@ -146,7 +146,7 @@ func (graph *ComponentGraph) resolveGraph() (ComponentGraph, error) {
 				g.addComponent(graph.componentIDs[id])
 			}
 
-			return g, errors.New("Circular dependency found")
+			return g, errors.New("circular dependency found")
 		}
 
 		// remove ready components (without dependencies) from the
