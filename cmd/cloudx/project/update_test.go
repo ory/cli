@@ -46,7 +46,7 @@ func TestUpdateProject(t *testing.T) {
 			subcommand:      "project",
 			pathSuccess:     "fixtures/update/json/config.json",
 			pathFailure:     "fixtures/update/fail/config.json",
-			failureContains: "minimum 1 items allowed",
+			failureContains: "field `identities.default_schema_id` can not be empty",
 			fixture:         fixtureProject,
 		},
 		{
@@ -54,7 +54,7 @@ func TestUpdateProject(t *testing.T) {
 			projectFlag:     "--project",
 			pathSuccess:     "fixtures/update-kratos/json/config.json",
 			pathFailure:     "fixtures/update-kratos/fail/config.json",
-			failureContains: "minimum 1 items allowed",
+			failureContains: "field `identities.default_schema_id` can not be empty",
 			fixture:         fixtureKratosConfig,
 		},
 		{

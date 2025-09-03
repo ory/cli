@@ -8,8 +8,9 @@ on:
       - master
 
 env:
-  ORY_PROJECT_ID: "6c2ec103-0b67-4cfe-a975-8008ede7d2ff"
-  ORY_WORKSPACE_ID: "d4c796bf-6062-4cf0-87fc-5fcbf41743bb"
+  # project & workspace are managed in Ory Cloud tech integration workspace.
+  ORY_PROJECT_ID: "3b188173-833c-4074-995c-9085a72c8112"
+  ORY_WORKSPACE_ID: "f77d4982-46f1-42cd-8d02-8bccfa54f8f7"
   ORY_WORKSPACE_API_KEY: ${{ secrets.ORY_WORKSPACE_API_KEY }}
 
 jobs:
