@@ -1,8 +1,6 @@
 module github.com/ory/cli
 
-go 1.24
-
-toolchain go1.24.0
+go 1.24.0
 
 replace (
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
@@ -23,7 +21,7 @@ require (
 	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
 	github.com/hashicorp/go-retryablehttp v0.7.7
-	github.com/ory/client-go v1.15.10
+	github.com/ory/client-go v1.20.22
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.3-0.20230807143059-27cd6936499b
@@ -44,7 +42,7 @@ require (
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	github.com/urfave/negroni v1.0.0
-	golang.org/x/oauth2 v0.27.0
+	golang.org/x/oauth2 v0.30.0
 	golang.org/x/text v0.23.0
 	gopkg.in/yaml.v2 v2.4.0
 )
