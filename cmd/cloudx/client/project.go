@@ -267,6 +267,9 @@ func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name strin
 	if _, found := interim["name"]; !found {
 		interim["name"] = ""
 	}
+	if _, found := interim["organizations"]; !found {
+		interim["organizations"] = []client.BasicOrganization{}
+	}
 
 	var payload client.SetProject
 	var b bytes.Buffer
