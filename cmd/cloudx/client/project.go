@@ -267,6 +267,10 @@ func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name strin
 	if _, found := interim["name"]; !found {
 		interim["name"] = ""
 	}
+	_, orgsFound := interim["organizations"]
+	if !orgsFound {
+		interim["organizations"] = []client.BasicOrganization{}
+	}
 
 	var payload client.SetProject
 	var b bytes.Buffer
@@ -277,8 +281,8 @@ func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name strin
 		return nil, errors.WithStack(err)
 	}
 
-	if payload.Services.Identity == nil && payload.Services.Permission == nil && payload.Services.Oauth2 == nil {
-		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` is required and can not be empty")
+	if payload.Services.Identity == nil && payload.Services.Permission == nil && payload.Services.Oauth2 == nil && payload.Services.AccountExperience == nil {
+		return nil, errors.Errorf("at least one of the keys `services.identity.config` and `services.permission.config` and `services.oauth2.config` and `services.account_experience.config` is required and can not be empty")
 	}
 	if name != "" {
 		payload.Name = name
@@ -286,7 +290,7 @@ func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name strin
 
 	// If either of the CORS keys is not set after the merge, we need to fetch it from the server
 	// If the name is not set, and it was not provided, we need to fetch it from the server
-	needsBackfill := !corsAdminFound || !corsPublicFound || payload.Name == ""
+	needsBackfill := !corsAdminFound || !corsPublicFound || payload.Name == "" || !orgsFound
 
 	if needsBackfill {
 		res, _, err := c.ProjectAPI.GetProject(ctx, id).Execute()
@@ -301,6 +305,9 @@ func (h *CommandHelper) UpdateProject(ctx context.Context, id string, name strin
 		}
 		if !corsPublicFound {
 			payload.CorsPublic = *res.CorsPublic
+		}
+		if !orgsFound {
+			payload.Organizations = res.Organizations
 		}
 	}
 
