@@ -5,7 +5,7 @@ includes:
 variables:
   brew_name: cli
 
-  brew_description: "Use Ory from the your terminal!"
+  brew_description: "Use Ory from your terminal!"
 
   buildinfo_hash: "github.com/ory/cli/buildinfo.GitHash"
   buildinfo_tag: "github.com/ory/cli/buildinfo.Version"

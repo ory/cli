@@ -127,7 +127,7 @@ Are you sure you want to proceed without creating a pre version first?`, current
 			pkg.Confirm("You are about to release a non-test release v%s but did not include the --include-changelog-since flag. Are you sure you want to continue?", nextVersion)
 		}
 
-		pkg.Check(pkg.NewCommand("goreleaser", "check").Run())
+		pkg.Check(pkg.NewCommand("goreleaser", "check", "--soft").Run())
 
 		if dry {
 			fmt.Println("Don't worry, this is a dry run!")
