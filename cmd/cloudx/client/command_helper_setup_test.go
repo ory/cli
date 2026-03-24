@@ -19,8 +19,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	. "github.com/ory/x/pointerx"
 )
 
 func TestDetermineIDs(t *testing.T) {
@@ -63,7 +61,7 @@ func TestDetermineIDs(t *testing.T) {
 	setup := func(t *testing.T) (*CommandHelper, *Config) {
 		h := &CommandHelper{
 			configLocation:     t.TempDir() + "/config.json",
-			cloudConsoleAPIURL: Ptr(ts.URL),
+			cloudConsoleAPIURL: new(ts.URL),
 		}
 		cfg, err := h.getOrCreateConfig()
 		require.NoError(t, err)
@@ -107,15 +105,15 @@ func TestDetermineIDs(t *testing.T) {
 		t.Run("errors when workspace override is set", func(t *testing.T) {
 			h, cfg := setup(t)
 
-			h.workspaceAPIKey = Ptr("workspace-api-key")
-			h.workspaceOverride = Ptr("workspace-override")
+			h.workspaceAPIKey = new("workspace-api-key")
+			h.workspaceOverride = new("workspace-override")
 
 			assert.ErrorContains(t, h.determineWorkspaceID(ctx, cfg), "workspace API key is set but workspace flag is also set, please remove one")
 		})
 
 		h, cfg := setup(t)
 
-		h.workspaceAPIKey = Ptr("workspace-api-key")
+		h.workspaceAPIKey = new("workspace-api-key")
 
 		require.NoError(t, h.determineWorkspaceID(ctx, cfg))
 		assert.Equal(t, wsID, h.workspaceID)
@@ -126,15 +124,15 @@ func TestDetermineIDs(t *testing.T) {
 		t.Run("errors when project override is set", func(t *testing.T) {
 			h, cfg := setup(t)
 
-			h.projectAPIKey = Ptr("project-api-key")
-			h.projectOverride = Ptr("project-override")
+			h.projectAPIKey = new("project-api-key")
+			h.projectOverride = new("project-override")
 
 			assert.ErrorContains(t, h.determineProjectID(ctx, cfg), "project API key is set but project flag is also set, please remove one")
 		})
 		t.Run("errors when workspace is set", func(t *testing.T) {
 			h, cfg := setup(t)
 
-			h.projectAPIKey = Ptr("project-api-key")
+			h.projectAPIKey = new("project-api-key")
 			h.workspaceID = uuid.Must(uuid.NewV4())
 
 			assert.ErrorContains(t, h.determineProjectID(ctx, cfg), "project API key is set but workspace is also set, please remove one")
@@ -142,7 +140,7 @@ func TestDetermineIDs(t *testing.T) {
 
 		h, cfg := setup(t)
 
-		h.projectAPIKey = Ptr("project-api-key")
+		h.projectAPIKey = new("project-api-key")
 
 		require.NoError(t, h.determineProjectID(ctx, cfg))
 		assert.Equal(t, pjID, h.projectID)
@@ -177,7 +175,7 @@ func TestDetermineIDs(t *testing.T) {
 		} {
 			t.Run(tc.name, func(t *testing.T) {
 				for _, setValue := range []func(*CommandHelper){
-					func(h *CommandHelper) { h.workspaceOverride = Ptr(tc.value) },
+					func(h *CommandHelper) { h.workspaceOverride = new(tc.value) },
 					func(*CommandHelper) { t.Setenv(WorkspaceKey, tc.value) },
 				} {
 					h, cfg := setup(t)
@@ -224,7 +222,7 @@ func TestDetermineIDs(t *testing.T) {
 		} {
 			t.Run(tc.name, func(t *testing.T) {
 				for _, setValue := range []func(*CommandHelper){
-					func(h *CommandHelper) { h.projectOverride = Ptr(tc.value) },
+					func(h *CommandHelper) { h.projectOverride = new(tc.value) },
 					func(*CommandHelper) { t.Setenv(ProjectKey, tc.value) },
 				} {
 					h, cfg := setup(t)

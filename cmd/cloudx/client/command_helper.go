@@ -24,7 +24,6 @@ import (
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
 	"github.com/ory/x/jsonx"
-	"github.com/ory/x/pointerx"
 )
 
 const (
@@ -100,7 +99,7 @@ func WithProjectOverride(project string) CommandHelperOption {
 
 func WithWorkspaceOverride(workspace string) CommandHelperOption {
 	return func(h *CommandHelper) {
-		h.workspaceOverride = pointerx.Ptr(workspace)
+		h.workspaceOverride = new(workspace)
 	}
 }
 
@@ -322,7 +321,7 @@ func (h *CommandHelper) WorkspaceID() *string {
 	if h.workspaceID == uuid.Nil {
 		return nil
 	}
-	return pointerx.Ptr(h.workspaceID.String())
+	return new(h.workspaceID.String())
 }
 
 func (h *CommandHelper) UserName(ctx context.Context) string {

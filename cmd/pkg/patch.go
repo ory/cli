@@ -5,6 +5,7 @@ package pkg
 
 import (
 	"bytes"
+	"cmp"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -23,7 +24,7 @@ import (
 
 func RenderOASPatch(cmd *cobra.Command, uri string) ([]byte, error) {
 	f := fetcher.NewFetcher()
-	buf, err := f.Fetch(uri)
+	buf, err := f.FetchContext(cmd.Context(), uri)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -62,7 +63,7 @@ func RenderOASPatch(cmd *cobra.Command, uri string) ([]byte, error) {
 		HealthPathTags   []string
 	}
 
-	data.Version = stringsx.Coalesce(os.Getenv("CIRCLE_TAG"), os.Getenv("CIRCLE_HASH"))
+	data.Version = cmp.Or(os.Getenv("CIRCLE_TAG"), os.Getenv("CIRCLE_HASH"))
 	data.ProjectHumanName = fmt.Sprintf("%s %s",
 		stringsx.ToUpperInitial(strings.ToLower(os.Getenv("CIRCLE_PROJECT_USERNAME"))),
 		stringsx.ToUpperInitial(strings.ToLower(os.Getenv("CIRCLE_PROJECT_REPONAME"))),

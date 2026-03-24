@@ -4,6 +4,7 @@
 package client
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"net/http"
@@ -15,7 +16,6 @@ import (
 	"golang.org/x/oauth2"
 
 	cloud "github.com/ory/client-go"
-	"github.com/ory/x/stringsx"
 )
 
 const (
@@ -28,7 +28,7 @@ var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
 
 func CloudConsoleURL(prefix string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
-	consoleURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(ConsoleURLKey), "https://console.ory.sh"))
+	consoleURL, err := url.ParseRequestURI(cmp.Or(os.Getenv(ConsoleURLKey), "https://console.ory.sh"))
 	if err != nil {
 		fmt.Printf("error parsing console url: %s\n", err)
 		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.sh"}
@@ -42,7 +42,7 @@ func CloudConsoleURL(prefix string) *url.URL {
 
 func CloudAPIsURL(slug string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
-	oryAPIsURL, err := url.ParseRequestURI(stringsx.Coalesce(os.Getenv(OryAPIsURLKey), "https://oryapis.com"))
+	oryAPIsURL, err := url.ParseRequestURI(cmp.Or(os.Getenv(OryAPIsURLKey), "https://oryapis.com"))
 	if err != nil {
 		fmt.Printf("error parsing oryapis url: %s\n", err)
 		oryAPIsURL = &url.URL{Scheme: "https", Host: "oryapis.com"}

@@ -14,7 +14,6 @@ import (
 
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/flagx"
-	"github.com/ory/x/pointerx"
 	"github.com/ory/x/stringsx"
 )
 
@@ -66,7 +65,7 @@ func NewCreateProjectCmd() *cobra.Command {
 				if err != nil {
 					return cmdx.PrintOpenAPIError(cmd, err)
 				}
-				wsID = pointerx.Ptr(ws.Id)
+				wsID = new(ws.Id)
 			}
 
 			for name == "" {
