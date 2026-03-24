@@ -44,7 +44,6 @@ require (
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/oauth2 v0.35.0
 	golang.org/x/text v0.31.0
-	golang.org/x/tools v0.38.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -295,6 +294,7 @@ require (
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/telemetry v0.0.0-20251008203120-078029d740a8 // indirect
+	golang.org/x/tools v0.38.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251007200510-49b9836ed3ff // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251007200510-49b9836ed3ff // indirect
 	google.golang.org/grpc v1.75.0 // indirect
@@ -304,3 +304,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+tool golang.org/x/tools/cmd/goimports

@@ -1,37 +1,18 @@
 SHELL=/bin/bash -o pipefail
 
-#  EXECUTABLES = docker-compose docker node npm go
-#  K := $(foreach exec,$(EXECUTABLES),\
-#          $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH")))
-
-export GO111MODULE := on
 export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
-GOLANGCI_LINT_VERSION = 2.3.1
+GOLANGCI_LINT_VERSION = 2.11.4
 
-GO_DEPENDENCIES = github.com/ory/go-acc \
-				  github.com/golang/mock/mockgen \
-				  github.com/go-swagger/go-swagger/cmd/swagger \
-				  golang.org/x/tools/cmd/goimports \
-				  github.com/mikefarah/yq \
-				  github.com/mattn/goveralls
-
-define make-go-dependency
-  # go install is responsible for not re-building when the code hasn't changed
-  .bin/$(notdir $1): go.mod go.sum Makefile
-		GOBIN=$(PWD)/.bin/ go install $1
-endef
-$(foreach dep, $(GO_DEPENDENCIES), $(eval $(call make-go-dependency, $(dep))))
-
-.bin/clidoc: Makefile go.mod go.sum cmd
+.bin/clidoc: Makefile go.mod cmd
 	go build -tags nodev -o .bin/clidoc ./cmd/clidoc/.
 
 docs/cli: .bin/clidoc
 	curl -o docs/sidebar.json https://raw.githubusercontent.com/ory/docs/master/docs/sidebar.json
 	clidoc .
 
-.bin/cli: go.mod go.sum Makefile
+.bin/cli: go.mod Makefile
 	go build -o .bin/cli -tags sqlite github.com/ory/cli
 
 .bin/golangci-lint-$(GOLANGCI_LINT_VERSION):
@@ -47,7 +28,7 @@ lint: .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 .PHONY: install
 install:
-	GO111MODULE=on go install -tags sqlite .
+	go install -tags sqlite .
 
 .PHONY: refresh
 refresh:
@@ -55,9 +36,9 @@ refresh:
 
 # Formats the code
 .PHONY: format
-format: .bin/cli .bin/goimports node_modules
+format: .bin/cli node_modules go.mod
 	.bin/cli dev headers copyright --type=open-source
-	goimports -w -local github.com/ory .
+	go tool goimports -w -local github.com/ory .
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 
 licenses: .bin/licenses node_modules  # checks open-source licenses
