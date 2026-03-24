@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/ory/x/randx"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/ory/cli/cmd/pkg"
 	"github.com/ory/x/flagx"
-	"github.com/ory/x/stringslice"
 )
 
 var isTestRelease = regexp.MustCompile(`^(([a-zA-Z0-9\.\-]+\.)|)pre\.[0-9]+$`)
@@ -175,13 +175,13 @@ Are you sure you want to proceed without creating a pre version first?`, current
 }
 
 func checkForDuplicateTag(v *semver.Version) {
-	if stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
+	if slices.Contains(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
 		pkg.Fatalf(`Version v%s exists already and can not be re-released!`, v.String())
 	}
 }
 
 func checkIfTagExists(v *semver.Version) {
-	if !stringslice.Has(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
+	if !slices.Contains(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
 		pkg.Fatalf(`Version v%s does not exist!`, v.String())
 	}
 }

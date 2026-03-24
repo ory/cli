@@ -26,7 +26,6 @@ import (
 	"github.com/ory/cli/cmd/cloudx/client"
 
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/pointerx"
 	"github.com/ory/x/randx"
 )
 
@@ -234,8 +233,8 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 	pw, err := playwright.Run()
 	require.NoError(t, err)
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless:  pointerx.Ptr(true),
-		TracesDir: pointerx.Ptr(tracesDir),
+		Headless:  new(true),
+		TracesDir: new(tracesDir),
 	})
 	require.NoError(t, err)
 
@@ -250,7 +249,7 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 
 func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
-		BaseURL: pointerx.Ptr(client.CloudConsoleURL("").String()),
+		BaseURL: new(client.CloudConsoleURL("").String()),
 	})
 	require.NoError(t, err)
 
@@ -290,8 +289,8 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 		t.Logf("open browser with %s", uri)
 
 		require.NoError(t, page.Context().Tracing().Start(playwright.TracingStartOptions{
-			Screenshots: pointerx.Ptr(true),
-			Snapshots:   pointerx.Ptr(true),
+			Screenshots: new(true),
+			Snapshots:   new(true),
 		}))
 		defer func() {
 			r := recover()

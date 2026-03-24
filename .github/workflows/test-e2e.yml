@@ -12,9 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
+          cache-dependency-path: go.mod
       - uses: actions/setup-node@v2
         with:
           node-version: "16"
@@ -51,9 +53,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - name: Set up Go
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
+          cache-dependency-path: go.mod
       - uses: actions/setup-node@v2
         with:
           node-version: "16"

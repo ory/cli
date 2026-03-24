@@ -4,6 +4,7 @@
 package client
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -19,8 +20,6 @@ import (
 	"github.com/spf13/pflag"
 
 	"github.com/ory/x/cmdx"
-
-	"github.com/ory/x/stringsx"
 )
 
 var (
@@ -47,7 +46,7 @@ func getConfigPath() (string, error) {
 		return "", fmt.Errorf("unable to guess your home directory: %w", err)
 	}
 
-	return stringsx.Coalesce(
+	return cmp.Or(
 		os.Getenv(ConfigPathKey),
 		filepath.Join(homeDir, ConfigFileName),
 	), nil

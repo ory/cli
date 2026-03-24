@@ -4,14 +4,13 @@
 package pkg
 
 import (
+	"cmp"
 	"os"
 	"strings"
-
-	"github.com/ory/x/stringsx"
 )
 
 func GitHubSHA() string {
-	gitHash := stringsx.Coalesce(
+	gitHash := cmp.Or(
 		os.Getenv("CIRCLE_SHA1"),
 		os.Getenv("GITHUB_SHA"),
 		strings.TrimSpace(CommandGetOutput("git", "rev-parse", "HEAD")),
@@ -25,7 +24,7 @@ func GitHubTag() string {
 		ghTag = os.Getenv("GITHUB_REF_NAME")
 	}
 
-	tag := stringsx.Coalesce(
+	tag := cmp.Or(
 		os.Getenv("CIRCLE_TAG"),
 		ghTag,
 		strings.TrimSpace(CommandGetOutput("git", "tag", "--points-at", "HEAD")),

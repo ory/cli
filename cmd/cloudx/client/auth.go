@@ -180,7 +180,7 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 		serverErr    = make(chan error)
 		serverToken  = make(chan *oauth2.Token)
 	)
-	l, err := net.Listen("tcp", "localhost:0")
+	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, fmt.Errorf("failed to allocate port for OAuth2 callback handler, try again later: %w", err)
 	}

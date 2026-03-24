@@ -71,20 +71,19 @@ func (h *CommandHelper) GetSelectedProject(ctx context.Context) (*client.Project
 	}
 
 	return &client.ProjectMetadata{
-		CreatedAt:            time.Time{},
-		Environment:          project.Environment,
-		HomeRegion:           project.HomeRegion,
-		Hosts:                nil,
-		Id:                   project.Id,
-		Name:                 project.Name,
-		Slug:                 project.Slug,
-		State:                project.State,
-		SubscriptionId:       client.NullableString{},
-		SubscriptionPlan:     client.NullableString{},
-		UpdatedAt:            time.Time{},
-		Workspace:            nil,
-		WorkspaceId:          project.WorkspaceId,
-		AdditionalProperties: nil,
+		CreatedAt:        time.Time{},
+		Environment:      project.Environment,
+		HomeRegion:       project.HomeRegion,
+		Hosts:            nil,
+		Id:               project.Id,
+		Name:             project.Name,
+		Slug:             project.Slug,
+		State:            project.State,
+		SubscriptionId:   client.NullableString{},
+		SubscriptionPlan: client.NullableString{},
+		UpdatedAt:        time.Time{},
+		Workspace:        nil,
+		WorkspaceId:      project.WorkspaceId,
 	}, nil
 }
 
