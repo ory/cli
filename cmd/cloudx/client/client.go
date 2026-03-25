@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	hydra "github.com/ory/hydra-client-go/v26"
+	hydra "github.com/ory/hydra-client-go/v2"
 	hydracli "github.com/ory/hydra/v2/cmd/cliclient"
 	kratoscli "github.com/ory/kratos/cmd/cliclient"
 )

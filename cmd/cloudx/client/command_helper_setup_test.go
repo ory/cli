@@ -61,7 +61,7 @@ func TestDetermineIDs(t *testing.T) {
 	setup := func(t *testing.T) (*CommandHelper, *Config) {
 		h := &CommandHelper{
 			configLocation:     t.TempDir() + "/config.json",
-			cloudConsoleAPIURL: new(ts.URL),
+			cloudConsoleAPIURL: &ts.URL,
 		}
 		cfg, err := h.getOrCreateConfig()
 		require.NoError(t, err)

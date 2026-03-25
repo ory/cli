@@ -41,6 +41,7 @@ func NewDeleteCmd() *cobra.Command {
 func NewCreateCmd() *cobra.Command {
 	cmd := relationtuple.NewCreateCmd()
 	wrapForOryCLI(cmd)
+	wrapForStdinArg(cmd)
 
 	return cmd
 }
@@ -48,8 +49,27 @@ func NewCreateCmd() *cobra.Command {
 func NewParseCmd() *cobra.Command {
 	cmd := relationtuple.NewParseCmd()
 	wrapForOryCLI(cmd)
+	// The keto parse command uses cobra.NoArgs; allow one optional arg so
+	// callers can pass "-" for stdin (translated to -f - below).
+	cmd.Args = cobra.MaximumNArgs(1)
+	wrapForStdinArg(cmd)
 
 	return cmd
+}
+
+// wrapForStdinArg translates a bare "-" positional argument into the -f flag
+// expected by the keto commands for reading from stdin.
+func wrapForStdinArg(cmd *cobra.Command) {
+	originalRunE := cmd.RunE
+	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if len(args) == 1 && args[0] == "-" {
+			if err := cmd.Flags().Set(relationtuple.FlagFile, "-"); err != nil {
+				return err
+			}
+			args = args[:0]
+		}
+		return originalRunE(cmd, args)
+	}
 }
 
 func forwardConnectionInfo(cmd *cobra.Command) {

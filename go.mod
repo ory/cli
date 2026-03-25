@@ -25,7 +25,7 @@ require (
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.8
-	github.com/ory/hydra-client-go/v26 v26.2.0
+	github.com/ory/hydra-client-go/v2 v2.4.0-alpha.1.0.20251107123905-f3d35665821b
 	github.com/ory/hydra/v2 v2.3.1-0.20260324164235-735e0a30f7f2
 	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e
 	github.com/ory/keto v0.14.1-0.20260324164236-ccb79cfc480c
@@ -214,7 +214,6 @@ require (
 	github.com/ory/dockertest/v4 v4.0.0-beta.4 // indirect
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
 	github.com/ory/go-convenience v0.1.0 // indirect
-	github.com/ory/hydra-client-go/v2 v2.4.0-alpha.1.0.20251107123905-f3d35665821b // indirect
 	github.com/ory/keto/proto v0.13.0-alpha.0 // indirect
 	github.com/ory/kratos-client-go v1.3.8 // indirect
 	github.com/ory/mail/v3 v3.0.0 // indirect
