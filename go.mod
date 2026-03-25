@@ -21,7 +21,7 @@ require (
 	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/ory/client-go v1.22.26
+	github.com/ory/client-go v1.22.32
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.1.4-0.20230301144740-e222150c51d0
 	github.com/ory/herodot v0.10.8
