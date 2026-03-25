@@ -4,7 +4,7 @@ go 1.26
 
 replace (
 	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
-	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.16
+	github.com/mattn/go-sqlite3 => github.com/mattn/go-sqlite3 v1.14.37
 
 	github.com/ory/keto/proto => github.com/ory/keto/proto v0.13.0-alpha.0.0.20251107121730-f5635433a563
 )
