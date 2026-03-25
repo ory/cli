@@ -17,7 +17,7 @@ func NewCreateEventStreamCmd() *cobra.Command {
 	c := streamConfig{}
 
 	cmd := &cobra.Command{
-		Use:   "event-stream [--project=PROJECT_ID] --type=sns --aws-iam-role-arn=arn:aws:iam::123456789012:role/MyRole --aws-sns-topic-arn=arn:aws:sns:us-east-1:123456789012:MyTopic",
+		Use:   "event-stream [--project=PROJECT_ID] --type={sns,https} {--aws-iam-role-arn=arn:aws:iam::123456789012:role/MyRole --aws-sns-topic-arn=arn:aws:sns:us-east-1:123456789012:MyTopic, --https-endpoint=https://example.com/webhook}",
 		Short: "Create a new event stream",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
