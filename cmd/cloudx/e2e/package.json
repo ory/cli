@@ -10,11 +10,11 @@
     "test:dev": "cypress open"
   },
   "devDependencies": {
-    "cypress": "^9.0.0",
+    "cypress": "^15.13.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^2.0.5"
   },
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.22.1"
   }
 }
