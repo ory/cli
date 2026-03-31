@@ -165,7 +165,7 @@ func TestCRUD(t *testing.T) {
 func createLegacyNamespace(t *testing.T, project, rawNamespace string) {
 	t.Helper()
 	_, _, err := defaultCmd.Exec(nil, "patch", "permission-config", "--project", project,
-		"--add", `/namespaces/-=`+rawNamespace)
+		"--replace", `/namespaces=[`+rawNamespace+`]`)
 	if err != nil {
 		t.Fatal(err)
 	}
