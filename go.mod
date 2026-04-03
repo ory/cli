@@ -97,7 +97,7 @@ require (
 	github.com/go-crypt/crypt v0.2.25 // indirect
 	github.com/go-crypt/x v0.2.18 // indirect
 	github.com/go-faker/faker/v4 v4.6.0 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/errors v0.22.2 // indirect
