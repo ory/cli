@@ -372,7 +372,7 @@ func TestCommandHelper(t *testing.T) {
 				assert.Equal(t, tc.project.Id, actual.Id)
 				assertValidProject(t, tc.project)
 
-				actual, err = authenticated.GetProject(ctx, tc.project.Slug[:len(tc.project.Slug)-1], tc.project.WorkspaceId.Get())
+				actual, err = authenticated.GetProject(ctx, tc.project.Slug[:8], tc.project.WorkspaceId.Get())
 				require.NoError(t, err)
 				assert.Equal(t, tc.project.Id, actual.Id)
 			})
