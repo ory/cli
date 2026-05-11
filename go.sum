@@ -517,10 +517,10 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/moby/docker-image-spec v1.3.1 h1:jMKff3w6PgbfSa69GfNg+zN/XLhfXJGnEx3Nl2EsFP0=
 github.com/moby/docker-image-spec v1.3.1/go.mod h1:eKmb5VW8vQEh/BAr2yvVNvuiJuY6UIocYsFu/DxxRpo=
-github.com/moby/moby/api v1.54.0 h1:7kbUgyiKcoBhm0UrWbdrMs7RX8dnwzURKVbZGy2GnL0=
-github.com/moby/moby/api v1.54.0/go.mod h1:8mb+ReTlisw4pS6BRzCMts5M49W5M7bKt1cJy/YbAqc=
-github.com/moby/moby/client v0.3.0 h1:UUGL5okry+Aomj3WhGt9Aigl3ZOxZGqR7XPo+RLPlKs=
-github.com/moby/moby/client v0.3.0/go.mod h1:HJgFbJRvogDQjbM8fqc1MCEm4mIAGMLjXbgwoZp6jCQ=
+github.com/moby/moby/api v1.54.1 h1:TqVzuJkOLsgLDDwNLmYqACUuTehOHRGKiPhvH8V3Nn4=
+github.com/moby/moby/api v1.54.1/go.mod h1:+RQ6wluLwtYaTd1WnPLykIDPekkuyD/ROWQClE83pzs=
+github.com/moby/moby/client v0.4.0 h1:S+2XegzHQrrvTCvF6s5HFzcrywWQmuVnhOXe2kiWjIw=
+github.com/moby/moby/client v0.4.0/go.mod h1:QWPbvWchQbxBNdaLSpoKpCdf5E+WxFAgNHogCWDoa7g=
 github.com/moby/sys/atomicwriter v0.1.0 h1:kw5D/EqkBwsBFi0ss9v1VG3wIkVhzGvLklJ+w3A14Sw=
 github.com/moby/sys/atomicwriter v0.1.0/go.mod h1:Ul8oqv2ZMNHOceF643P6FKPXeCmYtlQMvpizfsSoaWs=
 github.com/moby/sys/sequential v0.6.0 h1:qrx7XFUd/5DxtqcoH1h438hF5TmOvzC/lspjy7zgvCU=
@@ -556,8 +556,8 @@ github.com/ory/analytics-go/v5 v5.0.1 h1:LX8T5B9FN8KZXOtxgN+R3I4THRRVB6+28IKgKBp
 github.com/ory/analytics-go/v5 v5.0.1/go.mod h1:lWCiCjAaJkKfgR/BN5DCLMol8BjKS1x+4jxBxff/FF0=
 github.com/ory/client-go v1.22.32 h1:31kLMk6DynhoyjXO7Gx6DRI9VX7RBdCQDxppfCiGtxg=
 github.com/ory/client-go v1.22.32/go.mod h1:G1f+5+m/PJVvl40bsRn0QuyVIcXe7EHiWeM7iWpIDjw=
-github.com/ory/dockertest/v4 v4.0.0-beta.4 h1:QcrNrobOP+5IjSDmS4//EuBtwiFuznQhi5xTe8oFSoM=
-github.com/ory/dockertest/v4 v4.0.0-beta.4/go.mod h1:p9kfE14tzK8+WU4F9YbIZlzhCzQ2pH7H1KIfBKrF3DM=
+github.com/ory/dockertest/v4 v4.0.0 h1:i19aFsO/VXE0VrMk4ifnKW4G/KIJ93PCjLOslxXoPME=
+github.com/ory/dockertest/v4 v4.0.0/go.mod h1:b5Ofu8VIxWNhXFvQcLu17pRNQdoUBKtXBW74G4Ygzx8=
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe h1:rvu4obdvqR0fkSIJ8IfgzKOWwZ5kOT2UNfLq81Qk7rc=
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe/go.mod h1:z4n3u6as84LbV4YmgjHhnwtccQqzf4cZlSk9f1FhygI=
 github.com/ory/go-convenience v0.1.0 h1:zouLKfF2GoSGnJwGq+PE/nJAE6dj2Zj5QlTgmMTsTS8=
@@ -578,8 +578,8 @@ github.com/ory/keto v0.14.1-0.20260324164236-ccb79cfc480c h1:IEGOWr24LYYohHhjsBt
 github.com/ory/keto v0.14.1-0.20260324164236-ccb79cfc480c/go.mod h1:oWXc/S0SVU/WM5s9lAfc9DidbnQNELFyKU5obZq2WIQ=
 github.com/ory/keto/proto v0.13.0-alpha.0.0.20251107121730-f5635433a563 h1:JAnmWvXQ8djHAycZgPfuhFh5yCDohu9x/5P638FnKkg=
 github.com/ory/keto/proto v0.13.0-alpha.0.0.20251107121730-f5635433a563/go.mod h1:80XUMndTR7nQxXmxsUx6pNaEp0KEa51wdhIPsIocwng=
-github.com/ory/kratos v1.3.1-0.20260324164252-55fe178c4ea9 h1:nQqTDWiJkhVOk5gP6I9GEap4KjK5TuwBsdHjpwNeybM=
-github.com/ory/kratos v1.3.1-0.20260324164252-55fe178c4ea9/go.mod h1:xSS7k+KjA6qjxkCmqh1hwnZ9QTDFXXbyyzICB2ZUEko=
+github.com/ory/kratos v1.3.1-0.20260320110106-9d7085948039 h1:Vo4Q5OO7mZWJLjyWH541JCBjkgVR3kXdHG4/1O2p0Og=
+github.com/ory/kratos v1.3.1-0.20260320110106-9d7085948039/go.mod h1:xSS7k+KjA6qjxkCmqh1hwnZ9QTDFXXbyyzICB2ZUEko=
 github.com/ory/kratos-client-go v1.3.8 h1:S4D5dAURq5C6LbOUU+DgE4ZXxp37IlJG2GngemdF9h0=
 github.com/ory/kratos-client-go v1.3.8/go.mod h1:Dc+ANapsPxu+CfdC0yk8TxmvceCmrvNozW+ZGS/xq5o=
 github.com/ory/mail v2.3.1+incompatible/go.mod h1:87D9/1gB6ewElQoN0lXJ0ayfqcj3cW3qCTXh+5E9mfU=
