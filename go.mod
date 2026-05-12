@@ -29,7 +29,7 @@ require (
 	github.com/ory/hydra/v2 v2.3.1-0.20260324164235-735e0a30f7f2
 	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e
 	github.com/ory/keto v0.14.1-0.20260324164236-ccb79cfc480c
-	github.com/ory/kratos v1.3.1-0.20260324164252-55fe178c4ea9
+	github.com/ory/kratos v1.3.1-0.20260320110106-9d7085948039
 	github.com/ory/x v0.0.730-0.20260324164228-9257dfe10938
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
@@ -162,7 +162,7 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.5 // indirect
+	github.com/jackc/pgx/v5 v5.9.2 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jaegertracing/jaeger-idl v0.5.0 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
@@ -199,8 +199,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
-	github.com/moby/moby/api v1.54.0 // indirect
-	github.com/moby/moby/client v0.3.0 // indirect
+	github.com/moby/moby/api v1.54.1 // indirect
+	github.com/moby/moby/client v0.4.0 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nyaruka/phonenumbers v1.6.5 // indirect
@@ -211,7 +211,7 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/openzipkin/zipkin-go v0.4.3 // indirect
 	github.com/ory/analytics-go/v5 v5.0.1 // indirect
-	github.com/ory/dockertest/v4 v4.0.0-beta.4 // indirect
+	github.com/ory/dockertest/v4 v4.0.0 // indirect
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
 	github.com/ory/go-convenience v0.1.0 // indirect
 	github.com/ory/keto/proto v0.13.0-alpha.0 // indirect

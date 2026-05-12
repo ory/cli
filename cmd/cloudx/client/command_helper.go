@@ -45,6 +45,7 @@ type (
 		projectID, workspaceID uuid.UUID
 		configLocation         string
 		noConfirm, isQuiet     bool
+		workspaceFromConfig    bool
 		VerboseErrWriter       io.Writer
 		Stdin                  *bufio.Reader
 		openBrowserHook        func(string) error
@@ -231,6 +232,7 @@ func (h *CommandHelper) determineWorkspaceID(ctx context.Context, config *Config
 		workspace = ws
 	} else if config.SelectedWorkspace != uuid.Nil {
 		h.workspaceID = config.SelectedWorkspace
+		h.workspaceFromConfig = true
 		return nil
 	}
 	workspace = strings.TrimSpace(workspace)
@@ -261,9 +263,11 @@ func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) 
 		if h.projectOverride != nil {
 			return fmt.Errorf("project API key is set but project flag is also set, please remove one")
 		}
-		if h.workspaceID != uuid.Nil {
+		if h.workspaceID != uuid.Nil && !h.workspaceFromConfig {
 			return fmt.Errorf("project API key is set but workspace is also set, please remove one")
 		}
+		// Clear workspace from config since project API key takes precedence.
+		h.workspaceID = uuid.Nil
 		pjs, err := h.ListProjects(ctx, nil)
 		if err != nil {
 			return err
