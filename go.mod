@@ -242,7 +242,7 @@ require (
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/slack-go/slack v0.13.1 // indirect
+	github.com/slack-go/slack v0.23.1 // indirect
 	github.com/smarty/assertions v1.16.0 // indirect
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d // indirect
