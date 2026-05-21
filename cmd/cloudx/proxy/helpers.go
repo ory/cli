@@ -376,7 +376,7 @@ func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (js
 	target.Path = path.Join(target.Path, "sessions", "whoami")
 	req, err := retryablehttp.NewRequest("GET", target.String(), nil)
 	if err != nil {
-		return nil, errors.WithStack(herodot.ErrInternalServerError)
+		return nil, errors.WithStack(herodot.ErrInternalServerError())
 	}
 
 	req.Header.Set("Cookie", r.Header.Get("Cookie"))
@@ -387,13 +387,13 @@ func checkSession(c *retryablehttp.Client, r *http.Request, target *url.URL) (js
 
 	res, err := c.Do(req)
 	if err != nil {
-		return nil, errors.WithStack(herodot.ErrInternalServerError.WithReasonf("Unable to call session checker: %s", err).WithWrap(err))
+		return nil, errors.WithStack(herodot.ErrInternalServerError().WithReasonf("Unable to call session checker: %s", err).WithWrap(err))
 	}
 	defer res.Body.Close()
 
 	var body json.RawMessage
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		return nil, errors.WithStack(herodot.ErrInternalServerError.WithReasonf("Unable to decode session to JSON: %s", err).WithWrap(err))
+		return nil, errors.WithStack(herodot.ErrInternalServerError().WithReasonf("Unable to decode session to JSON: %s", err).WithWrap(err))
 	}
 
 	return body, nil
