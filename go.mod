@@ -2,9 +2,7 @@ module github.com/ory/cli
 
 go 1.26
 
-replace (
-	github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
-)
+replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 
 require (
 	dario.cat/mergo v1.0.2
@@ -18,15 +16,15 @@ require (
 	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/ory/client-go v1.22.32
+	github.com/ory/client-go v1.22.41
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.2.0
 	github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22
 	github.com/ory/hydra-client-go/v2 v2.4.0-alpha.1.0.20251107123905-f3d35665821b
-	github.com/ory/hydra/v2 v2.3.1-0.20260324164235-735e0a30f7f2
+	github.com/ory/hydra/v2 v2.3.1-0.20260521102426-2e62d4d951ef
 	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e
 	github.com/ory/keto v0.14.1-0.20260521082736-bcf74421eaf2
-	github.com/ory/kratos v1.3.1-0.20260521082743-795930edd880
+	github.com/ory/kratos v1.3.1-0.20260521101516-8b2f33bd5c3d
 	github.com/ory/x v0.0.730-0.20260521082735-5aba9539f9e9
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
@@ -208,10 +206,10 @@ require (
 	github.com/ory/analytics-go/v5 v5.0.1 // indirect
 	github.com/ory/dockertest/v4 v4.0.0 // indirect
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
-	github.com/ory/go-convenience v0.1.0 // indirect
+	github.com/ory/go-convenience v0.1.1-0.20251022160015-e2a1f648d0b1 // indirect
 	github.com/ory/keto/proto v0.13.0-alpha.0.0.20260521082736-bcf74421eaf2 // indirect
-	github.com/ory/kratos-client-go v1.3.8 // indirect
-	github.com/ory/mail/v3 v3.0.1-0.20260413103059-df54acc74133 // indirect
+	github.com/ory/kratos-client-go v1.3.9-0.20251107123727-a6ddbd382e38 // indirect
+	github.com/ory/mail/v3 v3.0.1-0.20260416102637-e762925f059d // indirect
 	github.com/ory/nosurf v1.2.7 // indirect
 	github.com/ory/pop/v6 v6.4.2-0.20260507161217-89126558d369 // indirect
 	github.com/pborman/uuid v1.2.1 // indirect
