@@ -13,7 +13,6 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/gofrs/uuid/v3 v3.1.2
 	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/ory/client-go v1.22.41
