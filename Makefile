@@ -13,7 +13,7 @@ docs/cli: .bin/clidoc
 	clidoc .
 
 .bin/cli: go.mod Makefile
-	go build -o .bin/cli -tags sqlite github.com/ory/cli
+	go build -o .bin/cli github.com/ory/cli
 
 .bin/golangci-lint-$(GOLANGCI_LINT_VERSION):
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v$(GOLANGCI_LINT_VERSION)
@@ -28,11 +28,11 @@ lint: .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 .PHONY: install
 install:
-	go install -tags sqlite .
+	go install .
 
 .PHONY: refresh
 refresh:
-	UPDATE_SNAPSHOTS=true go test -tags sqlite,json1,refresh ./...
+	UPDATE_SNAPSHOTS=true go test -tags=refresh ./...
 
 # Formats the code
 .PHONY: format
