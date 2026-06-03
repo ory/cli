@@ -27,44 +27,48 @@ var orbs = []string{
 
 var orbLatestRegex = regexp.MustCompile(`(?im)^Latest:\s(.*)$`)
 
-var bump = &cobra.Command{
-	Use:   "bump <[.circleci/config.yml]>",
-	Args:  cobra.RangeArgs(0, 1),
-	Short: "Bump CircleCI Orb versions",
-	Long: `Bumps ORY's CircleCI Orb versions to their newest version.
+func newBumpCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "bump <[.circleci/config.yml]>",
+		Args:  cobra.RangeArgs(0, 1),
+		Short: "Bump CircleCI Orb versions",
+		Long: `Bumps ORY's CircleCI Orb versions to their newest version.
 
 If no argument is supplied, this command uses the default ".circleci/config.yml" location.
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		path := ".circleci/config.yml"
-		if len(args) == 1 {
-			path = args[0]
-		}
+		Run: func(cmd *cobra.Command, args []string) {
+			path := ".circleci/config.yml"
+			if len(args) == 1 {
+				path = args[0]
+			}
 
-		var wg sync.WaitGroup
-		var lock sync.Mutex
-		versions := map[string]string{}
-		for _, id := range orbs {
-			wg.Add(1)
-			go getVersion(id, versions, &lock, &wg)
-		}
-		wg.Wait()
+			var wg sync.WaitGroup
+			var lock sync.Mutex
+			versions := map[string]string{}
+			for _, id := range orbs {
+				wg.Add(1)
+				go getVersion(id, versions, &lock, &wg)
+			}
+			wg.Wait()
 
-		config, err := os.ReadFile(path)
-		pkg.Check(err)
+			config, err := os.ReadFile(path)
+			pkg.Check(err)
 
-		for k, r := range versions {
-			replace := regexp.MustCompile(fmt.Sprintf("(?im)^(\\s\\s[^:]+:\\s)(%s@[0-9a-zA-Z\\.]+)$", k))
-			config = []byte(replace.ReplaceAllString(string(config), "${1}"+r))
-		}
+			for k, r := range versions {
+				replace := regexp.MustCompile(fmt.Sprintf("(?im)^(\\s\\s[^:]+:\\s)(%s@[0-9a-zA-Z\\.]+)$", k))
+				config = []byte(replace.ReplaceAllString(string(config), "${1}"+r))
+			}
 
-		if flagx.MustGetBool(cmd, "write") {
-			pkg.Check(os.WriteFile(path, config, 0666))
-			fmt.Printf("Successfully wrote new orb versions to CircleCI config file: %s\n", path)
-		} else {
-			fmt.Println(string(config))
-		}
-	},
+			if flagx.MustGetBool(cmd, "write") {
+				pkg.Check(os.WriteFile(path, config, 0666))
+				fmt.Printf("Successfully wrote new orb versions to CircleCI config file: %s\n", path)
+			} else {
+				fmt.Println(string(config))
+			}
+		},
+	}
+	c.Flags().BoolP("write", "w", false, "Write output to CircleCI config file instead of stdout.")
+	return c
 }
 
 func getVersion(id string, versions map[string]string, l *sync.Mutex, wg *sync.WaitGroup) {
@@ -84,9 +88,4 @@ but got:
 	l.Lock()
 	versions[id] = matches[0][1]
 	l.Unlock()
-}
-
-func init() {
-	Main.AddCommand(bump)
-	bump.Flags().BoolP("write", "w", false, "Write output to CircleCI config file instead of stdout.")
 }

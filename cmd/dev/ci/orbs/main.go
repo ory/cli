@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Main = &cobra.Command{
-	Use:   "orbs",
-	Short: "Helpers for CircleCI",
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "orbs",
+		Short: "Helpers for CircleCI",
+	}
+	c.AddCommand(newBumpCmd())
+	return c
 }

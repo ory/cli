@@ -24,7 +24,7 @@ func NewRootCmd() *cobra.Command {
 		Short: "The Ory CLI",
 	}
 
-	c.AddCommand(devCommands...)
+	c.AddCommand(newDevCommands()...)
 	c.AddCommand(
 		cloudx.NewAuthCmd(),
 		cloudx.NewCreateCmd(),
@@ -46,7 +46,7 @@ func NewRootCmd() *cobra.Command {
 		cloudx.NewRevokeCmd(),
 		cloudx.NewIntrospectCmd(),
 		cloudx.NewIsCmd(),
-		versionCmd,
+		newVersionCmd(),
 	)
 	cmdx.EnableUsageTemplating(c)
 

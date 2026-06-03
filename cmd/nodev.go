@@ -10,4 +10,4 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var devCommands []*cobra.Command
+func newDevCommands() []*cobra.Command { return nil }

@@ -16,23 +16,23 @@ import (
 	"github.com/ory/cli/cmd/dev/swagger"
 )
 
-var Main = &cobra.Command{
-	Use:   "dev",
-	Short: "Developer tools for writing Ory software",
-	Long: `Developer tools and convenience functions for writing Ory software.
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "dev",
+		Short: "Developer tools for writing Ory software",
+		Long: `Developer tools and convenience functions for writing Ory software.
 Please check the individual commands for more information!`,
-	Hidden: true,
-}
-
-func init() {
-	Main.AddCommand(
-		newsletter.Main,
-		markdown.Main,
-		release.Main,
-		swagger.Main,
-		ci.Main,
-		schema.Main,
-		openapi.Main,
-		headers.Main,
+		Hidden: true,
+	}
+	c.AddCommand(
+		newsletter.NewCommand(),
+		markdown.NewCommand(),
+		release.NewCommand(),
+		swagger.NewCommand(),
+		ci.NewCommand(),
+		schema.NewCommand(),
+		openapi.NewCommand(),
+		headers.NewCommand(),
 	)
+	return c
 }

@@ -14,39 +14,55 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var changesMode string
-var changeLog string
-var gitOpts string
+// Package-level scratch variables for the `changes` subcommand, populated from
+// per-command locals in Run so concurrent construction does not race.
+// changeLog is a memoization cache and is unrelated to flag binding.
+var (
+	changesMode string
+	changeLog   string
+	gitOpts     string
+)
 
 const allChanges = "--name-only --oneline"
 const lastCommitChanges = "-1 --name-only --oneline"
 
-var changes = &cobra.Command{
-	Use:   "changes",
-	Short: "List changes in the repository.",
-	Long:  `List changes in the repository.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		repoChanges := "[empty]"
-		switch changesMode {
-		case "full":
-			if len(gitOpts) == 0 {
-				if isPR() {
-					gitOpts = "--pretty=full"
-				} else {
-					gitOpts = "-1 --pretty=full"
-				}
-			}
+func newChangesCmd() *cobra.Command {
+	var (
+		localChangesMode string
+		localGitOpts     string
+	)
+	c := &cobra.Command{
+		Use:   "changes",
+		Short: "List changes in the repository.",
+		Long:  `List changes in the repository.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			changesMode, gitOpts = localChangesMode, localGitOpts
 
-			repoChanges, _ = getChangeLog(rootDirectory, revisionRange, gitOpts)
-		case "directories":
-			repoChanges, _ = getChangedDirectories(rootDirectory, revisionRange, gitOpts)
-		case "files":
-			repoChanges, _ = getChangedFiles(rootDirectory, revisionRange, gitOpts)
-		default:
-			log.Fatalf("Unknown ListMode '%s'", changesMode)
-		}
-		fmt.Println(repoChanges)
-	},
+			repoChanges := "[empty]"
+			switch changesMode {
+			case "full":
+				if len(gitOpts) == 0 {
+					if isPR() {
+						gitOpts = "--pretty=full"
+					} else {
+						gitOpts = "-1 --pretty=full"
+					}
+				}
+
+				repoChanges, _ = getChangeLog(rootDirectory, revisionRange, gitOpts)
+			case "directories":
+				repoChanges, _ = getChangedDirectories(rootDirectory, revisionRange, gitOpts)
+			case "files":
+				repoChanges, _ = getChangedFiles(rootDirectory, revisionRange, gitOpts)
+			default:
+				log.Fatalf("Unknown ListMode '%s'", changesMode)
+			}
+			fmt.Println(repoChanges)
+		},
+	}
+	c.Flags().StringVarP(&localChangesMode, "mode", "m", "directories", "Define which which type of change information you want to get listed (full, files, directories). Default is 'directories'.")
+	c.Flags().StringVarP(&localGitOpts, "gitopts", "g", "", "Specify custom git arguments used to determine changes, e.g. '--pretty=oneline' Only supported if mode is 'full'.")
+	return c
 }
 
 func getGitDefaults() string {
@@ -175,10 +191,4 @@ func getRepositoryChangeLog(repositoryPath string, revisionRange string, gitOpti
 		fmt.Printf("getRepositoryChangeLog: \n%s\n", changeLog)
 	}
 	return changeLog, nil
-}
-
-func init() {
-	Main.AddCommand(changes)
-	changes.Flags().StringVarP(&changesMode, "mode", "m", "directories", "Define which which type of change information you want to get listed (full, files, directories). Default is 'directories'.")
-	changes.Flags().StringVarP(&gitOpts, "gitopts", "g", "", "Specify custom git arguments used to determine changes, e.g. '--pretty=oneline' Only supported if mode is 'full'.")
 }

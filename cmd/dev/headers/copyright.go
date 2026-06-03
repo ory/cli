@@ -104,41 +104,38 @@ func fileTypeNeedsCopyrightHeader(path string) bool {
 	return !comments.ContainsFileType(noHeadersFor, comments.GetFileType(path))
 }
 
-var copyright = &cobra.Command{
-	Use:   "copyright",
-	Short: "Adds the copyright header to all files in the current directory",
-	Long: `Adds the copyright header to all files that need one in the current directory.
-
-Does not add the header to files listed in .gitignore and .prettierignore.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		year, _, _ := time.Now().Date()
-		var template string
-		switch headerType {
-		case headerTypeProprietary:
-			template = HEADER_TEMPLATE_PROPRIETARY
-		case headerTypeOpenSource:
-			template = HEADER_TEMPLATE_OPEN_SOURCE
-		default:
-			return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
-		}
-		return AddHeaders(".", fmt.Sprintf(template, year), exclude, regexp.MustCompile(HEADER_REGEXP))
-	},
-}
-
-func init() {
-	Main.AddCommand(copyright)
-	copyright.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
-	copyright.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, fmt.Sprintf("type of header to create (%q, %q)", headerTypeOpenSource, headerTypeProprietary))
-}
-
-// contains the folders to exclude
-var exclude []string
-
-// indicates whether to create a headerType header
-var headerType string
-
-// the possible values for `headerType` variable
+// the possible values for the --type CLI flag
 const (
 	headerTypeOpenSource  string = "open-source"
 	headerTypeProprietary string = "proprietary"
 )
+
+func newCopyrightCmd() *cobra.Command {
+	var (
+		exclude    []string
+		headerType string
+	)
+	c := &cobra.Command{
+		Use:   "copyright",
+		Short: "Adds the copyright header to all files in the current directory",
+		Long: `Adds the copyright header to all files that need one in the current directory.
+
+Does not add the header to files listed in .gitignore and .prettierignore.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			year, _, _ := time.Now().Date()
+			var template string
+			switch headerType {
+			case headerTypeProprietary:
+				template = HEADER_TEMPLATE_PROPRIETARY
+			case headerTypeOpenSource:
+				template = HEADER_TEMPLATE_OPEN_SOURCE
+			default:
+				return fmt.Errorf("unknown value for type, expected one of %q or %q", headerTypeOpenSource, headerTypeProprietary)
+			}
+			return AddHeaders(".", fmt.Sprintf(template, year), exclude, regexp.MustCompile(HEADER_REGEXP))
+		},
+	}
+	c.Flags().StringSliceVarP(&exclude, "exclude", "e", []string{}, "folders to exclude, provide comma-separated values or multiple instances of this flag")
+	c.Flags().StringVarP(&headerType, "type", "t", headerTypeOpenSource, fmt.Sprintf("type of header to create (%q, %q)", headerTypeOpenSource, headerTypeProprietary))
+	return c
+}

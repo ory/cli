@@ -14,34 +14,42 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Package-level scratch variable for the `components` subcommand, populated
+// from a per-command local in Run so concurrent construction does not race.
 var componentMode string
 
-var components = &cobra.Command{
-	Use:   "components",
-	Short: "List components based on mode.",
-	Long:  `List components based on mode by reading dependency configs and displaying the dependency graph.`,
-	Run: func(cmd *cobra.Command, args []string) {
+func newComponentsCmd() *cobra.Command {
+	var localComponentMode string
+	c := &cobra.Command{
+		Use:   "components",
+		Short: "List components based on mode.",
+		Long:  `List components based on mode by reading dependency configs and displaying the dependency graph.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			componentMode = localComponentMode
 
-		var graph ComponentGraph
-		_, _ = graph.getComponentGraph(rootDirectory)
+			var graph ComponentGraph
+			_, _ = graph.getComponentGraph(rootDirectory)
 
-		switch componentMode {
-		case "affected":
-			affectedComponents := getAffectedComponents(&graph)
-			displayComponents(affectedComponents)
-		case "all":
-			allComponents := graph.components
-			displayComponents(allComponents)
-		case "changed":
-			changedComponents := getChangedComponents(&graph)
-			displayComponents(changedComponents)
-		case "involved":
-			involvedComponents := getInvolvedComponents(&graph)
-			displayComponents(involvedComponents)
-		default:
-			log.Fatalf("Unknown ListMode '%s'", componentMode)
-		}
-	},
+			switch componentMode {
+			case "affected":
+				affectedComponents := getAffectedComponents(&graph)
+				displayComponents(affectedComponents)
+			case "all":
+				allComponents := graph.components
+				displayComponents(allComponents)
+			case "changed":
+				changedComponents := getChangedComponents(&graph)
+				displayComponents(changedComponents)
+			case "involved":
+				involvedComponents := getInvolvedComponents(&graph)
+				displayComponents(involvedComponents)
+			default:
+				log.Fatalf("Unknown ListMode '%s'", componentMode)
+			}
+		},
+	}
+	c.Flags().StringVarP(&localComponentMode, "mode", "m", "involved", "Define which components you want to get listed (affected, all, changed, involved). Default is 'involved'.")
+	return c
 }
 
 func displayComponents(components []*Component) {
@@ -173,9 +181,4 @@ func getComponent(wd string) (*Component, error) {
 		return nil, err
 	}
 	return &c, nil
-}
-
-func init() {
-	Main.AddCommand(components)
-	components.Flags().StringVarP(&componentMode, "mode", "m", "involved", "Define which components you want to get listed (affected, all, changed, involved). Default is 'involved'.")
 }

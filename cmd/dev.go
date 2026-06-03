@@ -12,4 +12,6 @@ import (
 	"github.com/ory/cli/cmd/dev"
 )
 
-var devCommands = []*cobra.Command{dev.Main}
+func newDevCommands() []*cobra.Command {
+	return []*cobra.Command{dev.NewCommand()}
+}

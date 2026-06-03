@@ -126,29 +126,26 @@ func folderExists(path string) (bool, error) {
 	return dstStat.IsDir(), nil
 }
 
-var copy = &cobra.Command{
-	Use:   "cp",
-	Short: "Behaves like cp but adds a header pointing to the original to copied files.",
-	Args:  cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		if recursive {
-			return CopyFiles(args[0], args[1])
-		} else if noOverride {
-			return CopyFileNoOverwrite(args[0], args[1])
-		} else {
-			return CopyFile(args[0], args[1])
-		}
-	},
+func newCpCmd() *cobra.Command {
+	var (
+		recursive  bool
+		noOverride bool
+	)
+	c := &cobra.Command{
+		Use:   "cp",
+		Short: "Behaves like cp but adds a header pointing to the original to copied files.",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if recursive {
+				return CopyFiles(args[0], args[1])
+			} else if noOverride {
+				return CopyFileNoOverwrite(args[0], args[1])
+			} else {
+				return CopyFile(args[0], args[1])
+			}
+		},
+	}
+	c.Flags().BoolVarP(&recursive, "recursive", "r", false, "Whether to copy files in subdirectories")
+	c.Flags().BoolVarP(&noOverride, "no-clobber", "n", false, "Do not overwrite an existing file")
+	return c
 }
-
-func init() {
-	Main.AddCommand(copy)
-	copy.Flags().BoolVarP(&recursive, "recursive", "r", false, "Whether to copy files in subdirectories")
-	copy.Flags().BoolVarP(&recursive, "no-clobber", "n", false, "Do not overwrite an existing file")
-}
-
-// contains the value of the "-r" CLI flag
-var recursive bool
-
-// contains the value of the "-n" CLI flag
-var noOverride bool

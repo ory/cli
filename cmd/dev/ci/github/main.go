@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Main = &cobra.Command{
-	Use:   "github",
-	Short: "Helpers for GitHub",
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "github",
+		Short: "Helpers for GitHub",
+	}
+	c.AddCommand(newEnvCmd())
+	return c
 }

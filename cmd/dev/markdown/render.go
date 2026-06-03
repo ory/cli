@@ -17,20 +17,18 @@ import (
 	"github.com/ory/cli/cmd/pkg"
 )
 
-func init() {
-	Main.AddCommand(render)
-}
+func newRenderCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "render <file.md>",
+		Args:  cobra.ExactArgs(1),
+		Short: "Render a Markdown file",
+		Run: func(cmd *cobra.Command, args []string) {
+			changelogRaw, err := os.ReadFile(args[0])
+			pkg.Check(err)
 
-var render = &cobra.Command{
-	Use:   "render <file.md>",
-	Args:  cobra.ExactArgs(1),
-	Short: "Render a Markdown file",
-	Run: func(cmd *cobra.Command, args []string) {
-		changelogRaw, err := os.ReadFile(args[0])
-		pkg.Check(err)
-
-		fmt.Println(renderMarkdown(changelogRaw))
-	},
+			fmt.Println(renderMarkdown(changelogRaw))
+		},
+	}
 }
 
 func renderMarkdown(source []byte) template.HTML {

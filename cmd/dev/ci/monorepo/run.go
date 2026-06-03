@@ -12,10 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cmds string
-var runMode string
-var dryRun bool
-var inverseMode bool
+// Package-level scratch variables for the `run` subcommand, populated from
+// per-command locals in RunE so concurrent construction does not race.
+var (
+	cmds        string
+	runMode     string
+	dryRun      bool
+	inverseMode bool
+)
 
 // ModeCurrentAffected will execute the specified commands if any of the current components dependecies have changed
 const ModeCurrentAffected = "current_affected"
@@ -26,26 +30,39 @@ const ModeCurrentChanged = "current_changed"
 // ModeCurrentInvolved will execute the specified commands if the current component or any of its dependecies have changed
 const ModeCurrentInvolved = "current_involved"
 
-var run = &cobra.Command{
-	Use:   "run",
-	Short: "Runs the specified commands on changes",
-	Long:  `Runs the specified commands if the current component (which is defined in the current work directory) is affected by any change in the repository.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var graph ComponentGraph
-		if _, err := graph.getComponentGraph(rootDirectory); err != nil {
-			return err
-		}
+func newRunCmd() *cobra.Command {
+	var (
+		localCmds, localRunMode   string
+		localDryRun, localInverse bool
+	)
+	c := &cobra.Command{
+		Use:   "run",
+		Short: "Runs the specified commands on changes",
+		Long:  `Runs the specified commands if the current component (which is defined in the current work directory) is affected by any change in the repository.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cmds, runMode, dryRun, inverseMode = localCmds, localRunMode, localDryRun, localInverse
 
-		c, err := getCurrentComponent()
-		if err != nil {
-			return err
-		}
-		isAffected := c.isAffected(&graph)
-		isChanged := c.isChanged(&graph)
-		isInvolved := isChanged || isAffected
+			var graph ComponentGraph
+			if _, err := graph.getComponentGraph(rootDirectory); err != nil {
+				return err
+			}
 
-		return runWrapper(c, cmds, runMode, isAffected, isChanged, isInvolved, inverseMode)
-	},
+			c, err := getCurrentComponent()
+			if err != nil {
+				return err
+			}
+			isAffected := c.isAffected(&graph)
+			isChanged := c.isChanged(&graph)
+			isInvolved := isChanged || isAffected
+
+			return runWrapper(c, cmds, runMode, isAffected, isChanged, isInvolved, inverseMode)
+		},
+	}
+	c.Flags().StringVarP(&localCmds, "commands", "c", "", "Commands to be run if current component is affected.")
+	c.Flags().StringVarP(&localRunMode, "mode", "m", "current_involved", "Defines the mode of this run command. Supported values are: current_changed, current_affected, all_changed, all_affected. Default is current_involved.")
+	c.Flags().BoolVar(&localDryRun, "dry-run", false, "If dry-run is used, commands are only displayed, but not executed!")
+	c.Flags().BoolVar(&localInverse, "inverse", false, "If inverse is used, the specified commands will be executes if the current component is not affected/involved/changed (depending on mode)!")
+	return c
 }
 
 func runWrapper(c *Component, cmdLine string, mode string, affected bool, changed bool, involved bool, inverse bool) error {
@@ -95,12 +112,4 @@ func runCmd(component *Component, cmdLine string, dryRun bool) error {
 	cmd.Stderr = os.Stderr
 
 	return cmd.Run()
-}
-
-func init() {
-	Main.AddCommand(run)
-	run.Flags().StringVarP(&cmds, "commands", "c", "", "Commands to be run if current component is affected.")
-	run.Flags().StringVarP(&runMode, "mode", "m", "current_involved", "Defines the mode of this run command. Supported values are: current_changed, current_affected, all_changed, all_affected. Default is current_involved.")
-	run.Flags().BoolVar(&dryRun, "dry-run", false, "If dry-run is used, commands are only displayed, but not executed!")
-	run.Flags().BoolVar(&inverseMode, "inverse", false, "If inverse is used, the specified commands will be executes if the current component is not affected/involved/changed (depending on mode)!")
 }

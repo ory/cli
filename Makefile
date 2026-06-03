@@ -49,12 +49,6 @@ licenses: .bin/licenses node_modules  # checks open-source licenses
 docker:
 	docker build -f .docker/Dockerfile-build -t oryd/ory:latest-sqlite .
 
-
-# Runs tests in short mode, without database adapters
-.PHONY: post-release
-post-release:
-	echo "nothing to do"
-
 node_modules: package-lock.json
 	npm ci
 	touch node_modules
