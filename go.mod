@@ -7,7 +7,6 @@ replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
-	github.com/deckarep/golang-set v1.8.0
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/getkin/kin-openapi v0.131.0
 	github.com/ghodss/yaml v1.0.0

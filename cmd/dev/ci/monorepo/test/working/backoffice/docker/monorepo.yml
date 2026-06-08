@@ -1,5 +1,0 @@
-name: Backoffice Docker Container
-id: backoffice-docker
-deps: 
- - backoffice
- - terraform

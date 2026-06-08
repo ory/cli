@@ -8,7 +8,6 @@ import (
 
 	"github.com/ory/cli/cmd/dev/ci/deps"
 	"github.com/ory/cli/cmd/dev/ci/github"
-	"github.com/ory/cli/cmd/dev/ci/monorepo"
 	"github.com/ory/cli/cmd/dev/ci/orbs"
 )
 
@@ -20,7 +19,6 @@ func NewCommand() *cobra.Command {
 	c.AddCommand(
 		orbs.NewCommand(),
 		github.NewCommand(),
-		monorepo.NewCommand(),
 		deps.NewCommand(),
 	)
 	return c
