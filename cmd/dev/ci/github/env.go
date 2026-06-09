@@ -51,7 +51,8 @@ $ source $(ory dev ci github env)`,
 				caser.String(strings.ToLower(repo[1])),
 			)
 
-			if ignorePkgs := strings.Split(os.Getenv("SWAGGER_SPEC_IGNORE_PKGS"), ","); len(ignorePkgs) > 0 {
+			if raw := os.Getenv("SWAGGER_SPEC_IGNORE_PKGS"); raw != "" {
+				ignorePkgs := strings.Split(raw, ",")
 				for k, p := range ignorePkgs {
 					ignorePkgs[k] = "-x " + p
 				}
