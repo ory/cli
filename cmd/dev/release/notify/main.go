@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Main = &cobra.Command{
-	Use:   "notify",
-	Short: "Notify subscribers about new releases",
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "notify",
+		Short: "Notify subscribers about new releases",
+	}
+	c.AddCommand(newSendCmd(), newDraftCmd())
+	return c
 }

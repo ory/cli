@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Main = &cobra.Command{
-	Use:   "markdown",
-	Short: "Utilities for working with markdown",
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "markdown",
+		Short: "Utilities for working with markdown",
+	}
+	c.AddCommand(newRenderCmd())
+	return c
 }

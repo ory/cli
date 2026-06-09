@@ -9,13 +9,15 @@ import (
 	"github.com/ory/cli/cmd/dev/release/notify"
 )
 
-var Main = &cobra.Command{
-	Use:   "release",
-	Short: "Release infrastructure for ORY and related components",
-}
-
-func init() {
-	Main.AddCommand(
-		notify.Main,
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "release",
+		Short: "Release infrastructure for ORY and related components",
+	}
+	c.AddCommand(
+		notify.NewCommand(),
+		newCompileCmd(),
+		newPublishCmd(),
 	)
+	return c
 }

@@ -8,18 +8,18 @@ import (
 
 	"github.com/ory/cli/cmd/dev/ci/deps"
 	"github.com/ory/cli/cmd/dev/ci/github"
-	"github.com/ory/cli/cmd/dev/ci/monorepo"
 	"github.com/ory/cli/cmd/dev/ci/orbs"
 )
 
-var Main = &cobra.Command{
-	Use:   "ci",
-	Short: "Continuous Integration helpers",
-}
-
-func init() {
-	Main.AddCommand(orbs.Main)
-	Main.AddCommand(github.Main)
-	Main.AddCommand(monorepo.Main)
-	Main.AddCommand(deps.Main)
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "ci",
+		Short: "Continuous Integration helpers",
+	}
+	c.AddCommand(
+		orbs.NewCommand(),
+		github.NewCommand(),
+		deps.NewCommand(),
+	)
+	return c
 }

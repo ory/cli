@@ -23,11 +23,12 @@ import (
 	"github.com/ory/x/flagx"
 )
 
-var draft = &cobra.Command{
-	Use:   "draft list-id path/to/tag-message path/to/changelog.md",
-	Args:  cobra.ExactArgs(3),
-	Short: "Creates a draft release notification via the Mailchimp Campaign / Newsletter API",
-	Long: `Creates a draft release notification via the Mailchimp Campaign / Newsletter API. TL;DR
+func newDraftCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "draft list-id path/to/tag-message path/to/changelog.md",
+		Args:  cobra.ExactArgs(3),
+		Short: "Creates a draft release notification via the Mailchimp Campaign / Newsletter API",
+		Long: `Creates a draft release notification via the Mailchimp Campaign / Newsletter API. TL;DR
 
 	$ git tag -l --format='%(contents)' v0.0.103 > tag-message.txt
 	$ # run changelog generator > changelog.md
@@ -56,24 +57,28 @@ If you want to send only to a segment within that list, add the Segment ID as we
 
 	release notify --segment 1234 ...
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		listID := args[0]
-		tagMessagePath := args[1]
-		changelogPath := args[2]
+		Run: func(cmd *cobra.Command, args []string) {
+			listID := args[0]
+			tagMessagePath := args[1]
+			changelogPath := args[2]
 
-		tagMessageRaw, err := os.ReadFile(tagMessagePath)
-		pkg.Check(err)
-		changelogRaw, err := os.ReadFile(changelogPath)
-		pkg.Check(err)
+			tagMessageRaw, err := os.ReadFile(tagMessagePath)
+			pkg.Check(err)
+			changelogRaw, err := os.ReadFile(changelogPath)
+			pkg.Check(err)
 
-		chimpCampaign, err := Draft(listID, flagx.MustGetInt(cmd, "segment"), tagMessageRaw, changelogRaw, flagx.MustGetBool(cmd, "dry"))
-		pkg.Check(err)
+			chimpCampaign, err := Draft(listID, flagx.MustGetInt(cmd, "segment"), tagMessageRaw, changelogRaw, flagx.MustGetBool(cmd, "dry"))
+			pkg.Check(err)
 
-		fmt.Printf(`Created campaign "%s" (%s)`, chimpCampaign.Settings.Title, chimpCampaign.ID)
-		fmt.Println()
+			fmt.Printf(`Created campaign "%s" (%s)`, chimpCampaign.Settings.Title, chimpCampaign.ID)
+			fmt.Println()
 
-		fmt.Println("Campaign drafted")
-	},
+			fmt.Println("Campaign drafted")
+		},
+	}
+	c.Flags().Int("segment", 0, "The Mailchimp Segment ID")
+	c.Flags().Bool("dry", false, "Dry run")
+	return c
 }
 
 func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte, dry bool) (*gochimp3.CampaignResponse, error) {
@@ -175,10 +180,4 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte, dry
 	}
 
 	return chimpCampaign, err
-}
-
-func init() {
-	Main.AddCommand(draft)
-	draft.Flags().Int("segment", 0, "The Mailchimp Segment ID")
-	draft.Flags().Bool("dry", false, "Dry run")
 }

@@ -7,24 +7,23 @@ replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
-	github.com/deckarep/golang-set v1.8.0
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/getkin/kin-openapi v0.131.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
+	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/ory/client-go v1.22.41
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.2.0
 	github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22
 	github.com/ory/hydra-client-go/v2 v2.4.0-alpha.1.0.20251107123905-f3d35665821b
-	github.com/ory/hydra/v2 v2.3.1-0.20260521102426-2e62d4d951ef
+	github.com/ory/hydra/v2 v2.3.1-0.20260608173701-e93cfd611f53
 	github.com/ory/jsonschema/v3 v3.0.9-0.20250317235931-280c5fc7bf0e
-	github.com/ory/keto v0.14.1-0.20260521082736-bcf74421eaf2
-	github.com/ory/kratos v1.3.1-0.20260521101516-8b2f33bd5c3d
-	github.com/ory/x v0.0.730-0.20260521082735-5aba9539f9e9
+	github.com/ory/keto v0.14.1-0.20260609063042-5da3a68a58d9
+	github.com/ory/kratos v1.3.1-0.20260608173705-6611397deb2b
+	github.com/ory/x v0.0.730-0.20260608173703-f144602ce3cf
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
 	github.com/playwright-community/playwright-go v0.4702.0
@@ -37,7 +36,7 @@ require (
 	github.com/tidwall/sjson v1.2.5
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/oauth2 v0.36.0
-	golang.org/x/text v0.37.0
+	golang.org/x/text v0.38.0
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -77,7 +76,6 @@ require (
 	github.com/dghubble/oauth1 v0.7.3 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.4.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker v28.5.2+incompatible // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -206,7 +204,7 @@ require (
 	github.com/ory/dockertest/v4 v4.0.0 // indirect
 	github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe // indirect
 	github.com/ory/go-convenience v0.1.1-0.20251022160015-e2a1f648d0b1 // indirect
-	github.com/ory/keto/proto v0.13.0-alpha.0.0.20260521082736-bcf74421eaf2 // indirect
+	github.com/ory/keto/proto v0.13.0-alpha.0.0.20260609063042-5da3a68a58d9 // indirect
 	github.com/ory/kratos-client-go v1.3.9-0.20251107123727-a6ddbd382e38 // indirect
 	github.com/ory/mail/v3 v3.0.1-0.20260416102637-e762925f059d // indirect
 	github.com/ory/nosurf v1.2.7 // indirect
@@ -279,12 +277,12 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.51.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
 	golang.org/x/mod v0.36.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260508192327-42602be52be6 // indirect
 	golang.org/x/tools v0.45.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260519071638-aa98bba5eb94 // indirect

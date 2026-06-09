@@ -13,10 +13,11 @@ import (
 	"github.com/ory/x/flagx"
 )
 
-var send = &cobra.Command{
-	Use:  "send <list-id>",
-	Args: cobra.ExactArgs(1),
-	Long: `Send a drafted campaign.
+func newSendCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use:  "send <list-id>",
+		Args: cobra.ExactArgs(1),
+		Long: `Send a drafted campaign.
 
 Example:
 
@@ -26,15 +27,12 @@ Example:
 		CIRCLE_PROJECT_REPONAME=... \ # This is set automatically in CircleCI Jobs
 		release campaign send 12345
 `,
-	Run: func(cmd *cobra.Command, args []string) {
-		SendCampaign(args[0], flagx.MustGetBool(cmd, "dry"))
-	},
-}
-
-func init() {
-	Main.AddCommand(send)
-
-	send.Flags().Bool("dry", false, "Do not actually send the campaign")
+		Run: func(cmd *cobra.Command, args []string) {
+			SendCampaign(args[0], flagx.MustGetBool(cmd, "dry"))
+		},
+	}
+	c.Flags().Bool("dry", false, "Do not actually send the campaign")
+	return c
 }
 
 func SendCampaign(listID string, dry bool) {

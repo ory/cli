@@ -5,7 +5,11 @@ package headers
 
 import "github.com/spf13/cobra"
 
-var Main = &cobra.Command{
-	Use:   "headers",
-	Short: "Adds language-specific headers to files",
+func NewCommand() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "headers",
+		Short: "Adds language-specific headers to files",
+	}
+	c.AddCommand(newCopyrightCmd(), newCpCmd())
+	return c
 }

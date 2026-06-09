@@ -116,28 +116,26 @@ func (c *Component) getRenderedURL(osString string, archString string) (string, 
 	return buf.String(), nil
 }
 
-var url = &cobra.Command{
-	Use:   "url",
-	Short: "Returns the download url based on the provided config file.",
-	Long:  `Returns the download url based on the provided config file. This is used to simplify our Makefile logic when downloading binary dependencies. As the values used for os and arch as well as the structure of the download url for different binary tools are not standardized it makes it quite cumbersome to handle this efficiently in Makefiles.`,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		component := Component{}
-		var pConfig = flagx.MustGetString(cmd, "config")
-		err := component.getComponentFromConfig(pConfig)
-		if err != nil {
-			return err
-		}
-		var pOS = flagx.MustGetString(cmd, "os")
-		var pArch = flagx.MustGetString(cmd, "architecture")
-		url, err := component.getRenderedURL(pOS, pArch)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintln(os.Stdout, url)
-		return nil
-	},
-}
-
-func init() {
-	Main.AddCommand(url)
+func newURLCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "url",
+		Short: "Returns the download url based on the provided config file.",
+		Long:  `Returns the download url based on the provided config file. This is used to simplify our Makefile logic when downloading binary dependencies. As the values used for os and arch as well as the structure of the download url for different binary tools are not standardized it makes it quite cumbersome to handle this efficiently in Makefiles.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			component := Component{}
+			var pConfig = flagx.MustGetString(cmd, "config")
+			err := component.getComponentFromConfig(pConfig)
+			if err != nil {
+				return err
+			}
+			var pOS = flagx.MustGetString(cmd, "os")
+			var pArch = flagx.MustGetString(cmd, "architecture")
+			url, err := component.getRenderedURL(pOS, pArch)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(os.Stdout, url)
+			return nil
+		},
+	}
 }

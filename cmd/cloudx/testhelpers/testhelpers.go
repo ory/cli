@@ -241,6 +241,12 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 	page := NewPage(t, browser)
 
 	return browser, page, func() {
+		// Drain any in-flight Route handlers (registered in NewPage) before closing
+		// the page; otherwise page.Close() can race the handler goroutine inside
+		// playwright-go.
+		t.Logf("unroute error: %+v", page.Context().UnrouteAll(playwright.BrowserContextUnrouteAllOptions{
+			Behavior: playwright.UnrouteBehaviorWait,
+		}))
 		t.Logf("page close error: %+v", page.Close())
 		t.Logf("browser close error: %+v", browser.Close())
 		t.Logf("playwright stop error: %+v", pw.Stop())

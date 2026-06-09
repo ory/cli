@@ -17,10 +17,11 @@ import (
 	"github.com/ory/x/flagx"
 )
 
-var migrateCmd = &cobra.Command{
-	Use:   "migrate [path/to/swagger2.json] [path/to/output.json]",
-	Short: "Migrates Swagger 2.0 to OpenAPI 3.0",
-	Long: `Migrates Swagger 2.0 to OpenAPI 3.0. Prints the OpenAPI 3.0 spec to std out.
+func newMigrateCmd() *cobra.Command {
+	c := &cobra.Command{
+		Use:   "migrate [path/to/swagger2.json] [path/to/output.json]",
+		Short: "Migrates Swagger 2.0 to OpenAPI 3.0",
+		Long: `Migrates Swagger 2.0 to OpenAPI 3.0. Prints the OpenAPI 3.0 spec to std out.
 
 This command can also apply a JSON Patch (https://tools.ietf.org/html/rfc7396) to the OpenAPI 3.0 output using
 the --patch flag. The path can be a file:// or https:// path.
@@ -53,53 +54,57 @@ Example:
 		version: >-
 		  {{ .Version }}
 `,
-	Args: cobra.ExactArgs(2),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var oas2 openapi2.T
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var oas2 openapi2.T
 
-		in, err := os.ReadFile(args[0])
-		if err != nil {
-			return errors.WithStack(err)
-		}
+			in, err := os.ReadFile(args[0])
+			if err != nil {
+				return errors.WithStack(err)
+			}
 
-		if err := json.Unmarshal(in, &oas2); err != nil {
-			return errors.WithStack(err)
-		}
+			if err := json.Unmarshal(in, &oas2); err != nil {
+				return errors.WithStack(err)
+			}
 
-		oas3, err := openapi2conv.ToV3(&oas2)
-		if err != nil {
-			return errors.WithStack(err)
-		}
+			oas3, err := openapi2conv.ToV3(&oas2)
+			if err != nil {
+				return errors.WithStack(err)
+			}
 
-		result, err := json.MarshalIndent(oas3, "", "  ")
-		if err != nil {
-			return errors.WithStack(err)
-		}
+			result, err := json.MarshalIndent(oas3, "", "  ")
+			if err != nil {
+				return errors.WithStack(err)
+			}
 
-		patches := flagx.MustGetStringSlice(cmd, "patches")
-		if len(patches) == 0 {
+			patches := flagx.MustGetStringSlice(cmd, "patches")
+			if len(patches) == 0 {
+				return renderFile(args[1], result)
+			}
+
+			for _, path := range patches {
+				content, err := pkg.RenderOASPatch(cmd, path)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				patch, err := jsonpatch.DecodePatch(content)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+
+				result, err = patch.Apply(result)
+				if err != nil {
+					return errors.WithStack(err)
+				}
+			}
+
 			return renderFile(args[1], result)
-		}
-
-		for _, path := range patches {
-			content, err := pkg.RenderOASPatch(cmd, path)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			patch, err := jsonpatch.DecodePatch(content)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-
-			result, err = patch.Apply(result)
-			if err != nil {
-				return errors.WithStack(err)
-			}
-		}
-
-		return renderFile(args[1], result)
-	},
+		},
+	}
+	c.Flags().StringSliceP("patches", "p", []string{}, "JSON Patch file(s) to apply to the final OpenAPI v3.0 spec.")
+	c.Flags().StringSlice("health-path-tags", []string{"admin"}, "Which tags to set for the /health/* and /version endpoints.")
+	return c
 }
 
 func renderFile(path string, content []byte) error {
@@ -109,9 +114,4 @@ func renderFile(path string, content []byte) error {
 	}
 
 	return errors.WithStack(os.WriteFile(path, indented, 0644))
-}
-
-func init() {
-	migrateCmd.Flags().StringSliceP("patches", "p", []string{}, "JSON Patch file(s) to apply to the final OpenAPI v3.0 spec.")
-	migrateCmd.Flags().StringSlice("health-path-tags", []string{"admin"}, "Which tags to set for the /health/* and /version endpoints.")
 }

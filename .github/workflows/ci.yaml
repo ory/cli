@@ -31,7 +31,7 @@ jobs:
           go run github.com/playwright-community/playwright-go/cmd/playwright
           install chromium --with-deps
       - run: make lint
-      - run: go test ./...
+      - run: go test -race ./...
         env:
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}
           ORY_CONSOLE_URL: https://console.staging.ory.dev

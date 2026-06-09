@@ -23,11 +23,13 @@ import (
 	"github.com/ory/x/jsonschemax"
 )
 
-var RenderVersion = &cobra.Command{
-	Use:   "render-version <project-name> <new-version> <schema-path>",
-	Args:  cobra.ExactArgs(3),
-	Short: "Renders the version schema for <project-name> and <new-version> in the current directory. The `$ref` is pointing to the <schema-path> relative to the repo root.",
-	Run:   addVersionToSchema,
+func newRenderVersionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "render-version <project-name> <new-version> <schema-path>",
+		Args:  cobra.ExactArgs(3),
+		Short: "Renders the version schema for <project-name> and <new-version> in the current directory. The `$ref` is pointing to the <schema-path> relative to the repo root.",
+		Run:   addVersionToSchema,
+	}
 }
 
 var preReleaseVersion = regexp.MustCompile(`.*[-.]pre\.`)
