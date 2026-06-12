@@ -35,7 +35,7 @@ specified in the patch will be overwritten. To replace the config use the ` + "`
 
 The format of the patch is a JSON-Patch document. For more details please check:
 
-	https://www.ory.sh/docs/reference/api#operation/patchProject
+	https://www.ory.com/docs/reference/api#operation/patchProject
 	https://jsonpatch.com`,
 		RunE: runPatch(
 			func(s []string) []string {

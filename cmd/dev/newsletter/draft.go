@@ -164,7 +164,7 @@ func Draft(listID string, segmentID int, tagMessageRaw, changelogRaw []byte, dry
 			Title:        campaignID(),
 			SubjectLine:  fmt.Sprintf("%s %s has been released!", projectName, tag),
 			FromName:     "Ory",
-			ReplyTo:      "office@ory.sh",
+			ReplyTo:      "office@ory.com",
 			Authenticate: true,
 			FbComments:   false,
 			TemplateId:   chimpTemplate.ID,

@@ -37,7 +37,7 @@ refresh:
 # Formats the code
 .PHONY: format
 format: .bin/cli node_modules go.mod
-	.bin/cli dev headers copyright --type=open-source
+	.bin/cli dev headers copyright --type=open-source --exclude=.snapshots
 	go tool goimports -w -local github.com/ory .
 	npm exec -- prettier --write "{**/,}*{.js,.md,.ts}"
 

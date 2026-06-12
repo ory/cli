@@ -28,10 +28,10 @@ var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
 
 func CloudConsoleURL(prefix string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
-	consoleURL, err := url.ParseRequestURI(cmp.Or(os.Getenv(ConsoleURLKey), "https://console.ory.sh"))
+	consoleURL, err := url.ParseRequestURI(cmp.Or(os.Getenv(ConsoleURLKey), "https://console.ory.com"))
 	if err != nil {
 		fmt.Printf("error parsing console url: %s\n", err)
-		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.sh"}
+		consoleURL = &url.URL{Scheme: "https", Host: "console.ory.com"}
 	}
 	if prefix != "" {
 		consoleURL.Host = prefix + "." + consoleURL.Host

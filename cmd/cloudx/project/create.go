@@ -65,7 +65,7 @@ func NewCreateProjectCmd() *cobra.Command {
 				if err != nil {
 					return cmdx.PrintOpenAPIError(cmd, err)
 				}
-				wsID = new(ws.Id)
+				wsID = &ws.Id
 			}
 
 			for name == "" {

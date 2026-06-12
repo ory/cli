@@ -60,7 +60,7 @@ If the ` + "`--name`" + ` flag is not set, the project's name will not be change
 
 The full configuration payload can be found at
 
-	https://www.ory.sh/docs/reference/api#operation/updateProject
+	https://www.ory.com/docs/reference/api#operation/updateProject
 
 As an example an input could look like:
 
