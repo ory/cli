@@ -10,11 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ory/x/snapshotx"
-
-	"github.com/stretchr/testify/require"
-
+	"github.com/bradleyjkemp/cupaloy/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRenderMarkdown(t *testing.T) {
@@ -57,6 +55,6 @@ func TestRenderMarkdownLong(t *testing.T) {
 		BrandColor:  "#5528FF",
 	}))
 
-	require.NoError(t, os.WriteFile("stub/changelog.html.tmp", body.Bytes(), 0644))
-	snapshotx.SnapshotT(t, body.String())
+	snapshot := cupaloy.New(cupaloy.SnapshotSubdirectory(".snapshots"), cupaloy.SnapshotFileExtension(".html"))
+	snapshot.SnapshotT(t, body.String())
 }

@@ -52,7 +52,7 @@ when compared to the ` + "`patch project`" + ` command:
 
 The format of the patch is a JSON-Patch document. For more details please check:
 
-	https://www.ory.sh/docs/reference/api#operation/patchProject
+	https://www.ory.com/docs/reference/api#operation/patchProject
 	https://jsonpatch.com`,
 		RunE: runPatch(
 			prefixPermissionConfig,

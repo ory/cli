@@ -240,7 +240,7 @@ Please be also aware that this patch includes SQL migrations which **purge exist
 The configuration value for `hashers.argon2.memory` is now a string representation of the memory amount including the unit of measurement. To convert the value divide your current setting (KB) by 1024 to get a result in MB or 1048576 to get a result in GB. Example: `131072` would now become `128MB`.
 
 Co-authored-by: aeneasr <3372410+aeneasr@users.noreply.github.com>
-Co-authored-by: aeneasr <aeneas@ory.sh>
+Co-authored-by: aeneasr <aeneas@ory.com>
 Please run SQL migrations when applying this patch.
 The following configuration keys were updated:
 
@@ -549,7 +549,7 @@ Please be aware that ORY Kratos might complain about an invalid configuration, b
 * Global docs sidebar ([#1258](https://github.com/ory/kratos/issues/1258)) ([7108262](https://github.com/ory/kratos/commit/71082624e093b8c100e71ae59050f89b35ac20a2))
 * Implement and test domain aliasing ([1516a54](https://github.com/ory/kratos/commit/1516a54657df485627251de4e7019bc16353c956)):
 
-    This patch adds a feature called domain aliasing. For more information, head over to http://ory.sh/docs/kratos/next/guides/multi-domain-cookies
+    This patch adds a feature called domain aliasing. For more information, head over to https://www.ory.com/docs/kratos/guides/multi-domain-cookies
 
 * Improve oas spec and fix mobile tests ([4ead2c8](https://github.com/ory/kratos/commit/4ead2c826a2f1a307e327b9736dd8ac99ef52743))
 * Improve sorting of ui fields ([797b49d](https://github.com/ory/kratos/commit/797b49d0175280f85f568014cf3083e9bc42d354)):
@@ -583,7 +583,7 @@ Please be aware that ORY Kratos might complain about an invalid configuration, b
 
     This feature adds the ability to define web-hooks using a mixture of configuration and JsonNet. This allows integration with services like Mailchimp, Stripe, CRMs, and all other APIs that support REST requests. Additional to these new changes it is now possible to define hooks for verification and recovery as well!
 
-    For more information, head over to the [hooks documentation](https://www.ory.sh/kratos/docs/self-service/hooks).
+    For more information, head over to the [hooks documentation](https://www.ory.com/kratos/docs/self-service/hooks).
 
 * **courier:** Allow sending individual messages ([cbb2c0b](https://github.com/ory/kratos/commit/cbb2c0bef63323a177589e9d2a809c84b4f1acdd))
 * **oidc:** Support google hd claim ([#1097](https://github.com/ory/kratos/issues/1097)) ([1f20a5c](https://github.com/ory/kratos/commit/1f20a5ceba7682719112d24a3b18bf046fb2ac22))
@@ -825,5 +825,3 @@ Please be aware that ORY Kratos might complain about an invalid configuration, b
 * Add tests for csrf behavior ([48993e2](https://github.com/ory/kratos/commit/48993e2c496fb8af7e7b9e2752ba7078a134a75a)), closes [#785](https://github.com/ory/kratos/issues/785)
 * Mark link as enabled in e2e test ([c214b81](https://github.com/ory/kratos/commit/c214b81a7026b06aaca062b2aa77951d01b0e237))
 * Resolve schema test regression ([bb7af1b](https://github.com/ory/kratos/commit/bb7af1b759d6c812755956ef872bcbd31b9c50be))
-
-

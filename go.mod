@@ -7,6 +7,7 @@ replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
+	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/evanphx/json-patch v5.9.0+incompatible
 	github.com/getkin/kin-openapi v0.131.0
 	github.com/ghodss/yaml v1.0.0
@@ -58,7 +59,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/boombuler/barcode v1.1.0 // indirect
-	github.com/bradleyjkemp/cupaloy/v2 v2.8.0 // indirect
 	github.com/bwmarrin/discordgo v0.29.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect

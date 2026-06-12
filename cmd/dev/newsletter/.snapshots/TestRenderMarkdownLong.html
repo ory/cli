@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 
 <html lang='en'>
@@ -9,6 +12,14 @@
   <style type="text/css">
     #outlook a {
       padding: 0;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 8px;
+    }
+    code {
+      background-color: #f5f5f5;
+      padding: 2px 4px;
     }
     body {
       margin: 0;
@@ -56,8 +67,8 @@
         max-width: 3.389830508474576%;
       }
       .xc600 {
-        width: 600px !important;
-        max-width: 600px;
+        width: 1200px !important;
+        max-width: 1200px;
       }
       .xc32 {
         width: 32px !important;
@@ -68,8 +79,8 @@
         max-width: 16px;
       }
       .xc440 {
-        width: 440px !important;
-        max-width: 440px;
+         
+         
       }
     }
   </style>
@@ -87,8 +98,8 @@
       max-width: 3.389830508474576%;
     }
     .moz-text-html .xc600 {
-      width: 600px !important;
-      max-width: 600px;
+      width: 1200px !important;
+      max-width: 1200px;
     }
     .moz-text-html .xc32 {
       width: 32px !important;
@@ -99,8 +110,8 @@
       max-width: 16px;
     }
     .moz-text-html .xc440 {
-      width: 440px !important;
-      max-width: 440px;
+       
+       
     }
   </style>
   <style type="text/css">
@@ -245,7 +256,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
       background-color: #fffffe;
       margin: 0px auto;
       border-radius: 0;
-      max-width: 600px;
+      max-width: 1200px;
     "
   >
     <table
@@ -329,7 +340,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
                             <tr>
                               <td style="width: 80px">
                                 <a
-                                  href="https://www.ory.sh/"
+                                  href="https://www.ory.com/"
                                   target="_blank"
                                 >
                                   <img
@@ -468,7 +479,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
       background-color: #fcfcfc;
       margin: 0px auto;
       border-radius: 0;
-      max-width: 600px;
+      max-width: 1200px;
     "
   >
     <table
@@ -663,7 +674,7 @@ style="word-spacing: normal; background-color: #e5e5e5"
                             "
                             >Ory Kratos v0.1.0</span
                           >   <br>     <span style="font-size: 16px; font-weight: 400;">is here!</span><br>
-                          <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.sh/ory/kratos" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/ory/kratos" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/CHANGELOG.md" target="_blank">Changelog</a>&nbsp;|&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/UPGRADE.md" target="_blank">Upgrade Guide</a><br></span>
+                          <span style="font-size: 16px; font-weight: 400;"><a href="https://www.ory.com/ory/kratos" target="_blank">Website</a>&nbsp;| <a href="https://github.com/ory/ory/kratos" target="_blank">GitHub</a> |&nbsp;<a href="https://github.com/ory/ory/kratos/blob/master/CHANGELOG.md" target="_blank">Changelog</a><br></span>
 
                         </p>
                       </div>
@@ -1094,7 +1105,7 @@ This change introduces a new feature: UI Nodes. Previously, all self-service flo
 The configuration value for <code>hashers.argon2.memory</code> is now a string representation of the memory amount including the unit of measurement. To convert the value divide your current setting (KB) by 1024 to get a result in MB or 1048576 to get a result in GB. Example: <code>131072</code> would now become <code>128MB</code>.</p>
 
 <p>Co-authored-by: aeneasr <a href="mailto:3372410+aeneasr@users.noreply.github.com" target="_blank">3372410+aeneasr@users.noreply.github.com</a>
-Co-authored-by: aeneasr <a href="mailto:aeneas@ory.sh" target="_blank">aeneas@ory.sh</a>
+Co-authored-by: aeneasr <a href="mailto:aeneas@ory.com" target="_blank">aeneas@ory.com</a>
 Please run SQL migrations when applying this patch.
 The following configuration keys were updated:</p>
 
@@ -1595,7 +1606,7 @@ to run docker image as root).</p></li>
 
 <li><p>Implement and test domain aliasing (<a href="https://github.com/ory/kratos/commit/1516a54657df485627251de4e7019bc16353c956" target="_blank">1516a54</a>):</p>
 
-<p>This patch adds a feature called domain aliasing. For more information, head over to <a href="http://ory.sh/docs/kratos/next/guides/multi-domain-cookies" target="_blank">http://ory.sh/docs/kratos/next/guides/multi-domain-cookies</a></p></li>
+<p>This patch adds a feature called domain aliasing. For more information, head over to <a href="https://www.ory.com/docs/kratos/guides/multi-domain-cookies" target="_blank">https://www.ory.com/docs/kratos/guides/multi-domain-cookies</a></p></li>
 
 <li><p>Improve oas spec and fix mobile tests (<a href="https://github.com/ory/kratos/commit/4ead2c826a2f1a307e327b9736dd8ac99ef52743" target="_blank">4ead2c8</a>)</p></li>
 
@@ -1642,7 +1653,7 @@ to run docker image as root).</p></li>
 
 <p>This feature adds the ability to define web-hooks using a mixture of configuration and JsonNet. This allows integration with services like Mailchimp, Stripe, CRMs, and all other APIs that support REST requests. Additional to these new changes it is now possible to define hooks for verification and recovery as well!</p>
 
-<p>For more information, head over to the <a href="https://www.ory.sh/kratos/docs/self-service/hooks" target="_blank">hooks documentation</a>.</p></li>
+<p>For more information, head over to the <a href="https://www.ory.com/kratos/docs/self-service/hooks" target="_blank">hooks documentation</a>.</p></li>
 
 <li><p><strong>courier:</strong> Allow sending individual messages (<a href="https://github.com/ory/kratos/commit/cbb2c0bef63323a177589e9d2a809c84b4f1acdd" target="_blank">cbb2c0b</a>)</p></li>
 
@@ -1831,7 +1842,6 @@ Decreasing iterations to get under 500ms:
     took 488.784192ms in try 1
   took 486.534204ms with 3 iterations
 Settled on 3 iterations.
-
 
 {
   &quot;memory&quot;: 1048576,
@@ -2189,7 +2199,7 @@ Settled on 3 iterations.
       background-color: #eeeeee;
       margin: 0px auto;
       border-radius: 0;
-      max-width: 600px;
+      max-width: 1200px;
     "
   >
     <table
@@ -2631,7 +2641,7 @@ Settled on 3 iterations.
       background-color: #171717;
       margin: 0px auto;
       border-radius: 0;
-      max-width: 600px;
+      max-width: 1200px;
     "
   >
     <table
@@ -2717,7 +2727,7 @@ Settled on 3 iterations.
                             <tr>
                               <td style="width: 80px">
                                 <a
-                                  href="https://www.ory.sh/"
+                                  href="https://www.ory.com/"
                                   target="_blank"
                                 >
                                   <img
@@ -2774,12 +2784,12 @@ Settled on 3 iterations.
                           "
                               >Copyright © *|CURRENT_YEAR|* *|LIST:COMPANY|*, All rights reserved.<br>*|IFNOT:ARCHIVE_PAGE|* *|LIST:DESCRIPTION|*<br>
                             <br>
-                            You subscribed to this newsletter on <a href="https://www.ory.sh/" target="_blank">www.ory.sh</a>.<br>
+                            You subscribed to this newsletter on <a href="https://www.ory.com/" target="_blank">www.ory.com</a>.<br>
                             <br>
                             Want to change how you receive these emails?<br>
                             You can <a href="*|UPDATE_PROFILE|*">update your preferences</a> or <a href="*|UNSUB|*">unsubscribe from this list</a>.*|END:IF|*<br>
                             <br>*|IF:REWARDS|* *|HTML:REWARDS|* *|END:IF|*</span
-                            > 
+                            >
                           </p>
                           </p>
                           <p style="margin: 0">
@@ -2916,7 +2926,7 @@ Settled on 3 iterations.
                                         "
                                       >
                                         <a
-                                          href="https://slack.ory.sh/"
+                                          href="https://slack.ory.com/"
                                           target="_blank"
                                         >
                                           <img
@@ -3114,3 +3124,4 @@ Settled on 3 iterations.
 </div>
 </body>
 </html>
+
