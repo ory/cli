@@ -92,5 +92,5 @@ func registerStreamConfigFlags(f *pflag.FlagSet, c *streamConfig) {
 	c.RoleArn = f.String("aws-iam-role-arn", "", "The ARN of the AWS IAM role to assume when publishing messages to the SNS topic.")
 	c.TopicArn = f.String("aws-sns-topic-arn", "", "The ARN of the AWS SNS topic.")
 	c.HttpsEndpoint = f.String("https-endpoint", "", "The URL of the HTTPS endpoint.")
-	c.Status = f.String("status", "", fmt.Sprintf("The status of the event stream. Supported values are %q and %q. Defaults to %q.", StatusActive, StatusPaused, StatusActive))
+	c.Status = f.String("status", "", fmt.Sprintf("The status of the event stream, either %q or %q. When unset, a new stream defaults to %q and an existing stream keeps its current status.", StatusActive, StatusPaused, StatusActive))
 }
