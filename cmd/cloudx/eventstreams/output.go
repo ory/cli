@@ -15,13 +15,14 @@ type (
 )
 
 func (output) Header() []string {
-	return []string{"ID", "TYPE", "IAM_ROLE_ARN", "SNS_TOPIC_ARN", "HTTPS_ENDPOINT"}
+	return []string{"ID", "TYPE", "STATUS", "IAM_ROLE_ARN", "SNS_TOPIC_ARN", "HTTPS_ENDPOINT"}
 }
 
 func (o output) Columns() []string {
 	return []string{
 		coalesce(o.Id),
 		coalesce(o.Type),
+		coalesce(o.Status),
 		coalesce(o.RoleArn),
 		coalesce(o.TopicArn),
 		coalesce(o.HttpsEndpoint.Get()),
