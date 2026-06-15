@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
-	cloud "github.com/ory/client-go"
 
 	"github.com/ory/x/cmdx"
 )
@@ -37,7 +36,7 @@ func NewUpdateEventStreamCmd() *cobra.Command {
 			if err := c.Validate(); err != nil {
 				return err
 			}
-			stream, err := h.UpdateEventStream(ctx, projectID, streamID, cloud.SetEventStreamBody(c))
+			stream, err := h.UpdateEventStream(ctx, projectID, streamID, c.toSetBody())
 			if err != nil {
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
@@ -49,7 +48,10 @@ func NewUpdateEventStreamCmd() *cobra.Command {
 	}
 
 	client.RegisterProjectFlag(cmd.Flags())
+	client.RegisterWorkspaceFlag(cmd.Flags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
+
+	registerStreamConfigFlags(cmd.Flags(), &c)
 
 	return cmd
 }

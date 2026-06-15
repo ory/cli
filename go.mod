@@ -15,7 +15,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/ory/client-go v1.22.41
+	github.com/ory/client-go v1.22.51
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.2.0
 	github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22

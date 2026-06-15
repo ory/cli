@@ -554,8 +554,8 @@ github.com/openzipkin/zipkin-go v0.4.3/go.mod h1:M9wCJZFWCo2RiY+o1eBCEMe0Dp2S5LD
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
 github.com/ory/analytics-go/v5 v5.0.1 h1:LX8T5B9FN8KZXOtxgN+R3I4THRRVB6+28IKgKBpXmAM=
 github.com/ory/analytics-go/v5 v5.0.1/go.mod h1:lWCiCjAaJkKfgR/BN5DCLMol8BjKS1x+4jxBxff/FF0=
-github.com/ory/client-go v1.22.41 h1:AywohwpZUMDVwnPaAoeZWseapSEF58GgPn1RPUvTaqQ=
-github.com/ory/client-go v1.22.41/go.mod h1:G1f+5+m/PJVvl40bsRn0QuyVIcXe7EHiWeM7iWpIDjw=
+github.com/ory/client-go v1.22.51 h1:T5tmhDvomkPTZeHQgfDcqjRnSvV1wkkG2xYQ/r6TQdk=
+github.com/ory/client-go v1.22.51/go.mod h1:G1f+5+m/PJVvl40bsRn0QuyVIcXe7EHiWeM7iWpIDjw=
 github.com/ory/dockertest/v4 v4.0.0 h1:i19aFsO/VXE0VrMk4ifnKW4G/KIJ93PCjLOslxXoPME=
 github.com/ory/dockertest/v4 v4.0.0/go.mod h1:b5Ofu8VIxWNhXFvQcLu17pRNQdoUBKtXBW74G4Ygzx8=
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe h1:rvu4obdvqR0fkSIJ8IfgzKOWwZ5kOT2UNfLq81Qk7rc=
