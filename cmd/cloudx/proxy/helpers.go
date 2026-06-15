@@ -53,7 +53,12 @@ const (
 	CORSFlag                  = "allowed-cors-origins"
 	AdditionalCORSHeadersFlag = "additional-cors-headers"
 	RewriteHostFlag           = "rewrite-host"
+	APIKeyExpiryFlag          = "api-key-expiry"
 )
+
+// defaultAPIKeyExpiry is the default lifetime of the temporary API key the
+// proxy and tunnel create to configure the project.
+const defaultAPIKeyExpiry = 12 * time.Hour
 
 type config struct {
 	port                  int
@@ -69,6 +74,11 @@ type config struct {
 	isDev                 bool
 	corsOrigins           []string
 	additionalCorsHeaders []string
+
+	// apiKeyExpiry is the lifetime of the temporary API key the proxy/tunnel
+	// creates. The key is deleted on shutdown; the expiry ensures it is removed
+	// automatically should that cleanup fail. A value of zero disables expiry.
+	apiKeyExpiry time.Duration
 
 	// rewriteHost means the host header will be rewritten to the upstream host.
 	// This is useful in cases where upstream resolves requests based on Host.
@@ -89,6 +99,7 @@ func registerConfigFlags(conf *config, flags *pflag.FlagSet) {
 	flags.BoolVar(&conf.isDev, DevFlag, true, "This flag is deprecated as the command is only supposed to be used during development.")
 	flags.BoolVar(&conf.isDebug, DebugFlag, false, "Use this flag to debug, for example, CORS requests.")
 	flags.BoolVar(&conf.rewriteHost, RewriteHostFlag, false, "Use this flag to rewrite the host header to the upstream host.")
+	flags.DurationVar(&conf.apiKeyExpiry, APIKeyExpiryFlag, defaultAPIKeyExpiry, "Sets the expiry of the temporary API key the Ory CLI creates to configure your project. The key is deleted on shutdown; this expiry ensures it is removed automatically if that cleanup fails. Set to 0 to disable expiry.")
 }
 
 func portFromEnv() int {
@@ -115,7 +126,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		return err
 	}
 
-	apiKey, removeAPIKey, err := h.TemporaryAPIKey(ctx, fmt.Sprintf("Ory %s temporary API key - %s", name, h.UserName(ctx)))
+	apiKey, removeAPIKey, err := h.TemporaryAPIKey(ctx, fmt.Sprintf("Ory %s temporary API key - %s", name, h.UserName(ctx)), conf.apiKeyExpiry)
 	if err != nil {
 		return err
 	}
