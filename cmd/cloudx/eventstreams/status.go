@@ -37,7 +37,7 @@ func newSetStatusCmd(verb, status, short, long string) *cobra.Command {
 
 			projectID, err := h.ProjectID()
 			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
+				return err
 			}
 			streamID := args[0]
 
