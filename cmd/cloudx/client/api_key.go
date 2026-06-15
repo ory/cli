@@ -15,8 +15,13 @@ import (
 
 // CreateProjectAPIKey creates a project API key. If expiresIn is greater than
 // zero, the key is set to expire that duration from now so it is cleaned up
-// automatically on the server side even if local cleanup fails.
+// automatically on the server side even if local cleanup fails. An expiresIn of
+// zero creates a key without expiry; a negative value is rejected.
 func (h *CommandHelper) CreateProjectAPIKey(ctx context.Context, projectID, name string, expiresIn time.Duration) (*cloud.ProjectApiKey, error) {
+	if expiresIn < 0 {
+		return nil, errors.New("API key expiry must not be negative")
+	}
+
 	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
