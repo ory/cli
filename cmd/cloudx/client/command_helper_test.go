@@ -155,7 +155,7 @@ func TestCommandHelper(t *testing.T) {
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
 
-			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key")
+			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key", 0)
 			require.NoError(t, err)
 
 			pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
@@ -192,7 +192,7 @@ func TestCommandHelper(t *testing.T) {
 			require.Len(t, projects, 2)
 			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
 
-			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key")
+			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key", 0)
 			require.NoError(t, err)
 
 			pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
@@ -310,10 +310,13 @@ func TestCommandHelper(t *testing.T) {
 
 		keyName := "a test key"
 
-		key, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, keyName)
+		key, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, keyName, time.Hour)
 		require.NoError(t, err)
 		assert.Equal(t, keyName, key.Name)
 		assert.NotNil(t, keyName, key.Value)
+		// The requested expiry should be reflected on the returned key.
+		require.NotNil(t, key.ExpiresAt)
+		assert.WithinDuration(t, time.Now().Add(time.Hour), *key.ExpiresAt, 5*time.Minute)
 
 		// check that the key works
 		ctxWithKey := client.ContextWithOptions(ctx,
@@ -333,7 +336,7 @@ func TestCommandHelper(t *testing.T) {
 	t.Run("func=GetProject", func(t *testing.T) {
 		wsKeyH, err := client.NewCommandHelper(ctx, client.WithWorkspaceAPIKey(*defaultWorkspaceAPIKey.Value))
 		require.NoError(t, err)
-		pjKey, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, "test key")
+		pjKey, err := authenticated.CreateProjectAPIKey(ctx, defaultProject.Id, "test key", 0)
 		require.NoError(t, err)
 		pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
 		require.NoError(t, err)

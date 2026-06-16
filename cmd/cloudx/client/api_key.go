@@ -7,18 +7,33 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	cloud "github.com/ory/client-go"
 	"github.com/ory/x/cmdx"
 )
 
-func (h *CommandHelper) CreateProjectAPIKey(ctx context.Context, projectID, name string) (*cloud.ProjectApiKey, error) {
+// CreateProjectAPIKey creates a project API key. If expiresIn is greater than
+// zero, the key is set to expire that duration from now so it is cleaned up
+// automatically on the server side even if local cleanup fails. An expiresIn of
+// zero creates a key without expiry; a negative value is rejected.
+func (h *CommandHelper) CreateProjectAPIKey(ctx context.Context, projectID, name string, expiresIn time.Duration) (*cloud.ProjectApiKey, error) {
+	if expiresIn < 0 {
+		return nil, errors.New("API key expiry must not be negative")
+	}
+
 	c, err := h.newConsoleAPIClient(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	token, res, err := c.ProjectAPI.CreateProjectApiKey(ctx, projectID).CreateProjectApiKeyRequest(cloud.CreateProjectApiKeyRequest{Name: name}).Execute()
+	req := cloud.CreateProjectApiKeyRequest{Name: name}
+	if expiresIn > 0 {
+		expiresAt := time.Now().Add(expiresIn)
+		req.ExpiresAt = &expiresAt
+	}
+
+	token, res, err := c.ProjectAPI.CreateProjectApiKey(ctx, projectID).CreateProjectApiKeyRequest(req).Execute()
 	if err != nil {
 		return nil, handleError("unable to create project API key", res, err)
 	}
@@ -64,7 +79,11 @@ func (h *CommandHelper) DeleteWorkspaceAPIKey(ctx context.Context, workspaceID, 
 	return nil
 }
 
-func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string) (apiKey string, cleanup func() error, err error) {
+// TemporaryAPIKey creates a short-lived project API key that is deleted via the
+// returned cleanup function. The key is additionally set to expire after
+// expiresIn so that it is removed automatically should the cleanup fail. An
+// expiresIn of zero creates a key without expiry.
+func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string, expiresIn time.Duration) (apiKey string, cleanup func() error, err error) {
 	if h.projectAPIKey != nil {
 		return *h.projectAPIKey, noop, nil
 	}
@@ -95,7 +114,7 @@ func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string) (apiKe
 	if err != nil {
 		return "", noop, err
 	}
-	ak, err := h.CreateProjectAPIKey(ctx, projectID, name)
+	ak, err := h.CreateProjectAPIKey(ctx, projectID, name, expiresIn)
 	if err != nil {
 		_, _ = fmt.Fprintf(h.VerboseErrWriter, "Unable to create API key. Do you have the required permissions to use the Ory CLI with project %q? Continuing without API key.", projectID)
 		return "", noop, nil
