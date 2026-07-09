@@ -15,6 +15,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gomarkdown/markdown v0.0.0-20260417124207-7d523f7318df
 	github.com/hashicorp/go-retryablehttp v0.7.8
+	github.com/mxschmitt/playwright-go v0.6100.0
 	github.com/ory/client-go v1.22.51
 	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.2.0
@@ -27,7 +28,6 @@ require (
 	github.com/ory/x v0.0.730-0.20260708100811-e26a5b71beb3
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/pkg/errors v0.9.1
-	github.com/playwright-community/playwright-go v0.4702.0
 	github.com/rs/cors v1.11.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/spf13/cobra v1.10.2
@@ -72,7 +72,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/cristalhq/jwt/v4 v4.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
+	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/dghubble/oauth1 v0.7.3 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.4.0 // indirect
