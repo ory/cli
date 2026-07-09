@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mxschmitt/playwright-go"
 	"github.com/pkg/errors"
-	"github.com/playwright-community/playwright-go"
 
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/randx"

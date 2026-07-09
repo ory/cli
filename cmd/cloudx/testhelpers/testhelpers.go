@@ -18,7 +18,7 @@ import (
 
 	"github.com/ory/cli/cmd"
 
-	"github.com/playwright-community/playwright-go"
+	"github.com/mxschmitt/playwright-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tidwall/gjson"
@@ -29,8 +29,10 @@ import (
 	"github.com/ory/x/randx"
 )
 
-const testProjectPattern = "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-"
-const testAccountPrefix = "dev+orycye2eda2f162daf6142dd"
+const (
+	testProjectPattern = "ory-cy-e2e-da2f162d-af61-42dd-90dc-e3fcfa7c84a0-"
+	testAccountPrefix  = "dev+orycye2eda2f162daf6142dd"
+)
 
 func TestName() string {
 	return testProjectPattern + randx.MustString(16, randx.AlphaLowerNum)
@@ -131,7 +133,7 @@ func MakeRandomIdentity(t testing.TB, email string) string {
   "traits": {
     "username": "`+email+`"
   }
-}`), 0600))
+}`), 0o600))
 	return path
 }
 
@@ -143,7 +145,7 @@ func MakeRandomClient(t testing.TB, name string) string {
   {
     "client_name": "`+name+`"
   }
-]`), 0600))
+]`), 0o600))
 	return path
 }
 

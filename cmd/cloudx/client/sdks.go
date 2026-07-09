@@ -125,6 +125,9 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 		Base:   c.Transport,
 		Source: tokenSource,
 	}
+	if rateLimitHeader != "" {
+		c.Transport = &setHeaderTransport{base: c.Transport, key: "Ory-RateLimit-Action", value: rateLimitHeader}
+	}
 
 	return c, baseURL, nil
 }
