@@ -286,7 +286,10 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 		require.NoError(t, page.Context().Route(func(actual string) bool {
 			return strings.Contains(actual, route)
 		}, func(r playwright.Route) {
-			require.NoError(t, r.Abort())
+			// Best-effort: the page may already be closed during teardown, in
+			// which case Abort returns "target closed" for a request we no
+			// longer care about. Failing the test here races test completion.
+			_ = r.Abort()
 		}))
 	}
 	return page
