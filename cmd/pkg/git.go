@@ -16,6 +16,10 @@ import (
 
 const GitCommitMessagePreviousVersion = "Bumps from"
 
+// stdin is shared across all prompts. Creating a fresh bufio.Reader per prompt
+// discards read-ahead input, which breaks piped stdin and typed-ahead answers.
+var stdin = bufio.NewReader(os.Stdin)
+
 func NewCommand(name string, args ...string) *exec.Cmd {
 	_, _ = fmt.Fprintf(os.Stderr, "$ %s %s\n", name, strings.Join(args, " "))
 	ec := exec.Command(name, args...)
@@ -43,9 +47,8 @@ func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, p
 	Check(NewCommandIn(dir, "git", gitArgs...).Run())
 
 	if annotate {
-		tag := NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String()), "-a")
-		tag.Stdin = os.Stdin
-		Check(tag.Run())
+		message := promptTagMessage(nextVersion)
+		Check(NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String()), "-a", "-m", message).Run())
 	} else {
 		Check(NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String())).Run())
 	}
@@ -64,11 +67,34 @@ func GitClone(repo string) string {
 	return dest
 }
 
+// promptTagMessage reads the annotated tag message from stdin. Opening
+// $EDITOR instead is not safe here: handing the inherited terminal to vim
+// mid-run can leave the terminal in a broken state and subsequent stdin
+// reads fail with EOF.
+func promptTagMessage(version semver.Version) string {
+	fmt.Printf("Enter the tag message for v%s. Finish with an empty line:\n> ", version.String())
+	var lines []string
+	for {
+		line, err := stdin.ReadString('\n')
+		Check(err)
+
+		line = strings.TrimRight(line, "\r\n")
+		if line == "" {
+			if len(lines) > 0 {
+				return strings.Join(lines, "\n")
+			}
+			fmt.Print("The tag message must not be empty.\n> ")
+			continue
+		}
+		lines = append(lines, line)
+		fmt.Print("> ")
+	}
+}
+
 func Confirm(message string, args ...interface{}) {
 	for {
-		reader := bufio.NewReader(os.Stdin)
 		fmt.Printf("%s [y/n] ", fmt.Sprintf(message, args...))
-		answer, err := reader.ReadString('\n')
+		answer, err := stdin.ReadString('\n')
 		Check(err)
 
 		answer = strings.TrimSpace(answer)
