@@ -49,6 +49,11 @@ licenses: .bin/licenses node_modules  # checks open-source licenses
 docker:
 	docker build -f .docker/Dockerfile-build -t oryd/ory:latest-sqlite .
 
+# Dummy target for ory/ci pipeline to run after a release has been made. Needs to exist or release pipeline fails.
+.PHONY: post-release
+post-release:
+	echo "nothing to do"
+
 node_modules: package-lock.json
 	npm ci
 	touch node_modules
