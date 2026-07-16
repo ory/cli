@@ -298,6 +298,15 @@ and configure your SDKs to point to it, for example in JavaScript:
 // upstream application do not need — and must not receive — these headers.
 func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddleware {
 	return func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
+		// Strip any client-supplied Ory-* headers before selectively re-applying
+		// them below. Otherwise a client could spoof these headers: they would be
+		// forwarded unchanged to the developer's upstream app, or — when apiKey is
+		// empty — an attacker-supplied Ory-Base-URL-Rewrite-Token would be passed
+		// through to Ory.
+		r.Out.Header.Del("Ory-No-Custom-Domain-Redirect")
+		r.Out.Header.Del("Ory-Base-URL-Rewrite")
+		r.Out.Header.Del("Ory-Base-URL-Rewrite-Token")
+
 		if r.Out.URL.Host == oryURL.Host {
 			r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
 			r.Out.Host = oryURL.Host

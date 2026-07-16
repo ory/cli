@@ -70,4 +70,41 @@ func TestReqMiddleware(t *testing.T) {
 		assert.Equal(t, "upstream.internal", r.Out.Host)
 		assert.Empty(t, r.Out.Header.Get(headerToken), "API key must not leak to the upstream app")
 	})
+
+	t.Run("case=client-spoofed Ory headers are stripped from upstream-bound requests", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, "localhost:3000")
+		r.Out.Header.Set(headerToken, "ory_apikey_spoofed")
+		r.Out.Header.Set(headerRewrite, "http://evil.example")
+		r.Out.Header.Set(headerNoCustom, "true")
+
+		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, r.Out.Header.Get(headerToken), "spoofed token must not be forwarded to the upstream app")
+		assert.Empty(t, r.Out.Header.Get(headerRewrite), "spoofed header must not be forwarded to the upstream app")
+		assert.Empty(t, r.Out.Header.Get(headerNoCustom), "spoofed header must not be forwarded to the upstream app")
+	})
+
+	t.Run("case=client-spoofed token is stripped from Ory-bound requests when apiKey is empty", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, oryURL.Host)
+		r.Out.Header.Set(headerToken, "ory_apikey_spoofed")
+
+		_, err := reqMiddleware(conf, oryURL, "")(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, r.Out.Header.Get(headerToken), "spoofed token must not be passed through to Ory when apiKey is empty")
+	})
+
+	t.Run("case=real apiKey overwrites a client-spoofed token on Ory-bound requests", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, oryURL.Host)
+		r.Out.Header.Set(headerToken, "ory_apikey_spoofed")
+
+		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, apiKey, r.Out.Header.Get(headerToken), "genuine key must overwrite any spoofed token")
+	})
 }
