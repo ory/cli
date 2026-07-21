@@ -1,27 +1,25 @@
 {
   "name": "@ory/cli",
   "version": "0.0.85",
-  "main": "npm/index.js",
+  "description": "The Ory CLI. Use Ory from your terminal!",
+  "homepage": "https://ory.com/cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ory/cli.git"
+  },
+  "license": "Apache-2.0",
   "bin": {
-    "ory": "bin/ory"
+    "ory": "npm/run.js"
   },
   "files": [
-    "npm/index.js",
-    "bin"
+    "npm/run.js"
   ],
   "scripts": {
-    "install": "binwrap-install",
-    "prepare": "binwrap-prepare",
-    "test": "npm-run-all test:cypress test:binwrap",
+    "test": "npm run test:cypress",
     "test:cypress": "cypress run",
-    "test:binwrap": "binwrap-test",
-    "test:cypress:dev": "cypress open",
-    "prepublishOnly": "npm run test:binwrap"
+    "test:cypress:dev": "cypress open"
   },
   "prettier": "ory-prettier-styles",
-  "dependencies": {
-    "binwrap": "^0.2.3"
-  },
   "devDependencies": {
     "cypress": "^8.7.0",
     "jsonwebtoken": "^9.0.2",

@@ -89,17 +89,14 @@ jobs:
       - release
     steps:
       - uses: ory/ci/checkout@master
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "22"
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
         run: |
-          npm install
-          npm version --no-git-tag-version ${{ github.ref_name }}
-          npm run test:binwrap
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          npm publish --access public
+          node npm/publish.js ${{ github.ref_name }}
 
   newsletter-draft:
     name: Draft newsletter
