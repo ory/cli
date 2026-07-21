@@ -94,9 +94,10 @@ jobs:
           node-version: "22"
       - env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          node npm/publish.js ${{ github.ref_name }}
+          node npm/publish.js "$REF_NAME"
 
   newsletter-draft:
     name: Draft newsletter
