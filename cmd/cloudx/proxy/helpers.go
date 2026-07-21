@@ -194,28 +194,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 				PathPrefix:     "",
 			}, nil
 		},
-		proxy.WithReqMiddleware(func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
-			if r.Out.URL.Host == oryURL.Host {
-				r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
-				r.Out.Host = oryURL.Host
-			} else if conf.rewriteHost {
-				r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
-				r.Out.Host = c.UpstreamHost
-			}
-
-			publicURL := conf.publicURL
-			if conf.pathPrefix != "" {
-				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
-			}
-
-			r.Out.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
-			r.Out.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
-			if len(apiKey) > 0 {
-				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
-			}
-
-			return body, nil
-		}),
+		proxy.WithReqMiddleware(reqMiddleware(conf, oryURL, apiKey)),
 		proxy.WithRespMiddleware(func(resp *http.Response, config *proxy.HostConfig, body []byte) ([]byte, error) {
 			l, err := resp.Location()
 			if err == nil {
@@ -311,6 +290,44 @@ and configure your SDKs to point to it, for example in JavaScript:
 	}
 
 	return nil
+}
+
+// reqMiddleware returns the request middleware used by the reverse proxy. The
+// Ory-* headers (including the temporary API key in Ory-Base-URL-Rewrite-Token)
+// are only attached to Ory-bound requests. Requests forwarded to the developer's
+// upstream application do not need — and must not receive — these headers.
+func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddleware {
+	return func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
+		// Strip any client-supplied Ory-* headers before selectively re-applying
+		// them below. Otherwise a client could spoof these headers: they would be
+		// forwarded unchanged to the developer's upstream app, or — when apiKey is
+		// empty — an attacker-supplied Ory-Base-URL-Rewrite-Token would be passed
+		// through to Ory.
+		r.Out.Header.Del("Ory-No-Custom-Domain-Redirect")
+		r.Out.Header.Del("Ory-Base-URL-Rewrite")
+		r.Out.Header.Del("Ory-Base-URL-Rewrite-Token")
+
+		if r.Out.URL.Host == oryURL.Host {
+			r.Out.URL.Path = strings.TrimPrefix(r.Out.URL.Path, conf.pathPrefix)
+			r.Out.Host = oryURL.Host
+
+			publicURL := conf.publicURL
+			if conf.pathPrefix != "" {
+				publicURL = urlx.AppendPaths(publicURL, conf.pathPrefix)
+			}
+
+			r.Out.Header.Set("Ory-No-Custom-Domain-Redirect", "true")
+			r.Out.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
+			if len(apiKey) > 0 {
+				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+			}
+		} else if conf.rewriteHost {
+			r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
+			r.Out.Host = c.UpstreamHost
+		}
+
+		return body, nil
+	}
 }
 
 func newJWTSigner() (jose.Signer, *jose.JSONWebKeySet, error) {
