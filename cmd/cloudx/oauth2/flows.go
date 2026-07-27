@@ -16,3 +16,7 @@ func NewPerformAuthorizationCode() *cobra.Command {
 func NewPerformClientCredentials() *cobra.Command {
 	return wrapHydraCmd(hydra.NewPerformClientCredentialsCmd)
 }
+
+func NewPerformDeviceCode() *cobra.Command {
+	return wrapHydraCmd(hydra.NewPerformDeviceCodeCmd)
+}

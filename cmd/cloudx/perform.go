@@ -21,6 +21,7 @@ func NewPerformCmd() *cobra.Command {
 	cmd.AddCommand(
 		oauth2.NewPerformAuthorizationCode(),
 		oauth2.NewPerformClientCredentials(),
+		oauth2.NewPerformDeviceCode(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
