@@ -9,7 +9,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/evanphx/json-patch v5.9.0+incompatible
-	github.com/getkin/kin-openapi v0.131.0
+	github.com/getkin/kin-openapi v0.144.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -147,7 +147,6 @@ require (
 	github.com/jaegertracing/jaeger-idl v0.9.0 // indirect
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
 	github.com/knadh/koanf/parsers/json v1.0.0 // indirect
@@ -164,7 +163,6 @@ require (
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lib/pq v1.12.3 // indirect
 	github.com/magiconair/properties v1.8.9 // indirect
-	github.com/mailru/easyjson v0.9.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/goveralls v0.0.12 // indirect
@@ -181,8 +179,8 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/nyaruka/phonenumbers v1.7.4 // indirect
-	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
-	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
+	github.com/oasdiff/yaml v0.1.1 // indirect
+	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/oklog/ulid/v2 v2.1.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
@@ -199,7 +197,6 @@ require (
 	github.com/pborman/uuid v1.2.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/peterhellberg/link v1.2.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pkg/profile v1.7.0 // indirect
@@ -214,6 +211,7 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/samber/lo v1.53.0 // indirect
+	github.com/santhosh-tekuri/jsonschema/v6 v6.0.2 // indirect
 	github.com/sawadashota/encrypta v0.0.5 // indirect
 	github.com/seatgeek/logrus-gelf-formatter v0.0.0-20210414080842-5b05eb8ff761 // indirect
 	github.com/segmentio/backo-go v1.1.0 // indirect
@@ -236,7 +234,6 @@ require (
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/toqueteos/webbrowser v1.2.0 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
-	github.com/ugorji/go v1.1.4 // indirect
 	github.com/wI2L/jsondiff v0.7.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
