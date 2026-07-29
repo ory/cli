@@ -4,16 +4,127 @@
 package proxy
 
 import (
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
 	"testing"
 
+	"github.com/rs/cors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/ory/x/cmdx"
+	"github.com/ory/x/corsx"
 	"github.com/ory/x/proxy"
 )
+
+func TestRespMiddleware(t *testing.T) {
+	const (
+		headerAllowOrigin      = "Access-Control-Allow-Origin"
+		headerAllowCredentials = "Access-Control-Allow-Credentials"
+		headerExposeHeaders    = "Access-Control-Expose-Headers"
+	)
+
+	newResponse := func(header http.Header) *http.Response {
+		return &http.Response{StatusCode: http.StatusOK, Header: header}
+	}
+
+	t.Run("case=strips CORS headers the proxy sets itself", func(t *testing.T) {
+		resp := newResponse(http.Header{
+			headerAllowOrigin:      []string{"http://localhost:3000"},
+			headerAllowCredentials: []string{"true"},
+		})
+
+		_, err := respMiddleware(&config{})(resp, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, resp.Header.Values(headerAllowOrigin))
+		assert.Empty(t, resp.Header.Values(headerAllowCredentials))
+	})
+
+	t.Run("case=keeps Access-Control-Expose-Headers from the upstream", func(t *testing.T) {
+		resp := newResponse(http.Header{headerExposeHeaders: []string{"X-Custom"}})
+
+		_, err := respMiddleware(&config{})(resp, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, []string{"X-Custom"}, resp.Header.Values(headerExposeHeaders),
+			"browsers merge duplicates of this header, so stripping it would only lose information")
+	})
+
+	t.Run("case=rewrites the welcome page redirect", func(t *testing.T) {
+		conf := &config{pathPrefix: "/.ory", defaultRedirectTo: cmdx.URL{URL: url.URL{Scheme: "http", Host: "localhost:3000"}}}
+		resp := newResponse(http.Header{"Location": []string{"http://localhost:4000/.ory/ui/welcome"}})
+		resp.StatusCode = http.StatusFound
+
+		_, err := respMiddleware(conf)(resp, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, "http://localhost:3000", resp.Header.Get("Location"))
+	})
+
+	t.Run("case=leaves other redirects alone", func(t *testing.T) {
+		conf := &config{pathPrefix: "/.ory", defaultRedirectTo: cmdx.URL{URL: url.URL{Scheme: "http", Host: "localhost:3000"}}}
+		resp := newResponse(http.Header{"Location": []string{"http://localhost:4000/.ory/ui/login"}})
+		resp.StatusCode = http.StatusFound
+
+		_, err := respMiddleware(conf)(resp, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, "http://localhost:4000/.ory/ui/login", resp.Header.Get("Location"))
+	})
+}
+
+// TestCORSHeadersAreNotDuplicated is the regression test for
+// https://github.com/ory/cli/issues/344. An upstream that handles CORS itself
+// used to produce two Access-Control-Allow-Origin headers, which browsers
+// reject outright even though both values are correct.
+func TestCORSHeadersAreNotDuplicated(t *testing.T) {
+	const origin = "http://localhost:3000"
+
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		_, _ = io.WriteString(w, "ok")
+	}))
+	t.Cleanup(upstream.Close)
+
+	upstreamURL, err := url.Parse(upstream.URL)
+	require.NoError(t, err)
+
+	rp := httputil.NewSingleHostReverseProxy(upstreamURL)
+	rp.ModifyResponse = func(resp *http.Response) error {
+		_, err := respMiddleware(&config{})(resp, &proxy.HostConfig{}, nil)
+		return err
+	}
+
+	// The same CORS options runReverseProxy configures.
+	ch := cors.New(cors.Options{
+		AllowedOrigins:         []string{origin},
+		AllowOriginRequestFunc: func(*http.Request, string) bool { return true },
+		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
+		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
+		ExposedHeaders:         corsx.CORSResponseHeadersSafelist,
+		AllowCredentials:       true,
+	})
+
+	srv := httptest.NewServer(ch.Handler(rp))
+	t.Cleanup(srv.Close)
+
+	req, err := http.NewRequest(http.MethodGet, srv.URL+"/api", nil)
+	require.NoError(t, err)
+	req.Header.Set("Origin", origin)
+
+	res, err := srv.Client().Do(req)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = res.Body.Close() })
+
+	assert.Equal(t, []string{origin}, res.Header.Values("Access-Control-Allow-Origin"),
+		"a duplicated Access-Control-Allow-Origin makes the browser reject the response")
+	assert.Equal(t, []string{"true"}, res.Header.Values("Access-Control-Allow-Credentials"))
+}
 
 func TestReqMiddleware(t *testing.T) {
 	oryURL := &url.URL{Scheme: "https", Host: "example.projects.oryapis.com"}

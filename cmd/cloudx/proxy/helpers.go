@@ -195,17 +195,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 			}, nil
 		},
 		proxy.WithReqMiddleware(reqMiddleware(conf, oryURL, apiKey)),
-		proxy.WithRespMiddleware(func(resp *http.Response, config *proxy.HostConfig, body []byte) ([]byte, error) {
-			l, err := resp.Location()
-			if err == nil {
-				// Redirect to main page if path is the default ui welcome page.
-				if l.Path == filepath.Join(conf.pathPrefix, "/ui/welcome") {
-					resp.Header.Set("Location", conf.defaultRedirectTo.String())
-				}
-			}
-
-			return body, nil
-		}),
+		proxy.WithRespMiddleware(respMiddleware(conf)),
 	))
 
 	cleanup := func() error {
@@ -324,6 +314,45 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddle
 		} else if conf.rewriteHost {
 			r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
 			r.Out.Host = c.UpstreamHost
+		}
+
+		return body, nil
+	}
+}
+
+// upstreamCORSHeaders are the CORS response headers the proxy strips from the
+// upstream's response.
+//
+// The proxy terminates CORS itself: the browser talks to the proxy, so the
+// proxy's own configuration is what must apply. The upstream computed its
+// headers for a different client — the proxy — so they are not meaningful at
+// this boundary, and when the upstream sets them anyway both copies end up on
+// the wire. A duplicated Access-Control-Allow-Origin is a hard failure per the
+// Fetch spec, and a duplicated Access-Control-Allow-Credentials no longer reads
+// as exactly "true", so credentials are dropped. Either way the browser rejects
+// a response that both the upstream and the proxy answered correctly, and the
+// developer cannot fix it from their own application.
+//
+// Access-Control-Expose-Headers is deliberately not stripped: browsers merge
+// duplicates into a single list rather than failing, so removing it would
+// silently discard headers the upstream meant to expose.
+var upstreamCORSHeaders = []string{
+	"Access-Control-Allow-Origin",
+	"Access-Control-Allow-Credentials",
+}
+
+func respMiddleware(conf *config) proxy.RespMiddleware {
+	return func(resp *http.Response, _ *proxy.HostConfig, body []byte) ([]byte, error) {
+		for _, h := range upstreamCORSHeaders {
+			resp.Header.Del(h)
+		}
+
+		l, err := resp.Location()
+		if err == nil {
+			// Redirect to main page if path is the default ui welcome page.
+			if l.Path == filepath.Join(conf.pathPrefix, "/ui/welcome") {
+				resp.Header.Set("Location", conf.defaultRedirectTo.String())
+			}
 		}
 
 		return body, nil
