@@ -324,6 +324,12 @@ func (h *CommandHelper) Confirm(message string) (bool, error) {
 	if h.noConfirm {
 		return true, nil
 	}
+	if h.isQuiet {
+		// VerboseErrWriter is io.Discard in quiet mode, so prompting would block
+		// on stdin without the user ever seeing the question. Fail loudly instead
+		// of hanging.
+		return false, errors.New("can not ask for confirmation when --quiet is set, use --yes to confirm automatically")
+	}
 	return cmdx.AskScannerForConfirmation(message, h.Stdin, h.VerboseErrWriter)
 }
 

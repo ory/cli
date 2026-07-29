@@ -87,11 +87,19 @@ func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string, expire
 		return *h.projectAPIKey, noop, nil
 	}
 
-	// For all other projects, except the playground, we need to authenticate.
-	if err := h.Authenticate(ctx); errors.Is(err, ErrNoConfigQuiet) {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "Because you are not authenticated, the Ory CLI can not configure your project automatically. You can still use the Ory Proxy / Ory Tunnel, but complex flows such as Social Sign In will not work. Remove the `--quiet` flag or run `ory auth login` to authenticate.")
-		return "", noop, nil
-	} else if errors.Is(err, ErrNotAuthenticated) {
+	// For all other projects, except the playground, we need to authenticate. We
+	// may only *check* here: Authenticate performs the interactive sign-in, so
+	// calling it up front would sign the user in without ever asking them, and
+	// would make both branches below unreachable.
+	switch err := h.checkAuthenticated(ctx); {
+	case err == nil:
+		// Already signed in, nothing to do.
+	case errors.Is(err, ErrNoConfig), errors.Is(err, ErrNotAuthenticated), errors.Is(err, ErrReauthenticate):
+		if h.isQuiet {
+			_, _ = fmt.Fprintf(h.VerboseErrWriter, "Because you are not authenticated, the Ory CLI can not configure your project automatically. You can still use the Ory Proxy / Ory Tunnel, but complex flows such as Social Sign In will not work. Remove the `--quiet` flag or run `ory auth login` to authenticate.")
+			return "", noop, nil
+		}
+
 		ok, err := h.Confirm("To support complex flows such as Social Sign In, the Ory CLI can configure your project automatically. To do so, you need to be signed in. Do you want to sign in?")
 		if err != nil {
 			return "", noop, err
@@ -105,7 +113,7 @@ func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string, expire
 		if err := h.Authenticate(ctx); err != nil {
 			return "", noop, err
 		}
-	} else if err != nil {
+	default:
 		return "", noop, err
 	}
 
