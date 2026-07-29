@@ -239,6 +239,12 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 	server := graceful.WithDefaults(&http.Server{
 		Addr:    addr,
 		Handler: ch.Handler(mw),
+		// graceful.WithDefaults would otherwise apply a 5s read and 10s write
+		// timeout, which cut slower exchanges off mid-flight and leave the client
+		// with an empty reply. The upstream here is the developer's own
+		// application and may legitimately take longer than that.
+		ReadTimeout:  120 * time.Second,
+		WriteTimeout: 120 * time.Second,
 	})
 
 	if conf.isTunnel {
