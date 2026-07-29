@@ -13,7 +13,7 @@ import (
 func NewUseWorkspaceCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "workspace [id]",
-		Aliases: []string{"ws"},
+		Aliases: []string{"workspaces", "ws"},
 		Args:    cobra.MaximumNArgs(1),
 		Short:   "Set the workspace as the default. When no id is provided, prints the currently used default workspace.",
 		Example: `$ ory use workspace ecaaa3cb-0730-4ee8-a6df-9553cdfeef89
@@ -36,15 +36,20 @@ $ ory use workspace ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format json
 			}
 
 			// The helper resolves a (partial) name or ID to the workspace ID,
-			// and falls back to the one already stored in the config when no
-			// argument is given.
+			// and falls back to the environment or the one already stored in
+			// the config when no argument is given.
 			id := h.WorkspaceID()
 			if id == nil {
 				return client.ErrWorkspaceNotSet
 			}
 
-			if err := h.SelectWorkspace(*id); err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
+			// Only persist when the user asked to change the default. Without
+			// an argument this command just reports the current one, which must
+			// not overwrite the stored default with e.g. an ORY_WORKSPACE value.
+			if len(args) == 1 {
+				if err := h.SelectWorkspace(*id); err != nil {
+					return cmdx.PrintOpenAPIError(cmd, err)
+				}
 			}
 
 			cmdx.PrintRow(cmd, &selectedWorkspace{ID: *id})

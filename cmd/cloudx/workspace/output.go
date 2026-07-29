@@ -63,10 +63,6 @@ type selectedWorkspace struct {
 
 var _ cmdx.TableRow = (*selectedWorkspace)(nil)
 
-func (i selectedWorkspace) String() string {
-	return i.ID
-}
-
 func (*selectedWorkspace) Header() []string {
 	return []string{"ID"}
 }
