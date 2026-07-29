@@ -6,8 +6,6 @@ package oauth2
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/ory/kratos/cmd/cliclient"
-
 	"github.com/ory/cli/cmd/cloudx/client"
 	hydra "github.com/ory/hydra/v2/cmd"
 	"github.com/ory/x/cmdx"
@@ -18,7 +16,10 @@ func wrapHydraCmd(newCmd func() *cobra.Command) *cobra.Command {
 	client.RegisterProjectFlag(c.Flags())
 	client.RegisterWorkspaceFlag(c.Flags())
 	cmdx.RegisterFormatFlags(c.Flags())
-	cliclient.RegisterClientFlags(c.Flags())
+	// The wrapped Hydra commands resolve their endpoint through
+	// cmdx.NewClient, which reads this flag. Register it here rather than
+	// pulling in Kratos' cliclient, which drags the whole Kratos server in.
+	c.Flags().StringP(cmdx.FlagEndpoint, cmdx.FlagEndpoint[:1], "", "The API URL this command should target. Alternatively set using the ORY_SDK_URL environmental variable.")
 	return c
 }
 
