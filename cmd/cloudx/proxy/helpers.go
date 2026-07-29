@@ -13,7 +13,7 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -202,29 +202,12 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 		return nil
 	}
 
-	var originFunc func(r *http.Request, origin string) bool
-	if len(conf.corsOrigins) == 0 {
-		originFunc = func(r *http.Request, origin string) bool {
-			return true
-		}
-	}
-
-	corsOrigins, err := corsx.NormalizeOriginStrings(append(conf.corsOrigins, conf.publicURL.String()))
+	corsOpts, err := corsOptions(conf)
 	if err != nil {
 		return err
 	}
 	addr := fmt.Sprintf(":%d", conf.port)
-	ch := cors.New(cors.Options{
-		AllowedOrigins:         corsOrigins,
-		AllowOriginRequestFunc: originFunc,
-		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
-		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, append(corsx.CORSRequestHeadersExtended, conf.additionalCorsHeaders...)...),
-		ExposedHeaders:         corsx.CORSResponseHeadersSafelist,
-		MaxAge:                 0,
-		AllowCredentials:       true,
-		OptionsPassthrough:     false,
-		Debug:                  conf.isDebug,
-	})
+	ch := cors.New(corsOpts)
 
 	server := graceful.WithDefaults(&http.Server{
 		Addr:    addr,
@@ -320,6 +303,41 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddle
 	}
 }
 
+// corsOptions returns the CORS configuration the proxy terminates browser
+// requests with. respMiddleware strips exactly the headers this configuration
+// re-adds, so both must be derived from here — tests build the handler from
+// this function rather than restating the options.
+func corsOptions(conf *config) (cors.Options, error) {
+	var originFunc func(r *http.Request, origin string) bool
+	if len(conf.corsOrigins) == 0 {
+		originFunc = func(r *http.Request, origin string) bool {
+			return true
+		}
+	}
+
+	corsOrigins, err := corsx.NormalizeOriginStrings(append(conf.corsOrigins, conf.publicURL.String()))
+	if err != nil {
+		return cors.Options{}, err
+	}
+
+	return cors.Options{
+		AllowedOrigins:         corsOrigins,
+		AllowOriginRequestFunc: originFunc,
+		// HEAD is CORS-safelisted, so browsers send it without a preflight, but
+		// corsx.CORSDefaultAllowedMethods omits it. For a method it does not
+		// allow, rs/cors adds no Access-Control-Allow-Origin at all — and since
+		// respMiddleware strips the upstream's copy, such a response would reach
+		// the browser with no CORS headers whatsoever and be rejected.
+		AllowedMethods:     slices.Concat(corsx.CORSDefaultAllowedMethods, []string{http.MethodHead}),
+		AllowedHeaders:     slices.Concat(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended, conf.additionalCorsHeaders),
+		ExposedHeaders:     corsx.CORSResponseHeadersSafelist,
+		MaxAge:             0,
+		AllowCredentials:   true,
+		OptionsPassthrough: false,
+		Debug:              conf.isDebug,
+	}, nil
+}
+
 // upstreamCORSHeaders are the CORS response headers the proxy strips from the
 // upstream's response.
 //
@@ -329,9 +347,10 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddle
 // this boundary, and when the upstream sets them anyway both copies end up on
 // the wire. A duplicated Access-Control-Allow-Origin is a hard failure per the
 // Fetch spec, and a duplicated Access-Control-Allow-Credentials no longer reads
-// as exactly "true", so credentials are dropped. Either way the browser rejects
-// a response that both the upstream and the proxy answered correctly, and the
-// developer cannot fix it from their own application.
+// as exactly "true", which fails a credentialed request outright rather than
+// merely dropping the credentials. Either way the browser rejects a response
+// that both the upstream and the proxy answered correctly, and the developer
+// cannot fix it from their own application.
 //
 // Access-Control-Expose-Headers is deliberately not stripped: browsers merge
 // duplicates into a single list rather than failing, so removing it would
@@ -350,7 +369,9 @@ func respMiddleware(conf *config) proxy.RespMiddleware {
 		l, err := resp.Location()
 		if err == nil {
 			// Redirect to main page if path is the default ui welcome page.
-			if l.Path == filepath.Join(conf.pathPrefix, "/ui/welcome") {
+			// This compares URL paths, so it must use path.Join: filepath.Join
+			// would join with a backslash on Windows and never match.
+			if l.Path == path.Join(conf.pathPrefix, "/ui/welcome") {
 				resp.Header.Set("Location", conf.defaultRedirectTo.String())
 			}
 		}

@@ -16,7 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/ory/x/cmdx"
-	"github.com/ory/x/corsx"
 	"github.com/ory/x/proxy"
 )
 
@@ -94,36 +93,40 @@ func TestCORSHeadersAreNotDuplicated(t *testing.T) {
 	upstreamURL, err := url.Parse(upstream.URL)
 	require.NoError(t, err)
 
+	conf := &config{publicURL: &url.URL{Scheme: "http", Host: "localhost:4000"}}
+
 	rp := httputil.NewSingleHostReverseProxy(upstreamURL)
 	rp.ModifyResponse = func(resp *http.Response) error {
-		_, err := respMiddleware(&config{})(resp, &proxy.HostConfig{}, nil)
+		_, err := respMiddleware(conf)(resp, &proxy.HostConfig{}, nil)
 		return err
 	}
 
-	// The same CORS options runReverseProxy configures.
-	ch := cors.New(cors.Options{
-		AllowedOrigins:         []string{origin},
-		AllowOriginRequestFunc: func(*http.Request, string) bool { return true },
-		AllowedMethods:         corsx.CORSDefaultAllowedMethods,
-		AllowedHeaders:         append(corsx.CORSRequestHeadersSafelist, corsx.CORSRequestHeadersExtended...),
-		ExposedHeaders:         corsx.CORSResponseHeadersSafelist,
-		AllowCredentials:       true,
-	})
+	// Built from the same helper runReverseProxy uses, so the test cannot drift
+	// away from the CORS configuration the proxy actually runs.
+	corsOpts, err := corsOptions(conf)
+	require.NoError(t, err)
+	ch := cors.New(corsOpts)
 
 	srv := httptest.NewServer(ch.Handler(rp))
 	t.Cleanup(srv.Close)
 
-	req, err := http.NewRequest(http.MethodGet, srv.URL+"/api", nil)
-	require.NoError(t, err)
-	req.Header.Set("Origin", origin)
+	// HEAD is CORS-safelisted, so it reaches the upstream without a preflight and
+	// must still come back with the proxy's own CORS headers.
+	for _, method := range []string{http.MethodGet, http.MethodHead} {
+		t.Run("method="+method, func(t *testing.T) {
+			req, err := http.NewRequest(method, srv.URL+"/api", nil)
+			require.NoError(t, err)
+			req.Header.Set("Origin", origin)
 
-	res, err := srv.Client().Do(req)
-	require.NoError(t, err)
-	t.Cleanup(func() { _ = res.Body.Close() })
+			res, err := srv.Client().Do(req)
+			require.NoError(t, err)
+			t.Cleanup(func() { _ = res.Body.Close() })
 
-	assert.Equal(t, []string{origin}, res.Header.Values("Access-Control-Allow-Origin"),
-		"a duplicated Access-Control-Allow-Origin makes the browser reject the response")
-	assert.Equal(t, []string{"true"}, res.Header.Values("Access-Control-Allow-Credentials"))
+			assert.Equal(t, []string{origin}, res.Header.Values("Access-Control-Allow-Origin"),
+				"a duplicated Access-Control-Allow-Origin makes the browser reject the response, and none at all blocks it too")
+			assert.Equal(t, []string{"true"}, res.Header.Values("Access-Control-Allow-Credentials"))
+		})
+	}
 }
 
 func TestReqMiddleware(t *testing.T) {
