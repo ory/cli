@@ -32,9 +32,10 @@ func NewValidateNamespaceConfigCmd() *cobra.Command {
 		Short: "Validate the syntax of an Ory Permission Language file",
 		Long: `Validate the syntax of an Ory Permission Language file without applying it.
 
-Ory Network checks the file the same way ` + "`ory update opl`" + ` does before storing it,
-but nothing is written to the project. The command exits with a non-zero status
-when the file has syntax errors, which makes it usable as a CI/CD check.`,
+The file is checked by the Ory Network project's syntax check endpoint; nothing
+is written to the project. The command exits with a non-zero status when the
+file has syntax errors, which makes it usable as a CI/CD check before running
+` + "`ory update opl`" + `.`,
 		Example: `$ {{ .CommandPath }} --file /path/to/namespace_config.ts
 
 The Ory Permission Language file is valid.
@@ -59,22 +60,33 @@ $ cat namespace_config.ts | {{ .CommandPath }} --file - --format json
 				return err
 			}
 
-			result, _, err := c.RelationshipAPI.CheckOplSyntax(ctx).Body(string(data)).Execute()
-			if err != nil {
-				return cmdx.PrintOpenAPIError(cmd, err)
+			var errs oplSyntaxErrors
+			// An empty file has no syntax errors, and the SDK refuses to send a
+			// zero-length body ("invalid body type text/plain").
+			if len(data) > 0 {
+				result, _, err := c.RelationshipAPI.CheckOplSyntax(ctx).Body(string(data)).Execute()
+				if err != nil {
+					return cmdx.PrintOpenAPIError(cmd, err)
+				}
+				// GetErrors is nil-safe: result is nil if the API replies with an empty body.
+				errs = oplSyntaxErrors(result.GetErrors())
 			}
 
-			errs := oplSyntaxErrors(result.Errors)
 			switch outputFormat(cmd) {
-			case cmdx.FormatDefault, cmdx.FormatTable, cmdx.FormatQuiet:
+			case cmdx.FormatJSON, cmdx.FormatJSONPretty, cmdx.FormatJSONPath, cmdx.FormatJSONPointer, cmdx.FormatYAML:
+				cmdx.PrintTable(cmd, errs)
+			default:
+				// Everything else (including an unknown value, which cmdx itself
+				// treats as the default format) is rendered for humans.
+				source := sourceName(file)
 				for _, parseErr := range errs {
-					_, _ = fmt.Fprintln(cmd.ErrOrStderr(), formatParseError(sourceName(file), parseErr))
+					// Syntax errors are what the command is for, so they are also
+					// printed with --quiet; only the success message is noise.
+					_, _ = fmt.Fprintln(cmd.ErrOrStderr(), formatParseError(source, parseErr))
 				}
 				if len(errs) == 0 {
 					_, _ = cmdx.NewLoudOutPrinter(cmd).Println("The Ory Permission Language file is valid.")
 				}
-			default:
-				cmdx.PrintTable(cmd, errs)
 			}
 
 			if len(errs) > 0 {
@@ -128,10 +140,10 @@ func outputFormat(cmd *cobra.Command) cmdx.Format {
 // and CI log parsers can pick up the location.
 func formatParseError(source string, err cloud.ParseError) string {
 	location := source
-	if start := err.Start; start != nil {
-		if start.Line != nil {
-			location += ":" + strconv.FormatInt(*start.Line, 10)
-		}
+	// The column is only appended together with the line, otherwise it would be
+	// rendered in the position where readers expect the line number.
+	if start := err.Start; start != nil && start.Line != nil {
+		location += ":" + strconv.FormatInt(*start.Line, 10)
 		if start.Column != nil {
 			location += ":" + strconv.FormatInt(*start.Column, 10)
 		}
@@ -165,6 +177,11 @@ func (e oplSyntaxErrors) Table() [][]string {
 }
 
 func (e oplSyntaxErrors) Interface() interface{} {
+	if e == nil {
+		// The field is omitted when nil, but CI/CD consumers should be able to
+		// rely on "errors" always being present, e.g. `jq '.errors | length'`.
+		e = oplSyntaxErrors{}
+	}
 	return cloud.CheckOplSyntaxResult{Errors: e}
 }
 

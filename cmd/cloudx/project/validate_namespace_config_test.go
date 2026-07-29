@@ -34,7 +34,8 @@ func TestValidateNamespaceConfig(t *testing.T) {
 		validate := func(t *testing.T, exec execFunc) {
 			stdout, stderr, err := exec(nil, "validate", "opl", "--file", config)
 			require.NoError(t, err, stderr)
-			assert.Contains(t, stdout, "valid")
+			// not just "valid", which is also a substring of "invalid"
+			assert.Contains(t, stdout, "file is valid")
 			assert.Empty(t, stderr)
 		}
 
@@ -76,30 +77,72 @@ func TestValidateNamespaceConfig(t *testing.T) {
 		runWithProjectAsFlag(ctx, t, extraProject.Id, validate)
 	})
 
+	t.Run("reports an empty error list as JSON", func(t *testing.T) {
+		t.Parallel()
+
+		config := writeFile(t, validOPL)
+		validate := func(t *testing.T, exec execFunc) {
+			stdout, stderr, err := exec(nil, "validate", "opl", "--file", config, "--format", "json")
+			require.NoError(t, err, stderr)
+
+			// the key is always present, so that `jq '.errors | length'` works
+			errs := gjson.Get(stdout, "errors")
+			require.True(t, errs.IsArray(), stdout)
+			assert.Empty(t, errs.Array(), stdout)
+		}
+
+		runWithProjectAsDefault(ctx, t, defaultProject.Id, validate)
+	})
+
+	t.Run("accepts an empty file", func(t *testing.T) {
+		t.Parallel()
+
+		config := writeFile(t, "")
+		validate := func(t *testing.T, exec execFunc) {
+			stdout, stderr, err := exec(nil, "validate", "opl", "--file", config)
+			require.NoError(t, err, stderr)
+			assert.Contains(t, stdout, "file is valid")
+		}
+
+		runWithProjectAsDefault(ctx, t, defaultProject.Id, validate)
+	})
+
 	t.Run("reads the file from stdin", func(t *testing.T) {
 		t.Parallel()
 
 		validate := func(t *testing.T, exec execFunc) {
 			stdout, stderr, err := exec(strings.NewReader(validOPL), "validate", "opl", "--file", "-")
 			require.NoError(t, err, stderr)
-			assert.Contains(t, stdout, "valid")
+			assert.Contains(t, stdout, "file is valid")
+
+			// errors are reported against "stdin", not against the literal "-"
+			_, stderr, err = exec(strings.NewReader(invalidOPL), "validate", "opl", "--file", "-")
+			assert.ErrorIs(t, err, cmdx.ErrNoPrintButFail, stderr)
+			assert.Contains(t, stderr, "stdin:", stderr)
 		}
 
 		runWithProjectAsDefault(ctx, t, defaultProject.Id, validate)
 		runWithProjectAsFlag(ctx, t, extraProject.Id, validate)
 	})
 
-	t.Run("prints nothing on success when quiet", func(t *testing.T) {
+	t.Run("stays quiet on success but still reports syntax errors", func(t *testing.T) {
 		t.Parallel()
 
-		config := writeFile(t, validOPL)
+		valid, invalid := writeFile(t, validOPL), writeFile(t, invalidOPL)
 		validate := func(t *testing.T, exec execFunc) {
-			stdout, stderr, err := exec(nil, "validate", "opl", "--file", config, "--quiet")
+			stdout, stderr, err := exec(nil, "validate", "opl", "--file", valid, "--quiet")
 			require.NoError(t, err, stderr)
 			assert.Empty(t, stdout)
 			assert.Empty(t, stderr)
+
+			// --quiet silences the success message, not the syntax errors
+			stdout, stderr, err = exec(nil, "validate", "opl", "--file", invalid, "--quiet")
+			assert.ErrorIs(t, err, cmdx.ErrNoPrintButFail, stderr)
+			assert.Empty(t, stdout)
+			assert.Contains(t, stderr, invalid+":", stderr)
 		}
 
 		runWithProjectAsDefault(ctx, t, defaultProject.Id, validate)
+		runWithProjectAsFlag(ctx, t, extraProject.Id, validate)
 	})
 }
