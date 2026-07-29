@@ -14,6 +14,8 @@ import (
 func TestPatchPermissionConfig(t *testing.T) {
 	t.Parallel()
 
+	project := newProject(t)
+
 	for _, tc := range []struct {
 		name string
 		// doPatch will use the same project in parallel, so it is important to only do one operation per test
@@ -54,8 +56,8 @@ func TestPatchPermissionConfig(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			runWithProjectAsDefault(ctx, t, defaultProject.Id, tc.doPatch)
-			runWithProjectAsFlag(ctx, t, extraProject.Id, tc.doPatch)
+			runWithProjectAsDefault(ctx, t, project, tc.doPatch)
+			runWithProjectAsFlag(ctx, t, project, tc.doPatch)
 		})
 	}
 }

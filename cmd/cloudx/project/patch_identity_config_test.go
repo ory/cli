@@ -14,6 +14,8 @@ import (
 func TestPatchKratosConfig(t *testing.T) {
 	t.Parallel()
 
+	project := newProject(t)
+
 	for _, tc := range []struct {
 		name    string
 		doPatch func(t *testing.T, exec execFunc)
@@ -53,8 +55,8 @@ func TestPatchKratosConfig(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			runWithProjectAsDefault(ctx, t, defaultProject.Id, tc.doPatch)
-			runWithProjectAsFlag(ctx, t, extraProject.Id, tc.doPatch)
+			runWithProjectAsDefault(ctx, t, project, tc.doPatch)
+			runWithProjectAsFlag(ctx, t, project, tc.doPatch)
 		})
 	}
 }

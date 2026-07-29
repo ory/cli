@@ -41,6 +41,7 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 
 	content := `class Default implements Namespace {}`
 	config := writeFile(t, content)
+	project := newProject(t)
 	verbs := []string{"update", "patch"}
 
 	for _, verb := range verbs {
@@ -57,8 +58,8 @@ func TestUpdateNamespaceConfig(t *testing.T) {
 				assert.Equal(t, content, data.String(), "the downloaded file does not match what we uploaded")
 			}
 
-			runWithProjectAsDefault(ctx, t, defaultProject.Id, updateNamespace)
-			runWithProjectAsFlag(ctx, t, extraProject.Id, updateNamespace)
+			runWithProjectAsDefault(ctx, t, project, updateNamespace)
+			runWithProjectAsFlag(ctx, t, project, updateNamespace)
 		})
 	}
 }
