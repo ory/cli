@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ory/cli/cmd/cloudx/client"
+	"github.com/ory/cli/cmd/cloudx/project"
 	"github.com/ory/kratos/cmd/identities"
 	"github.com/ory/x/cmdx"
 )
@@ -17,7 +18,10 @@ func NewValidateCmd() *cobra.Command {
 		Short: "Validate resources",
 	}
 
-	cmd.AddCommand(identities.NewValidateIdentityCmd())
+	cmd.AddCommand(
+		identities.NewValidateIdentityCmd(),
+		project.NewValidateNamespaceConfigCmd(),
+	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
 	client.RegisterYesFlag(cmd.PersistentFlags())

@@ -112,6 +112,24 @@ func (h *CommandHelper) ProjectAuthToken(ctx context.Context) (oauth2.TokenSourc
 	return config.TokenSource(ctx), CloudAPIsURL, nil
 }
 
+// NewProjectAPIClient returns an SDK client for the selected project's own API
+// (https://<slug>.projects.oryapis.com), as opposed to the Ory Console API.
+func (h *CommandHelper) NewProjectAPIClient(ctx context.Context) (*cloud.APIClient, error) {
+	c, baseURL, err := h.newProjectHTTPClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := h.GetSelectedProject(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	conf := newSDKConfiguration(baseURL(p.Slug + ".projects").String())
+	conf.HTTPClient = c
+	return cloud.NewAPIClient(conf), nil
+}
+
 func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client, func(string) *url.URL, error) {
 	tokenSource, baseURL, err := h.ProjectAuthToken(ctx)
 	if err != nil {
