@@ -314,6 +314,19 @@ func (h *CommandHelper) determineProjectID(ctx context.Context, config *Config) 
 	return nil
 }
 
+// Confirm asks the user to confirm message, returning true if they agree.
+//
+// When --yes is set the answer is yes without prompting. Every interactive
+// confirmation in the cloudx commands must go through here, otherwise --yes
+// silently does nothing and unattended use (CI, scripts) blocks forever on a
+// prompt nobody can answer.
+func (h *CommandHelper) Confirm(message string) (bool, error) {
+	if h.noConfirm {
+		return true, nil
+	}
+	return cmdx.AskScannerForConfirmation(message, h.Stdin, h.VerboseErrWriter)
+}
+
 func (h *CommandHelper) ProjectID() (string, error) {
 	if h.projectID == uuid.Nil {
 		return "", ErrProjectNotSet

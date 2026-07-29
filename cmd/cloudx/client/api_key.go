@@ -10,7 +10,6 @@ import (
 	"time"
 
 	cloud "github.com/ory/client-go"
-	"github.com/ory/x/cmdx"
 )
 
 // CreateProjectAPIKey creates a project API key. If expiresIn is greater than
@@ -93,7 +92,7 @@ func (h *CommandHelper) TemporaryAPIKey(ctx context.Context, name string, expire
 		_, _ = fmt.Fprintf(h.VerboseErrWriter, "Because you are not authenticated, the Ory CLI can not configure your project automatically. You can still use the Ory Proxy / Ory Tunnel, but complex flows such as Social Sign In will not work. Remove the `--quiet` flag or run `ory auth login` to authenticate.")
 		return "", noop, nil
 	} else if errors.Is(err, ErrNotAuthenticated) {
-		ok, err := cmdx.AskScannerForConfirmation("To support complex flows such as Social Sign In, the Ory CLI can configure your project automatically. To do so, you need to be signed in. Do you want to sign in?", h.Stdin, h.VerboseErrWriter)
+		ok, err := h.Confirm("To support complex flows such as Social Sign In, the Ory CLI can configure your project automatically. To do so, you need to be signed in. Do you want to sign in?")
 		if err != nil {
 			return "", noop, err
 		}
