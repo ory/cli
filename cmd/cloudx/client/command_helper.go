@@ -34,7 +34,10 @@ const (
 	ProjectAPIKey   = "ORY_PROJECT_API_KEY"
 )
 
-var ErrProjectNotSet = fmt.Errorf("no project was specified")
+var (
+	ErrProjectNotSet   = fmt.Errorf("no project was specified")
+	ErrWorkspaceNotSet = fmt.Errorf("no workspace was specified")
+)
 
 type (
 	CommandHelper struct {

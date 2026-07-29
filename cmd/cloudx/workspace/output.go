@@ -54,3 +54,27 @@ func (o outputWorkspaces) Interface() interface{} {
 func (o outputWorkspaces) Len() int {
 	return len(o)
 }
+
+// selectedWorkspace is the output of `ory use workspace`, mirroring the shape
+// `ory use project` prints.
+type selectedWorkspace struct {
+	ID string `json:"id"`
+}
+
+var _ cmdx.TableRow = (*selectedWorkspace)(nil)
+
+func (i selectedWorkspace) String() string {
+	return i.ID
+}
+
+func (*selectedWorkspace) Header() []string {
+	return []string{"ID"}
+}
+
+func (i *selectedWorkspace) Columns() []string {
+	return []string{i.ID}
+}
+
+func (i *selectedWorkspace) Interface() interface{} {
+	return i
+}

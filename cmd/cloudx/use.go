@@ -8,6 +8,7 @@ import (
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/cli/cmd/cloudx/project"
+	"github.com/ory/cli/cmd/cloudx/workspace"
 	"github.com/ory/x/cmdx"
 )
 
@@ -19,6 +20,7 @@ func NewUseCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		project.NewUseProjectCmd(),
+		workspace.NewUseWorkspaceCmd(),
 	)
 
 	client.RegisterConfigFlag(cmd.PersistentFlags())
