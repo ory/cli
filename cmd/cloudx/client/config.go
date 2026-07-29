@@ -96,10 +96,14 @@ func (h *CommandHelper) getConfig() (*Config, error) {
 				}
 
 				_, _ = fmt.Fprintln(h.VerboseErrWriter, "Thanks for upgrading! You will now be prompted to log in to the Ory CLI through the Ory Console.")
-				_, _ = fmt.Fprintln(h.VerboseErrWriter, "Press enter to continue...")
-				_, err := h.Stdin.ReadString('\n')
-				if err != nil && err != io.EOF {
-					return nil, fmt.Errorf("unable to read from stdin: %w", err)
+				// --yes must skip this dialog as well, otherwise unattended use
+				// blocks on a prompt nobody can answer.
+				if !h.noConfirm {
+					_, _ = fmt.Fprintln(h.VerboseErrWriter, "Press enter to continue...")
+					_, err := h.Stdin.ReadString('\n')
+					if err != nil && err != io.EOF {
+						return nil, fmt.Errorf("unable to read from stdin: %w", err)
+					}
 				}
 			}
 			fallthrough
