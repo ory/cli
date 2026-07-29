@@ -33,11 +33,20 @@ type execFunc = func(stdin io.Reader, args ...string) (string, string, error)
 // still perform a single operation and assert on the response to that operation
 // rather than re-reading the project.
 //
+// Callers that exercise both project-selection styles pass this one project to
+// both, so each case applies its patch twice in a row and the second
+// application runs against already-mutated state. That is safe for the patches
+// these tests issue: the API materializes schema defaults back into the stored
+// config, so even a repeated `remove` of the same path succeeds. It is also
+// preferred over a project per style, which would double both the projects and
+// the workspaces provisioned per run — and that burst makes the package's
+// existing rate-limit flakiness measurably worse.
+//
 // The project goes into a workspace of its own because the development-project
-// quota is per workspace: adding these to defaultWorkspaceID fails with
-// "the quota for the feature 'Development Projects' has been exceeded". This is
-// the same reason TestUpdateProject and TestListProject create a workspace
-// before their projects.
+// quota is per workspace, and it is two: adding a third to defaultWorkspaceID
+// fails with "the quota for the feature 'Development Projects' has been
+// exceeded". This is the same reason TestListProject creates a workspace before
+// its projects.
 func newProject(t *testing.T) string {
 	t.Helper()
 	return testhelpers.CreateProject(ctx, t, testhelpers.CreateWorkspace(ctx, t)).Id

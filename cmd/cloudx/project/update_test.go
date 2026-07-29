@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/ory/cli/cmd/cloudx/testhelpers"
 	"github.com/ory/x/assertx"
 	"github.com/ory/x/cmdx"
 	"github.com/ory/x/snapshotx"
@@ -31,8 +30,7 @@ var (
 func TestUpdateProject(t *testing.T) {
 	t.Parallel()
 
-	workspace := testhelpers.CreateWorkspace(ctx, t)
-	project := testhelpers.CreateProject(ctx, t, workspace)
+	project := newProject(t)
 
 	for _, tc := range []struct {
 		subcommand,
@@ -81,7 +79,7 @@ func TestUpdateProject(t *testing.T) {
 				t.Skip("TODO")
 				t.Parallel()
 
-				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project.Id, "--format", "json", "--file", tc.pathSuccess)
+				stdout, _, err := defaultCmd.Exec(nil, "update", tc.subcommand, project, "--format", "json", "--file", tc.pathSuccess)
 				require.NoError(t, err)
 
 				assertx.EqualAsJSONExcept(t, tc.fixture, json.RawMessage(stdout), []string{
@@ -156,7 +154,7 @@ func TestUpdateProject(t *testing.T) {
 				if tc.projectFlag != "" {
 					args = append(args, tc.projectFlag)
 				}
-				args = append(args, project.Id)
+				args = append(args, project)
 				stdout, stderr, err := defaultCmd.Exec(nil, args...)
 				require.ErrorIs(t, err, cmdx.ErrNoPrintButFail)
 
