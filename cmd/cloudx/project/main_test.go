@@ -15,7 +15,11 @@ import (
 )
 
 var (
-	ctx                               context.Context
+	ctx context.Context
+	// defaultProject and extraProject are read-only fixtures shared by every
+	// test in this package. Tests that write project configuration must not use
+	// them, because they run in parallel and would clobber each other; call
+	// newProject instead.
 	defaultProject, extraProject      *cloud.Project
 	defaultConfig, defaultWorkspaceID string
 	defaultCmd                        *cmdx.CommandExecuter
