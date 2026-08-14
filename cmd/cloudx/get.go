@@ -25,6 +25,7 @@ func NewGetCmd() *cobra.Command {
 		project.NewGetProjectCmd(),
 		project.NewGetKratosConfigCmd(),
 		project.NewGetKetoConfigCmd(),
+		project.NewGetOPLCmd(),
 		project.NewGetOAuth2ConfigCmd(),
 		workspace.NewGetCmd(),
 		identity.NewGetIdentityCmd(),

@@ -52,7 +52,7 @@ $ ory get oauth2-config --format json   # uses currently selected project
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			cmdx.PrintJSONAble(cmd, outputConfig(project.Services.Oauth2.Config))
+			cmdx.PrintJSONAble(cmd, outputConfig(project.Services.GetOauth2().Config))
 			return nil
 		},
 	}

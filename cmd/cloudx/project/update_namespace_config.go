@@ -28,7 +28,9 @@ func NewUpdateNamespaceConfigCmd() *cobra.Command {
 
 class Example implements Namespace {}
 `,
-		Long: "Update the Ory Permission Language file in Ory Network. Legacy namespace definitions will be overwritten.",
+		Long: `Update the Ory Permission Language file in Ory Network. Legacy namespace definitions will be overwritten.
+
+This is the counterpart of ` + "`ory get opl`" + `, which reads the configured file back.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			h, err := client.NewCobraCommandHelper(cmd)
@@ -53,7 +55,7 @@ class Example implements Namespace {}
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Permission.Config))
+			cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.GetPermission().Config))
 
 			return h.PrintUpdateProjectWarnings(p)
 		},
