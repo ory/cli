@@ -4,6 +4,8 @@
 package testhelpers
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -307,6 +309,100 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 	return page
 }
 
+// stopTracing writes the trace of the login flow and strips the rate-limit
+// header value out of it.
+//
+// A trace records complete request headers — this repository is public and CI
+// uploads the traces as a build artifact, where GitHub's secret masking does not
+// reach. The header that exempts CI from Ory Network's rate limits therefore
+// must not survive into one. Playwright offers no redaction option, so the
+// archive is rewritten after it has been written.
+//
+// If it cannot be rewritten the trace is deleted: losing a diagnostic is the
+// cheaper failure by far.
+func stopTracing(t testing.TB, page playwright.Page) {
+	path := filepath.Join(tracesDir, fmt.Sprintf("%s.zip", t.Name()))
+	if err := page.Context().Tracing().Stop(path); err != nil {
+		t.Logf("tracing stop error: %+v", err)
+		return
+	}
+
+	_, secret, ok := client.RateLimitHeader()
+	if !ok {
+		return
+	}
+	if err := redactInZip(path, secret); err != nil {
+		t.Logf("could not redact %s, removing it: %+v", path, err)
+		require.NoError(t, os.Remove(path))
+	}
+}
+
+const redactedPlaceholder = "[redacted]"
+
+// redactInZip rewrites every entry of the zip archive at path, replacing each
+// occurrence of secret with a placeholder.
+//
+// The JSON-escaped spelling is replaced as well, because the trace stores
+// headers as JSON string values and a secret containing a quote or backslash
+// would otherwise appear there in a form the raw comparison does not match.
+func redactInZip(path, secret string) error {
+	if secret == "" {
+		return nil
+	}
+
+	needles := [][]byte{[]byte(secret)}
+	if escaped, err := json.Marshal(secret); err == nil {
+		if inner := escaped[1 : len(escaped)-1]; !bytes.Equal(inner, []byte(secret)) {
+			needles = append(needles, inner)
+		}
+	}
+
+	r, err := zip.OpenReader(path)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := os.CreateTemp(filepath.Dir(path), "trace-*.zip")
+	if err != nil {
+		_ = r.Close()
+		return err
+	}
+	defer os.Remove(tmp.Name()) // no-op once the rename below succeeded
+
+	err = func() error {
+		w := zip.NewWriter(tmp)
+		for _, f := range r.File {
+			src, err := f.Open()
+			if err != nil {
+				return err
+			}
+			content, err := io.ReadAll(src)
+			_ = src.Close()
+			if err != nil {
+				return err
+			}
+			for _, needle := range needles {
+				content = bytes.ReplaceAll(content, needle, []byte(redactedPlaceholder))
+			}
+			dst, err := w.Create(f.Name)
+			if err != nil {
+				return err
+			}
+			if _, err := dst.Write(content); err != nil {
+				return err
+			}
+		}
+		return w.Close()
+	}()
+	_ = r.Close()
+	_ = tmp.Close()
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(tmp.Name(), path)
+}
+
 // submitPasswordForm submits the filled-in login form and fails immediately if
 // the server refused the request outright.
 //
@@ -353,7 +449,7 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 		}))
 		defer func() {
 			r := recover()
-			_ = page.Context().Tracing().Stop(filepath.Join(tracesDir, fmt.Sprintf("%s.zip", t.Name())))
+			stopTracing(t, page)
 			if r != nil {
 				panic(r)
 			}
