@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -259,21 +260,12 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 }
 
 func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
-	opts := playwright.BrowserNewPageOptions{
+	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
 		BaseURL: new(client.CloudConsoleURL("").String()),
-	}
-
-	// The browser talks to Ory Network directly, so it needs the same rate-limit
-	// exemption the SDK clients get — the header configured on those does not
-	// reach it. Without this, `go test ./...` runs the browser login of every
-	// cloudx package at once from a single CI egress IP and the login endpoint
-	// starts answering 429.
-	if name, value, ok := client.RateLimitHeader(); ok {
-		opts.ExtraHttpHeaders = map[string]string{name: value}
-	}
-
-	page, err := browser.NewPage(opts)
+	})
 	require.NoError(t, err)
+
+	routeRateLimitHeader(t, page)
 
 	for _, route := range []string{
 		"doubleclick.net",
@@ -307,6 +299,48 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 		}))
 	}
 	return page
+}
+
+// routeRateLimitHeader makes the browser send the rate-limit header that exempts
+// CI from Ory Network's per-IP limits, to the Ory Console and nothing else.
+//
+// The browser needs it because it talks to Ory Network directly and the header
+// configured on the SDK clients does not reach it: `go test ./...` runs the
+// browser login of every cloudx package at once from a single CI egress IP, and
+// the login endpoint answers 429.
+//
+// It is attached per request rather than through the page's ExtraHttpHeaders,
+// which apply to every request the page makes — the login page pulls in Stripe,
+// Sentry, Cloudflare Insights and Ory's own consent and analytics hosts, and all
+// of them would receive the secret.
+func routeRateLimitHeader(t testing.TB, page playwright.Page) {
+	name, value, ok := client.RateLimitHeader()
+	if !ok {
+		return
+	}
+
+	// The console serves the login UI and its subdomains serve the flow the UI
+	// submits to, so both have to carry the header.
+	console := client.CloudConsoleURL("").Host
+	isConsole := func(rawURL string) bool {
+		parsed, err := url.Parse(rawURL)
+		if err != nil {
+			return false
+		}
+		return parsed.Host == console || strings.HasSuffix(parsed.Host, "."+console)
+	}
+
+	require.NoError(t, page.Route(isConsole, func(r playwright.Route) {
+		headers, err := r.Request().AllHeaders()
+		if err != nil {
+			// Continue unmodified rather than dropping the request: a login
+			// without the header may still succeed, a cancelled one cannot.
+			_ = r.Continue()
+			return
+		}
+		headers[name] = value
+		_ = r.Continue(playwright.RouteContinueOptions{Headers: headers})
+	}))
 }
 
 // stopTracing writes the trace of the login flow and strips the rate-limit
