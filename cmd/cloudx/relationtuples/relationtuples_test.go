@@ -92,12 +92,20 @@ func TestCRUD(t *testing.T) {
 	t.Parallel()
 	createLegacyNamespace(t, defaultProject.Id, `{"name": "n", "id": 0}`)
 
+	// Ory Network rejects writes carrying a subject_id — "subject_id is not
+	// supported; please migrate to subject sets" — for every form of it (plain
+	// string, UUID, namespaced) and under both legacy and OPL namespaces, so the
+	// tuples here are subject sets.
 	tuple := func(object string) string {
 		return fmt.Sprintf(`[{
 	"namespace": "n",
 	"object": %q,
 	"relation": "r",
-	"subject_id": "s"
+	"subject_set": {
+		"namespace": "n",
+		"object": "s",
+		"relation": "r"
+	}
 }]`, object)
 	}
 	create := func(t *testing.T, object string) string {
@@ -111,14 +119,6 @@ func TestCRUD(t *testing.T) {
 		require.NoError(t, err, stderr)
 		return stdout
 	}
-	isAllowed := func(t *testing.T, subject, relation, namespace, object string) string {
-		stdout, stderr, err := defaultCmd.Exec(nil,
-			"is", "allowed", subject, relation, namespace, object,
-			"--project", defaultProject.Id, "--format", "json")
-		require.NoError(t, err, stderr)
-		return stdout
-	}
-
 	// 1. create a tuple
 	stdout := create(t, "o1")
 	require.JSONEq(t, tuple("o1"), stdout)
@@ -127,9 +127,12 @@ func TestCRUD(t *testing.T) {
 	stdout = list(t)
 	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
 
-	// check that it is allowed
-	stdout = isAllowed(t, "s", "r", "n", "o1")
-	require.JSONEq(t, `{"allowed":true}`, stdout, stdout)
+	// There used to be an `ory is allowed s r n o1` check here. It cannot run
+	// against Ory Network any more: `is allowed` takes a plain subject and sends
+	// it as a subject_id, which the server now rejects outright with the same
+	// "please migrate to subject sets" error as a write does. That makes the
+	// command unusable rather than merely deprecated, so it is tracked
+	// separately instead of being asserted as broken here.
 
 	// 3. delete with --all but without --force
 	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,
