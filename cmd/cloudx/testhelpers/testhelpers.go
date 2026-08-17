@@ -8,8 +8,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/http"
 	"net/url"
 	"os"
@@ -355,7 +357,11 @@ func routeRateLimitHeader(t testing.TB, page playwright.Page) {
 // If it cannot be rewritten the trace is deleted: losing a diagnostic is the
 // cheaper failure by far.
 func stopTracing(t testing.TB, page playwright.Page) {
-	path := filepath.Join(tracesDir, fmt.Sprintf("%s.zip", t.Name()))
+	// The name is qualified by package because every package's TestMain traces
+	// under the same test name into one shared directory: unqualified, the
+	// packages `go test ./...` runs in parallel overwrite each other's traces,
+	// and rewriting one races the next writer.
+	path := filepath.Join(tracesDir, fmt.Sprintf("%s.%s.zip", tracesPackage, t.Name()))
 	if err := page.Context().Tracing().Stop(path); err != nil {
 		t.Logf("tracing stop error: %+v", err)
 		return
@@ -365,9 +371,17 @@ func stopTracing(t testing.TB, page playwright.Page) {
 	if !ok {
 		return
 	}
-	if err := redactInZip(path, secret); err != nil {
-		t.Logf("could not redact %s, removing it: %+v", path, err)
-		require.NoError(t, os.Remove(path))
+
+	err := redactInZip(path, secret)
+	if err == nil {
+		return
+	}
+
+	// The archive could not be rewritten, so make sure it cannot be uploaded.
+	// Only a trace that is still on disk afterwards is worth failing over.
+	t.Logf("could not redact %s, removing it: %+v", path, err)
+	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		require.NoError(t, err, "the trace may still carry the rate-limit header")
 	}
 }
 
@@ -392,6 +406,10 @@ func redactInZip(path, secret string) error {
 	}
 
 	r, err := zip.OpenReader(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		// Tracing wrote no archive, so there is nothing that could leak.
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -520,13 +538,19 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 	}
 }
 
-var tracesDir string
+var (
+	tracesDir string
+	// tracesPackage is the package under test, used to keep the traces of
+	// packages running in parallel apart. See stopTracing.
+	tracesPackage string
+)
 
 func init() {
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+	tracesPackage = filepath.Base(cwd)
 	dirs := strings.Split(cwd, string(os.PathSeparator))
 	for i := range dirs {
 		if dirs[i] == "cloudx" {
