@@ -4,10 +4,16 @@
 package testhelpers
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -261,6 +267,8 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 	})
 	require.NoError(t, err)
 
+	routeRateLimitHeader(t, page)
+
 	for _, route := range []string{
 		"doubleclick.net",
 		"google-analytics.com",
@@ -295,6 +303,206 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 	return page
 }
 
+// routeRateLimitHeader makes the browser send the rate-limit header that exempts
+// CI from Ory Network's per-IP limits, to the Ory Console and nothing else.
+//
+// The browser needs it because it talks to Ory Network directly and the header
+// configured on the SDK clients does not reach it: `go test ./...` runs the
+// browser login of every cloudx package at once from a single CI egress IP, and
+// the login endpoint answers 429.
+//
+// It is attached per request rather than through the page's ExtraHttpHeaders,
+// which apply to every request the page makes — the login page pulls in Stripe,
+// Sentry, Cloudflare Insights and Ory's own consent and analytics hosts, and all
+// of them would receive the secret.
+func routeRateLimitHeader(t testing.TB, page playwright.Page) {
+	name, value, ok := client.RateLimitHeader()
+	if !ok {
+		return
+	}
+
+	// The console serves the login UI and its subdomains serve the flow the UI
+	// submits to, so both have to carry the header.
+	console := client.CloudConsoleURL("").Host
+	isConsole := func(rawURL string) bool {
+		parsed, err := url.Parse(rawURL)
+		if err != nil {
+			return false
+		}
+		return parsed.Host == console || strings.HasSuffix(parsed.Host, "."+console)
+	}
+
+	require.NoError(t, page.Route(isConsole, func(r playwright.Route) {
+		headers, err := r.Request().AllHeaders()
+		if err != nil {
+			// Continue unmodified rather than dropping the request: a login
+			// without the header may still succeed, a cancelled one cannot.
+			_ = r.Continue()
+			return
+		}
+		headers[name] = value
+		_ = r.Continue(playwright.RouteContinueOptions{Headers: headers})
+	}))
+}
+
+// stopTracing writes the trace of the login flow and strips the rate-limit
+// header value out of it.
+//
+// A trace records complete request headers — this repository is public and CI
+// uploads the traces as a build artifact, where GitHub's secret masking does not
+// reach. The header that exempts CI from Ory Network's rate limits therefore
+// must not survive into one. Playwright offers no redaction option, so the
+// archive is rewritten after it has been written.
+//
+// If it cannot be rewritten the trace is deleted: losing a diagnostic is the
+// cheaper failure by far.
+func stopTracing(t testing.TB, page playwright.Page) {
+	// The name is qualified by package because every package's TestMain traces
+	// under the same test name into one shared directory: unqualified, the
+	// packages `go test ./...` runs in parallel overwrite each other's traces,
+	// and rewriting one races the next writer.
+	path := filepath.Join(tracesDir, fmt.Sprintf("%s.%s.zip", tracesPackage, t.Name()))
+
+	// A failure here is not a reason to skip the redaction below. Stop assembles
+	// the archive first and only then sends `tracingStop`, which is itself
+	// allowed to fail, so it can return an error having already written a
+	// complete trace — and one that is only partially written is just as
+	// unwelcome in the artifact. All a failure means is that the trace may be
+	// absent or truncated, both of which the next step handles.
+	if err := page.Context().Tracing().Stop(path); err != nil {
+		t.Logf("tracing stop error: %+v", err)
+	}
+
+	_, secret, ok := client.RateLimitHeader()
+	if !ok {
+		return
+	}
+	redactOrRemoveTrace(t, path, secret)
+}
+
+// redactOrRemoveTrace strips secret out of the trace archive at path, and
+// removes the archive if that is not possible — a trace that cannot be rewritten
+// must not reach the uploaded artifact. An archive that was never written is
+// nothing to redact and nothing to remove.
+func redactOrRemoveTrace(t testing.TB, path, secret string) {
+	err := redactInZip(path, secret)
+	if err == nil {
+		return
+	}
+
+	t.Logf("could not redact %s, removing it: %+v", path, err)
+	// Only a trace still on disk afterwards is worth failing over.
+	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		require.NoError(t, err, "the trace may still carry the rate-limit header")
+	}
+}
+
+const redactedPlaceholder = "[redacted]"
+
+// redactInZip rewrites every entry of the zip archive at path, replacing each
+// occurrence of secret with a placeholder.
+//
+// The JSON-escaped spelling is replaced as well, because the trace stores
+// headers as JSON string values and a secret containing a quote or backslash
+// would otherwise appear there in a form the raw comparison does not match.
+func redactInZip(path, secret string) error {
+	if secret == "" {
+		return nil
+	}
+
+	needles := [][]byte{[]byte(secret)}
+	if escaped, err := json.Marshal(secret); err == nil {
+		if inner := escaped[1 : len(escaped)-1]; !bytes.Equal(inner, []byte(secret)) {
+			needles = append(needles, inner)
+		}
+	}
+
+	r, err := zip.OpenReader(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		// Tracing wrote no archive, so there is nothing that could leak.
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	tmp, err := os.CreateTemp(filepath.Dir(path), "trace-*.zip")
+	if err != nil {
+		_ = r.Close()
+		return err
+	}
+	defer os.Remove(tmp.Name()) // no-op once the rename below succeeded
+
+	err = func() error {
+		w := zip.NewWriter(tmp)
+		for _, f := range r.File {
+			src, err := f.Open()
+			if err != nil {
+				return err
+			}
+			content, err := io.ReadAll(src)
+			_ = src.Close()
+			if err != nil {
+				return err
+			}
+			for _, needle := range needles {
+				content = bytes.ReplaceAll(content, needle, []byte(redactedPlaceholder))
+			}
+			dst, err := w.Create(f.Name)
+			if err != nil {
+				return err
+			}
+			if _, err := dst.Write(content); err != nil {
+				return err
+			}
+		}
+		return w.Close()
+	}()
+	_ = r.Close()
+	_ = tmp.Close()
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(tmp.Name(), path)
+}
+
+// submitPasswordForm submits the filled-in login form and fails immediately if
+// the server refused the request outright.
+//
+// This catches the infrastructure-level refusals — 429 when a CI run drives more
+// logins from one IP than Ory Network allows, or a 5xx — and it exists because
+// the consent screen is the next thing the caller waits for. On a refusal the
+// page never leaves the form, so an unchecked failure surfaces 30 seconds later
+// as a missing `Allow` button, pointing at the consent screen instead of at the
+// reason it never rendered.
+//
+// A rejected *credential* is not covered here: Ory Network answers that with a
+// 303 back to the login page, which is indistinguishable from success at this
+// point. The consent wait reports where the browser ended up, which is what
+// separates the two.
+func submitPasswordForm(t testing.TB, page playwright.Page) {
+	// The login flow issues exactly one request to this path, and it is this
+	// submission — the flow itself is created by the login UI, not the browser.
+	isLoginSubmission := func(url string) bool {
+		return strings.Contains(url, "/self-service/login")
+	}
+
+	resp, err := page.ExpectResponse(isLoginSubmission, func() error {
+		return page.Locator(`[type="submit"][name="method"][value="password"]`).Click()
+	})
+	require.NoError(t, err, "the login form was never submitted")
+
+	if resp.Status() < http.StatusBadRequest {
+		return
+	}
+
+	body, _ := resp.Text()
+	require.FailNowf(t, "the login form was refused",
+		"POST %s\n%d %s\n%s\n\nThe consent screen never renders after this, so waiting for it would only time out.",
+		resp.URL(), resp.Status(), resp.StatusText(), body)
+}
+
 func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, email, password string) func(uri string) error {
 	return func(uri string) error {
 		t.Logf("open browser with %s", uri)
@@ -305,7 +513,7 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 		}))
 		defer func() {
 			r := recover()
-			_ = page.Context().Tracing().Stop(filepath.Join(tracesDir, fmt.Sprintf("%s.zip", t.Name())))
+			stopTracing(t, page)
 			if r != nil {
 				panic(r)
 			}
@@ -319,16 +527,18 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 			t.Logf("logging in")
 			require.NoError(t, page.Locator(`[data-testid="node/input/identifier"] input`).Fill(email))
 			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		} else {
 			// reconfirm password
 			t.Logf("reconfirming password")
 			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		}
+		submitPasswordForm(t, page)
 
 		// we wait here for the button +1s because there is some console bug that can lead to form submissions before the form action is correctly set
-		require.NoError(t, page.Locator(`button:has-text("Allow")`).WaitFor())
+		if err := page.Locator(`button:has-text("Allow")`).WaitFor(); err != nil {
+			require.FailNowf(t, "the consent screen did not render", "%s\n\nThe browser ended up at %s. Still being on the login page means the credentials or the flow were rejected, rather than the consent screen itself being broken.",
+				err, page.URL())
+		}
 		time.Sleep(time.Second)
 
 		// accept consent
@@ -340,13 +550,19 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 	}
 }
 
-var tracesDir string
+var (
+	tracesDir string
+	// tracesPackage is the package under test, used to keep the traces of
+	// packages running in parallel apart. See stopTracing.
+	tracesPackage string
+)
 
 func init() {
 	cwd, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+	tracesPackage = filepath.Base(cwd)
 	dirs := strings.Split(cwd, string(os.PathSeparator))
 	for i := range dirs {
 		if dirs[i] == "cloudx" {
