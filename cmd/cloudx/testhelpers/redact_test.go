@@ -110,4 +110,30 @@ func TestRedactInZip(t *testing.T) {
 		// whole TestMain down with it.
 		assert.NoError(t, redactInZip(filepath.Join(t.TempDir(), "absent.zip"), secret))
 	})
+
+	// Tracing().Stop() assembles the archive before the call that finishes
+	// tracing, and that call may fail on its own, so a trace can be left behind
+	// complete or truncated even when stopping reports an error. Neither may
+	// reach the uploaded artifact carrying the secret.
+	t.Run("case=an unrewritable archive is removed", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "truncated.zip")
+		full := writeArchive(t, map[string]string{"trace.trace": secret})
+		content, err := os.ReadFile(full)
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(path, content[:len(content)/2], 0o600))
+
+		redactOrRemoveTrace(t, path, secret)
+
+		_, err = os.Stat(path)
+		assert.ErrorIs(t, err, os.ErrNotExist, "a trace that could not be redacted must not survive")
+	})
+
+	t.Run("case=a rewritable archive is kept, redacted", func(t *testing.T) {
+		path := writeArchive(t, map[string]string{"trace.trace": "before " + secret + " after"})
+
+		redactOrRemoveTrace(t, path, secret)
+
+		require.FileExists(t, path, "a redacted trace is still worth uploading")
+		assert.Equal(t, "before "+redactedPlaceholder+" after", readArchive(t, path)["trace.trace"])
+	})
 }

@@ -362,24 +362,36 @@ func stopTracing(t testing.TB, page playwright.Page) {
 	// packages `go test ./...` runs in parallel overwrite each other's traces,
 	// and rewriting one races the next writer.
 	path := filepath.Join(tracesDir, fmt.Sprintf("%s.%s.zip", tracesPackage, t.Name()))
+
+	// A failure here is not a reason to skip the redaction below. Stop assembles
+	// the archive first and only then sends `tracingStop`, which is itself
+	// allowed to fail, so it can return an error having already written a
+	// complete trace — and one that is only partially written is just as
+	// unwelcome in the artifact. All a failure means is that the trace may be
+	// absent or truncated, both of which the next step handles.
 	if err := page.Context().Tracing().Stop(path); err != nil {
 		t.Logf("tracing stop error: %+v", err)
-		return
 	}
 
 	_, secret, ok := client.RateLimitHeader()
 	if !ok {
 		return
 	}
+	redactOrRemoveTrace(t, path, secret)
+}
 
+// redactOrRemoveTrace strips secret out of the trace archive at path, and
+// removes the archive if that is not possible — a trace that cannot be rewritten
+// must not reach the uploaded artifact. An archive that was never written is
+// nothing to redact and nothing to remove.
+func redactOrRemoveTrace(t testing.TB, path, secret string) {
 	err := redactInZip(path, secret)
 	if err == nil {
 		return
 	}
 
-	// The archive could not be rewritten, so make sure it cannot be uploaded.
-	// Only a trace that is still on disk afterwards is worth failing over.
 	t.Logf("could not redact %s, removing it: %+v", path, err)
+	// Only a trace still on disk afterwards is worth failing over.
 	if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		require.NoError(t, err, "the trace may still carry the rate-limit header")
 	}
