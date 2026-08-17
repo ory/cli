@@ -13,15 +13,9 @@ func NewAllowedCmd() *cobra.Command {
 	cmd := check.NewCheckCmd()
 	wrapForOryCLI(cmd)
 
-	// The previous usage line, `allowed <subject> <relation> <namespace> <object>`,
-	// documented only the deprecated four-argument form and gave no hint that
-	// the subject may be a subject set — so it steered callers into passing a
-	// bare subject ID, which Ory Network rejects with "subject_id is not
-	// supported; please migrate to subject sets".
 	cmd.Use = "allowed <subject> <relation> <object_namespace>:<object_id>"
-	// wrapForOryCLI names the command it is normally applied to, so without this
-	// `ory is allowed` also answers to `relationships`, `relation-tuples` and
-	// friends — the aliases of a different command entirely.
+	// wrapForOryCLI sets the aliases of the relationships command, which do not
+	// belong on a permission check.
 	cmd.Aliases = nil
 	cmd.Long = `Check whether a subject has a relation on an object.
 

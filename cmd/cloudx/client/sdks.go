@@ -30,11 +30,6 @@ var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
 
 // RateLimitHeader returns the header that exempts a caller from Ory Network's
 // per-IP rate limits, and whether one is configured at all.
-//
-// Everything that talks to Ory Network on the test suite's behalf has to send
-// it, not just the SDK clients built below: the browser that drives the OAuth2
-// login is a separate client with its own connection, and CI runs many of those
-// logins concurrently from a single egress IP.
 func RateLimitHeader() (name, value string, ok bool) {
 	return rateLimitHeaderName, rateLimitHeader, rateLimitHeader != ""
 }

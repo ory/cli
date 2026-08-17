@@ -127,19 +127,11 @@ func TestCRUD(t *testing.T) {
 	stdout = list(t)
 	require.JSONEq(t, tuple("o1"), gjson.Get(stdout, "relation_tuples").Raw, stdout)
 
-	// There used to be an `ory is allowed s r n o1` check here asserting
-	// `{"allowed":true}`.
-	//
-	// The command still works — it accepts a subject set, and `is allowed
-	// n:s#r r n:o1` against the tuple above runs fine — but it answers
-	// `{"allowed":false}`, and no reachable configuration makes it answer true:
-	// granting a permission that evaluates to true needs a relationship whose
-	// subject is a plain ID, which is exactly what the server refuses to store.
-	// Only a bare subject fails outright, with the same "please migrate to
-	// subject sets" error a write gets.
-	//
-	// So there is nothing here left to assert that would not be asserting the
-	// server's current state rather than the CLI's behaviour.
+	// This does not assert on `ory is allowed`. The check runs against a
+	// subject-set tuple, but answers false whatever it is given: a permission
+	// that evaluates to true needs a relationship whose subject is a plain ID,
+	// which the server refuses to store. Asserting that would pin the server's
+	// state rather than the CLI's behaviour.
 
 	// 3. delete with --all but without --force
 	stdout, stderr, err := defaultCmd.Exec(nil, "delete", "relation-tuples", "--format", "json", "--project", defaultProject.Id,

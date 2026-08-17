@@ -106,8 +106,7 @@ func TestRedactInZip(t *testing.T) {
 
 	t.Run("case=a missing archive is not an error", func(t *testing.T) {
 		// Tracing does not always leave a file behind, and an archive that was
-		// never written cannot leak anything. Treating it as a failure took the
-		// whole TestMain down with it.
+		// never written cannot leak anything.
 		assert.NoError(t, redactInZip(filepath.Join(t.TempDir(), "absent.zip"), secret))
 	})
 
