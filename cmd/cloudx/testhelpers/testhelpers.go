@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -256,9 +257,20 @@ func SetupPlaywright(t testing.TB) (playwright.Browser, playwright.Page, func())
 }
 
 func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
-	page, err := browser.NewPage(playwright.BrowserNewPageOptions{
+	opts := playwright.BrowserNewPageOptions{
 		BaseURL: new(client.CloudConsoleURL("").String()),
-	})
+	}
+
+	// The browser talks to Ory Network directly, so it needs the same rate-limit
+	// exemption the SDK clients get — the header configured on those does not
+	// reach it. Without this, `go test ./...` runs the browser login of every
+	// cloudx package at once from a single CI egress IP and the login endpoint
+	// starts answering 429.
+	if name, value, ok := client.RateLimitHeader(); ok {
+		opts.ExtraHttpHeaders = map[string]string{name: value}
+	}
+
+	page, err := browser.NewPage(opts)
 	require.NoError(t, err)
 
 	for _, route := range []string{
@@ -295,6 +307,42 @@ func NewPage(t testing.TB, browser playwright.Browser) playwright.Page {
 	return page
 }
 
+// submitPasswordForm submits the filled-in login form and fails immediately if
+// the server refused the request outright.
+//
+// This catches the infrastructure-level refusals — 429 when a CI run drives more
+// logins from one IP than Ory Network allows, or a 5xx — and it exists because
+// the consent screen is the next thing the caller waits for. On a refusal the
+// page never leaves the form, so an unchecked failure surfaces 30 seconds later
+// as a missing `Allow` button, pointing at the consent screen instead of at the
+// reason it never rendered.
+//
+// A rejected *credential* is not covered here: Ory Network answers that with a
+// 303 back to the login page, which is indistinguishable from success at this
+// point. The consent wait reports where the browser ended up, which is what
+// separates the two.
+func submitPasswordForm(t testing.TB, page playwright.Page) {
+	// The login flow issues exactly one request to this path, and it is this
+	// submission — the flow itself is created by the login UI, not the browser.
+	isLoginSubmission := func(url string) bool {
+		return strings.Contains(url, "/self-service/login")
+	}
+
+	resp, err := page.ExpectResponse(isLoginSubmission, func() error {
+		return page.Locator(`[type="submit"][name="method"][value="password"]`).Click()
+	})
+	require.NoError(t, err, "the login form was never submitted")
+
+	if resp.Status() < http.StatusBadRequest {
+		return
+	}
+
+	body, _ := resp.Text()
+	require.FailNowf(t, "the login form was refused",
+		"POST %s\n%d %s\n%s\n\nThe consent screen never renders after this, so waiting for it would only time out.",
+		resp.URL(), resp.Status(), resp.StatusText(), body)
+}
+
 func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, email, password string) func(uri string) error {
 	return func(uri string) error {
 		t.Logf("open browser with %s", uri)
@@ -319,16 +367,18 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 			t.Logf("logging in")
 			require.NoError(t, page.Locator(`[data-testid="node/input/identifier"] input`).Fill(email))
 			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		} else {
 			// reconfirm password
 			t.Logf("reconfirming password")
 			require.NoError(t, page.Locator(`[data-testid="node/input/password"] input`).Fill(password))
-			require.NoError(t, page.Locator(`[type="submit"][name="method"][value="password"]`).Click())
 		}
+		submitPasswordForm(t, page)
 
 		// we wait here for the button +1s because there is some console bug that can lead to form submissions before the form action is correctly set
-		require.NoError(t, page.Locator(`button:has-text("Allow")`).WaitFor())
+		if err := page.Locator(`button:has-text("Allow")`).WaitFor(); err != nil {
+			require.FailNowf(t, "the consent screen did not render", "%s\n\nThe browser ended up at %s. Still being on the login page means the credentials or the flow were rejected, rather than the consent screen itself being broken.",
+				err, page.URL())
+		}
 		time.Sleep(time.Second)
 
 		// accept consent

@@ -22,9 +22,22 @@ const (
 	RateLimitHeaderKey = "ORY_RATE_LIMIT_HEADER"
 	ConsoleURLKey      = "ORY_CONSOLE_URL"
 	OryAPIsURLKey      = "ORY_ORYAPIS_URL"
+
+	rateLimitHeaderName = "Ory-RateLimit-Action"
 )
 
 var rateLimitHeader = os.Getenv(RateLimitHeaderKey)
+
+// RateLimitHeader returns the header that exempts a caller from Ory Network's
+// per-IP rate limits, and whether one is configured at all.
+//
+// Everything that talks to Ory Network on the test suite's behalf has to send
+// it, not just the SDK clients built below: the browser that drives the OAuth2
+// login is a separate client with its own connection, and CI runs many of those
+// logins concurrently from a single egress IP.
+func RateLimitHeader() (name, value string, ok bool) {
+	return rateLimitHeaderName, rateLimitHeader, rateLimitHeader != ""
+}
 
 func CloudConsoleURL(prefix string) *url.URL {
 	// we load the URL from the env here instead of init() because the tests might want to change this
@@ -58,7 +71,7 @@ func newSDKConfiguration(uri string) *cloud.Configuration {
 	conf.OperationServers = nil
 	conf.HTTPClient = &http.Client{Timeout: time.Second * 30}
 	if rateLimitHeader != "" {
-		conf.AddDefaultHeader("Ory-RateLimit-Action", rateLimitHeader)
+		conf.AddDefaultHeader(rateLimitHeaderName, rateLimitHeader)
 	}
 	return conf
 }
@@ -126,7 +139,7 @@ func (h *CommandHelper) newProjectHTTPClient(ctx context.Context) (*http.Client,
 		Source: tokenSource,
 	}
 	if rateLimitHeader != "" {
-		c.Transport = &setHeaderTransport{base: c.Transport, key: "Ory-RateLimit-Action", value: rateLimitHeader}
+		c.Transport = &setHeaderTransport{base: c.Transport, key: rateLimitHeaderName, value: rateLimitHeader}
 	}
 
 	return c, baseURL, nil
