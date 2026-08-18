@@ -64,13 +64,13 @@ func outputFullProject(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
 }
 
 func outputIdentityConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
-	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Identity.Config))
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.GetIdentity().Config))
 }
 
 func outputPermissionConfig(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
-	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Permission.Config))
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.GetPermission().Config))
 }
 
 func outputOAuth2Config(cmd *cobra.Command, p *cloud.SuccessfulProjectUpdate) {
-	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.Oauth2.Config))
+	cmdx.PrintJSONAble(cmd, outputConfig(p.Project.Services.GetOauth2().Config))
 }

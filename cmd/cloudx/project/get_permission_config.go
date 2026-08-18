@@ -16,19 +16,21 @@ func NewGetKetoConfigCmd() *cobra.Command {
 		Aliases: []string{"pc", "keto-config"},
 		Args:    cobra.NoArgs,
 		Short:   "Get Ory Permissions configuration.",
-		Long:    "Get the Ory Permissions configuration for an Ory Network project.",
+		Long: `Get the Ory Permissions configuration for an Ory Network project.
+
+Ory Network stores the Ory Permission Language file separately and reports its
+location here rather than its contents. To read the file itself, use ` + "`ory get opl`" + `.`,
 		Example: `$ ory get permission-config --project ecaaa3cb-0730-4ee8-a6df-9553cdfeef89 --format yaml > permission-config.yaml
 
 $ ory get permission-config --format json   # uses currently selected project
 
 {
-  "namespaces": [
-    {
-      "name": "files",
-      "id": 1
-	},1
-    // ...
-  ]
+  "limit": {
+    "max_read_depth": 3
+  },
+  "namespaces": {
+    "location": "https://storage.googleapis.com/bac-gcs-production/..."
+  }
 }`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			h, err := client.NewCobraCommandHelper(cmd)
@@ -45,7 +47,7 @@ $ ory get permission-config --format json   # uses currently selected project
 				return cmdx.PrintOpenAPIError(cmd, err)
 			}
 
-			cmdx.PrintJSONAble(cmd, outputConfig(project.Services.Permission.Config))
+			cmdx.PrintJSONAble(cmd, outputConfig(project.Services.GetPermission().Config))
 			return nil
 		},
 	}
