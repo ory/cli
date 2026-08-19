@@ -87,17 +87,22 @@ jobs:
     if: ${{ github.ref_type == 'tag' }}
     needs:
       - release
+    # Authenticates to npm via OIDC trusted publishing (no token). Each
+    # published package must list this repo and workflow file as a trusted
+    # publisher in its npmjs.com settings.
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: ory/ci/checkout@master
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      # Trusted publishing requires npm >= 11.5.1; node 22 bundles npm 10.
+      - run: npm install -g npm@11
       - env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN_AENEASR }}
           REF_NAME: ${{ github.ref_name }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          node npm/publish.js "$REF_NAME"
+        run: node npm/publish.js "$REF_NAME"
 
   newsletter-draft:
     name: Draft newsletter
