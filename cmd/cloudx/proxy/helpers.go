@@ -143,6 +143,8 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 	oryURL := client.CloudAPIsURL(project.Slug + ".projects")
 	oryURL.Host = strings.TrimSuffix(oryURL.Host, ":443")
 
+	rateLimitName, rateLimitValue, _ := client.RateLimitHeader()
+
 	writer := herodot.NewJSONWriter(&errorLogger{Writer: stdErr})
 	mw := negroni.New()
 
@@ -194,7 +196,7 @@ func runReverseProxy(ctx context.Context, h *client.CommandHelper, stdErr io.Wri
 				PathPrefix:     "",
 			}, nil
 		},
-		proxy.WithReqMiddleware(reqMiddleware(conf, oryURL, apiKey)),
+		proxy.WithReqMiddleware(reqMiddleware(conf, oryURL, apiKey, rateLimitName, rateLimitValue)),
 		proxy.WithRespMiddleware(respMiddleware(conf)),
 	))
 
@@ -272,10 +274,11 @@ and configure your SDKs to point to it, for example in JavaScript:
 }
 
 // reqMiddleware returns the request middleware used by the reverse proxy. The
-// Ory-* headers (including the temporary API key in Ory-Base-URL-Rewrite-Token)
-// are only attached to Ory-bound requests. Requests forwarded to the developer's
-// upstream application do not need — and must not receive — these headers.
-func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddleware {
+// Ory-* headers (including the temporary API key in Ory-Base-URL-Rewrite-Token
+// and the rate-limit exemption header) are only attached to Ory-bound requests.
+// Requests forwarded to the developer's upstream application do not need — and
+// must not receive — these headers.
+func reqMiddleware(conf *config, oryURL *url.URL, apiKey, rateLimitName, rateLimitValue string) proxy.ReqMiddleware {
 	return func(r *httputil.ProxyRequest, c *proxy.HostConfig, body []byte) ([]byte, error) {
 		// Strip any client-supplied Ory-* headers before selectively re-applying
 		// them below. Otherwise a client could spoof these headers: they would be
@@ -299,6 +302,9 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey string) proxy.ReqMiddle
 			r.Out.Header.Set("Ory-Base-URL-Rewrite", publicURL.String())
 			if len(apiKey) > 0 {
 				r.Out.Header.Set("Ory-Base-URL-Rewrite-Token", apiKey)
+			}
+			if rateLimitValue != "" {
+				r.Out.Header.Set(rateLimitName, rateLimitValue)
 			}
 		} else if conf.rewriteHost {
 			r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
