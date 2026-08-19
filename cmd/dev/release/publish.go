@@ -196,6 +196,6 @@ func gitCleanTags() {
 	pkg.Check(pkg.NewCommand("git",
 		append([]string{"tag", "-d"}, pkg.BashPipe(pkg.GitListTags())...)...).Run())
 	pkg.Check(pkg.NewCommand("git", "fetch", "origin", "--tags").Run())
-	pkg.Check(pkg.NewCommand("git", "pull", "-ff").Run())
+	pkg.Check(pkg.NewCommand("git", "pull", "--ff-only").Run())
 	pkg.Check(pkg.NewCommand("git", "diff", "--exit-code").Run())
 }
