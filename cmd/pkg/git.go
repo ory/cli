@@ -35,23 +35,28 @@ func NewCommandIn(dir, name string, args ...string) *exec.Cmd {
 	return ec
 }
 
-func GitTagRelease(dir string, annotate, dry bool, nextVersion semver.Version, previousVersion *semver.Version) {
+func GitTagRelease(dir string, promptReleaseNotes, dry bool, nextVersion semver.Version, previousVersion *semver.Version) {
 	Check(NewCommandIn(dir, "git", "add", "-A").Run())
 
-	gitArgs := []string{"commit", "-a", "--allow-empty", "-m",
-		fmt.Sprintf("autogen: pin v%s release commit", nextVersion.String())}
+	commitMessage := fmt.Sprintf("autogen: pin v%s release commit", nextVersion.String())
 	if previousVersion != nil {
-		gitArgs = append(gitArgs, "-m", fmt.Sprintf("%s v%s", GitCommitMessagePreviousVersion, previousVersion.String()))
+		commitMessage += fmt.Sprintf("\n\n%s v%s", GitCommitMessagePreviousVersion, previousVersion.String())
 	}
+	Check(NewCommandIn(dir, "git", "commit", "-a", "--allow-empty", "-m", commitMessage).Run())
 
-	Check(NewCommandIn(dir, "git", gitArgs...).Run())
-
-	if annotate {
-		message := promptTagMessage(nextVersion)
-		Check(NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String()), "-a", "-m", message).Run())
-	} else {
-		Check(NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String())).Run())
+	// The tag message becomes the release notes in `ory dev release notify
+	// draft`. Tags without release notes (test releases, mirror repos) mirror
+	// the pin commit's message: `notify draft` skips the newsletter when tag
+	// and commit message are identical.
+	message := commitMessage
+	if promptReleaseNotes {
+		message = promptTagMessage(nextVersion)
 	}
+	// The message must be given via -m: without it, git opens an editor
+	// (always for -a, and for plain tags when tag.gpgsign is set), which
+	// breaks the terminal because stdin is detached. With tag.gpgsign set,
+	// the tag is signed non-interactively.
+	Check(NewCommandIn(dir, "git", "tag", fmt.Sprintf("v%s", nextVersion.String()), "-a", "-m", message).Run())
 
 	if !dry {
 		Confirm("Pressing [y] will push this (%s) release to GitHub. Are you sure?", dir)

@@ -40,7 +40,13 @@ func newDraftCmd() *cobra.Command {
 			pkg.Check(pkg.NewCommandIn(presetDir, "npm", "i").Run())
 
 			commitMessage := pkg.CommandGetOutput("git", "log", "--format=%B", "-n", "1", gitHash)
-			tagMessage := pkg.CommandGetOutput("git", "tag", "-l", "--format=%(contents)", circleTag)
+			// Strip the signature block of signed tags from the message: it
+			// must not end up in the newsletter and would defeat the
+			// no-release-notes check against the commit message below.
+			tagMessage := strings.TrimSpace(pkg.CommandGetOutput("git", "tag", "-l", "--format=%(contents)", circleTag))
+			if sig := strings.TrimSpace(pkg.CommandGetOutput("git", "tag", "-l", "--format=%(contents:signature)", circleTag)); sig != "" {
+				tagMessage = strings.TrimSpace(strings.TrimSuffix(tagMessage, sig))
+			}
 
 			pkg.Check(pkg.NewCommand("npm", "--no-git-tag-version", "--allow-same-version", "version", circleTag).Run())
 
