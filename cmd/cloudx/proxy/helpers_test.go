@@ -263,9 +263,22 @@ func TestReqMiddleware(t *testing.T) {
 		r := newRequest(t, oryURL.Host)
 		r.Out.Header.Set(headerRateLimit, "client-supplied")
 
-		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Equal(t, "client-supplied", r.Out.Header.Get(headerRateLimit), "callers may still send the header themselves")
+	})
+
+	t.Run("case=client-supplied rate-limit header is stripped from upstream-bound requests", func(t *testing.T) {
+		for _, value := range []string{rateLimitSecret, ""} {
+			conf := &config{publicURL: publicURL}
+			r := newRequest(t, "localhost:3000")
+			r.Out.Header.Set(headerRateLimit, "client-supplied")
+
+			_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, value)(r, &proxy.HostConfig{}, nil)
+			require.NoError(t, err)
+
+			assert.Empty(t, r.Out.Header.Get(headerRateLimit), "the header is meaningful only to Ory Network and must not reach the upstream app (configured value: %q)", value)
+		}
 	})
 }

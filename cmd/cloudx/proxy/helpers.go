@@ -306,9 +306,14 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey, rateLimitName, rateLim
 			if rateLimitValue != "" {
 				r.Out.Header.Set(rateLimitName, rateLimitValue)
 			}
-		} else if conf.rewriteHost {
-			r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
-			r.Out.Host = c.UpstreamHost
+		} else {
+			// The rate-limit exemption header is meaningful only to Ory Network
+			// and must never be forwarded to the developer's upstream application.
+			r.Out.Header.Del(rateLimitName)
+			if conf.rewriteHost {
+				r.Out.Header.Set("X-Forwarded-Host", r.In.Host)
+				r.Out.Host = c.UpstreamHost
+			}
 		}
 
 		return body, nil
