@@ -26,13 +26,13 @@ func (h *CommandHelper) CreateProjectAPIKey(ctx context.Context, projectID, name
 		return nil, err
 	}
 
-	req := cloud.CreateProjectApiKeyRequest{Name: name}
+	req := cloud.CreateProjectApiKeyBody{Name: name}
 	if expiresIn > 0 {
 		expiresAt := time.Now().Add(expiresIn)
 		req.ExpiresAt = &expiresAt
 	}
 
-	token, res, err := c.ProjectAPI.CreateProjectApiKey(ctx, projectID).CreateProjectApiKeyRequest(req).Execute()
+	token, res, err := c.ProjectAPI.CreateProjectApiKey(ctx, projectID).CreateProjectApiKeyBody(req).Execute()
 	if err != nil {
 		return nil, handleError("unable to create project API key", res, err)
 	}
