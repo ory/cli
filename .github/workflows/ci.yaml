@@ -11,6 +11,16 @@ on:
     - cron: "0 0 * * *"
 
 jobs:
+  test-launcher:
+    name: Test npm launcher
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ory/ci/checkout@master
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm run test:launcher
+
   test:
     name: Run tests
     runs-on: ubuntu-latest
