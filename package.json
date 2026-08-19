@@ -17,7 +17,8 @@
   "scripts": {
     "test": "npm run test:cypress",
     "test:cypress": "cypress run",
-    "test:cypress:dev": "cypress open"
+    "test:cypress:dev": "cypress open",
+    "test:launcher": "node --test npm/run.test.js"
   },
   "prettier": "ory-prettier-styles",
   "devDependencies": {

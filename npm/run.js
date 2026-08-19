@@ -8,7 +8,7 @@
 
 "use strict"
 
-var spawnSync = require("child_process").spawnSync
+var spawn = require("child_process").spawn
 
 var packages = {
   "darwin arm64": "@ory/cli-darwin-arm64",
@@ -45,13 +45,32 @@ function binaryPath() {
   }
 }
 
-var result = spawnSync(binaryPath(), process.argv.slice(2), {
-  stdio: "inherit",
+// Termination signals sent to the launcher are forwarded to the binary rather
+// than ending the launcher alone: `ory tunnel` and `ory proxy` delete their
+// temporary API key on shutdown, which an orphaned binary never gets to do.
+var forwardedSignals = ["SIGINT", "SIGTERM", "SIGHUP"]
+
+var child = spawn(binaryPath(), process.argv.slice(2), { stdio: "inherit" })
+
+forwardedSignals.forEach(function (signal) {
+  process.on(signal, function () {
+    child.kill(signal)
+  })
 })
-if (result.error) {
-  throw result.error
-}
-if (result.signal) {
-  process.kill(process.pid, result.signal)
-}
-process.exit(typeof result.status === "number" ? result.status : 1)
+
+child.on("error", function (err) {
+  console.error("Unable to start the Ory CLI binary: " + err.message)
+  process.exit(1)
+})
+
+child.on("exit", function (code, signal) {
+  if (signal) {
+    // Re-raise with the default disposition restored so the launcher is
+    // terminated by the same signal as the binary.
+    forwardedSignals.forEach(function (s) {
+      process.removeAllListeners(s)
+    })
+    process.kill(process.pid, signal)
+  }
+  process.exit(typeof code === "number" ? code : 1)
+})
