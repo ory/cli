@@ -59,7 +59,7 @@ require (
 	github.com/cloudflare/circl v1.6.5 // indirect
 	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/deckarep/golang-set/v2 v2.9.0 // indirect
+	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.4.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -137,7 +137,6 @@ require (
 	github.com/toqueteos/webbrowser v1.2.1 // indirect
 	github.com/wI2L/jsondiff v0.7.1 // indirect
 	github.com/zmb3/spotify/v2 v2.4.3 // indirect
-	go.mongodb.org/mongo-driver v1.17.9 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.70.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.70.0 // indirect
