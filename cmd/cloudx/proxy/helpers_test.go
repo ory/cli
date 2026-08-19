@@ -153,7 +153,7 @@ func TestReqMiddleware(t *testing.T) {
 		conf := &config{publicURL: publicURL}
 		r := newRequest(t, oryURL.Host)
 
-		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Equal(t, apiKey, r.Out.Header.Get(headerToken))
@@ -165,7 +165,7 @@ func TestReqMiddleware(t *testing.T) {
 		conf := &config{publicURL: publicURL}
 		r := newRequest(t, "localhost:3000")
 
-		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Empty(t, r.Out.Header.Get(headerToken), "API key must not leak to the upstream app")
@@ -177,7 +177,7 @@ func TestReqMiddleware(t *testing.T) {
 		conf := &config{publicURL: publicURL, rewriteHost: true}
 		r := newRequest(t, "localhost:3000")
 
-		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{UpstreamHost: "upstream.internal"}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{UpstreamHost: "upstream.internal"}, nil)
 		require.NoError(t, err)
 
 		assert.Equal(t, r.In.Host, r.Out.Header.Get("X-Forwarded-Host"))
@@ -192,7 +192,7 @@ func TestReqMiddleware(t *testing.T) {
 		r.Out.Header.Set(headerRewrite, "http://evil.example")
 		r.Out.Header.Set(headerNoCustom, "true")
 
-		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Empty(t, r.Out.Header.Get(headerToken), "spoofed token must not be forwarded to the upstream app")
@@ -205,7 +205,7 @@ func TestReqMiddleware(t *testing.T) {
 		r := newRequest(t, oryURL.Host)
 		r.Out.Header.Set(headerToken, "ory_apikey_spoofed")
 
-		_, err := reqMiddleware(conf, oryURL, "")(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, "", "", "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Empty(t, r.Out.Header.Get(headerToken), "spoofed token must not be passed through to Ory when apiKey is empty")
@@ -216,9 +216,69 @@ func TestReqMiddleware(t *testing.T) {
 		r := newRequest(t, oryURL.Host)
 		r.Out.Header.Set(headerToken, "ory_apikey_spoofed")
 
-		_, err := reqMiddleware(conf, oryURL, apiKey)(r, &proxy.HostConfig{}, nil)
+		_, err := reqMiddleware(conf, oryURL, apiKey, "", "")(r, &proxy.HostConfig{}, nil)
 		require.NoError(t, err)
 
 		assert.Equal(t, apiKey, r.Out.Header.Get(headerToken), "genuine key must overwrite any spoofed token")
+	})
+
+	const (
+		headerRateLimit = "Ory-RateLimit-Action"
+		rateLimitSecret = "rate-limit-secret-sentinel"
+	)
+
+	t.Run("case=ory-bound request receives the rate-limit exemption header when configured", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, oryURL.Host)
+
+		_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, rateLimitSecret)(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, rateLimitSecret, r.Out.Header.Get(headerRateLimit))
+	})
+
+	t.Run("case=upstream-bound request does not receive the rate-limit exemption header", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, "localhost:3000")
+
+		_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, rateLimitSecret)(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Empty(t, r.Out.Header.Get(headerRateLimit), "rate-limit secret must not leak to the upstream app")
+	})
+
+	t.Run("case=configured rate-limit header overwrites a client-supplied value on Ory-bound requests", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, oryURL.Host)
+		r.Out.Header.Set(headerRateLimit, "client-supplied")
+
+		_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, rateLimitSecret)(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, rateLimitSecret, r.Out.Header.Get(headerRateLimit), "configured secret must win over a client-supplied value")
+	})
+
+	t.Run("case=client-supplied rate-limit header passes through when none is configured", func(t *testing.T) {
+		conf := &config{publicURL: publicURL}
+		r := newRequest(t, oryURL.Host)
+		r.Out.Header.Set(headerRateLimit, "client-supplied")
+
+		_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, "")(r, &proxy.HostConfig{}, nil)
+		require.NoError(t, err)
+
+		assert.Equal(t, "client-supplied", r.Out.Header.Get(headerRateLimit), "callers may still send the header themselves")
+	})
+
+	t.Run("case=client-supplied rate-limit header is stripped from upstream-bound requests", func(t *testing.T) {
+		for _, value := range []string{rateLimitSecret, ""} {
+			conf := &config{publicURL: publicURL}
+			r := newRequest(t, "localhost:3000")
+			r.Out.Header.Set(headerRateLimit, "client-supplied")
+
+			_, err := reqMiddleware(conf, oryURL, apiKey, headerRateLimit, value)(r, &proxy.HostConfig{}, nil)
+			require.NoError(t, err)
+
+			assert.Empty(t, r.Out.Header.Get(headerRateLimit), "the header is meaningful only to Ory Network and must not reach the upstream app (configured value: %q)", value)
+		}
 	})
 }
