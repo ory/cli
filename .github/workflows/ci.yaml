@@ -38,8 +38,8 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('go.mod') }}
           restore-keys: ${{ runner.os }}-playwright-
       - run:
-          go run github.com/mxschmitt/playwright-go/cmd/playwright
-          install chromium --with-deps
+          go run github.com/mxschmitt/playwright-go/cmd/playwright install
+          chromium --with-deps
       - run: make lint
       - run: go test -race ./...
         env:
