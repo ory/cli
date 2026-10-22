@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine3.22 AS builder
+FROM golang:1.27-alpine3.24 AS builder
 
 RUN apk -U --no-cache add build-base git gcc bash
 
@@ -15,7 +15,7 @@ ADD . .
 
 RUN CGO_CFLAGS="-D_LARGEFILE64_SOURCE" go build -tags sqlite,json1 -o /usr/bin/ory
 
-FROM alpine:3.22
+FROM alpine:3.24
 
 RUN apk add -U --no-cache ca-certificates bash
 RUN apk upgrade --no-cache libssl3 libcrypto3

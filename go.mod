@@ -1,6 +1,6 @@
 module github.com/ory/cli
 
-go 1.26
+go 1.27
 
 replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110165800-b09c17334dc2
 

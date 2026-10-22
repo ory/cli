@@ -325,9 +325,9 @@ func reqMiddleware(conf *config, oryURL *url.URL, apiKey, rateLimitName, rateLim
 // re-adds, so both must be derived from here — tests build the handler from
 // this function rather than restating the options.
 func corsOptions(conf *config) (cors.Options, error) {
-	var originFunc func(r *http.Request, origin string) bool
+	var originFunc func(origin string) bool
 	if len(conf.corsOrigins) == 0 {
-		originFunc = func(r *http.Request, origin string) bool {
+		originFunc = func(origin string) bool {
 			return true
 		}
 	}
@@ -338,8 +338,8 @@ func corsOptions(conf *config) (cors.Options, error) {
 	}
 
 	return cors.Options{
-		AllowedOrigins:         corsOrigins,
-		AllowOriginRequestFunc: originFunc,
+		AllowedOrigins:  corsOrigins,
+		AllowOriginFunc: originFunc,
 		// HEAD is CORS-safelisted, so browsers send it without a preflight, but
 		// corsx.CORSDefaultAllowedMethods omits it. For a method it does not
 		// allow, rs/cors adds no Access-Control-Allow-Origin at all — and since
