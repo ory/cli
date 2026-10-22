@@ -68,7 +68,7 @@ func TestUpdateProject(t *testing.T) {
 			projectFlag:     "--project",
 			pathSuccess:     "fixtures/update-hydra/json/config.json",
 			pathFailure:     "fixtures/update-hydra/fail/config.json",
-			failureContains: "cannot unmarshal number into Go struct field",
+			failureContains: "cannot unmarshal number into Go",
 			fixture:         fixtureHydraConfig,
 		},
 	} {

@@ -54,6 +54,9 @@ jobs:
 
   docs:
     name: Generate docs
+    # Disabled: ory/docs only accepts changes to master through pull requests,
+    # and ory/ci/docs/cli-next pushes directly. Re-enable once it opens one.
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: ory/ci/docs/cli-next@master

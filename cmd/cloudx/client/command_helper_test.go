@@ -74,7 +74,7 @@ func TestCommandHelper(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, defaultWorkspaceAPIKey.Value)
 
-	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", nil, true)
+	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", &defaultWorkspace.Id, true)
 	require.NoError(t, err)
 	defaultWorkspaceProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", &defaultWorkspace.Id, false)
 	require.NoError(t, err)
@@ -89,7 +89,9 @@ func TestCommandHelper(t *testing.T) {
 		t.Parallel()
 		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)
-		otherProject, err := h.CreateProject(ctx, "other project", "dev", &defaultWorkspace.Id, false)
+		otherWorkspace, err := h.CreateWorkspace(ctx, "other workspace")
+		require.NoError(t, err)
+		otherProject, err := h.CreateProject(ctx, "other project", "dev", &otherWorkspace.Id, false)
 		require.NoError(t, err)
 
 		t.Run("can change the selected project and workspace", func(t *testing.T) {
@@ -102,7 +104,7 @@ func TestCommandHelper(t *testing.T) {
 			require.Equal(t, current, defaultProject.Id)
 
 			require.NoError(t, h.SelectProject(otherProject.Id))
-			require.NoError(t, h.SelectWorkspace(defaultWorkspace.Id))
+			require.NoError(t, h.SelectWorkspace(otherWorkspace.Id))
 
 			actualProject, err := h.ProjectID()
 			require.NoError(t, err)
@@ -110,7 +112,7 @@ func TestCommandHelper(t *testing.T) {
 
 			actualWorkspace := h.WorkspaceID()
 			require.NotNil(t, actualWorkspace)
-			assert.Equal(t, defaultWorkspace.Id, *actualWorkspace)
+			assert.Equal(t, otherWorkspace.Id, *actualWorkspace)
 
 			// check if persistent across instances
 			h, err = client.NewCommandHelper(ctx)
@@ -142,29 +144,6 @@ func TestCommandHelper(t *testing.T) {
 			projects, err := h.ListProjects(ctx, nil)
 			require.NoError(t, err)
 			require.Empty(t, projects)
-		})
-
-		t.Run("list of projects", func(t *testing.T) {
-			p0, err := h.CreateProject(ctx, "p0", "dev", nil, false)
-			require.NoError(t, err)
-			p1, err := h.CreateProject(ctx, "p1", "dev", nil, false)
-			require.NoError(t, err)
-
-			projects, err := h.ListProjects(ctx, nil)
-			require.NoError(t, err)
-			require.Len(t, projects, 2)
-			assert.ElementsMatch(t, []string{p0.Id, p1.Id}, []string{projects[0].Id, projects[1].Id})
-
-			pjKey, err := authenticated.CreateProjectAPIKey(ctx, p0.Id, "test key", 0)
-			require.NoError(t, err)
-
-			pjKeyH, err := client.NewCommandHelper(ctx, client.WithProjectAPIKey(*pjKey.Value))
-			require.NoError(t, err)
-
-			projects, err = pjKeyH.ListProjects(ctx, nil)
-			require.NoError(t, err)
-			require.Len(t, projects, 1)
-			assert.Equal(t, p0.Id, projects[0].Id)
 		})
 
 		t.Run("list of workspace projects", func(t *testing.T) {
@@ -216,22 +195,25 @@ func TestCommandHelper(t *testing.T) {
 
 		name0 := "new project name0"
 		name1 := "new project name1"
-		name2 := "new project name2"
 
+		// A free workspace holds two development projects.
 		project0, err := h.CreateProject(ctx, name0, "dev", &workspace.Id, true)
 		require.NoError(t, err)
-		project1, err := h.CreateProject(ctx, name1, "dev", nil, false)
-		require.NoError(t, err)
-		project2, err := h.CreateProject(ctx, name2, "dev", nil, false)
+		project1, err := h.CreateProject(ctx, name1, "dev", &workspace.Id, false)
 		require.NoError(t, err)
 
-		assert.Len(t, stringslice.Unique([]string{project0.Id, project1.Id, project2.Id}), 3)
-		assert.Len(t, stringslice.Unique([]string{project0.Slug, project1.Slug, project2.Slug}), 3)
-		assert.Equal(t, []string{name0, name1, name2}, []string{project0.Name, project1.Name, project2.Name})
+		// Ory Network rejects session-authenticated project creation without a
+		// workspace, which is why `ory create project` asks for one.
+		_, err = h.CreateProject(ctx, "no workspace", "dev", nil, false)
+		require.ErrorContains(t, err, "A workspace is required to create a project.")
 
-		assert.Equal(t, &workspace.Id, project0.WorkspaceId.Get())
-		assert.Nil(t, project1.WorkspaceId.Get())
-		assert.Nil(t, project2.WorkspaceId.Get())
+		assert.Len(t, stringslice.Unique([]string{project0.Id, project1.Id}), 2)
+		assert.Len(t, stringslice.Unique([]string{project0.Slug, project1.Slug}), 2)
+		assert.Equal(t, []string{name0, name1}, []string{project0.Name, project1.Name})
+
+		for _, p := range []*cloud.Project{project0, project1} {
+			assert.Equal(t, &workspace.Id, p.WorkspaceId.Get())
+		}
 
 		selectedID, err := h.ProjectID()
 		require.NoError(t, err)

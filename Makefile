@@ -3,7 +3,7 @@ SHELL=/bin/bash -o pipefail
 export PATH := .bin:${PATH}
 export PWD := $(shell pwd)
 
-GOLANGCI_LINT_VERSION = 2.11.4
+GOLANGCI_LINT_VERSION = 2.15.0
 
 .bin/clidoc: Makefile go.mod cmd
 	go build -tags nodev -o .bin/clidoc ./cmd/clidoc/.
@@ -16,7 +16,7 @@ docs/cli: .bin/clidoc
 	go build -o .bin/cli github.com/ory/cli
 
 .bin/golangci-lint-$(GOLANGCI_LINT_VERSION):
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b .bin v$(GOLANGCI_LINT_VERSION)
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b .bin v$(GOLANGCI_LINT_VERSION)
 	mv .bin/golangci-lint .bin/golangci-lint-$(GOLANGCI_LINT_VERSION)
 
 .bin/licenses: Makefile
