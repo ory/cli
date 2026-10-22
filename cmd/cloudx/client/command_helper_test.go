@@ -74,7 +74,7 @@ func TestCommandHelper(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, defaultWorkspaceAPIKey.Value)
 
-	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", nil, true)
+	defaultProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", &defaultWorkspace.Id, true)
 	require.NoError(t, err)
 	defaultWorkspaceProject, err := authenticated.CreateProject(ctx, randx.MustString(6, randx.AlphaNum), "dev", &defaultWorkspace.Id, false)
 	require.NoError(t, err)
@@ -145,9 +145,11 @@ func TestCommandHelper(t *testing.T) {
 		})
 
 		t.Run("list of projects", func(t *testing.T) {
-			p0, err := h.CreateProject(ctx, "p0", "dev", nil, false)
+			workspace, err := h.CreateWorkspace(ctx, t.Name())
 			require.NoError(t, err)
-			p1, err := h.CreateProject(ctx, "p1", "dev", nil, false)
+			p0, err := h.CreateProject(ctx, "p0", "dev", &workspace.Id, false)
+			require.NoError(t, err)
+			p1, err := h.CreateProject(ctx, "p1", "dev", &workspace.Id, false)
 			require.NoError(t, err)
 
 			projects, err := h.ListProjects(ctx, nil)
@@ -220,18 +222,23 @@ func TestCommandHelper(t *testing.T) {
 
 		project0, err := h.CreateProject(ctx, name0, "dev", &workspace.Id, true)
 		require.NoError(t, err)
-		project1, err := h.CreateProject(ctx, name1, "dev", nil, false)
+		project1, err := h.CreateProject(ctx, name1, "dev", &workspace.Id, false)
 		require.NoError(t, err)
-		project2, err := h.CreateProject(ctx, name2, "dev", nil, false)
+		project2, err := h.CreateProject(ctx, name2, "dev", &workspace.Id, false)
 		require.NoError(t, err)
+
+		// Ory Network rejects session-authenticated project creation without a
+		// workspace, which is why `ory create project` asks for one.
+		_, err = h.CreateProject(ctx, "no workspace", "dev", nil, false)
+		require.ErrorContains(t, err, "A workspace is required to create a project.")
 
 		assert.Len(t, stringslice.Unique([]string{project0.Id, project1.Id, project2.Id}), 3)
 		assert.Len(t, stringslice.Unique([]string{project0.Slug, project1.Slug, project2.Slug}), 3)
 		assert.Equal(t, []string{name0, name1, name2}, []string{project0.Name, project1.Name, project2.Name})
 
-		assert.Equal(t, &workspace.Id, project0.WorkspaceId.Get())
-		assert.Nil(t, project1.WorkspaceId.Get())
-		assert.Nil(t, project2.WorkspaceId.Get())
+		for _, p := range []*cloud.Project{project0, project1, project2} {
+			assert.Equal(t, &workspace.Id, p.WorkspaceId.Get())
+		}
 
 		selectedID, err := h.ProjectID()
 		require.NoError(t, err)
