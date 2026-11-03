@@ -273,32 +273,69 @@ func redirectErr(w http.ResponseWriter, r *http.Request, err, desc string) {
 	http.Redirect(w, r, location.String(), http.StatusFound)
 }
 
+// SignOut revokes the stored OAuth2 token and removes it from the local
+// configuration. It reads the configuration file directly instead of going
+// through GetAuthenticatedConfig, because signing out must not require a valid
+// session: an expired or invalid one would otherwise start a new login, and
+// RFC 7009 servers accept revocation requests for tokens that are already
+// invalid.
 func (h *CommandHelper) SignOut(ctx context.Context) error {
-	config, err := h.GetAuthenticatedConfig(ctx)
-	if err != nil {
+	config, err := readConfig(h.configLocation)
+	if stderrors.Is(err, ErrNoConfig) {
+		return nil
+	} else if err != nil {
 		return err
 	}
-	if config.AccessToken == nil {
-		return h.ClearConfig()
+	if config.AccessToken != nil {
+		if err := revokeToken(ctx, config.AccessToken); err != nil {
+			_, _ = fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token, signing out locally only: %v\n", err)
+		}
 	}
+	return h.ClearConfig()
+}
+
+// revokeToken revokes the refresh token, which also revokes the access tokens
+// issued with it. Tokens obtained without the offline_access scope have no
+// refresh token, so the access token is revoked instead.
+func revokeToken(ctx context.Context, token *oauth2.Token) error {
+	value, hint := token.RefreshToken, "refresh_token"
+	if value == "" {
+		value, hint = token.AccessToken, "access_token"
+	}
+	if value == "" {
+		return nil
+	}
+
 	client := oauth2ClientConfig()
 	revoke, err := url.Parse(client.Endpoint.AuthURL)
 	if err != nil {
 		return err
 	}
 	revoke.Path = "/oauth2/revoke"
-	res, err := http.PostForm(revoke.String(), url.Values{
-		"client_id": []string{client.ClientID},
-		"token":     []string{config.AccessToken.RefreshToken}, // this also revokes the associated access token
-	})
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, revoke.String(), strings.NewReader(url.Values{
+		"client_id":       {client.ClientID},
+		"token":           {value},
+		"token_type_hint": {hint},
+	}.Encode()))
 	if err != nil {
-		_, _ = fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", err)
-	} else {
-		defer res.Body.Close()
-		if res.StatusCode < 200 || res.StatusCode > 299 {
-			body, _ := io.ReadAll(res.Body)
-			_, _ = fmt.Fprintf(h.VerboseErrWriter, "failed to revoke access token: %v\n", string(body))
-		}
+		return err
 	}
-	return h.ClearConfig()
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Honor the same context HTTP client that the oauth2 package uses for the
+	// token exchange and refresh requests against this server.
+	httpClient := http.DefaultClient
+	if c, ok := ctx.Value(oauth2.HTTPClient).(*http.Client); ok && c != nil {
+		httpClient = c
+	}
+	res, err := httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		body, _ := io.ReadAll(io.LimitReader(res.Body, 4096))
+		return fmt.Errorf("unexpected status %d: %s", res.StatusCode, body)
+	}
+	return nil
 }
