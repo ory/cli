@@ -14,8 +14,6 @@ import (
 	"github.com/Masterminds/semver/v3"
 )
 
-const GitCommitMessagePreviousVersion = "Bumps from"
-
 // stdin is shared across all prompts. Creating a fresh bufio.Reader per prompt
 // discards read-ahead input, which breaks piped stdin and typed-ahead answers.
 var stdin = bufio.NewReader(os.Stdin)
@@ -35,19 +33,15 @@ func NewCommandIn(dir, name string, args ...string) *exec.Cmd {
 	return ec
 }
 
-func GitTagRelease(dir string, promptReleaseNotes, dry bool, nextVersion semver.Version, previousVersion *semver.Version) {
+func GitTagRelease(dir string, promptReleaseNotes, dry bool, nextVersion semver.Version) {
 	Check(NewCommandIn(dir, "git", "add", "-A").Run())
 
 	commitMessage := fmt.Sprintf("autogen: pin v%s release commit", nextVersion.String())
-	if previousVersion != nil {
-		commitMessage += fmt.Sprintf("\n\n%s v%s", GitCommitMessagePreviousVersion, previousVersion.String())
-	}
 	Check(NewCommandIn(dir, "git", "commit", "-a", "--allow-empty", "-m", commitMessage).Run())
 
-	// The tag message becomes the release notes in `ory dev release notify
-	// draft`. Tags without release notes (test releases, mirror repos) mirror
-	// the pin commit's message: `notify draft` skips the newsletter when tag
-	// and commit message are identical.
+	// The tag message becomes the release notes that ory/changelog renders
+	// into the GitHub release. Tags without release notes (test releases,
+	// mirror repos) reuse the pin commit's message.
 	message := commitMessage
 	if promptReleaseNotes {
 		message = promptTagMessage(nextVersion)

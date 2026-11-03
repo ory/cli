@@ -9,7 +9,6 @@ import (
 	"github.com/ory/cli/cmd/dev/ci"
 	"github.com/ory/cli/cmd/dev/headers"
 	"github.com/ory/cli/cmd/dev/markdown"
-	"github.com/ory/cli/cmd/dev/newsletter"
 	"github.com/ory/cli/cmd/dev/openapi"
 	"github.com/ory/cli/cmd/dev/release"
 	"github.com/ory/cli/cmd/dev/schema"
@@ -25,7 +24,6 @@ Please check the individual commands for more information!`,
 		Hidden: true,
 	}
 	c.AddCommand(
-		newsletter.NewCommand(),
 		markdown.NewCommand(),
 		release.NewCommand(),
 		swagger.NewCommand(),

@@ -34,9 +34,9 @@ To publish a release, you first have to create a pre-release:
 	ory dev release publish v0.1.0-pre.0
 	ory dev release publish v0.1.0-pre.0
 
-Once the release pipeline finished successfully (skip publishing the newsletter!) you can run:
+Once the release pipeline finished successfully you can run:
 
-	ory dev release publish v0.1.0 --include-changelog-since v0.1.0-pre.0
+	ory dev release publish v0.1.0
 
 Here are some examples how to choose pre:
 
@@ -48,13 +48,7 @@ Here are some examples how to choose pre:
 
 You may also release a specific commit by using its hash as the second argument:
 
-	ory dev release publish v0.1.0-pre.0 28472a9f15457f55ae18aee2c5d26a18c1216a39
-
-In case where the release pipeline failed and you re-create another release where you want to include the changelog from the failed release, perform the following:
-
-1. Assuming release "v0.1.0" failed
-2. You wish to create "v0.1.1" and include the changelog of "v0.1.0" as well
-3. Run ` + "`ory dev release publish v0.1.1 --include-changelog-since v0.1.0`",
+	ory dev release publish v0.1.0-pre.0 28472a9f15457f55ae18aee2c5d26a18c1216a39`,
 		Run: func(cmd *cobra.Command, args []string) {
 			wd, err := os.Getwd()
 			pkg.Check(err)
@@ -124,10 +118,6 @@ Please check "ory help dev release publish".
 Are you sure you want to proceed without creating a pre version first?`, currentVersion, nextVersion)
 			}
 
-			if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) == 0 && !isTestRelease.MatchString(nextVersion.Prerelease()) {
-				pkg.Confirm("You are about to release a non-test release v%s but did not include the --include-changelog-since flag. Are you sure you want to continue?", nextVersion)
-			}
-
 			pkg.Check(pkg.NewCommand("goreleaser", "check", "--soft").Run())
 
 			if dry {
@@ -154,40 +144,26 @@ Are you sure you want to proceed without creating a pre version first?`, current
 				}
 			}
 
-			var fromVersion *semver.Version
-			if ov := flagx.MustGetString(cmd, "include-changelog-since"); len(ov) > 0 {
-				fromVersion, err = semver.StrictNewVersion(strings.TrimPrefix(ov, "v"))
-				pkg.Check(err, "Unable to parse include-changelog-since git tag v%s: %s", ov, err)
-				checkIfTagExists(fromVersion)
-			}
-
-			pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion, fromVersion)
+			pkg.GitTagRelease(wd, !isTestRelease.MatchString(nextVersion.Prerelease()), dry, nextVersion)
 
 			switch cfg.Project {
 			case "hydra":
-				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion, nil)
+				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/hydra-login-consent-node.git"), false, dry, nextVersion)
 			case "kratos":
-				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion, nil)
-				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion, nil)
+				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-node.git"), false, dry, nextVersion)
+				pkg.GitTagRelease(pkg.GitClone("git@github.com:ory/kratos-selfservice-ui-react-native.git"), false, dry, nextVersion)
 			}
 
 			fmt.Printf("Successfully released version: v%s\n", nextVersion.String())
 		},
 	}
 	c.Flags().Bool("dry", false, "Make changes only locally and do not push to remotes.")
-	c.Flags().String("include-changelog-since", "", "If set includes all changelog entries for all git tags up to and including the specified git tag")
 	return c
 }
 
 func checkForDuplicateTag(v *semver.Version) {
 	if slices.Contains(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
 		pkg.Fatalf(`Version v%s exists already and can not be re-released!`, v.String())
-	}
-}
-
-func checkIfTagExists(v *semver.Version) {
-	if !slices.Contains(strings.Split(pkg.GitListTags(), "\n"), fmt.Sprintf("v%s", v)) {
-		pkg.Fatalf(`Version v%s does not exist!`, v.String())
 	}
 }
 

@@ -513,8 +513,6 @@ github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe h1:rvu4obdvqR0fkSIJ8I
 github.com/ory/go-acc v0.2.9-0.20230103102148-6b1c9a70dbbe/go.mod h1:z4n3u6as84LbV4YmgjHhnwtccQqzf4cZlSk9f1FhygI=
 github.com/ory/go-convenience v0.1.1-0.20251022160015-e2a1f648d0b1 h1:kQ6STHpAW2DAt88ANUKj6kZ4e3XKl1zvV+IaSWXJkTo=
 github.com/ory/go-convenience v0.1.1-0.20251022160015-e2a1f648d0b1/go.mod h1:uEY/a60PL5c12nYz4V5cHY03IBmwIAEm8TWB0yn9KNs=
-github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655 h1:H/zV2+eEGc4KZC4c2zYobnm3MRfuxJS+QQZQGsjJjsE=
-github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655/go.mod h1:UkHph/q1UfWxoWtS2mT8Hb4PrCHJxjTdBjT9RkJoMnk=
 github.com/ory/graceful v0.2.0 h1:5wqyCvKZG2+sorOA9rmQJm9aZP+RJdTrVHVDcvMOSuQ=
 github.com/ory/graceful v0.2.0/go.mod h1:hg2iCy+LCWOXahBZ+NQa4dk8J2govyQD79rrqrgMyY8=
 github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22 h1:xSbAB0yH2CUPqf9tiei3EFo7xpqY5nsAGdcrwqH9o6o=
