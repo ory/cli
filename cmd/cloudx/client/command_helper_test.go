@@ -57,6 +57,8 @@ func TestCommandHelper(t *testing.T) {
 
 	email, password, name := testhelpers.RegisterAccount(ctx, t)
 
+	// Parallel subtests log in through this browser, so it may only be closed
+	// once all of them have finished, which is when t.Cleanup runs.
 	browser, page, cleanup := testhelpers.SetupPlaywright(t)
 	t.Cleanup(cleanup)
 	authenticated, err := client.NewCommandHelper(
@@ -87,6 +89,8 @@ func TestCommandHelper(t *testing.T) {
 
 	t.Run("func=SelectProjectWorkspace", func(t *testing.T) {
 		t.Parallel()
+		// Selecting rewrites the config file, which the parallel subtests share.
+		ctx, _ := testhelpers.WithDuplicatedConfigFile(ctx, t, defaultConfigFile)
 		h, err := client.NewCommandHelper(ctx)
 		require.NoError(t, err)
 		otherWorkspace, err := h.CreateWorkspace(ctx, "other workspace")
@@ -236,9 +240,6 @@ func TestCommandHelper(t *testing.T) {
 		// authenticate
 		require.NoError(t, h.Authenticate(ctx))
 		t.Logf("authentication successful")
-
-		// we don't need playwright anymore
-		cleanup()
 
 		// assert success
 		config, err := h.GetAuthenticatedConfig(ctx)
