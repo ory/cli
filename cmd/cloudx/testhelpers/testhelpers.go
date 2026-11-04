@@ -468,15 +468,15 @@ func redactInZip(path, secret string) error {
 	return os.Rename(tmp.Name(), path)
 }
 
-// submitPasswordForm submits the filled-in login form and fails immediately if
-// Ory Network did not accept it.
+// submitLoginStep submits the login form with the given method and fails
+// immediately if Ory Network did not accept it.
 //
-// It exists because the consent screen is the next thing the caller waits for.
-// On a refusal the page never leaves the form, so an unchecked failure surfaces
-// 30 seconds later as a missing `Allow` button, pointing at the consent screen
-// instead of at the reason it never rendered: rejected credentials (400), 429
-// when a CI run drives more logins from one IP than Ory Network allows, or a 5xx.
-func submitPasswordForm(t testing.TB, page playwright.Page) {
+// It exists because every step is followed by a wait for the next screen. On a
+// refusal the page never leaves the form, so an unchecked failure surfaces 30
+// seconds later as a missing field or `Allow` button, pointing at that screen
+// instead of at the reason it never rendered: rejected credentials, 429 when a
+// CI run drives more logins from one IP than Ory Network allows, or a 5xx.
+func submitLoginStep(t testing.TB, page playwright.Page, method string) {
 	// The login UI submits the flow with fetch, so this POST is the only request
 	// to this path; the flow itself was created before the page rendered.
 	isLoginSubmission := func(r playwright.Response) bool {
@@ -484,22 +484,58 @@ func submitPasswordForm(t testing.TB, page playwright.Page) {
 	}
 
 	resp, err := page.ExpectResponse(isLoginSubmission, func() error {
-		return page.Locator(`[type="submit"][name="method"][value="password"]`).Click()
+		return page.Locator(fmt.Sprintf(`[type="submit"][name="method"][value=%q]`, method)).Click()
 	})
-	require.NoError(t, err, "the login form was never submitted")
+	require.NoError(t, err, "the %s login step was never submitted", method)
 
-	// A login that continues at the OAuth2 consent screen is answered with 422
-	// browser_location_change_required, the only use of 422 in self-service
-	// flows. The login UI navigates away on it, which can discard the body
-	// before it is read, so the status alone has to decide.
-	if resp.Status() < http.StatusBadRequest || resp.Status() == http.StatusUnprocessableEntity {
+	switch resp.Status() {
+	case http.StatusUnprocessableEntity:
+		// A login that continues at the OAuth2 consent screen is answered with
+		// 422 browser_location_change_required, the only use of 422 in
+		// self-service flows. The login UI navigates away on it, which can
+		// discard the body before it is read, so the status alone has to decide.
 		return
+	case http.StatusBadRequest:
+		// Kratos answers 400 both when it refuses a step and when the flow
+		// continues at its next step, as after the identifier of an
+		// identifier-first login. The UI renders that step in place, so the
+		// body is still there to tell the two apart.
+		if body, err := resp.Body(); err == nil && isNextLoginStep(body) {
+			return
+		}
+	default:
+		if resp.Status() < http.StatusBadRequest {
+			return
+		}
 	}
 
 	body, _ := resp.Text()
 	require.FailNowf(t, "the login form was refused",
-		"POST %s\n%d %s\n%s\n\nThe consent screen never renders after this, so waiting for it would only time out.",
-		resp.URL(), resp.Status(), resp.StatusText(), body)
+		"POST %s (method %s)\n%d %s\n%s\n\nThe next login screen never renders after this, so waiting for it would only time out.",
+		resp.URL(), method, resp.Status(), resp.StatusText(), body)
+}
+
+// isNextLoginStep reports whether a 400 answer to a login submission is the
+// flow asking for its next step. Kratos answers a refusal with the flow too,
+// but adds messages of type error to it; other errors are not a flow at all.
+func isNextLoginStep(body []byte) bool {
+	var flow cloud.LoginFlow
+	if err := json.Unmarshal(body, &flow); err != nil {
+		return false
+	}
+	for _, m := range flow.Ui.Messages {
+		if m.Type == "error" {
+			return false
+		}
+	}
+	for _, n := range flow.Ui.Nodes {
+		for _, m := range n.Messages {
+			if m.Type == "error" {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, email, password string) func(uri string) error {
@@ -521,19 +557,23 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 		_, err := page.Goto(uri)
 		require.NoError(t, err)
 
-		// The password field renders on a first login and when reconfirming an
-		// existing session, but only the first login asks for the identifier.
-		passwordInput := page.Locator(`[data-testid="ory/form/node/input/password"]`)
-		require.NoError(t, passwordInput.WaitFor())
-		identifierInput := page.Locator(`[data-testid="ory/form/node/input/identifier"]`)
+		// Console login is identifier-first: a first login asks for the email on
+		// its own screen and only then for the password, while reconfirming an
+		// existing session starts at the password. The email stays in the form
+		// as a hidden field after its step, so only visible fields count.
+		identifierInput := page.Locator(`[data-testid="ory/form/node/input/identifier"]:visible`)
+		passwordInput := page.Locator(`[data-testid="ory/form/node/input/password"]:visible`)
+		require.NoError(t, identifierInput.Or(passwordInput).First().WaitFor())
 		if visible, err := identifierInput.IsVisible(); err == nil && visible {
 			t.Logf("logging in")
 			require.NoError(t, identifierInput.Fill(email))
+			submitLoginStep(t, page, "identifier_first")
+			require.NoError(t, passwordInput.WaitFor())
 		} else {
 			t.Logf("reconfirming password")
 		}
 		require.NoError(t, passwordInput.Fill(password))
-		submitPasswordForm(t, page)
+		submitLoginStep(t, page, "password")
 
 		// we wait here for the button +1s because there is some console bug that can lead to form submissions before the form action is correctly set
 		if err := page.Locator(`button:has-text("Allow")`).WaitFor(); err != nil {
