@@ -41,7 +41,9 @@ jobs:
           go run github.com/mxschmitt/playwright-go/cmd/playwright install
           chromium --with-deps
       - run: make lint
-      - run: go test -race ./...
+      # cmd/cloudx tests run against live staging, which go test cannot track,
+      # so a cached pass would hide a break on the staging side.
+      - run: go test -race -count=1 ./...
         env:
           ORY_RATE_LIMIT_HEADER: ${{ secrets.ORY_RATE_LIMIT_HEADER }}
           ORY_CONSOLE_URL: https://console.staging.ory.dev
