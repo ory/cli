@@ -4,13 +4,18 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"crypto/subtle"
 	stderrors "errors"
 	"fmt"
+	"html/template"
 	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
@@ -181,7 +186,9 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 	}
 	client.RedirectURL = fmt.Sprintf("http://%s/callback", l.Addr())
 
+	nonce := randx.MustString(32, randx.AlphaNum)
 	login := &loopbackLogin{
+		startNonce: nonce,
 		// Cookies are not separated by port, so concurrent logins need distinct
 		// names.
 		cookieName: fmt.Sprintf("ory_cli_login_%d", l.Addr().(*net.TCPAddr).Port),
@@ -215,15 +222,17 @@ func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth
 		_ = srv.Shutdown(shutdownCtx)
 	}()
 
-	startURL := fmt.Sprintf("http://%s/start", l.Addr())
+	startURL := fmt.Sprintf("http://%s/start?nonce=%s", l.Addr(), nonce)
 	if h.noBrowser {
 		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Open the below page in a browser on this computer to complete your login to Ory Network:")
 	} else {
-		if err := h.openBrowserHook(startURL); err != nil {
+		removePage, err := h.openBrowserPrivately(startURL)
+		if err != nil {
 			return nil, err
 		}
+		defer removePage()
 		_, _ = fmt.Fprintln(h.VerboseErrWriter, `A browser should have opened for you to complete your login to Ory Network.
-If no browser opened, visit the below page to continue:`)
+If it did not open or does not show the login, visit the below page to continue:`)
 	}
 	_, _ = fmt.Fprintf(h.VerboseErrWriter, "\n\t\t%s\n\n", startURL)
 
@@ -233,6 +242,53 @@ If no browser opened, visit the below page to continue:`)
 	case <-login.done:
 		return login.result.token, login.result.err
 	}
+}
+
+var redirectPage = template.Must(template.New("").Parse(`<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="refresh" content="0;url={{.}}">
+<title>Ory CLI</title>
+</head>
+<body><a href="{{.}}">Continue to log in to Ory Network</a></body>
+</html>
+`))
+
+// openBrowserPrivately opens the URL through a page that only the current user
+// can read, because every user of the computer can see the arguments of the
+// program that opens the browser. The returned function removes the page.
+func (h *CommandHelper) openBrowserPrivately(target string) (removePage func(), _ error) {
+	dir, err := os.MkdirTemp("", "ory-cli-login-")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a directory for the login page: %w", err)
+	}
+	removePage = func() { _ = os.RemoveAll(dir) }
+
+	var page bytes.Buffer
+	if err := redirectPage.Execute(&page, target); err != nil {
+		removePage()
+		return nil, fmt.Errorf("failed to render the login page: %w", err)
+	}
+	path := filepath.Join(dir, "login.html")
+	if err := os.WriteFile(path, page.Bytes(), 0o600); err != nil {
+		removePage()
+		return nil, fmt.Errorf("failed to write the login page: %w", err)
+	}
+	if err := h.openBrowserHook(fileURL(path)); err != nil {
+		removePage()
+		return nil, err
+	}
+	return removePage, nil
+}
+
+func fileURL(path string) string {
+	p := filepath.ToSlash(path)
+	if !strings.HasPrefix(p, "/") {
+		// Windows paths start with the drive letter.
+		p = "/" + p
+	}
+	return (&url.URL{Scheme: "file", Path: p}).String()
 }
 
 // loopbackLogin is the CLI's side of the browser login: it sends the browser
@@ -245,6 +301,9 @@ If no browser opened, visit the below page to continue:`)
 // browser visits, may request the start and callback URLs too. They get
 // attempts of their own or are rejected, and leave the login running.
 type loopbackLogin struct {
+	// Every user of the computer can connect to the port, so only requests
+	// with the nonce from the start URL can begin an attempt.
+	startNonce string
 	// All attempts share the cookie name, so in each browser only the latest
 	// attempt can complete, as with the authorization server's CSRF cookie.
 	cookieName string
@@ -279,6 +338,10 @@ func (l *loopbackLogin) handler() http.Handler {
 }
 
 func (l *loopbackLogin) start(w http.ResponseWriter, r *http.Request) {
+	if subtle.ConstantTimeCompare([]byte(r.URL.Query().Get("nonce")), []byte(l.startNonce)) != 1 {
+		http.NotFound(w, r)
+		return
+	}
 	state := randx.MustString(32, randx.AlphaNum)
 	pkceVerifier := oauth2.GenerateVerifier()
 	l.mu.Lock()
