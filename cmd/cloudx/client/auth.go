@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -173,91 +174,188 @@ func (h *CommandHelper) loginOAuth2(ctx context.Context) (*Config, error) {
 	return config, nil
 }
 
-func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth2.Config) (token *oauth2.Token, err error) {
-	var (
-		state        = randx.MustString(32, randx.AlphaNum)
-		pkceVerifier = oauth2.GenerateVerifier()
-		serverErr    = make(chan error)
-		serverToken  = make(chan *oauth2.Token)
-	)
+func (h *CommandHelper) oAuth2DanceWithServer(ctx context.Context, client *oauth2.Config) (*oauth2.Token, error) {
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return nil, fmt.Errorf("failed to allocate port for OAuth2 callback handler, try again later: %w", err)
 	}
-	client.RedirectURL = fmt.Sprintf("http://%s/callback", l.Addr().String())
+	client.RedirectURL = fmt.Sprintf("http://%s/callback", l.Addr())
 
-	srv := http.Server{
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// for retries the user has to start from the beginning
-			defer close(serverErr)
-			defer close(serverToken)
-
-			ctx := r.Context()
-			if err := r.ParseForm(); err != nil {
-				redirectErr(w, r, "parse form", "An error occurred during CLI authentication. Please try again")
-				serverErr <- fmt.Errorf("failed to parse form: %w", err)
-				return
-			}
-			if s := r.Form.Get("state"); s != state {
-				redirectErr(w, r, "state mismatch", "An error occurred during CLI authentication. Please try again")
-				serverErr <- fmt.Errorf("state mismatch: expected %q, got %q", state, s)
-				return
-			}
-			if r.Form.Has("error") {
-				e, d := r.Form.Get("error"), r.Form.Get("error_description")
-				redirectErr(w, r, e, d)
-				serverErr <- fmt.Errorf("upsteam error: %s: %s", e, d)
-				return
-			}
-			code := r.Form.Get("code")
-			if code == "" {
-				redirectErr(w, r, "missing code", "An error occurred during CLI authentication. Please try again")
-				serverErr <- fmt.Errorf("missing code")
-				return
-			}
-			t, err := client.Exchange(
-				ctx,
-				code,
-				oauth2.VerifierOption(pkceVerifier),
+	login := &loopbackLogin{
+		// Cookies are not separated by port, so concurrent logins need distinct
+		// names.
+		cookieName: fmt.Sprintf("ory_cli_login_%d", l.Addr().(*net.TCPAddr).Port),
+		authURL: func(state, pkceVerifier string) string {
+			return client.AuthCodeURL(state,
+				oauth2.S256ChallengeOption(pkceVerifier),
+				oauth2.SetAuthURLParam("scope", "offline_access email profile"),
+				oauth2.SetAuthURLParam("response_type", "code"),
+				oauth2.SetAuthURLParam("prompt", "login consent"),
+				oauth2.SetAuthURLParam("audience", CloudConsoleURL("api").String()),
 			)
-			if err != nil {
-				redirectErr(w, r, "token exchange", "An error occurred during the OAuth2 token exchange")
-				serverErr <- fmt.Errorf("failed OAuth2 token exchange: %w", err)
-				return
-			}
-			redirectOK(w, r)
-			serverToken <- t
-		}),
+		},
+		exchange: func(code, pkceVerifier string) (*oauth2.Token, error) {
+			return client.Exchange(ctx, code, oauth2.VerifierOption(pkceVerifier))
+		},
+		pkceVerifiers: make(map[string]string),
+		done:          make(chan struct{}),
 	}
+
+	handler := login.handler()
+	if h.wrapLoopbackHandler != nil {
+		handler = h.wrapLoopbackHandler(handler)
+	}
+	srv := http.Server{Handler: handler, ReadHeaderTimeout: 10 * time.Second}
 	go func() { _ = srv.Serve(l) }()
 	defer srv.Close()
+	defer func() {
+		// Shutdown lets the browser receive the redirect it waits for.
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+		defer cancel()
+		_ = srv.Shutdown(shutdownCtx)
+	}()
 
-	u := client.AuthCodeURL(state,
-		oauth2.S256ChallengeOption(pkceVerifier),
-		oauth2.SetAuthURLParam("scope", "offline_access email profile"),
-		oauth2.SetAuthURLParam("response_type", "code"),
-		oauth2.SetAuthURLParam("prompt", "login consent"),
-		oauth2.SetAuthURLParam("audience", CloudConsoleURL("api").String()),
-	)
-	if err := h.openBrowserHook(u); err != nil {
-		return nil, err
+	startURL := fmt.Sprintf("http://%s/start", l.Addr())
+	if h.noBrowser {
+		_, _ = fmt.Fprintln(h.VerboseErrWriter, "Open the below page in a browser on this computer to complete your login to Ory Network:")
+	} else {
+		if err := h.openBrowserHook(startURL); err != nil {
+			return nil, err
+		}
+		_, _ = fmt.Fprintln(h.VerboseErrWriter, `A browser should have opened for you to complete your login to Ory Network.
+If no browser opened, visit the below page to continue:`)
 	}
-	_, _ = fmt.Fprintf(h.VerboseErrWriter,
-		`A browser should have opened for you to complete your login to Ory Network.
-If no browser opened, visit the below page to continue:
-
-		%s
-
-`, u)
+	_, _ = fmt.Fprintf(h.VerboseErrWriter, "\n\t\t%s\n\n", startURL)
 
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case token := <-serverToken:
-		return token, nil
-	case err := <-serverErr:
-		return nil, err
+	case <-login.done:
+		return login.result.token, login.result.err
 	}
+}
+
+// loopbackLogin is the CLI's side of the browser login: it sends the browser
+// to the authorization server and receives the callback with the result.
+//
+// Every request to the start URL begins an attempt with its own state and PKCE
+// verifier, and sets a cookie holding the state. A callback completes the
+// login only if its state matches the cookie and belongs to an attempt. Other
+// programs on the machine, such as link previews that fetch the pages the
+// browser visits, may request the start and callback URLs too. They get
+// attempts of their own or are rejected, and leave the login running.
+type loopbackLogin struct {
+	// All attempts share the cookie name, so in each browser only the latest
+	// attempt can complete, as with the authorization server's CSRF cookie.
+	cookieName string
+	authURL    func(state, pkceVerifier string) string
+	exchange   func(code, pkceVerifier string) (*oauth2.Token, error)
+
+	mu sync.Mutex
+	// pkceVerifiers are keyed by state.
+	pkceVerifiers map[string]string
+
+	once sync.Once
+	// done is closed after the first callback from a browser has set result.
+	done   chan struct{}
+	result loopbackLoginResult
+}
+
+const maxLoginAttempts = 32
+
+type loopbackLoginResult struct {
+	token *oauth2.Token
+	err   error
+	// browserError and browserErrorDescription are shown in the browser if
+	// err is set.
+	browserError, browserErrorDescription string
+}
+
+func (l *loopbackLogin) handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /start", l.start)
+	mux.HandleFunc("GET /callback", l.callback)
+	return mux
+}
+
+func (l *loopbackLogin) start(w http.ResponseWriter, r *http.Request) {
+	state := randx.MustString(32, randx.AlphaNum)
+	pkceVerifier := oauth2.GenerateVerifier()
+	l.mu.Lock()
+	full := len(l.pkceVerifiers) >= maxLoginAttempts
+	if !full {
+		l.pkceVerifiers[state] = pkceVerifier
+	}
+	l.mu.Unlock()
+	if full {
+		http.Error(w, "This login was opened too many times. Run the command again.", http.StatusTooManyRequests)
+		return
+	}
+
+	http.SetCookie(w, l.cookie(state, 0))
+	http.Redirect(w, r, l.authURL(state, pkceVerifier), http.StatusFound)
+}
+
+func (l *loopbackLogin) callback(w http.ResponseWriter, r *http.Request) {
+	pkceVerifier, ok := l.pkceVerifierOf(r)
+	if !ok {
+		http.Error(w, "This login was started in another browser window. Continue in the window where you last opened the login link, or run the command again.", http.StatusForbidden)
+		return
+	}
+	http.SetCookie(w, l.cookie("", -1))
+
+	// A repeated callback waits for the first one and gets the same answer.
+	l.once.Do(func() {
+		l.result = l.complete(r, pkceVerifier)
+		close(l.done)
+	})
+	if l.result.err != nil {
+		redirectErr(w, r, l.result.browserError, l.result.browserErrorDescription)
+		return
+	}
+	redirectOK(w, r)
+}
+
+func (l *loopbackLogin) cookie(value string, maxAge int) *http.Cookie {
+	return &http.Cookie{
+		Name:     l.cookieName,
+		Value:    value,
+		Path:     "/callback",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+}
+
+func (l *loopbackLogin) pkceVerifierOf(r *http.Request) (string, bool) {
+	state := r.URL.Query().Get("state")
+	if c, err := r.Cookie(l.cookieName); err != nil || c.Value != state {
+		return "", false
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	pkceVerifier, ok := l.pkceVerifiers[state]
+	return pkceVerifier, ok
+}
+
+func (l *loopbackLogin) complete(r *http.Request, pkceVerifier string) loopbackLoginResult {
+	const tryAgain = "An error occurred during CLI authentication. Please try again"
+	if err := r.ParseForm(); err != nil {
+		return loopbackLoginResult{err: fmt.Errorf("failed to parse form: %w", err), browserError: "parse form", browserErrorDescription: tryAgain}
+	}
+	if r.Form.Has("error") {
+		e, d := r.Form.Get("error"), r.Form.Get("error_description")
+		return loopbackLoginResult{err: fmt.Errorf("upstream error: %s: %s", e, d), browserError: e, browserErrorDescription: d}
+	}
+	code := r.Form.Get("code")
+	if code == "" {
+		return loopbackLoginResult{err: stderrors.New("missing code"), browserError: "missing code", browserErrorDescription: tryAgain}
+	}
+	token, err := l.exchange(code, pkceVerifier)
+	if err != nil {
+		return loopbackLoginResult{err: fmt.Errorf("failed OAuth2 token exchange: %w", err), browserError: "token exchange", browserErrorDescription: "An error occurred during the OAuth2 token exchange"}
+	}
+	return loopbackLoginResult{token: token}
 }
 
 func redirectOK(w http.ResponseWriter, r *http.Request) {
