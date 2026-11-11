@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -264,6 +265,9 @@ func browserLoginCookies(browserContext playwright.BrowserContext) ([]playwright
 }
 
 func TestOAuth2LoginInBrowser(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("readLoginPage expects a Unix path in the file URL and Unix file modes.")
+	}
 	pw, err := playwright.Run()
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = pw.Stop() })
