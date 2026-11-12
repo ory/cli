@@ -48,10 +48,12 @@ type (
 		projectID, workspaceID uuid.UUID
 		configLocation         string
 		noConfirm, isQuiet     bool
+		noBrowser              bool
 		workspaceFromConfig    bool
 		VerboseErrWriter       io.Writer
 		Stdin                  *bufio.Reader
 		openBrowserHook        func(string) error
+		wrapLoopbackHandler    func(http.Handler) http.Handler
 	}
 	helperOptionsContextKey struct{}
 	CommandHelperOption     func(*CommandHelper)
@@ -116,6 +118,12 @@ func WithProjectAPIKey(apiKey string) CommandHelperOption {
 func WithWorkspaceAPIKey(apiKey string) CommandHelperOption {
 	return func(h *CommandHelper) {
 		h.workspaceAPIKey = &apiKey
+	}
+}
+
+func WithNoBrowser(noBrowser bool) CommandHelperOption {
+	return func(h *CommandHelper) {
+		h.noBrowser = noBrowser
 	}
 }
 

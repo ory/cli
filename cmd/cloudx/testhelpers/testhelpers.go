@@ -582,13 +582,28 @@ func PlaywrightAcceptConsentBrowserHook(t testing.TB, page playwright.Page, emai
 		}
 		time.Sleep(time.Second)
 
-		// accept consent
-		require.NoError(t, page.Locator(`button:has-text("Allow")`).Click())
+		// The CLI keeps waiting after it rejects a callback, so a failed login
+		// has to fail here and not at the test timeout.
+		callback, err := page.ExpectResponse(isLoopbackCallback, func() error {
+			return page.Locator(`button:has-text("Allow")`).Click()
+		})
+		if err != nil {
+			require.FailNowf(t, "the browser did not return to the CLI", "%s\n\nThe browser ended up at %s.", err, page.URL())
+		}
+		if callback.Status() != http.StatusFound {
+			body, _ := callback.Text()
+			require.FailNowf(t, "the CLI rejected the callback", "%d %s", callback.Status(), body)
+		}
 
 		t.Logf("consent successful")
 
 		return nil
 	}
+}
+
+func isLoopbackCallback(rawURL string) bool {
+	u, err := url.Parse(rawURL)
+	return err == nil && u.Hostname() == "127.0.0.1" && u.Path == "/callback"
 }
 
 var (

@@ -8,14 +8,17 @@ import (
 
 	"github.com/ory/cli/cmd/cloudx/client"
 	"github.com/ory/x/cmdx"
+	"github.com/ory/x/flagx"
 )
+
+const flagNoBrowser = "no-browser"
 
 func NewAuthCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "auth",
 		Short: "Create a new Ory Network account or sign in to an existing account.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			h, err := client.NewCobraCommandHelper(cmd)
+			h, err := client.NewCobraCommandHelper(cmd, client.WithNoBrowser(flagx.MustGetBool(cmd, flagNoBrowser)))
 			if err != nil {
 				return err
 			}
@@ -33,6 +36,7 @@ func NewAuthCmd() *cobra.Command {
 	client.RegisterYesFlag(cmd.PersistentFlags())
 	cmdx.RegisterNoiseFlags(cmd.PersistentFlags())
 	cmdx.RegisterFormatFlags(cmd.Flags())
+	cmd.Flags().Bool(flagNoBrowser, false, "Print the sign-in link instead of opening it in the browser.")
 	cmd.AddCommand(NewLogoutCmd())
 	return cmd
 }
