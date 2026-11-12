@@ -8,17 +8,12 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"html"
 	"io"
 	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
-	"os"
-	"path/filepath"
-	"regexp"
-	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -214,28 +209,10 @@ func linkPreview(t *testing.T, jar http.CookieJar) func(string) {
 	}
 }
 
-// readLoginPage checks that only the current user can read the page the CLI
-// opens in the browser, and returns its path and the start URL it leads to.
-func readLoginPage(t *testing.T, pageURL string) (path, startURL string) {
-	u, err := url.Parse(pageURL)
-	require.NoError(t, err)
-	path = u.Path
-	for p, perm := range map[string]os.FileMode{path: 0o600, filepath.Dir(path): 0o700} {
-		info, err := os.Stat(p)
-		require.NoError(t, err)
-		assert.Equal(t, perm, info.Mode().Perm(), p)
-	}
-	page, err := os.ReadFile(path)
-	require.NoError(t, err)
-	link := regexp.MustCompile(`href="([^"]+)"`).FindSubmatch(page)
-	require.NotNil(t, link, "%s", page)
-	return path, html.UnescapeString(string(link[1]))
-}
-
-// signInWithBrowser opens the page the CLI gives the browser and waits for the
+// signInWithBrowser opens the URL the CLI gives the browser and waits for the
 // page the CLI sends the browser to at the end.
-func signInWithBrowser(page playwright.Page, pageURL string, deny bool) error {
-	if _, err := page.Goto(pageURL); err != nil {
+func signInWithBrowser(page playwright.Page, startURL string, deny bool) error {
+	if _, err := page.Goto(startURL); err != nil {
 		return err
 	}
 	landing, landingText := "/cli-auth-success", "Signed in"
@@ -265,9 +242,6 @@ func browserLoginCookies(browserContext playwright.BrowserContext) ([]playwright
 }
 
 func TestOAuth2LoginInBrowser(t *testing.T) {
-	if runtime.GOOS == "windows" {
-		t.Skip("readLoginPage expects a Unix path in the file URL and Unix file modes.")
-	}
 	pw, err := playwright.Run()
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = pw.Stop() })
@@ -457,16 +431,13 @@ func TestOAuth2LoginInBrowser(t *testing.T) {
 			t.Setenv(ConsoleURLKey, authorizationServer.URL)
 
 			signedIn := make(chan error, 1)
-			var pagePath string
 			h := &CommandHelper{
 				VerboseErrWriter: io.Discard,
-				openBrowserHook: func(pageURL string) error {
-					var startURL string
-					pagePath, startURL = readLoginPage(t, pageURL)
+				openBrowserHook: func(startURL string) error {
 					if s.beforeBrowser != nil {
 						s.beforeBrowser(startURL)
 					}
-					go func() { signedIn <- signInWithBrowser(page, pageURL, tc.deny) }()
+					go func() { signedIn <- signInWithBrowser(page, startURL, tc.deny) }()
 					return nil
 				},
 				wrapLoopbackHandler: s.wrapLoopbackHandler,
@@ -478,7 +449,6 @@ func TestOAuth2LoginInBrowser(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
 			defer cancel()
 			token, err := h.oAuth2DanceWithServer(ctx, conf)
-			assert.NoFileExists(t, pagePath, "the login page must be removed")
 
 			redemptions, revoked := authorizationServer.redeemed()
 			if tc.deny {
