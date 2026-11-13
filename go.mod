@@ -7,7 +7,6 @@ replace github.com/gorilla/sessions => github.com/ory/sessions v1.2.2-0.20220110
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.5.0
-	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/evanphx/json-patch v5.9.11+incompatible
 	github.com/getkin/kin-openapi v0.149.0
 	github.com/ghodss/yaml v1.0.0
@@ -17,7 +16,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/mxschmitt/playwright-go v0.6201.1
 	github.com/ory/client-go v1.22.66
-	github.com/ory/gochimp3 v0.0.0-20200417124117-ccd242db3655
 	github.com/ory/graceful v0.2.0
 	github.com/ory/herodot v0.10.9-0.20260330111132-da75ef0fbc22
 	github.com/ory/hydra-client-go/v2 v2.4.0-alpha.1.0.20251107123905-f3d35665821b
@@ -53,6 +51,7 @@ require (
 	github.com/avast/retry-go/v4 v4.7.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/boombuler/barcode v1.1.0 // indirect
+	github.com/bradleyjkemp/cupaloy/v2 v2.8.0 // indirect
 	github.com/bwmarrin/discordgo v0.29.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

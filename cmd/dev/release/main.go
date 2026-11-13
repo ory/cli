@@ -5,8 +5,6 @@ package release
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/ory/cli/cmd/dev/release/notify"
 )
 
 func NewCommand() *cobra.Command {
@@ -15,7 +13,6 @@ func NewCommand() *cobra.Command {
 		Short: "Release infrastructure for ORY and related components",
 	}
 	c.AddCommand(
-		notify.NewCommand(),
 		newCompileCmd(),
 		newPublishCmd(),
 	)
