@@ -20,7 +20,6 @@
 "github.com/mxschmitt/playwright-go/internal/safe","MIT"
 "github.com/ory/client-go","Apache-2.0"
 "golang.org/x/oauth2","BSD-3-Clause"
-"github.com/ory/gochimp3","MIT"
 "github.com/ory/graceful","Apache-2.0"
 "github.com/pkg/errors","BSD-2-Clause"
 "github.com/ory/herodot/httputil/header","Apache-2.0"
